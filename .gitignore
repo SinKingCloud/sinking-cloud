@@ -15,5 +15,5 @@
 # vendor/
 
 .idea
-*/node_modules
-*/.umi/
+cloud-web/node_modules
+cloud-web/src/.umi
