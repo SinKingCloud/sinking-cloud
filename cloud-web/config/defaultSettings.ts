@@ -5,7 +5,7 @@ const Settings: LayoutSettings & {
   logo?: string;
 } = {
   navTheme: "light",
-  primaryColor: "#2F54EB",
+  primaryColor: "#8800ff",
   layout: "top",
   contentWidth: "Fluid",
   splitMenus: false,

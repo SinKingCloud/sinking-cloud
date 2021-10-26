@@ -29,8 +29,8 @@ FROM alpine as sinking-cloud-api-run
 WORKDIR /data/cloud-api
 
 # 复制文件
-COPY --from=sinking-consul-builder /data/cloud-api/sinking-consul .
-COPY --from=sinking-consul-builder /data/cloud-api/config/ ./config/
+COPY --from=sinking-cloud-api-builder /data/cloud-api/cloud-api .
+COPY --from=sinking-cloud-api-builder /data/cloud-api/config/ ./config/
 
 #映射端口
 EXPOSE 1818
