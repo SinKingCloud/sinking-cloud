@@ -1,7 +1,11 @@
 package str
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
+	"fmt"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -46,7 +50,7 @@ func NewSnowWorker(workerId int64) (*Worker, error) {
 	}, nil
 }
 
-// GetId 生成方法一定要挂载在某个worker下，这样逻辑会比较清晰 指定某个节点生成id
+// GetId 获取唯一id
 func (w *Worker) GetId() int64 {
 	w.mu.Lock()
 	defer w.mu.Unlock()
@@ -64,4 +68,18 @@ func (w *Worker) GetId() int64 {
 	}
 	ID := (now-epoch)<<timeShift | (w.workerId << workerShift) | (w.number)
 	return ID
+}
+
+// md5 获取md5值
+func (w *Worker) md5(str string) string {
+	h := md5.New()
+	h.Write([]byte(str))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+// GetUuid 获取uuid
+func (w *Worker) GetUuid() string {
+	id := w.md5(strconv.FormatInt(w.GetId(), 10))
+	id = fmt.Sprintf("%s-%s-%s-%s-%s", id[0:6], id[6:10], id[10:14], id[14:20], id[20:32])
+	return id
 }

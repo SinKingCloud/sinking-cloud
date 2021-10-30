@@ -1,33 +1,16 @@
 package logs
 
-import (
-	"encoding/json"
-	"log"
-)
-
-var logs *Logstash
-
-// SetLogClient 设置log对象
-func SetLogClient(client *Logstash) *Logstash {
-	logs = client
-	return logs
+type Logs interface {
+	Println(data ...interface{})
 }
 
-// GetLogClient 获取log对象
-func GetLogClient() *Logstash {
-	return logs
-}
-
-func Println(data ...interface{}) {
-	message, err := json.Marshal(data)
-	if err == nil && logs != nil {
-		err = logs.Writeln(string(message))
-		if err != nil {
-			log.Println("Save log err:", err, data)
-		} else {
-			log.Println(data)
-		}
-	} else {
-		log.Println(data)
+// NewLogstash 实例化NewLogstash
+func NewLogstash(hostname string, port int, timeout int) Logs {
+	l := &Logstash{
+		Hostname:   hostname,
+		Port:       port,
+		Connection: nil,
+		Timeout:    timeout,
 	}
+	return l
 }

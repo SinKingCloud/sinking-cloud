@@ -1,9 +1,9 @@
 package logs
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"time"
 )
@@ -13,22 +13,6 @@ type Logstash struct {
 	Port       int
 	Connection *net.TCPConn
 	Timeout    int
-}
-
-func New(hostname string, port int, timeout int) *Logstash {
-	l := Logstash{}
-	l.Hostname = hostname
-	l.Port = port
-	l.Connection = nil
-	l.Timeout = timeout
-	return &l
-}
-
-func (l *Logstash) Dump() {
-	fmt.Println("Hostname:   ", l.Hostname)
-	fmt.Println("Port:       ", l.Port)
-	fmt.Println("Connection: ", l.Connection)
-	fmt.Println("Timeout:    ", l.Timeout)
 }
 
 func (l *Logstash) SetTimeouts() {
@@ -87,7 +71,7 @@ func (l *Logstash) Writeln(message string) error {
 	if l.Connection == nil {
 		l.Connection, err = l.Connect()
 		if err != nil {
-			log.Println("重连日志服务器失败")
+			return err
 		}
 	}
 	if l.Connection != nil {
@@ -111,10 +95,16 @@ func (l *Logstash) Writeln(message string) error {
 				return err
 			}
 		} else {
-			// Successful write! Let's extend the timeoul.
 			l.SetTimeouts()
 			return nil
 		}
 	}
 	return err
+}
+
+func (l *Logstash) Println(data ...interface{}) {
+	message, err := json.Marshal(data)
+	if err == nil {
+		_ = l.Writeln(string(message))
+	}
 }

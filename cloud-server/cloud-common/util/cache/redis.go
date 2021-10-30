@@ -5,68 +5,66 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-var redisPool *redis.Pool
-
-func SetRedisPool(pool *redis.Pool) {
-	redisPool = pool
+type Redis struct {
+	Pool *redis.Pool
 }
 
-// RedisGet 获取缓存
-func RedisGet(key string) (string, bool) {
-	c1 := redisPool.Get()
+// Get 获取缓存
+func (redis *Redis) Get(key string) (string, bool) {
+	c1 := redis.Pool.Get()
 	reply, err := c1.Do("get", key)
-	defer closeRedisClient(c1)
+	defer redis.closeRedisClient(c1)
 	if err != nil {
 		return "", false
 	}
 	return string(reply.([]byte)), true
 }
 
-// RedisSetWithExpire 设置缓存(带过期时间)
-func RedisSetWithExpire(key string, value string, ttl int64) bool {
-	c1 := redisPool.Get()
+// SetWithExpire 设置缓存(带过期时间)
+func (redis *Redis) SetWithExpire(key string, value string, ttl int64) bool {
+	c1 := redis.Pool.Get()
 	_, err := c1.Do("set", key, value)
 	if ttl > 0 {
 		_, _ = c1.Do("pexpire", key, ttl)
 	}
-	defer closeRedisClient(c1)
+	defer redis.closeRedisClient(c1)
 	if err == nil {
 		return true
 	}
 	return false
 }
 
-// RedisSet 设置缓存(不过期)
-func RedisSet(key string, value string) bool {
-	c1 := redisPool.Get()
+// Set 设置缓存(不过期)
+func (redis *Redis) Set(key string, value string) bool {
+	c1 := redis.Pool.Get()
 	_, err := c1.Do("set", key, value)
-	defer closeRedisClient(c1)
+	defer redis.closeRedisClient(c1)
 	if err == nil {
 		return true
 	}
 	return false
 }
 
-// RedisRemember 获取缓存,不存在则设置
-func RedisRemember(key string, fun func() string, ttl int64) string {
-	value, exists := RedisGet(key)
+// Remember 获取缓存,不存在则设置
+func (redis *Redis) Remember(key string, fun func() string, ttl int64) string {
+	value, exists := redis.Get(key)
 	if exists {
 		return value
 	}
 	value = fun()
 	if ttl > 0 {
-		RedisSetWithExpire(key, value, ttl)
+		redis.SetWithExpire(key, value, ttl)
 	}
-	RedisSet(key, value)
+	redis.Set(key, value)
 	return value
 }
 
-// RedisDelete 删除缓存
-func RedisDelete(key string) bool {
-	c1 := redisPool.Get()
+// Delete 删除缓存
+func (redis *Redis) Delete(key string) bool {
+	c1 := redis.Pool.Get()
 	res, err := c1.Do("del", key)
 	fmt.Println(res, err)
-	defer closeRedisClient(c1)
+	defer redis.closeRedisClient(c1)
 	if err == nil {
 		return true
 	}
@@ -74,7 +72,7 @@ func RedisDelete(key string) bool {
 }
 
 // closeRedisClient 关闭链接
-func closeRedisClient(c1 redis.Conn) {
+func (redis *Redis) closeRedisClient(c1 redis.Conn) {
 	err := c1.Close()
 	if err != nil {
 		return
