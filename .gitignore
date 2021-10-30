@@ -17,3 +17,4 @@
 .idea
 cloud-web/node_modules
 cloud-web/src/.umi
+/cloud-server/cloud-common/go.sum
