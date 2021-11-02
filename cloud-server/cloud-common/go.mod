@@ -3,7 +3,7 @@ module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 go 1.17
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211029164418-21190269efee
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211102072810-573b6a9d642f
 	github.com/apache/rocketmq-client-go/v2 v2.1.0
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/gomodule/redigo v1.8.5
