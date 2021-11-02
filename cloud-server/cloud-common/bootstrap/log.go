@@ -6,6 +6,6 @@ import (
 )
 
 func LoadLog() {
-	conf := util.Consul.Config("default").Name("logstash").Viper()
+	conf := util.Consul.Config("default").Name("logstash-common").Viper()
 	util.Log = logs.NewLogstash(conf.GetString("host"), conf.GetInt("port"), conf.GetInt("timeout"))
 }
