@@ -10,8 +10,14 @@ import (
 	"time"
 )
 
+//Database 数据库连接
+type Database struct {
+	Db      *gorm.DB
+	DbError error
+}
+
 // NewMysql 实例化一个mysql连接
-func NewMysql(host string, port string, user string, pwd string, database string) (*gorm.DB, error) {
+func NewMysql(host string, port string, user string, pwd string, database string) *Database {
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), //io writer（日志输出的目标，前缀和日志包含的内容——译者注）
 		logger.Config{
@@ -25,5 +31,5 @@ func NewMysql(host string, port string, user string, pwd string, database string
 	Db, DbError := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: newLogger,
 	})
-	return Db, DbError
+	return &Database{Db: Db, DbError: DbError}
 }

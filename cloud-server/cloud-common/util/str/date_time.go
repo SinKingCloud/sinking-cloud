@@ -1,17 +1,11 @@
-package model
+package str
 
 import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"strings"
 	"time"
-)
-
-var (
-	Db      *gorm.DB
-	DbError error
 )
 
 // DateTime 返回日期格式

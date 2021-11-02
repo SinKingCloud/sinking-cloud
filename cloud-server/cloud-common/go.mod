@@ -1,6 +1,6 @@
-module cloud-common
+module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 
-go 1.11
+go 1.17
 
 require (
 	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211029164418-21190269efee // indirect
