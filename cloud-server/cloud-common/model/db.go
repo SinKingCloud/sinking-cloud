@@ -10,9 +10,8 @@ import (
 )
 
 var (
-	Db       *gorm.DB
-	DbError  error
-	DbPrefix string
+	Db      *gorm.DB
+	DbError error
 )
 
 // DateTime 返回日期格式
