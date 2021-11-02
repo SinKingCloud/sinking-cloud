@@ -7,5 +7,6 @@ import (
 
 // LoadCache 初始化缓存
 func LoadCache() {
-	util.Cache = cache.NewRedis("","","",0)
+	conf := util.Consul.Config("default").Name("redis").Viper()
+	util.Cache = cache.NewRedis(conf.GetString("host"), conf.GetString("port"), conf.GetString("pwd"), conf.GetInt64("db"))
 }
