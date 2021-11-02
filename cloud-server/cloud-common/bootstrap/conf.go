@@ -1,7 +1,7 @@
 package bootstrap
 
 import (
-	"cloud-common/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/spf13/viper"
 )
 

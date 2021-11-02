@@ -1,9 +1,9 @@
 package util
 
 import (
-	"cloud-common/util/cache"
-	"cloud-common/util/database"
-	"cloud-common/util/logs"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/logs"
 	"github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go"
 	"github.com/spf13/viper"
 )
