@@ -4,4 +4,7 @@ package bootstrap
 func Load() {
 	LoadConf()
 	LoadConsul()
+	LoadLog()
+	LoadCache()
+	LoadDatabase()
 }
