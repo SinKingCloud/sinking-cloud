@@ -12,11 +12,6 @@ func loadCommonMiddleware(s *sinking_web.Engine) {
 	s.Use(middleware.Cors())
 }
 
-// loadRoute 加载路由
-func loadRoute(s *sinking_web.Engine) {
-	InitProxyRouter(s)
-}
-
 // loadErrorHandle 设置错误回调
 func loadErrorHandle(s *sinking_web.Engine) {
 	//设置错误回调
@@ -32,6 +27,7 @@ func loadErrorHandle(s *sinking_web.Engine) {
 	})
 }
 
+// Init 初始化server
 func Init() {
 	//设置是否以debug模式运行
 	sinking_web.SetDebugMode(util.Conf.GetString("project.env") == "dev")
