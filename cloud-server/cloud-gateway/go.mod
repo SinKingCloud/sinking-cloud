@@ -2,7 +2,10 @@ module cloud-gateway
 
 go 1.17
 
-require github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
+require (
+	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211102072810-573b6a9d642f
+)
 
 require (
 	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211102072810-573b6a9d642f // indirect

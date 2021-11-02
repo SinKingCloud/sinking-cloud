@@ -17,3 +17,5 @@ require (
 	gorm.io/driver/mysql v1.1.3
 	gorm.io/gorm v1.21.15
 )
+
+require github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211102072810-573b6a9d642f // indirect
