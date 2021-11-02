@@ -9,7 +9,7 @@ import (
 
 // loadCommonMiddleware 加载全局中间件
 func loadCommonMiddleware(s *sinking_web.Engine) {
-	s.Use(middleware.Cors())
+	s.Use(middleware.Log(), middleware.Cors())
 }
 
 // loadErrorHandle 设置错误回调

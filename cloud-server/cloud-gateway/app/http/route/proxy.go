@@ -25,7 +25,7 @@ func InitProxyRouter(route *sinking_web.Engine) {
 					return r
 				})
 			} else {
-				response.Error(s, v)
+				response.ErrorWithData(s, "not found online service", value)
 			}
 		})
 	}
