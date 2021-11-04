@@ -13,7 +13,7 @@ const (
 	NotAllowCode   = 401 //无权限
 )
 
-func (c *Context) Response(code int32, message interface{}, data interface{}) {
+func (c *Context) response(code int32, message interface{}, data interface{}) {
 	c.JSON(http.StatusOK, sinking_web.H{
 		"code":    code,
 		"message": message,
@@ -22,33 +22,33 @@ func (c *Context) Response(code int32, message interface{}, data interface{}) {
 }
 
 func (c *Context) Return(code int32, message interface{}, data interface{}) {
-	c.Response(code, message, data)
+	c.response(code, message, data)
 }
 
 func (c *Context) Success(message interface{}) {
-	c.Response(SuccessCode, message, nil)
+	c.response(SuccessCode, message, nil)
 }
 
 func (c *Context) SuccessWithData(message interface{}, data interface{}) {
-	c.Response(SuccessCode, message, data)
+	c.response(SuccessCode, message, data)
 }
 
 func (c *Context) Error(message interface{}) {
-	c.Response(ErrorCode, message, nil)
+	c.response(ErrorCode, message, nil)
 }
 
 func (c *Context) ErrorWithData(message interface{}, data interface{}) {
-	c.Response(ErrorCode, message, data)
+	c.response(ErrorCode, message, data)
 }
 
 func (c *Context) TokenError(message interface{}, data interface{}) {
-	c.Response(TokenErrorCode, message, data)
+	c.response(TokenErrorCode, message, data)
 }
 
 func (c *Context) NotLogin(message interface{}, data interface{}) {
-	c.Response(NotLoginCode, message, data)
+	c.response(NotLoginCode, message, data)
 }
 
 func (c *Context) NotAllow(message interface{}, data interface{}) {
-	c.Response(NotAllowCode, message, data)
+	c.response(NotAllowCode, message, data)
 }
