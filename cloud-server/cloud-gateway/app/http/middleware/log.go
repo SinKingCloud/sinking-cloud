@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bytes"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"io/ioutil"
 	"log"
@@ -10,7 +11,7 @@ import (
 
 // Log 日志
 func Log() sinking_web.HandlerFunc {
-	return func(c *sinking_web.Context) {
+	return sinking_server.HandleFunc(func(c *sinking_server.Context) {
 		ioBody := c.Request.Body
 		body, err := ioutil.ReadAll(ioBody)
 		if err != nil {
@@ -24,7 +25,7 @@ func Log() sinking_web.HandlerFunc {
 		c.Writer = writer
 		c.Next()
 		log.Println("请求内容", string(body), "响应码", c.StatusCode, "响应头:", c.Writer.Header().Clone(), "响应内容", writer.body.String())
-	}
+	})
 }
 
 // responseBodyWriter 接管下文write
