@@ -1,15 +1,19 @@
 package sinking_server
 
-import "github.com/SinKingCloud/sinking-go/sinking-web"
+import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-go/sinking-web"
+)
 
 // Context 接管上下文方便扩展方法
 type Context struct {
 	*sinking_web.Context
+	RequestId string
 }
 
 // HandleFunc 方法转换
 func HandleFunc(handler func(c *Context)) func(ctx *sinking_web.Context) {
 	return func(c *sinking_web.Context) {
-		handler(&Context{Context: c})
+		handler(&Context{Context: c, RequestId: str.GetSnowWorkIns().GetUuid()})
 	}
 }
