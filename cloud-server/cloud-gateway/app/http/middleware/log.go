@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bytes"
+	"cloud-gateway/app/command/queue/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"io/ioutil"
@@ -24,7 +25,8 @@ func Log() sinking_web.HandlerFunc {
 		}
 		c.Writer = writer
 		c.Next()
-		log.Println("请求内容", string(body), "响应码", c.StatusCode, "响应头:", c.Writer.Header().Clone(), "响应内容", writer.body.String())
+		producer.NewLogRequest().Send()
+		log.Println("请求id", c.GetRequestId(), "请求内容", string(body), "响应码", c.StatusCode, "响应头:", c.Writer.Header().Clone(), "响应内容", writer.body.String())
 	})
 }
 

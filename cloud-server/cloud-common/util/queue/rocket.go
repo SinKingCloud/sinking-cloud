@@ -37,20 +37,23 @@ func RegisterRocketConsumerMust(endPoints []string, groupName string, allListen 
 }
 
 // SendMsg 按字符串类型生产数据
-func (r *RocketMq) SendMsg(topic string, body string) (mqMsg MqMsg, err error) {
-	return r.SendByteMsg(topic, []byte(body))
+func (r *RocketMq) SendMsg(topic string, tag string, body string) (mqMsg MqMsg, err error) {
+	return r.SendByteMsg(topic, tag, []byte(body))
 }
 
 // SendByteMsg 生产数据
-func (r *RocketMq) SendByteMsg(topic string, body []byte) (mqMsg MqMsg, err error) {
+func (r *RocketMq) SendByteMsg(topic string, tag string, body []byte) (mqMsg MqMsg, err error) {
 	if r.producerIns == nil {
 		return mqMsg, errors.New("RocketMq producer not register")
 	}
-
-	result, err := r.producerIns.SendSync(context.Background(), &primitive.Message{
+	msg := &primitive.Message{
 		Topic: topic,
 		Body:  body,
-	})
+	}
+	if tag != "" {
+		msg.WithTag(tag)
+	}
+	result, err := r.producerIns.SendSync(context.Background(), msg)
 
 	if err != nil {
 		return
@@ -69,12 +72,18 @@ func (r *RocketMq) SendByteMsg(topic string, body []byte) (mqMsg MqMsg, err erro
 }
 
 // ListenReceiveMsgDo 消费数据
-func (r *RocketMq) ListenReceiveMsgDo(topic string, receiveDo func(mqMsg MqMsg)) (err error) {
+func (r *RocketMq) ListenReceiveMsgDo(topic string, tag string, receiveDo func(mqMsg MqMsg)) (err error) {
 	if r.consumerIns == nil {
 		return errors.New("RocketMq consumer not register")
 	}
-
-	err = r.consumerIns.Subscribe(topic, consumer.MessageSelector{}, func(ctx context.Context, megs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
+	if tag == "" {
+		tag = "*"
+	}
+	selector := &consumer.MessageSelector{
+		Type:       consumer.TAG,
+		Expression: tag,
+	}
+	err = r.consumerIns.Subscribe(topic, *selector, func(ctx context.Context, megs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
 		for _, item := range megs {
 			receiveDo(MqMsg{
 				RunType: ReceiveMsg,

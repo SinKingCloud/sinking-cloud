@@ -5,12 +5,12 @@ import (
 )
 
 type MqProducer interface {
-	SendMsg(topic string, body string) (mqMsg MqMsg, err error)
-	SendByteMsg(topic string, body []byte) (mqMsg MqMsg, err error)
+	SendMsg(topic string, tag string, body string) (mqMsg MqMsg, err error)
+	SendByteMsg(topic string, tag string, body []byte) (mqMsg MqMsg, err error)
 }
 
 type MqConsumer interface {
-	ListenReceiveMsgDo(topic string, receiveDo func(mqMsg MqMsg)) (err error)
+	ListenReceiveMsgDo(topic string, tag string, receiveDo func(mqMsg MqMsg)) (err error)
 }
 
 const (
