@@ -19,3 +19,4 @@ cloud-web/node_modules
 cloud-web/src/.umi
 /cloud-server/cloud-common/go.sum
 /cloud-server/cloud-service/service-admin/go.sum
+/cloud-server/cloud-gateway/.rocketmq_client_go
