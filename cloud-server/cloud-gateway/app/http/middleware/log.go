@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"bytes"
-	"cloud-gateway/app/command/queue/producer"
+	"cloud-gateway/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"

@@ -6,8 +6,8 @@ import (
 )
 
 func Run() {
-	//初始化api
-	route.Init()
 	//初始化异步任务
 	command.Init()
+	//初始化api
+	route.Init()
 }
