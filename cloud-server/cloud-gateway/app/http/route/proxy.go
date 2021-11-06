@@ -1,8 +1,8 @@
 package route
 
 import (
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/config"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/group"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/group"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-go/sinking-web"

@@ -18,7 +18,7 @@ func (c *Context) response(code int32, message interface{}, data interface{}) {
 		"code":       code,
 		"message":    message,
 		"data":       data,
-		"request_id": c.RequestId,
+		"request_id": c.GetRequestId(),
 	})
 }
 
