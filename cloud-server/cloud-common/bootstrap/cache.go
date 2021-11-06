@@ -10,5 +10,10 @@ import (
 // LoadCache 初始化缓存
 func LoadCache() {
 	conf := util.Consul.Config(group.CloudCommon).Name(config.RedisCommon).Viper()
-	util.Cache = cache.NewRedis(conf.GetString("host"), conf.GetString("port"), conf.GetString("password"), conf.GetInt64("db"))
+	util.Cache = cache.NewRedis(
+		conf.GetString(config.RedisHost),
+		conf.GetString(config.RedisPort),
+		conf.GetString(config.RedisPassword),
+		conf.GetInt64(config.RedisDb),
+	)
 }

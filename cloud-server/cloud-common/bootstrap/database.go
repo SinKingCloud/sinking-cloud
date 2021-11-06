@@ -11,10 +11,10 @@ import (
 func LoadDatabase() {
 	conf := util.Consul.Config(group.CloudCommon).Name(config.MysqlCommon).Viper()
 	util.Database = database.NewMysql(
-		conf.GetString("host"),
-		conf.GetString("port"),
-		conf.GetString("user"),
-		conf.GetString("password"),
-		conf.GetString("database"),
+		conf.GetString(config.MysqlHost),
+		conf.GetString(config.MysqlPort),
+		conf.GetString(config.MysqlUser),
+		conf.GetString(config.MysqlPassword),
+		conf.GetString(config.MysqlDatabase),
 	)
 }

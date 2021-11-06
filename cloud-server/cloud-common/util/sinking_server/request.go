@@ -14,3 +14,12 @@ func (c *Context) GetRequestId() string {
 	}
 	return id
 }
+
+// GetRequestIp 获取请求ip
+func (c *Context) GetRequestIp() string {
+	ip := c.ClientIP(true)
+	if ip == "" {
+		ip = c.ClientIP(false)
+	}
+	return ip
+}

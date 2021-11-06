@@ -9,5 +9,9 @@ import (
 
 func LoadLog() {
 	conf := util.Consul.Config(group.CloudCommon).Name(config.LogStashCommon).Viper()
-	util.Log = logs.NewLogstash(conf.GetString("host"), conf.GetInt("port"), conf.GetInt("timeout"))
+	util.Log = logs.NewLogstash(
+		conf.GetString(config.LogstashHost),
+		conf.GetInt(config.LogstashPort),
+		conf.GetInt(config.LogstashTimeout),
+	)
 }

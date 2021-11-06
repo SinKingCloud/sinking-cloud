@@ -1,0 +1,38 @@
+package model
+
+import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"gorm.io/gorm"
+	"time"
+)
+
+// SystemConfig 系统配置表
+type SystemConfig struct {
+	Id         int64        `gorm:"column:id" json:"id"`
+	Name       string       `gorm:"column:name" json:"name"`
+	Describe   string       `gorm:"column:describe" json:"describe"`
+	Key        string       `gorm:"column:key" json:"key"`
+	Value      string       `gorm:"column:value" json:"value"`
+	Status     int          `gorm:"column:status" json:"status"`
+	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
+	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
+	IsDelete   int64        `gorm:"column:is_delete" json:"is_delete"`
+}
+
+// TableName 获取表名
+func (SystemConfig) TableName() string {
+	return "system_configs"
+}
+
+// BeforeCreate 创建前
+func (t *SystemConfig) BeforeCreate(tx *gorm.DB) error {
+	t.CreateTime = str.DateTime(time.Now())
+	t.IsDelete = 0
+	return nil
+}
+
+// BeforeUpdate 更新前
+func (t *SystemConfig) BeforeUpdate(tx *gorm.DB) error {
+	t.UpdateTime = str.DateTime(time.Now())
+	return nil
+}
