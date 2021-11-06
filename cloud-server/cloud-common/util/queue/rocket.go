@@ -76,9 +76,6 @@ func (r *RocketMq) ListenReceiveMsgDo(topic string, tag string, receiveDo func(m
 	if r.consumerIns == nil {
 		return errors.New("RocketMq consumer not register")
 	}
-	if tag == "" {
-		tag = "*"
-	}
 	selector := &consumer.MessageSelector{
 		Type:       consumer.TAG,
 		Expression: tag,

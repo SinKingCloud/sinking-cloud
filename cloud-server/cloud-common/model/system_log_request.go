@@ -15,6 +15,7 @@ type SystemLogRequest struct {
 	RequestMethod  string       `gorm:"column:request_method" json:"request_method"`
 	RequestHeader  string       `gorm:"column:request_header" json:"request_header"`
 	RequestBody    string       `gorm:"column:request_body" json:"request_body"`
+	RequestTime    str.DateTime `gorm:"column:request_time" json:"request_time"`
 	ResponseCode   int          `gorm:"column:response_code" json:"response_code"`
 	ResponseHeader string       `gorm:"column:response_header" json:"response_header"`
 	ResponseBody   string       `gorm:"column:response_body" json:"response_body"`
