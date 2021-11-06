@@ -1,8 +1,6 @@
 package sinking_server
 
 import (
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
@@ -18,14 +16,4 @@ func HandleFunc(handler func(c *Context)) func(ctx *sinking_web.Context) {
 			Context: c,
 		})
 	}
-}
-
-// GetRequestId 获取请求id
-func (c *Context) GetRequestId() string {
-	id := c.GetString(util.RequestId)
-	if id == "" {
-		id = str.GetSnowWorkIns().GetUuid()
-		c.Set(util.RequestId, id)
-	}
-	return id
 }
