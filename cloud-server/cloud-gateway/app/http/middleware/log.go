@@ -58,6 +58,7 @@ func Log() sinking_web.HandlerFunc {
 		c.Next()
 		//拼接日志
 		log := &model.SystemLogRequest{
+			Id:             str.GetSnowWorkIns().GetId(),
 			RequestId:      requestId,
 			UserId:         0,
 			RequestIp:      requestIp,
