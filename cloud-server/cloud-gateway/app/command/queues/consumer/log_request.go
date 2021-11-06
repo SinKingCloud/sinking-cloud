@@ -2,8 +2,10 @@ package consumer
 
 import (
 	queue2 "cloud-gateway/app/util/queue"
-	"fmt"
+	"encoding/json"
 	queue3 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/queue"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 )
 
@@ -20,10 +22,14 @@ type logRequest struct {
 
 func (l *logRequest) Listen() {
 	if logRequestIns == nil {
-		logRequestIns = queue2.GetRocketConsumerServer(queue3.LogRequestGroup, 1)
+		logRequestIns = queue2.GetRocketConsumerServer(queue3.LogRequestGroup, false)
 	}
 	err := logRequestIns.ListenReceiveMsgDo(queue3.LogRequestTopic, "", func(mqMsg queue.MqMsg) {
-		fmt.Println("收到消息", mqMsg.MsgId, mqMsg.Body)
+		log := &model.SystemLogRequest{}
+		err := json.Unmarshal(mqMsg.Body, log)
+		if err == nil {
+			util.Database.Db.Create(log)
+		}
 	})
 	if err != nil {
 		return

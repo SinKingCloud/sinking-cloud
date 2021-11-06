@@ -15,8 +15,8 @@ func GetRocketProducerServer(groupName string, retry int) queue.MqProducer {
 }
 
 // GetRocketConsumerServer 获取消息队列消费者者对象
-func GetRocketConsumerServer(groupName string, retry int) queue.MqConsumer {
+func GetRocketConsumerServer(groupName string, allListen bool) queue.MqConsumer {
 	return queue.RegisterRocketConsumerMust([]string{
 		util.Consul.Config(group.CloudCommon).Name(config.RocketMqCommon).Viper().GetString(config.RocketmqServer),
-	}, groupName, true)
+	}, groupName, allListen)
 }
