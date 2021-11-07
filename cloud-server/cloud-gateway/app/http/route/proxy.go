@@ -3,6 +3,7 @@ package route
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/group"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -18,6 +19,12 @@ func InitProxyRouter(route *sinking_web.Engine) {
 			groupName := tempV1["group"]
 			name := tempV1["name"]
 			tempGroup := route.Group(k)
+			if tempV1["login"] == "user" {
+				tempGroup.Use(middleware.AuthUser())
+			}
+			if tempV1["login"] == "admin" {
+				tempGroup.Use(middleware.AuthAdmin())
+			}
 			tempGroup.ANY(k1, sinking_server.HandleFunc(func(s *sinking_server.Context) {
 				url, exists := util.Consul.GetService(groupName.(string), name.(string))
 				if exists {

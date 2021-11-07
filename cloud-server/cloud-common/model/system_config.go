@@ -8,7 +8,7 @@ import (
 
 // SystemConfig 系统配置表
 type SystemConfig struct {
-	Id         int64        `gorm:"column:id" json:"id"`
+	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	Name       string       `gorm:"column:name" json:"name"`
 	Describe   string       `gorm:"column:describe" json:"describe"`
 	Key        string       `gorm:"column:key" json:"key"`
