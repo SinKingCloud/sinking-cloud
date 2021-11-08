@@ -32,6 +32,7 @@ func InitProxyRouter(route *sinking_web.Engine) {
 					s.Proxy(k, "http://"+url.Addr, func(r *http.Request) *http.Request {
 						r.Host = s.Request.URL.Host
 						r.URL.Path = strings.Replace(s.Request.URL.Path, k, "", 1)
+						r.Header.Set(util.Conf.GetString("register.tokenKey"), util.Conf.GetString("register.tokenValue"))
 						return r
 					})
 				} else {

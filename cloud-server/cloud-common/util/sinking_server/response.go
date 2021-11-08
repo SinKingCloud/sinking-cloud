@@ -6,11 +6,12 @@ import (
 )
 
 const (
-	SuccessCode    = 200 //请求成功
-	ErrorCode      = 500 //请求失败
-	TokenErrorCode = 503 //token认证失败
-	NotLoginCode   = 403 //未登录
-	NotAllowCode   = 401 //无权限
+	SuccessCode      = 200 //请求成功
+	ErrorCode        = 500 //请求失败
+	TokenErrorCode   = 503 //token认证失败
+	NotLoginCode     = 403 //未登录
+	NotAllowCode     = 401 //无权限
+	ServiceErrorCode = 502 //微服务鉴权失败
 )
 
 func (c *Context) response(code int32, message interface{}, data interface{}) {
@@ -52,4 +53,8 @@ func (c *Context) NotLogin(message interface{}, data interface{}) {
 
 func (c *Context) NotAllow(message interface{}, data interface{}) {
 	c.response(NotAllowCode, message, data)
+}
+
+func (c *Context) ServiceError(message interface{}) {
+	c.response(ServiceErrorCode, message, nil)
 }

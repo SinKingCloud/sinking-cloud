@@ -12,7 +12,9 @@ application:
   timeout:
     read: 60 #超时读(s)
     write: 60 #超时读(写)
-  useService: #监听的服务 分组:应用标识
+  useService:
+    cloud-common: cloud-websocket #引用websocket服务
+
 
 #注册中心
 register:
