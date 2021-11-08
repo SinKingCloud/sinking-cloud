@@ -8,6 +8,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"net/http"
+	"strings"
 )
 
 func InitProxyRouter(route *sinking_web.Engine) {
@@ -28,7 +29,9 @@ func InitProxyRouter(route *sinking_web.Engine) {
 			tempGroup.ANY(k1, sinking_server.HandleFunc(func(s *sinking_server.Context) {
 				url, exists := util.Consul.GetService(groupName.(string), name.(string))
 				if exists {
-					s.Proxy(k, url.Addr, func(r *http.Request) *http.Request {
+					s.Proxy(k, "http://"+url.Addr, func(r *http.Request) *http.Request {
+						r.Host = s.Request.URL.Host
+						r.URL.Path = strings.Replace(s.Request.URL.Path, k, "", 1)
 						return r
 					})
 				} else {
