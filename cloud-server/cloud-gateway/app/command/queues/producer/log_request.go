@@ -1,12 +1,12 @@
 package producer
 
 import (
-	queue2 "cloud-gateway/app/util/queue"
 	"encoding/json"
 	queue3 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/queue"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 )
 
 // logRequestIns 生产者单例
@@ -34,7 +34,7 @@ func (l *logRequest) Build(request *model.SystemLogRequest) *logRequest {
 // Send 发送消息
 func (l *logRequest) Send() {
 	if logRequestIns == nil {
-		logRequestIns = queue2.GetRocketProducerServer(queue3.LogRequestGroup, 1)
+		logRequestIns = sinking.GetRocketProducerServer(queue3.LogRequestGroup, 1)
 	}
 	_, err := logRequestIns.SendByteMsg(queue3.LogRequestTopic, "", l.bytes)
 	if err != nil {

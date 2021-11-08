@@ -1,7 +1,7 @@
 package queues
 
 import (
-	"cloud-gateway/app/command/queues/consumer"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/command/queues/consumer"
 )
 
 // Run 执行消息队列

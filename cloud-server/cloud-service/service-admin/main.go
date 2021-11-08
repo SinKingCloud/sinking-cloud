@@ -1,11 +1,7 @@
 package main
 
-import (
-	"fmt"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/bootstrap"
-)
+import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app"
 
 func main() {
-	bootstrap.Load()
-	fmt.Println("succ")
+	app.Run()
 }

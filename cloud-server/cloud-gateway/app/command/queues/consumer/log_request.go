@@ -1,12 +1,12 @@
 package consumer
 
 import (
-	queue2 "cloud-gateway/app/util/queue"
 	"encoding/json"
 	queue3 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/queue"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 )
 
 // logRequestIns 消费者单例
@@ -22,7 +22,7 @@ type logRequest struct {
 
 func (l *logRequest) Listen() {
 	if logRequestIns == nil {
-		logRequestIns = queue2.GetRocketConsumerServer(queue3.LogRequestGroup, false)
+		logRequestIns = sinking.GetRocketConsumerServer(queue3.LogRequestGroup, false)
 	}
 	err := logRequestIns.ListenReceiveMsgDo(queue3.LogRequestTopic, "", func(mqMsg queue.MqMsg) {
 		log := &model.SystemLogRequest{}

@@ -1,4 +1,4 @@
-package queue
+package sinking
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"

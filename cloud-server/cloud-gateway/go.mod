@@ -1,4 +1,4 @@
-module cloud-gateway
+module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway
 
 go 1.17
 

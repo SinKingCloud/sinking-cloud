@@ -2,10 +2,13 @@ module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-
 
 go 1.17
 
-require github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
+require (
+	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211102072810-573b6a9d642f
+)
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211029164418-21190269efee // indirect
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211102072810-573b6a9d642f // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/gomodule/redigo v1.8.5 // indirect

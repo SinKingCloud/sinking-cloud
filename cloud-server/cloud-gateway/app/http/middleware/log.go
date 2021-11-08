@@ -2,12 +2,12 @@ package middleware
 
 import (
 	"bytes"
-	"cloud-gateway/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"io/ioutil"
 	"net/http"

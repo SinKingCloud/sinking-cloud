@@ -1,6 +1,6 @@
 package command
 
-import "cloud-gateway/app/command/queues"
+import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/command/queues"
 
 // Init 初始化后台任务
 func Init() {
