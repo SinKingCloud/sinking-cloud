@@ -60,7 +60,6 @@ func Log() sinking_web.HandlerFunc {
 		log := &model.SystemLogRequest{
 			Id:             str.GetSnowWorkIns().GetId(),
 			RequestId:      requestId,
-			UserId:         0,
 			RequestIp:      requestIp,
 			RequestUrl:     requestUrl,
 			RequestMethod:  method,

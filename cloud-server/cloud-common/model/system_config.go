@@ -8,7 +8,8 @@ import (
 
 // SystemConfig 系统配置表
 type SystemConfig struct {
-	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
+	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
+	Pid        int          `gorm:"column:pid" json:"pid"`
 	Name       string       `gorm:"column:name" json:"name"`
 	Describe   string       `gorm:"column:describe" json:"describe"`
 	Key        string       `gorm:"column:key" json:"key"`
@@ -16,7 +17,7 @@ type SystemConfig struct {
 	Status     int          `gorm:"column:status" json:"status"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
-	IsDelete   int64        `gorm:"column:is_delete" json:"is_delete"`
+	IsDelete   int          `gorm:"column:is_delete" json:"is_delete"`
 }
 
 // TableName 获取表名

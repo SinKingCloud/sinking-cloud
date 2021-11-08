@@ -10,7 +10,6 @@ import (
 type SystemLogRequest struct {
 	Id             int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	RequestId      string       `gorm:"column:request_id" json:"request_id"`
-	UserId         int64        `gorm:"column:user_id" json:"user_id"`
 	RequestIp      string       `gorm:"column:request_ip" json:"request_ip"`
 	RequestUrl     string       `gorm:"column:request_url" json:"request_url"`
 	RequestMethod  string       `gorm:"column:request_method" json:"request_method"`
@@ -26,7 +25,7 @@ type SystemLogRequest struct {
 	AppAddr        string       `gorm:"column:app_addr" json:"app_addr"`
 	CreateTime     str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime     str.DateTime `gorm:"column:update_time" json:"update_time"`
-	IsDelete       int64        `gorm:"column:is_delete" json:"is_delete"`
+	IsDelete       int          `gorm:"column:is_delete" json:"is_delete"`
 }
 
 // TableName 获取表名
