@@ -13,7 +13,9 @@ application:
     read: 60 #超时读(s)
     write: 60 #超时读(写)
   useService:
-    cloud-service: service-admin #引用后台服务
+    cloud-service:
+      - service-admin #引用后台服务
+      - service-user #引用用户服务
 
 #注册中心
 register:

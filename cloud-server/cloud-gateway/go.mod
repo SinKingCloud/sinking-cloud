@@ -4,11 +4,11 @@ go 1.17
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211108075145-2b5aea1c7381
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211111141739-6e86016dad20
 )
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211102072810-573b6a9d642f // indirect
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211111141739-6e86016dad20 // indirect
 	github.com/apache/rocketmq-client-go/v2 v2.1.0 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect

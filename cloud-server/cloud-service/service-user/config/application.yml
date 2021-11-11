@@ -13,7 +13,8 @@ application:
     read: 60 #超时读(s)
     write: 60 #超时读(写)
   useService:
-    cloud-common: cloud-websocket #引用websocket服务
+    cloud-common:
+      - cloud-websocket #引用websocket服务
 
 #注册中心
 register:
