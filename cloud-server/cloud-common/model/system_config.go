@@ -14,6 +14,7 @@ type SystemConfig struct {
 	Describe   string       `gorm:"column:describe" json:"describe"`
 	Key        string       `gorm:"column:key" json:"key"`
 	Value      string       `gorm:"column:value" json:"value"`
+	Sort       int          `gorm:"column:sort" json:"sort"`
 	Status     int          `gorm:"column:status" json:"status"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
