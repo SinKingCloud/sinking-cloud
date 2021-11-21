@@ -11,7 +11,7 @@ application:
   port: 1000 #应用端口
   timeout:
     read: 60 #超时读(s)
-    write: 60 #超时读(写)
+    write: 60 #超时写(s)
   useService:
     cloud-service:
       - service-admin #引用后台服务

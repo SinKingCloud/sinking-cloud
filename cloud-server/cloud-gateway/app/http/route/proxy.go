@@ -3,6 +3,7 @@ package route
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/group"
+	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
@@ -33,6 +34,7 @@ func InitProxyRouter(route *sinking_web.Engine) {
 						r.Host = s.Request.URL.Host
 						r.URL.Path = strings.Replace(s.Request.URL.Path, k, "", 1)
 						r.Header.Set(util.Conf.GetString("register.tokenKey"), util.Conf.GetString("register.tokenValue"))
+						r.Header.Set(util2.RequestId, s.GetRequestId())
 						return r
 					})
 				} else {
