@@ -17,4 +17,5 @@ require (
 	golang.org/x/sys v0.0.0-20211015200801-69063c4bb744 // indirect
 	gorm.io/driver/mysql v1.1.3
 	gorm.io/gorm v1.21.15
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 )

@@ -27,12 +27,13 @@ func InitProxyRouter(route *sinking_web.Engine) {
 			if tempV1["login"] == "admin" {
 				tempGroup.Use(middleware.AuthAdmin())
 			}
+			patten := k
 			tempGroup.ANY(k1, sinking_server.HandleFunc(func(s *sinking_server.Context) {
 				url, exists := util.Consul.GetService(groupName.(string), name.(string))
 				if exists {
-					s.Proxy(k, "http://"+url.Addr, func(r *http.Request) *http.Request {
+					s.Proxy(patten, "http://"+url.Addr, func(r *http.Request) *http.Request {
 						r.Host = s.Request.URL.Host
-						r.URL.Path = strings.Replace(s.Request.URL.Path, k, "", 1)
+						r.URL.Path = strings.Replace(s.Request.URL.Path, patten, "", 1)
 						r.Header.Set(util.Conf.GetString("register.tokenKey"), util.Conf.GetString("register.tokenValue"))
 						r.Header.Set(util2.RequestId, s.GetRequestId())
 						return r

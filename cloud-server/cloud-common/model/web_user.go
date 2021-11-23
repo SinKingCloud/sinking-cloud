@@ -15,6 +15,7 @@ type WebUser struct {
 	Avatar     string       `gorm:"column:avatar" json:"avatar"`
 	Email      string       `gorm:"column:email" json:"email"`
 	Phone      int64        `gorm:"column:phone" json:"phone"`
+	LoginToken string       `gorm:"column:login_token" json:"login_token"`
 	LoginIp    string       `gorm:"column:login_ip" json:"login_ip"`
 	LoginTime  str.DateTime `gorm:"column:login_time" json:"login_time"`
 	Status     int          `gorm:"column:status" json:"status"`

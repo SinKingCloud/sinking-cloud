@@ -16,6 +16,7 @@ application:
     cloud-service:
       - service-admin #引用后台服务
       - service-user #引用用户服务
+      - service-auth #引用登陆授权服务
 
 #注册中心
 register:
