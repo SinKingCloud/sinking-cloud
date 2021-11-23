@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
@@ -9,7 +8,10 @@ import (
 // LoadConfig 加载系统核心配置
 func LoadConfig() sinking_web.HandlerFunc {
 	return sinking_server.HandleFunc(func(c *sinking_server.Context) {
-		fmt.Println("加载系统配置")
+		//加载系统配置
+		c.SetSystemConfig(map[string]string{
+			"test": "测试数据",
+		})
 		c.Next()
 	})
 }
