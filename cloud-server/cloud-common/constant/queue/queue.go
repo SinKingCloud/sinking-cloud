@@ -1,6 +1,6 @@
 package queue
 
 const (
-	LogRequestGroup = "LogRequestGroup"
-	LogRequestTopic = "LogRequestTopic"
+	LogRequestGroup = "LogRequestGroup" //请求日志group
+	LogRequestTopic = "LogRequestTopic" //请求日志topic
 )

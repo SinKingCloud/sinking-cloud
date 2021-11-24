@@ -14,7 +14,7 @@ func (redis *Redis) Get(key string) (string, bool) {
 	c1 := redis.Pool.Get()
 	reply, err := c1.Do("get", key)
 	defer redis.closeRedisClient(c1)
-	if err != nil {
+	if err != nil || reply == nil {
 		return "", false
 	}
 	return string(reply.([]byte)), true
