@@ -1,6 +1,7 @@
 package route
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
 	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/http/middleware"
@@ -46,7 +47,7 @@ func Init() {
 	//加载路由
 	loadRoute(r)
 	//启动http server
-	err := r.Run("0.0.0.0:" + util.Conf.GetString("application.port"))
+	err := r.Run("0.0.0.0:" + util.Conf.GetString(config.ConfApplicationPort))
 	if err != nil {
 		panic(err)
 		return
