@@ -1,10 +1,12 @@
 package str
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -83,4 +85,40 @@ func (stringTool *StringTool) AesCbcDecrypt(key string) string {
 	mode := cipher.NewCBCDecrypter(block, iv)
 	mode.CryptBlocks(cipherByte, cipherByte)
 	return string(cipherByte[:])
+}
+
+func (stringTool *StringTool) AesEncrypt(key string) string {
+	origData := []byte(stringTool.string)
+	k := []byte(key)
+	block, _ := aes.NewCipher(k)
+	blockSize := aes.BlockSize
+	origData = stringTool.pKCS7Padding(origData, blockSize)
+	blockMode := cipher.NewCBCEncrypter(block, k[:blockSize])
+	cryted := make([]byte, len(origData))
+	blockMode.CryptBlocks(cryted, origData)
+	return base64.StdEncoding.EncodeToString(cryted)
+}
+
+func (stringTool *StringTool) AesDecrypt(key string) string {
+	crytedByte, _ := base64.StdEncoding.DecodeString(stringTool.string)
+	k := []byte(key)
+	block, _ := aes.NewCipher(k)
+	blockSize := aes.BlockSize
+	blockMode := cipher.NewCBCDecrypter(block, k[:blockSize])
+	orig := make([]byte, len(crytedByte))
+	blockMode.CryptBlocks(orig, crytedByte)
+	orig = stringTool.pKCS7UnPadding(orig)
+	return string(orig)
+}
+
+func (StringTool) pKCS7Padding(ciphertext []byte, blocksize int) []byte {
+	padding := blocksize - len(ciphertext)%blocksize
+	padText := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(ciphertext, padText...)
+}
+
+func (StringTool) pKCS7UnPadding(origData []byte) []byte {
+	length := len(origData)
+	unPadding := int(origData[length-1])
+	return origData[:(length - unPadding)]
 }

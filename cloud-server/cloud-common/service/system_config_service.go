@@ -7,23 +7,23 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 )
 
-// configService config_service
-type configService struct {
+// systemConfigService config_service
+type systemConfigService struct {
 }
 
-// configObj config对象
-var configObj *configService
+// systemConfigObj systemConfigObj对象
+var systemConfigObj *systemConfigService
 
-// GetConfigServiceIns 获取单例
-func GetConfigServiceIns() *configService {
-	if configObj == nil {
-		configObj = &configService{}
+// GetSystemConfigServiceIns 获取单例
+func GetSystemConfigServiceIns() *systemConfigService {
+	if systemConfigObj == nil {
+		systemConfigObj = &systemConfigService{}
 	}
-	return configObj
+	return systemConfigObj
 }
 
-// SelectAllConfigWithMap 获取map类型配置
-func (configService) SelectAllConfigWithMap() map[string]string {
+// SelectAllWithMap 获取map类型配置
+func (systemConfigService) SelectAllWithMap() map[string]string {
 	var configs []*model.SystemConfig
 	temp := make(map[string]string)
 	util.Database.Db.Find(&configs)
@@ -33,11 +33,11 @@ func (configService) SelectAllConfigWithMap() map[string]string {
 	return temp
 }
 
-// GetConfigByCache 获取系统配置
-func (c configService) GetConfigByCache(refresh bool) map[string]string {
+// GetByCache 获取系统配置
+func (c systemConfigService) GetByCache(refresh bool) map[string]string {
 	config := make(map[string]string)
 	if refresh {
-		config = c.SelectAllConfigWithMap()
+		config = c.SelectAllWithMap()
 		data, err := json.Marshal(config)
 		if err == nil {
 			util.Cache.SetWithExpire(util2.CacheNameWithSystemConfig, string(data), util2.CacheTimeWithSystemConfig)
@@ -47,7 +47,7 @@ func (c configService) GetConfigByCache(refresh bool) map[string]string {
 		if exists {
 			_ = json.Unmarshal([]byte(data), &config)
 		} else {
-			config = c.SelectAllConfigWithMap()
+			config = c.SelectAllWithMap()
 			data, err := json.Marshal(config)
 			if err == nil {
 				util.Cache.SetWithExpire(util2.CacheNameWithSystemConfig, string(data), util2.CacheTimeWithSystemConfig)

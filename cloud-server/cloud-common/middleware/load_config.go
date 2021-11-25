@@ -10,7 +10,7 @@ import (
 func LoadConfig() sinking_web.HandlerFunc {
 	return sinking_server.HandleFunc(func(c *sinking_server.Context) {
 		//加载系统配置
-		config := service.GetConfigServiceIns().GetConfigByCache(false)
+		config := service.GetSystemConfigServiceIns().GetByCache(false)
 		c.SetSystemConfig(config)
 		c.Next()
 	})

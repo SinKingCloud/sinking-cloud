@@ -23,7 +23,7 @@ func AuthAdmin() sinking_web.HandlerFunc {
 			c.Abort()
 			return
 		}
-		c.SetSystemUserInfo(key.User)
+		c.SetSystemUserInfo(key.SystemUser)
 		//判断权限
 		c.Next()
 	})

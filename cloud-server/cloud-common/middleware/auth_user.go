@@ -23,7 +23,7 @@ func AuthUser() sinking_web.HandlerFunc {
 			c.Abort()
 			return
 		}
-		c.SetWebUserInfo(key.User)
+		c.SetWebUserInfo(key.WebUser)
 		c.Next()
 	})
 }

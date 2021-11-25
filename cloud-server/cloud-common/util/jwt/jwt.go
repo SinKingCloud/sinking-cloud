@@ -1,7 +1,9 @@
 package jwt
 
 import (
+	"encoding/json"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/dgrijalva/jwt-go"
 	"time"
@@ -9,7 +11,8 @@ import (
 
 // MyClaims jwt载体
 type MyClaims struct {
-	User interface{}
+	WebUser    *model.WebUser
+	SystemUser *model.SystemUser
 	jwt.StandardClaims
 }
 
@@ -18,10 +21,18 @@ func getKey() []byte {
 	return []byte(util.JwtTokenKey)
 }
 
-// GetToken 生成token
-func GetToken(user interface{}) string {
+// GetLoginToken 获取token
+func GetLoginToken(token string) map[string]string {
+	temp := make(map[string]string)
+	_ = json.Unmarshal([]byte(token), &temp)
+	return temp
+}
+
+// GetToken 生成token user 用户信息
+func GetToken(webUser *model.WebUser, systemUser *model.SystemUser) string {
 	setClaim := MyClaims{
-		User: user,
+		WebUser:    webUser,
+		SystemUser: systemUser,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(util.JwtTokenExpire * time.Second).Unix(), //过期时间（时间戳）
 		},
@@ -31,12 +42,12 @@ func GetToken(user interface{}) string {
 	if err != nil {
 		return ""
 	}
-	return str.NetStringTool(token).AesCbcEncrypt(util.JwtTokenKey)
+	return str.NetStringTool(token).AesEncrypt(util.JwtTokenKey)
 }
 
 // CheckToken 验证token
 func CheckToken(token string) *MyClaims {
-	token = str.NetStringTool(token).AesCbcDecrypt(util.JwtTokenKey)
+	token = str.NetStringTool(token).AesDecrypt(util.JwtTokenKey)
 	setToken, err := jwt.ParseWithClaims(token, &MyClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return getKey(), nil
 	})

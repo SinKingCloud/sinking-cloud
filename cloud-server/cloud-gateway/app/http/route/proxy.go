@@ -7,6 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/http/middleware"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"net/http"
 	"strings"
@@ -22,10 +23,10 @@ func InitProxyRouter(route *sinking_web.Engine) {
 			name := tempV1["name"]
 			tempGroup := route.Group(k)
 			if tempV1["login"] == "user" {
-				tempGroup.Use(middleware.AuthUser())
+				tempGroup.Use(middleware.AuthUser(), middleware2.CheckWebUser())
 			}
 			if tempV1["login"] == "admin" {
-				tempGroup.Use(middleware.AuthAdmin())
+				tempGroup.Use(middleware.AuthAdmin(), middleware2.CheckSystemUser())
 			}
 			patten := k
 			tempGroup.ANY(k1, sinking_server.HandleFunc(func(s *sinking_server.Context) {
