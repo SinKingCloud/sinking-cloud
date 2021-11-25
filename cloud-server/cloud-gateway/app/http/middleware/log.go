@@ -17,6 +17,12 @@ import (
 // Log 记录日志
 func Log() sinking_web.HandlerFunc {
 	return sinking_server.HandleFunc(func(c *sinking_server.Context) {
+		//websocket直接通过
+		if c.Request.Header.Get("Connection") == "Upgrade" {
+			c.Next()
+			return
+		}
+		//普通请求记录日志
 		getHeader := func(header http.Header) string {
 			temp := ""
 			for k, v := range header {

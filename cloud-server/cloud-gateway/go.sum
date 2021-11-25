@@ -45,10 +45,10 @@ dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
-github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211111141739-6e86016dad20 h1:fCHx9lSzX3DqkS0cxG7jHIPWtgLWx++bwUNBj1pr1Q0=
-github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211111141739-6e86016dad20/go.mod h1:yKxs0d0LCaraNwGjJaouWN5XIfmzMypgkb8S2ICemjc=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211111141739-6e86016dad20 h1:mYgPliFvrf41VXTb32RBfN6Cz2InCxKp+eOW6+BOLTU=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211111141739-6e86016dad20/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211125053718-b26199caff3f h1:rl+m1/HcnO48DajOF6Cc/HE17S5nL0klNYVfHsATuXQ=
+github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211125053718-b26199caff3f/go.mod h1:yKxs0d0LCaraNwGjJaouWN5XIfmzMypgkb8S2ICemjc=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211125053718-b26199caff3f h1:Cz8maLlSL4z4YPBe5/sgpcP/OKRDXym5rtPVsmSR7nw=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211125053718-b26199caff3f/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/apache/rocketmq-client-go/v2 v2.1.0 h1:3eABKfxc1WmS2lLTTbKMe1gZfZV6u1Sx9orFnOfABV0=
 github.com/apache/rocketmq-client-go/v2 v2.1.0/go.mod h1:oEZKFDvS7sz/RWU0839+dQBupazyBV7WX5cP6nrio0Q=

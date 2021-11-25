@@ -4,12 +4,12 @@ go 1.17
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211111141739-6e86016dad20
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211125053718-b26199caff3f
+	github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20211125053718-b26199caff3f
 )
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211111141739-6e86016dad20 // indirect
-	github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20211111141739-6e86016dad20 // indirect
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211125053718-b26199caff3f // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
