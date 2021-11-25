@@ -23,16 +23,18 @@ func LoadConsul() {
 	)
 	//拉取服务
 	list := util.Conf.Get(config.ConfApplicationUseService)
-	service := map[string][]string{}
-	for k, v := range list.(map[string]interface{}) {
-		for _, v1 := range v.([]interface{}) {
-			if service[k] == nil {
-				service[k] = []string{}
+	if list != nil {
+		service := map[string][]string{}
+		for k, v := range list.(map[string]interface{}) {
+			for _, v1 := range v.([]interface{}) {
+				if service[k] == nil {
+					service[k] = []string{}
+				}
+				service[k] = append(service[k], v1.(string))
 			}
-			service[k] = append(service[k], v1.(string))
 		}
+		util.Consul.UseService(service)
 	}
-	util.Consul.UseService(service)
 	//监听
 	util.Consul.Listen()
 }

@@ -7,7 +7,7 @@ import (
 
 // GetRequestId 获取请求id
 func (c *Context) GetRequestId() string {
-	id := c.GetString(util.RequestId)
+	id := c.Request.Header.Get(util.RequestId)
 	if id == "" {
 		id = str.GetSnowWorkIns().GetUuid()
 		c.Set(util.RequestId, id)
