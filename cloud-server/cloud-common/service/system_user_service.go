@@ -33,7 +33,7 @@ func (systemUserService) FindById(id int) *model.SystemUser {
 // FindByIdWithCache 查询缓存用户信息(根据用户ID)
 func (w systemUserService) FindByIdWithCache(id int, refresh bool) *model.SystemUser {
 	var user *model.SystemUser
-	key := util2.CacheNameWithWebUser + strconv.Itoa(id)
+	key := util2.CacheNameWithSystemUser + strconv.Itoa(id)
 	if refresh {
 		user = w.FindById(id)
 		data, err := json.Marshal(user)

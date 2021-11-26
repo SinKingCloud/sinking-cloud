@@ -9,4 +9,7 @@ const (
 
 	CacheNameWithSystemUser = "SystemUser_" //系统登录用户信息缓存
 	CacheTimeWithSystemUser = 86400 * 1000  //系统登录用户信息缓存时间
+
+	CacheNameWebSocketUser = "WebSocketUser_" //websocket连接用户缓存
+	CacheTimeWebSocketUser = 86400 * 1000 * 7 //websocket连接用户缓存时间
 )

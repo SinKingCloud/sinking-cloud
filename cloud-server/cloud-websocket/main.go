@@ -6,6 +6,8 @@ import (
 )
 
 func main() {
-	bootstrap.Load()
+	bootstrap.LoadConf()
+	bootstrap.LoadConsul()
+	bootstrap.LoadLog()
 	app.Run()
 }

@@ -23,7 +23,7 @@ type logRequest struct {
 
 func (l *logRequest) Listen() {
 	if logRequestIns == nil {
-		logRequestIns = sinking.GetRocketConsumerServer(queue3.LogRequestGroup, false)
+		logRequestIns = sinking.GetRocketConsumerServer(sinking.GetServerHash(queue3.LogRequestGroup), false)
 	}
 	err := logRequestIns.ListenReceiveMsgDo(queue3.LogRequestTopic, "", func(mqMsg queue.MqMsg) {
 		log := &model.SystemLogRequest{}

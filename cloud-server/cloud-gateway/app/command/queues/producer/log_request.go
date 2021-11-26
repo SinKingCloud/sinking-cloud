@@ -51,7 +51,7 @@ func (l *logRequest) run() {
 // Send 发送消息
 func (l *logRequest) Send() {
 	if logRequestIns == nil {
-		logRequestIns = sinking.GetRocketProducerServer(queue3.LogRequestGroup, 1)
+		logRequestIns = sinking.GetRocketProducerServer(sinking.GetServerHash(queue3.LogRequestGroup), 1)
 		logSendTask = make(chan *model.SystemLogRequest)
 		l.run()
 	}
