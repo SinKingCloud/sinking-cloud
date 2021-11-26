@@ -26,13 +26,9 @@ func (l *messageSender) Listen() {
 	if webSocketSenderIns == nil {
 		webSocketSenderIns = sinking.GetRocketConsumerServer(queue3.WebSocketSenderGroup, false)
 	}
-	tag := util.Conf.GetString(config.ConfApplicationAddr) + util.Conf.GetString(config.ConfApplicationPort)
-	err := webSocketSenderIns.ListenReceiveMsgDo(queue3.WebSocketSenderTopic, tag, func(mqMsg queue.MqMsg) {
-		//log := &model.SystemLogRequest{}
-		//err := json.Unmarshal(mqMsg.Body, log)
-		//if err == nil {
-		//	util.Database.Db.Create(log)
-		//}
+	topic := util.Conf.GetString(config.ConfApplicationAddr) + util.Conf.GetString(config.ConfApplicationPort)
+	err := webSocketSenderIns.ListenReceiveMsgDo(topic, "", func(mqMsg queue.MqMsg) {
+		log.Println("收到消息:", mqMsg.BodyString())
 	})
 	if err != nil {
 		log.Println(err)
