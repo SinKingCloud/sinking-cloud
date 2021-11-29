@@ -1,4 +1,4 @@
-package producer
+package sinking
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"log"
 )
 
@@ -14,7 +13,7 @@ import (
 var webSocketProducerIns queue.MqProducer
 
 // logSendTask 异步发送
-var webSocketProducerTask chan *message
+var webSocketProducerTask chan *WebSocketMessage
 
 // NewWebSocketProducer 实例化NewWebSocketProducer
 func NewWebSocketProducer() *webSocketProducer {
@@ -23,18 +22,18 @@ func NewWebSocketProducer() *webSocketProducer {
 
 // webSocketProducer 结构
 type webSocketProducer struct {
-	msg *message
+	msg *WebSocketMessage
 }
 
-// message 消息结构
-type message struct {
+// WebSocketMessage 消息结构
+type WebSocketMessage struct {
 	Id      string `json:"id"`
-	Message string `json:"message"`
+	Message string `json:"WebSocketMessage"`
 }
 
 // Build 构建消息
 func (l *webSocketProducer) Build(id string, msg string) *webSocketProducer {
-	l.msg = &message{
+	l.msg = &WebSocketMessage{
 		Id:      id,
 		Message: msg,
 	}
@@ -43,7 +42,7 @@ func (l *webSocketProducer) Build(id string, msg string) *webSocketProducer {
 
 // run 异步执行
 func (l *webSocketProducer) run() {
-	go func(tasks chan *message) {
+	go func(tasks chan *WebSocketMessage) {
 		for task := range tasks {
 			bytes, err := json.Marshal(task)
 			if err != nil {
@@ -65,8 +64,8 @@ func (l *webSocketProducer) run() {
 // Send 发送消息
 func (l *webSocketProducer) Send() {
 	if webSocketProducerIns == nil {
-		webSocketProducerIns = sinking.GetRocketProducerServer(sinking.GetServerHash(queue3.WebSocketSenderGroup), 1)
-		webSocketProducerTask = make(chan *message)
+		webSocketProducerIns = GetRocketProducerServer(GetServerHash(queue3.WebSocketSenderGroup), 1)
+		webSocketProducerTask = make(chan *WebSocketMessage)
 		l.run()
 	}
 	webSocketProducerTask <- l.msg

@@ -23,12 +23,6 @@ func NewWebSocketSenderIns() *messageSender {
 type messageSender struct {
 }
 
-// message 消息结构
-type message struct {
-	Id      string `json:"id"`
-	Message string `json:"message"`
-}
-
 // Listen 监听并发送消息
 func (l *messageSender) Listen() {
 	if webSocketSenderIns == nil {
@@ -36,7 +30,7 @@ func (l *messageSender) Listen() {
 	}
 	tag := util.Conf.GetString(config.ConfApplicationAddr) + ":" + util.Conf.GetString(config.ConfApplicationPort)
 	err := webSocketSenderIns.ListenReceiveMsgDo(queue3.WebSocketSenderTopic, tag, func(mqMsg queue.MqMsg) {
-		data := &message{}
+		data := &sinking.WebSocketMessage{}
 		err := json.Unmarshal(mqMsg.Body, data)
 		if err == nil {
 			//此处根据消息结构解析的用户id,并给用户推送消息

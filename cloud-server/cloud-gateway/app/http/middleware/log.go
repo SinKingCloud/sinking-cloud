@@ -5,9 +5,9 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"io/ioutil"
 	"net/http"
@@ -80,7 +80,7 @@ func Log() sinking_web.HandlerFunc {
 			AppName:        util.Conf.GetString(config.ConfApplicationName),
 			AppAddr:        util.Conf.GetString(config.ConfApplicationAddr) + ":" + util.Conf.GetString(config.ConfApplicationPort),
 		}
-		producer.NewLogRequest().Build(log).Send()
+		sinking.NewLogRequestProducer().Build(log).Send()
 	})
 }
 

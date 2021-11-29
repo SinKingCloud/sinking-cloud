@@ -4,7 +4,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-go/sinking-websocket"
 	"log"
 	"time"
@@ -12,11 +11,10 @@ import (
 
 var Connection *sinking_websocket.WebSocketConnections
 
+// Handler websocket处理
 func Handler(c *sinking_server.Context) {
 	//生成uid
 	id := c.Param("id")
-	//处理认证业务
-
 	//ws推送业务
 	wsServer := sinking_websocket.WebSocket{
 		OnError: func(err error) {
@@ -25,8 +23,8 @@ func Handler(c *sinking_server.Context) {
 		OnConnect: func(ws *sinking_websocket.Conn) {
 			Connection.Set(id, ws)
 			//rpc调用用户服务。更新用户ws地址
-			topic := util.Conf.GetString(config.ConfApplicationAddr) + ":" + util.Conf.GetString(config.ConfApplicationPort)
-			log.Println(str.NetStringTool(topic).Md5())
+			addr := util.Conf.GetString(config.ConfApplicationAddr) + ":" + util.Conf.GetString(config.ConfApplicationPort)
+			log.Println(addr)
 		},
 		OnClose: func(err error) {
 			Connection.Delete(id)

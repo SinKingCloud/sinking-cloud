@@ -1,4 +1,4 @@
-package producer
+package sinking
 
 import (
 	"encoding/json"
@@ -6,17 +6,16 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 )
 
-// logRequestIns 生产者单例
-var logRequestIns queue.MqProducer
+// logRequestProducerIns 生产者单例
+var logRequestProducerIns queue.MqProducer
 
-// logSendTask 异步发送
-var logSendTask chan *model.SystemLogRequest
+// logSendProducerTask 异步发送
+var logSendProducerTask chan *model.SystemLogRequest
 
-// NewLogRequest 实例化logRequest
-func NewLogRequest() *logRequest {
+// NewLogRequestProducer 实例化logRequest
+func NewLogRequestProducer() *logRequest {
 	return &logRequest{}
 }
 
@@ -39,21 +38,21 @@ func (l *logRequest) run() {
 			if err != nil {
 				continue
 			}
-			_, err = logRequestIns.SendByteMsg(queue3.LogRequestTopic, "", bytes)
+			_, err = logRequestProducerIns.SendByteMsg(queue3.LogRequestTopic, "", bytes)
 			if err != nil {
 				util.Log.Println(err)
 				return
 			}
 		}
-	}(logSendTask)
+	}(logSendProducerTask)
 }
 
 // Send 发送消息
 func (l *logRequest) Send() {
-	if logRequestIns == nil {
-		logRequestIns = sinking.GetRocketProducerServer(sinking.GetServerHash(queue3.LogRequestGroup), 1)
-		logSendTask = make(chan *model.SystemLogRequest)
+	if logRequestProducerIns == nil {
+		logRequestProducerIns = GetRocketProducerServer(GetServerHash(queue3.LogRequestGroup), 1)
+		logSendProducerTask = make(chan *model.SystemLogRequest)
 		l.run()
 	}
-	logSendTask <- l.log
+	logSendProducerTask <- l.log
 }
