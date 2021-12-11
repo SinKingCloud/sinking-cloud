@@ -10,5 +10,5 @@ import (
 // loadRoute 加载路由
 func loadRoute(s *sinking_web.Engine) {
 	websocket.Connection = sinking_websocket.NewWebSocketConnections() //初始化ws连接池
-	s.GET("/:id", sinking_server.HandleFunc(websocket.Handler))
+	s.GET("/server", sinking_server.HandleFunc(websocket.Handler))
 }

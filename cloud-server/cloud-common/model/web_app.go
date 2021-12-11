@@ -14,7 +14,6 @@ type WebApp struct {
 	Status     int          `gorm:"column:status" json:"status"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
-	IsDelete   int          `gorm:"column:is_delete" json:"is_delete"`
 }
 
 // TableName 获取表名
@@ -25,7 +24,6 @@ func (WebApp) TableName() string {
 // BeforeCreate 创建前
 func (t *WebApp) BeforeCreate(tx *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
-	t.IsDelete = 0
 	return nil
 }
 
