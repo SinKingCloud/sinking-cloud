@@ -7,10 +7,13 @@ import (
 
 // GetRequestId 获取请求id
 func (c *Context) GetRequestId() string {
-	id := c.Request.Header.Get(util.RequestId)
+	id := c.GetString(util.RequestId)
 	if id == "" {
-		id = str.GetSnowWorkIns().GetUuid()
-		c.Set(util.RequestId, id)
+		id = c.Request.Header.Get(util.RequestId)
+		if id == "" {
+			id = str.GetSnowWorkIns().GetUuid()
+			c.Set(util.RequestId, id)
+		}
 	}
 	return id
 }
