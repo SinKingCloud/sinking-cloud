@@ -26,10 +26,10 @@ func (l *logRequest) Listen() {
 		logRequestIns = sinking.GetRocketConsumerServer(sinking.GetServerHash(queue3.LogRequestGroup), false)
 	}
 	err := logRequestIns.ListenReceiveMsgDo(queue3.LogRequestTopic, "", func(mqMsg queue.MqMsg) {
-		log := &model.SystemLogRequest{}
-		err := json.Unmarshal(mqMsg.Body, log)
+		s := &model.SystemLogRequest{}
+		err := json.Unmarshal(mqMsg.Body, s)
 		if err == nil {
-			util.Database.Db.Create(log)
+			util.Database.Db.Create(s)
 		}
 	})
 	if err != nil {
