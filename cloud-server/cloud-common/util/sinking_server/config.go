@@ -41,10 +41,10 @@ func (c *Context) GetWebUserConfig(key string) interface{} {
 
 // SetSystemUserConfig 设置系统用户配置信息
 func (c *Context) SetSystemUserConfig(config map[string]string) {
-	c.set(util.WebUserConfig, config)
+	c.set(util.SystemUserConfig, config)
 }
 
 // GetSystemUserConfig 获取系统用户配置信息
 func (c *Context) GetSystemUserConfig(key string) interface{} {
-	return c.get(util.WebUserConfig, key)
+	return c.get(util.SystemUserConfig, key)
 }
