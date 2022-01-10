@@ -20,20 +20,20 @@
   },
   {
     path: '/welcome',
-    name: 'welcome',
+    name: '用户首页',
     icon: 'smile',
     component: './Welcome',
   },
   {
     path: '/admin',
-    name: 'admin',
+    name: '二级菜单',
     icon: 'crown',
     access: 'canAdmin',
     component: './Admin',
     routes: [
       {
         path: '/admin/sub-page',
-        name: 'sub-page',
+        name: '欢迎页面',
         icon: 'smile',
         component: './Welcome',
       },
@@ -41,12 +41,6 @@
         component: './404',
       },
     ],
-  },
-  {
-    name: 'list.table-list',
-    icon: 'table',
-    path: '/list',
-    component: './TableList',
   },
   {
     path: '/',

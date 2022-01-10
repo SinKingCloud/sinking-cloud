@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+*.sum
 
 # Test binary, built with `go test -c`
 *.test
@@ -16,7 +17,7 @@
 
 .idea
 cloud-web/node_modules
+cloud-web/dist
+cloud-web/.vscode
 cloud-web/src/.umi
-/cloud-server/cloud-common/go.sum
-/cloud-server/cloud-service/service-admin/go.sum
 /cloud-server/cloud-gateway/.rocketmq_client_go/

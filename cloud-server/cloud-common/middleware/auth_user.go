@@ -11,14 +11,14 @@ import (
 // AuthUser 用户系统鉴权
 func AuthUser() sinking_web.HandlerFunc {
 	return sinking_server.HandleFunc(func(c *sinking_server.Context) {
-		token := c.Request.Header.Get(util.JwtTokenNameWebUser)
+		token := c.Request.Header.Get(util.JwtTokenName)
 		if token == "" {
 			c.NotLogin("您还未登陆,请先登陆账户", nil)
 			c.Abort()
 			return
 		}
 		key := jwt.CheckToken(token)
-		if key == nil || time.Now().Unix() > key.ExpiresAt {
+		if key == nil || time.Now().Unix() > key.ExpiresAt || key.WebUser == nil {
 			c.TokenError("登陆超时,请重新登陆", nil)
 			c.Abort()
 			return
