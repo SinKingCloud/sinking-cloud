@@ -14,7 +14,6 @@ application:
     write: 60 #超时写(s)
   useService:
     cloud-common:
-      - cloud-websocket #引用websocket服务
 
 #注册中心
 register:

@@ -26,6 +26,9 @@ func LoadConsul() {
 	if list != nil {
 		service := map[string][]string{}
 		for k, v := range list.(map[string]interface{}) {
+			if v == nil {
+				continue
+			}
 			for _, v1 := range v.([]interface{}) {
 				if service[k] == nil {
 					service[k] = []string{}
