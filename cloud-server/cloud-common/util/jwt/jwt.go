@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/dgrijalva/jwt-go"
 	"time"
 )
@@ -42,12 +41,11 @@ func GetToken(webUser *model.WebUser, systemUser *model.SystemUser) string {
 	if err != nil {
 		return ""
 	}
-	return str.NetStringTool(token).AesEncrypt(util.JwtTokenKey)
+	return token
 }
 
 // CheckToken 验证token
 func CheckToken(token string) *MyClaims {
-	token = str.NetStringTool(token).AesDecrypt(util.JwtTokenKey)
 	setToken, err := jwt.ParseWithClaims(token, &MyClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return getKey(), nil
 	})

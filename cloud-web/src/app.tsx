@@ -11,7 +11,8 @@ import defaultSettings from '../config/defaultSettings';
 import * as auth from './util/auth';
 
 const isDev = process.env.NODE_ENV === 'development';
-const loginPath = '/user/login';
+
+const loginPaths = ['/user/login', '/admin/login'];//无需登陆页面
 
 /** 获取用户信息比较慢的时候会展示一个 loading */
 export const initialStateConfig = {
@@ -31,12 +32,12 @@ export async function getInitialState(): Promise<{
       const msg = await queryCurrentUser();
       return msg.data;
     } catch (error) {
-      history.push(loginPath);
+      history.push(loginPaths[0]);
     }
     return undefined;
   };
   // 如果是登录页面，不执行
-  if (history.location.pathname !== loginPath) {
+  if (loginPaths.indexOf(history.location.pathname) < 0) {
     const currentUser = await fetchUserInfo();
     return {
       fetchUserInfo,
@@ -62,8 +63,8 @@ export const layout: RunTimeLayoutConfig = ({initialState}) => {
     onPageChange: () => {
       const {location} = history;
       // 如果没有登录，重定向到 login
-      if (!initialState?.currentUser && location.pathname !== loginPath) {
-        history.push(loginPath);
+      if (!initialState?.currentUser && loginPaths.indexOf(location.pathname) < 0) {
+        history.push(loginPaths[0]);
       }
     },
     links: isDev

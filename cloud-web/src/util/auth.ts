@@ -34,3 +34,18 @@ export function getHeaders() {
     'sinking-type': getLoginType()
   };
 }
+
+/**
+ * 判断是否后台
+ */
+export function isAdmin(): boolean {
+  return localStorage.getItem('sinking-system') == "admin"
+}
+
+/**
+ * 设置当前登陆系统
+ * @param isAdmin 是否为后台
+ */
+export function setSystem(isAdmin: boolean) {
+  localStorage.setItem('sinking-system', String(isAdmin));
+}

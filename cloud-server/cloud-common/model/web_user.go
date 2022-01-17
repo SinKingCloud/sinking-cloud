@@ -10,7 +10,7 @@ import (
 type WebUser struct {
 	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	Account    string       `gorm:"column:account" json:"account"`
-	Password   string       `gorm:"column:password" json:"password"`
+	Password   string       `gorm:"column:password" json:"-"`
 	NickName   string       `gorm:"column:nick_name" json:"nick_name"`
 	Avatar     string       `gorm:"column:avatar" json:"avatar"`
 	Email      string       `gorm:"column:email" json:"email"`
