@@ -2,5 +2,6 @@ package group
 
 const (
 	CloudCommon  = "cloud-common"  //公用分组
-	CloudGateway = "cloud-gateway" //网关
+	CloudGateway = "cloud-gateway" //网关分组
+	CloudSpider  = "cloud-spider"  //爬虫分组
 )

@@ -5,5 +5,8 @@ const (
 	LogStashCommon = "logstash-common"
 	MysqlCommon    = "mysql-common"
 	RocketMqCommon = "rocketmq-common"
-	Gateway        = "gateway"
+
+	Gateway = "gateway"
+
+	SpiderMysql = "spider-mysql"
 )
