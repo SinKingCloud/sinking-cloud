@@ -11,6 +11,7 @@ func LoadConf() {
 	config.AddConfigPath("./config")
 	config.SetConfigName("application.yml")
 	config.SetConfigType("yaml")
+	config.WatchConfig()
 	if err := config.ReadInConfig(); err != nil {
 		panic(err)
 		return

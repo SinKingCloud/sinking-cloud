@@ -50,7 +50,7 @@ func (l *logRequest) run() {
 // Send 发送消息
 func (l *logRequest) Send() {
 	if logRequestProducerIns == nil {
-		logRequestProducerIns = GetRocketProducerServer(GetServerHash(queue3.LogRequestGroup), 1)
+		logRequestProducerIns = GetRocketProducerServer(queue3.LogRequestGroup, 1)
 		logSendProducerTask = make(chan *model.SystemLogRequest)
 		l.run()
 	}

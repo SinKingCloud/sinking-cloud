@@ -9,5 +9,5 @@ import (
 // loadRoute 加载路由
 func loadRoute(s *sinking_web.Engine) {
 	index := &index2.ControllerIndex{}
-	s.GET("/test", sinking_server.HandleFunc(index.Index))
+	s.GET("/*", sinking_server.HandleFunc(index.Index))
 }

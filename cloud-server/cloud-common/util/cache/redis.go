@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"fmt"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -49,24 +48,21 @@ func NewRedis(host string, port string, pwd string, db int64) Cache {
 }
 
 // Get 获取缓存
-func (redis *Redis) Get(key string) (string, bool) {
-	c1 := redis.Pool.Get()
-	reply, err := c1.Do("get", key)
-	defer redis.closeRedisClient(c1)
-	if err != nil || reply == nil {
+func (client *Redis) Get(key string) (string, bool) {
+	c1 := client.Pool.Get()
+	reply, err := redis.String(c1.Do("get", key))
+	defer client.closeRedisClient(c1)
+	if err != nil || reply == "" {
 		return "", false
 	}
-	return string(reply.([]byte)), true
+	return reply, true
 }
 
 // SetWithExpire 设置缓存(带过期时间)
-func (redis *Redis) SetWithExpire(key string, value string, ttl int64) bool {
-	c1 := redis.Pool.Get()
-	_, err := c1.Do("set", key, value)
-	if ttl > 0 {
-		_, _ = c1.Do("pexpire", key, ttl)
-	}
-	defer redis.closeRedisClient(c1)
+func (client *Redis) SetWithExpire(key string, value string, ttl int64) bool {
+	c1 := client.Pool.Get()
+	_, err := c1.Do("set", key, value, "px", ttl)
+	defer client.closeRedisClient(c1)
 	if err == nil {
 		return true
 	}
@@ -74,36 +70,65 @@ func (redis *Redis) SetWithExpire(key string, value string, ttl int64) bool {
 }
 
 // Set 设置缓存(不过期)
-func (redis *Redis) Set(key string, value string) bool {
-	c1 := redis.Pool.Get()
+func (client *Redis) Set(key string, value string) bool {
+	c1 := client.Pool.Get()
 	_, err := c1.Do("set", key, value)
-	defer redis.closeRedisClient(c1)
+	defer client.closeRedisClient(c1)
 	if err == nil {
 		return true
 	}
 	return false
 }
 
+// SetExpire 设置过期时间
+func (client *Redis) SetExpire(key string, ttl int64) bool {
+	c1 := client.Pool.Get()
+	num, err := redis.Int(c1.Do("pexpire", key, ttl))
+	return err == nil && num > 0
+}
+
+// Lock 上锁
+func (client *Redis) Lock(key string, ttl int64) bool {
+	c1 := client.Pool.Get()
+	defer client.closeRedisClient(c1)
+	_, err := redis.String(c1.Do("set", key, 1, "px", ttl, "nx"))
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// UnLock 解锁
+func (client *Redis) UnLock(key string) bool {
+	return client.Delete(key)
+}
+
 // Remember 获取缓存,不存在则设置
-func (redis *Redis) Remember(key string, fun func() string, ttl int64) string {
-	value, exists := redis.Get(key)
-	if exists {
-		return value
+func (client *Redis) Remember(key string, value string, ttl int64) string {
+	c1 := client.Pool.Get()
+	num, err := redis.Int(c1.Do("setnx", key, value))
+	defer client.closeRedisClient(c1)
+	if err != nil {
+		return ""
 	}
-	value = fun()
-	if ttl > 0 {
-		redis.SetWithExpire(key, value, ttl)
+	if err == nil && num == 0 {
+		value2, exists := client.Get(key)
+		if exists {
+			return value2
+		}
+	} else {
+		if ttl > 0 {
+			client.SetExpire(key, ttl)
+		}
 	}
-	redis.Set(key, value)
 	return value
 }
 
 // Delete 删除缓存
-func (redis *Redis) Delete(key string) bool {
-	c1 := redis.Pool.Get()
-	res, err := c1.Do("del", key)
-	fmt.Println(res, err)
-	defer redis.closeRedisClient(c1)
+func (client *Redis) Delete(key string) bool {
+	c1 := client.Pool.Get()
+	_, err := c1.Do("del", key)
+	defer client.closeRedisClient(c1)
 	if err == nil {
 		return true
 	}
@@ -111,7 +136,7 @@ func (redis *Redis) Delete(key string) bool {
 }
 
 // closeRedisClient 关闭链接
-func (redis *Redis) closeRedisClient(c1 redis.Conn) {
+func (client *Redis) closeRedisClient(c1 redis.Conn) {
 	err := c1.Close()
 	if err != nil {
 		return
