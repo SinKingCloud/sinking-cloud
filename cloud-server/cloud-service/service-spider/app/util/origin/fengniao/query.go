@@ -3,6 +3,7 @@ package fengniao
 import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-spider/app/util/origin"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -16,12 +17,12 @@ type SearchCompany struct {
 }
 
 // Search 搜索关键词企业信息
-func Search(keyword string) ([]*SearchCompany, bool) {
+func Search(keyword string) ([]*SearchCompany, int) {
 	sessionId := GetJSessionId()
 	if sendPostData(keyword, sessionId) {
 		return getData(sessionId)
 	}
-	return nil, false
+	return nil, origin.Fail
 }
 
 // sendPostData 发送关键词信息
@@ -48,7 +49,7 @@ func sendPostData(keyWord string, sessionId string) bool {
 	req.Header.Set("Sec-Fetch-User", "?1")
 	req.Header.Set("Upgrade-Insecure-Requests", "1")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36")
-	resp, err2 := GetClient().Do(req)
+	resp, err2 := origin.GetClient().Do(req)
 	if err2 != nil {
 		return false
 	}
@@ -64,7 +65,7 @@ func sendPostData(keyWord string, sessionId string) bool {
 }
 
 // getData 获取搜索结果
-func getData(sessionId string) ([]*SearchCompany, bool) {
+func getData(sessionId string) ([]*SearchCompany, int) {
 	url := "https://www.riskbird.com/web/query/search"
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
@@ -83,9 +84,9 @@ func getData(sessionId string) ([]*SearchCompany, bool) {
 	req.Header.Set("Sec-Fetch-User", "?1")
 	req.Header.Set("Upgrade-Insecure-Requests", "1")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36")
-	resp, err := GetClient().Do(req)
+	resp, err := origin.GetClient().Do(req)
 	if err != nil {
-		return nil, false
+		return nil, origin.Fail
 	}
 	if resp != nil && resp.Body != nil {
 		defer func(Body io.ReadCloser) {
@@ -97,15 +98,15 @@ func getData(sessionId string) ([]*SearchCompany, bool) {
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, false
+		return nil, origin.Fail
 	}
 	temp := string(body)
 	if strings.Contains(temp, "风鸟查询平台-登录") {
-		return nil, false
+		return nil, origin.TokenError
 	}
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(temp))
 	if err != nil {
-		return nil, false
+		return nil, origin.Fail
 	}
 	var company []*SearchCompany
 	doc.Find("tr").Each(func(i int, s *goquery.Selection) {
@@ -124,5 +125,5 @@ func getData(sessionId string) ([]*SearchCompany, bool) {
 			ArtificialPerson: span,
 		})
 	})
-	return company, true
+	return company, origin.Success
 }

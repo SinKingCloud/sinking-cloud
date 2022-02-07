@@ -5,13 +5,5 @@ import (
 )
 
 func (ControllerIndex) Index(c *sinking_server.Context) {
-	//producer.NewJobLogProducer().Build(&model.JobLog{
-	//	CityCode:    time.Now().String(),
-	//	SubjectCode: time.Now().String(),
-	//	Index:       time.Now().String(),
-	//	RegCode:     time.Now().String(),
-	//	CompanyName: time.Now().String(),
-	//	Status:      0,
-	//}).Send()
-	c.Success("请求成功")
+	c.Success("服务正常")
 }

@@ -2,23 +2,13 @@ package fengniao
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-spider/app/util/origin"
 	"io"
 	"net/http"
 	"strings"
 )
 
 const URL = "https://www.riskbird.com"
-
-//请求client
-var birdClient *http.Client
-
-// GetClient 获取http client
-func GetClient() *http.Client {
-	if birdClient == nil {
-		birdClient = &http.Client{}
-	}
-	return birdClient
-}
 
 // GetJSessionId 生成一个新的session id
 func GetJSessionId() string {
@@ -42,7 +32,7 @@ func GetJSessionId() string {
 	req.Header.Set("Sec-Fetch-User", "?1")
 	req.Header.Set("Upgrade-Insecure-Requests", "1")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36")
-	resp, err := GetClient().Do(req)
+	resp, err := origin.GetClient().Do(req)
 	if err != nil {
 		return ""
 	}

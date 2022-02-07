@@ -21,3 +21,4 @@ cloud-web/dist
 cloud-web/.vscode
 cloud-web/src/.umi
 /cloud-server/cloud-gateway/.rocketmq_client_go/
+/cloud-server/cloud-service/service-spider

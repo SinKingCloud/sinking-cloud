@@ -30,7 +30,7 @@ func (l *logRequest) Listen() {
 		err := json.Unmarshal(mqMsg.Body, s)
 		if err == nil {
 			var temp model.JobLog
-			util.Database.Db.Where("reg_code=?", s.RegCode).First(&temp)
+			util.Database.Db.Where("company_name=?", s.CompanyName).First(&temp)
 			if temp.Id > 0 {
 				util.Database.Db.Where("id=?", temp.Id).Updates(&s)
 			} else {

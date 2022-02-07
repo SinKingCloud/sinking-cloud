@@ -14,9 +14,21 @@ application:
     write: 60 #超时写(s)
   useService:
     cloud-common:
-  spider:
-    threadNum: 1 #爬虫线程
-    maxFailNum: 100 #最大连续抓取失败次数
+
+#爬虫配置
+spider:
+  httpsProxy: http://tiqu.pyhttp.taolop.com/getip?count=20&neek=20556&type=1&yys=0&port=2&sb=&mr=2&sep=1&pack=14441 #提取代理地址
+  maxFailNum: 100 #最大连续抓取失败次数
+  tianYanCha:
+    threadNum: 10 #天眼查爬虫线程
+  fengNiao:
+    threadNum: 1 #风鸟爬虫线程
+  qiYouCha:
+    threadNum: 1 #企友查线程
+    token: demotoken #企友查token
+  qiChaCha:
+    threadNum: 1 #企查查线程
+    token: demotoken #企查查token
 
 #注册中心
 register:
