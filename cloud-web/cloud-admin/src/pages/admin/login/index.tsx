@@ -42,8 +42,7 @@ const Login: React.FC = () => {
       // 登录
       const msg = await login({...values, type});
       if (msg.status === 'ok') {
-        const defaultLoginSuccessMessage = '登录成功！';
-        message.success(defaultLoginSuccessMessage);
+        message.success('登录成功！');
         await fetchUserInfo();
         /** 此方法会跳转到 redirect 参数所在的位置 */
         if (!history) return;
@@ -56,8 +55,7 @@ const Login: React.FC = () => {
       // 如果失败去设置用户错误信息
       setUserLoginState(msg);
     } catch (error) {
-      const defaultLoginFailureMessage = '登录失败，请重试！';
-      message.error(defaultLoginFailureMessage);
+      message.error('登录失败，请重试！');
     }
   };
   const {status, type: loginType} = userLoginState;
@@ -67,8 +65,8 @@ const Login: React.FC = () => {
       <div className={styles.content}>
         <LoginForm
           logo={<img alt="logo" src="/logo.svg"/>}
-          title="Ant Design"
-          subTitle="后台登陆"
+          title="SinKing Admin"
+          subTitle="后台管理系统登陆"
           initialValues={{
             autoLogin: true,
           }}
@@ -100,7 +98,7 @@ const Login: React.FC = () => {
                   size: 'large',
                   prefix: <UserOutlined className={styles.prefixIcon}/>,
                 }}
-                placeholder='用户名: admin or user'
+                placeholder='用户名'
                 rules={[
                   {
                     required: true,
@@ -114,7 +112,7 @@ const Login: React.FC = () => {
                   size: 'large',
                   prefix: <LockOutlined className={styles.prefixIcon}/>,
                 }}
-                placeholder='密码: ant.design'
+                placeholder='密码'
                 rules={[
                   {
                     required: true,
@@ -180,21 +178,10 @@ const Login: React.FC = () => {
               />
             </>
           )}
-          <div
-            style={{
-              marginBottom: 24,
-            }}
-          >
+          <div style={{marginBottom: 24,}}>
             <ProFormCheckbox noStyle name="autoLogin">
               自动登录
             </ProFormCheckbox>
-            <a
-              style={{
-                float: 'right',
-              }}
-            >
-              忘记密码
-            </a>
           </div>
         </LoginForm>
       </div>

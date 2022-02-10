@@ -1,3 +1,4 @@
+import React from 'react';
 import type {Settings as LayoutSettings} from '@ant-design/pro-layout';
 import {PageLoading} from '@ant-design/pro-layout';
 import type {RunTimeLayoutConfig} from 'umi';
@@ -5,14 +6,21 @@ import {history, Link, RequestConfig} from 'umi';
 import RightContent from '@/components/RightContent';
 import Footer from '@/components/Footer';
 import {currentUser as queryCurrentUser} from './services/ant-design-pro/api';
-import {BookOutlined, LinkOutlined} from '@ant-design/icons';
+import * as allIcons from '@ant-design/icons';
 import {message} from 'antd';
 import defaultSettings from '../config/defaultSettings';
 import * as auth from './util/auth';
+import {MenuDataItem} from "@umijs/route-utils";
 
+/**
+ * 开发环境
+ */
 const isDev = process.env.NODE_ENV === 'development';
 
-const loginPaths = ['/user/login', '/admin/login'];//无需登陆页面
+/**
+ * 无需登陆的页面
+ */
+const allowPaths = ['/admin/login'];//无需登陆页面
 
 /** 获取用户信息比较慢的时候会展示一个 loading */
 export const initialStateConfig = {
@@ -20,6 +28,7 @@ export const initialStateConfig = {
 };
 
 /**
+ * 初始化数据
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
  * */
 export async function getInitialState(): Promise<{
@@ -32,12 +41,12 @@ export async function getInitialState(): Promise<{
       const msg = await queryCurrentUser();
       return msg.data;
     } catch (error) {
-      history.push(loginPaths[0]);
+      history.push(allowPaths[0]);
     }
     return undefined;
   };
   // 如果是登录页面，不执行
-  if (loginPaths.indexOf(history.location.pathname) < 0) {
+  if (allowPaths.indexOf(history.location.pathname) < 0) {
     const currentUser = await fetchUserInfo();
     return {
       fetchUserInfo,
@@ -51,30 +60,68 @@ export async function getInitialState(): Promise<{
   };
 }
 
+/**
+ * 菜单图标映射
+ * @param menus 菜单
+ * @param iconType 图标类型
+ */
+const fixMenuItemIcon = (menus: MenuDataItem[], iconType = 'Outlined'): MenuDataItem[] => {
+  menus.forEach((item) => {
+    const {icon, children} = item;
+    if (typeof icon === 'string') {
+      let fixIconName = icon.slice(0, 1).toLocaleUpperCase() + icon.slice(1) + iconType;
+      item.icon = React.createElement(allIcons[fixIconName] || allIcons[icon]);
+    }
+    children && children.length > 0 ? (item.children = fixMenuItemIcon(children)) : null;
+  });
+  return menus;
+};
+
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
+// @ts-ignore
 export const layout: RunTimeLayoutConfig = ({initialState}) => {
   return {
+    menu: {
+      locale: false,
+      params: {
+        userId: initialState?.currentUser?.userid,
+      },
+      request: async (params: Record<string, any>, defaultMenuData: MenuDataItem[]) => {
+        return [{
+          path: '/index',
+          name: '用户首页',
+          icon: 'smile',
+          routes: [
+            {
+              path: 'index',
+              name: '示例首页12',
+            },
+          ],
+        }];
+      },
+    },
+    onPageChange: () => {
+      const {location} = history;
+      // 如果没有登录，重定向到 login
+      if (!initialState?.currentUser && allowPaths.indexOf(location.pathname) < 0) {
+        history.push(allowPaths[0]);
+      }
+    },
     rightContentRender: () => <RightContent/>,
     disableContentMargin: false,
     waterMarkProps: {
       content: initialState?.currentUser?.name,
     },
+    menuDataRender: fixMenuItemIcon,
     footerRender: () => <Footer/>,
-    onPageChange: () => {
-      const {location} = history;
-      // 如果没有登录，重定向到 login
-      if (!initialState?.currentUser && loginPaths.indexOf(location.pathname) < 0) {
-        history.push(loginPaths[0]);
-      }
-    },
     links: isDev
       ? [
         <Link to="/umi/plugin/openapi" target="_blank">
-          <LinkOutlined/>
+          <allIcons.LinkOutlined/>
           <span>OpenAPI 文档</span>
         </Link>,
         <Link to="/~docs">
-          <BookOutlined/>
+          <allIcons.BookOutlined/>
           <span>业务组件文档</span>
         </Link>,
       ]
@@ -86,7 +133,10 @@ export const layout: RunTimeLayoutConfig = ({initialState}) => {
   };
 };
 
-//拦截器错误处理
+/**
+ * 拦截器错误处理
+ * @param error 错误信息
+ */
 const errorHandler = (error: { response: RequestConfig; }) => {
   const {response} = error;
   if (response && response.code) {
@@ -97,7 +147,11 @@ const errorHandler = (error: { response: RequestConfig; }) => {
   }
   return response;
 };
-//拦截器
+/**
+ * 拦截器
+ * @param ctx 请求对象
+ * @param next 执行
+ */
 const requestMiddleware = async (ctx: any, next: () => void) => {
   ctx.req.url = defaultSettings.api + ctx.req.url;
   ctx.req.options.headers = auth.getHeaders();
