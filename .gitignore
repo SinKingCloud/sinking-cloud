@@ -16,9 +16,8 @@
 # vendor/
 
 .idea
-cloud-web/node_modules
-cloud-web/dist
-cloud-web/.vscode
-cloud-web/src/.umi
-/cloud-server/cloud-gateway/.rocketmq_client_go/
-/cloud-server/cloud-service/service-spider
+*/node_modules
+*/dist
+*/.vscode
+*/.umi
+*/.rocketmq_client_go/
