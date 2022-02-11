@@ -7,13 +7,13 @@ import (
 	"image/png"
 )
 
+// Code 生成验证码
 func (ControllerVerify) Code(c *sinking_server.Context) {
 	type Form struct {
 		Token string `form:"token" default:"" validate:"required" label:"验证码标识"`
 	}
 	form := &Form{}
-	ok, msg := c.ValidatorGet(form)
-	if !ok {
+	if ok, msg := c.ValidatorGet(form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -22,6 +22,6 @@ func (ControllerVerify) Code(c *sinking_server.Context) {
 	if err != nil {
 		return
 	}
-	//验证码写入redis
+	//验证码存入redis
 	fmt.Println(code)
 }

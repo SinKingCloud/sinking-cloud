@@ -209,7 +209,7 @@ const Login: React.FC = () => {
               <Image
                 height={40}
                 preview={false}
-                src="http://127.0.0.1:1003/verify/code"
+                src="http://127.0.0.1:1000/auth/verify/code?token=qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
                 onClick={() => {
                   message.success("点击了验证码");
                 }}
