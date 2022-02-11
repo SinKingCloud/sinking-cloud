@@ -62,6 +62,11 @@ func Log() sinking_web.HandlerFunc {
 		c.Writer = writer
 		//执行业务
 		c.Next()
+		responseHeader := c.Writer.Header().Clone()
+		responseBody := ""
+		if responseHeader.Get("Content-Type") == "application/json" {
+			responseBody = writer.body.String()
+		}
 		//拼接日志
 		log := &model.SystemLogRequest{
 			Id:             str.GetSnowWorkIns().GetId(),
@@ -73,8 +78,8 @@ func Log() sinking_web.HandlerFunc {
 			RequestBody:    string(body),
 			RequestTime:    str.DateTime(requestTime),
 			ResponseCode:   c.StatusCode,
-			ResponseHeader: getHeader(c.Writer.Header().Clone()),
-			ResponseBody:   writer.body.String(),
+			ResponseHeader: getHeader(responseHeader),
+			ResponseBody:   responseBody,
 			ResponseTime:   int(time.Since(requestTime).Microseconds() / 1000),
 			GroupName:      util.Conf.GetString(config.ConfApplicationGroup),
 			AppName:        util.Conf.GetString(config.ConfApplicationName),

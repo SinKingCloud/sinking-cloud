@@ -19,3 +19,15 @@ require (
 	gorm.io/driver/mysql v1.1.3
 	gorm.io/gorm v1.21.15
 )
+
+require (
+	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868 // indirect
+	github.com/go-playground/locales v0.14.0 // indirect
+	github.com/go-playground/universal-translator v0.18.0 // indirect
+	github.com/go-playground/validator/v10 v10.10.0 // indirect
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
+	github.com/leodido/go-urn v1.2.1 // indirect
+	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
+	golang.org/x/image v0.0.0-20190802002840-cff245a6509b // indirect
+	golang.org/x/text v0.3.7 // indirect
+)

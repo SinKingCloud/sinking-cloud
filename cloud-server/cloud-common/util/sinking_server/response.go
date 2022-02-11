@@ -15,6 +15,9 @@ const (
 )
 
 func (c *Context) response(code int32, message interface{}, data interface{}) {
+	if data == nil {
+		data = sinking_web.H{}
+	}
 	c.JSON(http.StatusOK, sinking_web.H{
 		"code":       code,
 		"message":    message,
