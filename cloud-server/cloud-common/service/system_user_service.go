@@ -23,6 +23,11 @@ func GetSystemUserServiceIns() *systemUserService {
 	return systemUserObj
 }
 
+// ClearCache 清理缓存
+func (systemUserService) ClearCache(id int) {
+	util.Cache.Delete(util2.CacheNameWithSystemUser + strconv.Itoa(id))
+}
+
 // FindById 查询用户信息(根据用户ID)
 func (systemUserService) FindById(id int) *model.SystemUser {
 	var user *model.SystemUser
@@ -30,7 +35,7 @@ func (systemUserService) FindById(id int) *model.SystemUser {
 	return user
 }
 
-// FindByIdWithCache 查询缓存用户信息(根据用户ID)
+// FindByIdWithCache 查询缓存用户信息(根据用户ID) refresh为true强制刷新
 func (w systemUserService) FindByIdWithCache(id int, refresh bool) *model.SystemUser {
 	var user *model.SystemUser
 	key := util2.CacheNameWithSystemUser + strconv.Itoa(id)

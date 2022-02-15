@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"io"
 	"strings"
 )
@@ -121,4 +122,23 @@ func (StringTool) pKCS7UnPadding(origData []byte) []byte {
 	length := len(origData)
 	unPadding := int(origData[length-1])
 	return origData[:(length - unPadding)]
+}
+
+// GetPassword 获取密码
+func (stringTool StringTool) GetPassword() string {
+	hash, err := bcrypt.GenerateFromPassword([]byte(stringTool.string), bcrypt.DefaultCost) //加密处理
+	if err != nil {
+		return ""
+	}
+	return string(hash)
+}
+
+// CheckPassword 比对密码
+func (stringTool StringTool) CheckPassword(password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(stringTool.string), []byte(password)) //验证（对比）
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
 }

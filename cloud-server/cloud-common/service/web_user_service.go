@@ -23,6 +23,11 @@ func GetWebUserServiceIns() *webUserService {
 	return webUserObj
 }
 
+// ClearCache 清理缓存
+func (webUserService) ClearCache(id int) {
+	util.Cache.Delete(util2.CacheNameWithWebUser + strconv.Itoa(id))
+}
+
 // FindById 查询用户信息(根据用户ID)
 func (webUserService) FindById(id int) *model.WebUser {
 	var user *model.WebUser

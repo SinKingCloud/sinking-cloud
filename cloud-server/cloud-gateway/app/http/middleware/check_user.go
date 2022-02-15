@@ -36,11 +36,6 @@ func CheckWebUser() sinking_web.HandlerFunc {
 func CheckSystemUser() sinking_web.HandlerFunc {
 	return sinking_server.HandleFunc(func(c *sinking_server.Context) {
 		types := c.Request.Header.Get(util.JwtTokenNameType)
-		if types == "" {
-			c.TokenError("登陆超时,请重新登陆", nil)
-			c.Abort()
-			return
-		}
 		jwtUser := c.GetSystemUserInfo()
 		jwtToken := jwt.GetLoginToken(jwtUser.LoginToken)
 		//获取用户最新信息

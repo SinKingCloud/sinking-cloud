@@ -22,8 +22,21 @@ const LoginMessage: React.FC<{
   />
 );
 
+type LoginResult = {
+  status?: string;
+  type?: string;
+  currentAuthority?: string;
+};
+
+type LoginParams = {
+  username?: string;
+  password?: string;
+  autoLogin?: boolean;
+  type?: string;
+};
+
 const Login: React.FC = () => {
-  const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
+  const [userLoginState, setUserLoginState] = useState<LoginResult>({});
   const [type, setType] = useState<string>('account');
   const {initialState, setInitialState} = useModel('@@initialState');
 
@@ -43,7 +56,7 @@ const Login: React.FC = () => {
    * 提交登录
    * @param values 登陆表单
    */
-  const handleSubmit = async (values: API.LoginParams) => {
+  const handleSubmit = async (values: LoginParams) => {
     try {
       // 登录
       const msg = await login({...values, type});
@@ -85,7 +98,7 @@ const Login: React.FC = () => {
             autoLogin: true,
           }}
           onFinish={async (values) => {
-            await handleSubmit(values as API.LoginParams);
+            await handleSubmit(values as LoginParams);
           }}
         >
           <Tabs activeKey={type} onChange={handleTab}>

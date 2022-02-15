@@ -26,7 +26,7 @@ func loadWebRoute(s *sinking_web.Engine) {
 func loadSystemRoute(s *sinking_web.Engine) {
 	r := s.Group("/system")
 	handle := &system.ControllerSystem{}
-	r.GET("/login", sinking_server.HandleFunc(handle.Login))
+	r.POST("/login", sinking_server.HandleFunc(handle.Login))
 }
 
 // loadWebRoute 加载验证器路由
