@@ -10,9 +10,9 @@ import (
 func Cors() sinking_web.HandlerFunc {
 	return sinking_server.HandleFunc(func(c *sinking_server.Context) {
 		c.SetHeader("Access-Control-Allow-Origin", "*")
-		c.SetHeader("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, Authorization, Token")
-		c.SetHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, PATCH, DELETE")
-		c.SetHeader("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
+		c.SetHeader("Access-Control-Allow-Headers", "*")
+		c.SetHeader("Access-Control-Allow-Methods", "*")
+		c.SetHeader("Access-Control-Expose-Headers", "*")
 		c.SetHeader("Access-Control-Allow-Credentials", "true")
 		if c.Request.Method == "OPTIONS" {
 			c.SetStatus(http.StatusNoContent)

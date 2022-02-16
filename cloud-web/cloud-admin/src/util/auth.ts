@@ -5,7 +5,7 @@
  */
 export function setLoginToken(type: string, token: string) {
   localStorage.setItem('sinking-token', token);
-  localStorage.setItem('sinking-type', type);
+  localStorage.setItem('sinking-device', type);
 }
 
 /**
@@ -21,7 +21,7 @@ export function getLoginToken() {
  * @returns {string}
  */
 export function getLoginType() {
-  return localStorage.getItem('sinking-type');
+  return localStorage.getItem('sinking-device');
 }
 
 /**
@@ -31,6 +31,6 @@ export function getLoginType() {
 export function getHeaders() {
   return {
     'sinking-token': getLoginToken(),
-    'sinking-type': getLoginType()
+    'sinking-device': getLoginType()
   };
 }

@@ -20,8 +20,8 @@ func (ControllerSystem) Login(c *sinking_server.Context) {
 		return
 	}
 	if !captcha.Check(form.Token, form.Captcha) {
-		//c.Error("验证码验证失败请重试")
-		//return
+		c.Error("验证码验证失败请重试")
+		return
 	}
 	user, err := auth.GetSystemUserInfoByPwd(form.Account, form.Password)
 	if err != nil {
@@ -32,7 +32,7 @@ func (ControllerSystem) Login(c *sinking_server.Context) {
 		c.Error("您的帐号已被封禁")
 		return
 	}
-	token, err := auth.GetJwtToken(form.Device, user, nil)
+	token, err := auth.GetJwtToken(form.Device, user, nil, c.GetRequestIp())
 	if err != nil {
 		c.Error(err.Error())
 		return

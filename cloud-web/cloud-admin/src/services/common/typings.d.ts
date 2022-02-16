@@ -98,4 +98,15 @@ declare namespace API {
     description?: string;
     type?: NoticeIconItemType;
   };
+
+  /*以下为新系统代码*/
+  /**
+   * 通用响应
+   */
+  type Response = {
+    code?: number;
+    message?: string;
+    data?: any;
+    request_id?: string;
+  }
 }

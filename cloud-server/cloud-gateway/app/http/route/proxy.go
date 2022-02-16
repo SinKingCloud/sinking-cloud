@@ -43,6 +43,9 @@ func InitProxyRouter(route *sinking_web.Engine) {
 						r.URL.RawPath, r.RequestURI = r.URL.Path, r.URL.Path
 						r.Header.Set(util.Conf.GetString("register.tokenKey"), util.Conf.GetString("register.tokenValue"))
 						r.Header.Set(util2.RequestId, s.GetRequestId())
+						ip := s.ClientIP(false)
+						r.Header.Set("X-Forwarded-For", ip)
+						r.Header.Set("X-Real-Ip", ip)
 						return r
 					})
 				} else {

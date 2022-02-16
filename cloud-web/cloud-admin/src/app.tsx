@@ -1,7 +1,9 @@
 import React from 'react';
 import type {Settings as LayoutSettings} from '@ant-design/pro-layout';
 import {PageLoading} from '@ant-design/pro-layout';
+// @ts-ignore
 import type {RunTimeLayoutConfig} from 'umi';
+// @ts-ignore
 import {history, Link, RequestConfig} from 'umi';
 import RightContent from '@/components/RightContent';
 import Footer from '@/components/Footer';

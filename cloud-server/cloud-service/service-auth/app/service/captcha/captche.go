@@ -21,9 +21,9 @@ func Get(key string) (*captcha.Image, string) {
 // Check 判断验证码是否正确
 func Check(key string, code string) bool {
 	value, exists := util.Cache.Get(prefix + key)
+	util.Cache.Delete(prefix + key)
 	if exists {
 		if value == code {
-			util.Cache.Delete(prefix + key)
 			return true
 		}
 		return false

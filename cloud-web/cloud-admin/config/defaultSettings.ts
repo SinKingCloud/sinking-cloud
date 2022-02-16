@@ -12,7 +12,7 @@ let Settings = {
   iconfontUrl: '',
   footer: 'All Right Revered',
   loadingTitle: '沉沦云平台',
-  api: 'http://127.0.0.1:1000',
+  api: '',
   base: '/',
 };
 
@@ -23,7 +23,7 @@ Settings = Object.assign(Settings, {
   pwa: false,
   footer: '沉沦云科技开发',
   loadingTitle: '沉沦云平台',
-  api: '',//http://127.0.0.1:1000
+  api: 'http://127.0.0.1:1000',
   base: '/',
 });
 

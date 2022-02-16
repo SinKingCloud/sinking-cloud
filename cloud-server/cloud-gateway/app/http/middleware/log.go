@@ -38,7 +38,7 @@ func Log() sinking_web.HandlerFunc {
 		method := c.Request.Method                    //请求方式
 		header := getHeader(c.Request.Header.Clone()) //请求头
 		requestId := c.GetRequestId()                 //请求id
-		requestIp := c.GetRequestIp()                 //请求ip
+		requestIp := c.ClientIP(false)                //请求ip
 		requestUrl := func(request *http.Request) string {
 			scheme := "http://"
 			if request.TLS != nil {

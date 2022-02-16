@@ -26,7 +26,7 @@ func GetSystemUserInfoByPwd(account string, pwd string) (u *model.SystemUser, e 
 }
 
 // GetJwtToken 生成jwtToken
-func GetJwtToken(types string, u *model.SystemUser, u2 *model.WebUser) (s string, e error) {
+func GetJwtToken(types string, u *model.SystemUser, u2 *model.WebUser, ip string) (s string, e error) {
 	//生成token
 	token := str.NetStringTool(time.Now().String()).Md5()
 	jwtLoginToken, _ := json.Marshal(map[string]string{types: token})
@@ -44,7 +44,7 @@ func GetJwtToken(types string, u *model.SystemUser, u2 *model.WebUser) (s string
 	if u != nil {
 		tempToken := fun(types, token, u.LoginToken)
 		if tempToken != "" {
-			tempU := model.SystemUser{Id: u.Id, LoginToken: tempToken, LoginTime: str.DateTime(time.Now())}
+			tempU := model.SystemUser{Id: u.Id, LoginToken: tempToken, LoginTime: str.DateTime(time.Now()), LoginIp: ip}
 			util.Database.Db.Updates(&tempU)
 		} else {
 			e = errors.New("生成token失败")
@@ -56,7 +56,7 @@ func GetJwtToken(types string, u *model.SystemUser, u2 *model.WebUser) (s string
 	if u2 != nil {
 		tempToken := fun(types, token, u2.LoginToken)
 		if tempToken != "" {
-			tempU := model.WebUser{Id: u2.Id, LoginToken: tempToken, LoginTime: str.DateTime(time.Now())}
+			tempU := model.WebUser{Id: u2.Id, LoginToken: tempToken, LoginTime: str.DateTime(time.Now()), LoginIp: ip}
 			util.Database.Db.Updates(&tempU)
 		} else {
 			e = errors.New("生成token失败")

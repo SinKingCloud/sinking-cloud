@@ -1,92 +1,83 @@
 import {LockOutlined, MobileOutlined, SafetyCertificateOutlined, UserOutlined} from '@ant-design/icons';
-import {Alert, Col, Form, Image, Input, message, Row, Tabs} from 'antd';
-import React, {useState} from 'react';
-import {LoginForm, ProFormCaptcha, ProFormCheckbox, ProFormText} from '@ant-design/pro-form';
-import {history, useModel} from 'umi';
+import {Col, Form, Image, Input, message, Row, Tabs} from 'antd';
+import React, {useEffect, useState} from 'react';
+import {LoginForm, ProFormCaptcha, ProFormText} from '@ant-design/pro-form';
 import Footer from '@/components/Footer';
-import {login} from '@/services/ant-design-pro/api';
+import {login} from '@/services/admin/login';
 import {getFakeCaptcha} from '@/services/ant-design-pro/login';
-
+import defaultSettings from '@/../config/defaultSettings';
 import styles from './index.less';
+import {getRandStr} from "@/util/string";
+import {history} from "umi";
+import {setLoginToken} from "@/util/auth";
 
-const LoginMessage: React.FC<{
-  content: string;
-}> = ({content}) => (
-  <Alert
-    style={{
-      marginBottom: 24,
-    }}
-    message={content}
-    type="error"
-    showIcon
-  />
-);
-
-type LoginResult = {
-  status?: string;
-  type?: string;
-  currentAuthority?: string;
-};
-
-type LoginParams = {
-  username?: string;
-  password?: string;
-  autoLogin?: boolean;
-  type?: string;
-};
 
 const Login: React.FC = () => {
-  const [userLoginState, setUserLoginState] = useState<LoginResult>({});
+  /**
+   * 登陆方式
+   */
   const [type, setType] = useState<string>('account');
-  const {initialState, setInitialState} = useModel('@@initialState');
+
+  /**
+   * 验证码信息
+   */
+  const [token, setToken] = useState<string>("");
+  const [captchaUrl, setCaptchaUrl] = useState<string>("");
+
+  /**
+   * 加载验证码
+   */
+  const changeCaptcha = () => {
+    let tempToken = getRandStr(16)
+    setToken(tempToken)
+    setCaptchaUrl(defaultSettings.api + "/auth/verify/code?token=" + tempToken)
+  }
+  useEffect(changeCaptcha, [])
+  //const {initialState, setInitialState} = useModel('@@initialState');
 
   /**
    * 获取当前用户信息
    */
-  const fetchUserInfo = async () => {
-    const userInfo = await initialState?.fetchUserInfo?.();
-    if (userInfo) {
-      await setInitialState((s) => ({
-        ...s,
-        currentUser: userInfo,
-      }));
-    }
-  };
+  // const fetchUserInfo = async () => {
+  //   const userInfo = await initialState?.fetchUserInfo?.();
+  //   if (userInfo) {
+  //     await setInitialState((s) => ({
+  //       ...s,
+  //       currentUser: userInfo,
+  //     }));
+  //   }
+  // };
   /**
    * 提交登录
    * @param values 登陆表单
    */
-  const handleSubmit = async (values: LoginParams) => {
+  const handleSubmit = async (values: AdminAPI.LoginParams) => {
     try {
+      values.token = token
+      values.device = "web"
       // 登录
-      const msg = await login({...values, type});
-      if (msg.status === 'ok') {
-        message.success('登录成功！');
-        await fetchUserInfo();
+      const response = await login(values);
+      if (response.code == 200) {
+        //await fetchUserInfo();
+        message.success(response.message)
+        setLoginToken("web", response.data)
         /** 此方法会跳转到 redirect 参数所在的位置 */
         if (!history) return;
         const {query} = history.location;
         const {redirect} = query as { redirect: string };
         history.push(redirect || '/');
+
         return;
+      } else {
+        message.error(response.message)
+        changeCaptcha()
       }
-      console.log(msg);
-      // 如果失败去设置用户错误信息
-      setUserLoginState(msg);
     } catch (error) {
+      console.log(error)
       message.error('登录失败，请重试！');
     }
   };
-  const {status, type: loginType} = userLoginState;
-
-  /**
-   * 切换tab状态
-   * @param tab 栏目
-   */
-  const handleTab = (tab: string) => {
-    setUserLoginState({status: ""})
-    setType(tab)
-  };
+  // @ts-ignore
   return (
     <div className={styles.container}>
       <div className={styles.content}>
@@ -94,14 +85,11 @@ const Login: React.FC = () => {
           logo={<img alt="logo" src="/logo.svg"/>}
           title="SinKing Admin"
           subTitle="后台管理系统登陆"
-          initialValues={{
-            autoLogin: true,
-          }}
           onFinish={async (values) => {
-            await handleSubmit(values as LoginParams);
+            await handleSubmit(values as AdminAPI.LoginParams);
           }}
         >
-          <Tabs activeKey={type} onChange={handleTab}>
+          <Tabs activeKey={type} onChange={setType}>
             <Tabs.TabPane
               key="account"
               tab='账户密码登录'
@@ -111,16 +99,10 @@ const Login: React.FC = () => {
               tab='手机号登录'
             />
           </Tabs>
-
-          {status === 'error' && loginType === 'account' && (
-            <LoginMessage
-              content='账户或密码错误'
-            />
-          )}
           {type === 'account' && (
             <>
               <ProFormText
-                name="username"
+                name="account"
                 fieldProps={{
                   size: 'large',
                   prefix: <UserOutlined className={styles.prefixIcon}/>,
@@ -149,7 +131,6 @@ const Login: React.FC = () => {
               />
             </>
           )}
-          {status === 'error' && loginType === 'mobile' && <LoginMessage content="验证码错误"/>}
           {type === 'mobile' && (
             <>
               <ProFormText
@@ -185,7 +166,7 @@ const Login: React.FC = () => {
                   }
                   return '获取验证码';
                 }}
-                name="captcha"
+                name="code"
                 rules={[
                   {
                     required: true,
@@ -207,7 +188,7 @@ const Login: React.FC = () => {
           <Row>
             <Col span={16}>
               <Form.Item
-                name="password2"
+                name="captcha"
                 rules={[{required: true, message: '请输入图片验证码!'}]}
               >
                 <Input
@@ -222,21 +203,13 @@ const Login: React.FC = () => {
               <Image
                 height={40}
                 preview={false}
-                src="http://127.0.0.1:1000/auth/verify/code?token=qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
+                src={captchaUrl}
                 onClick={() => {
-                  message.success("点击了验证码");
-                }}
-                onLoad={(e) => {
-                  console.log(e)
+                  changeCaptcha()
                 }}
               />
             </Col>
           </Row>
-          <div style={{marginBottom: 24,}}>
-            <ProFormCheckbox noStyle name="autoLogin">
-              自动登录
-            </ProFormCheckbox>
-          </div>
         </LoginForm>
       </div>
       <Footer/>
