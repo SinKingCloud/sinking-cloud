@@ -10,19 +10,16 @@ import {getRandStr} from "@/util/string";
 import {history, useModel} from "umi";
 import {setLoginToken} from "@/util/auth";
 
-
 const Login: React.FC = () => {
   /**
    * 登陆方式
    */
   const [type, setType] = useState<string>('account');
-
   /**
    * 验证码信息
    */
   const [token, setToken] = useState<string>("");
   const [captchaUrl, setCaptchaUrl] = useState<string>("");
-
   /**
    * 加载验证码
    */
@@ -33,7 +30,6 @@ const Login: React.FC = () => {
   }
   useEffect(changeCaptcha, [])
   const {initialState, setInitialState} = useModel('@@initialState');
-
   /**
    * 获取当前用户信息
    */

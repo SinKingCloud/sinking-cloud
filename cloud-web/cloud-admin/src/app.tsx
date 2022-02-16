@@ -42,8 +42,6 @@ export async function getInitialState(): Promise<{
       // @ts-ignore
       if (response.code != 200) {
         history.push(allowPaths[0]);
-        // @ts-ignore
-        message.warning(response.message)
         return undefined;
       }
       return response.data;
@@ -157,7 +155,7 @@ const errorHandler = (error: { response: RequestConfig; }) => {
     return message.warning('请先登录您的账号');
   }
   if (response.code == 401) {
-    return message.warning("您暂无权限操作");
+    message.warning("您暂无权限操作");
   }
   return response;
 };
