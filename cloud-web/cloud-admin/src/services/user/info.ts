@@ -1,10 +1,10 @@
 import {request} from "umi";
 
-/** 获取当前用户信息 GET /admin/user/info */
-export async function currentUser(options?: { [key: string]: any }) {
+/** 获取当前用户信息 GET /admin/person/info */
+export async function queryCurrentUser(options?: { [key: string]: any }) {
   return request<{
-    data: API.CurrentUser;
-  }>('/api/currentUser', {
+    data: API.UserInfo;
+  }>('/admin/person/info', {
     method: 'GET',
     ...(options || {}),
   });

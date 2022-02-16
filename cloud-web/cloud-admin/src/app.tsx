@@ -1,13 +1,11 @@
 import React from 'react';
 import type {Settings as LayoutSettings} from '@ant-design/pro-layout';
 import {PageLoading} from '@ant-design/pro-layout';
-// @ts-ignore
 import type {RunTimeLayoutConfig} from 'umi';
-// @ts-ignore
 import {history, Link, RequestConfig} from 'umi';
 import RightContent from '@/components/RightContent';
 import Footer from '@/components/Footer';
-import {currentUser as queryCurrentUser} from './services/ant-design-pro/api';
+import {queryCurrentUser} from './services/user/info';
 import * as allIcons from '@ant-design/icons';
 import {message} from 'antd';
 import defaultSettings from '../config/defaultSettings';
@@ -35,13 +33,20 @@ export const initialStateConfig = {
  * */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
-  currentUser?: API.CurrentUser;
-  fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
+  currentUser?: API.UserInfo;
+  fetchUserInfo?: () => Promise<API.UserInfo | undefined>;
 }> {
   const fetchUserInfo = async () => {
     try {
-      const msg = await queryCurrentUser();
-      return msg.data;
+      const response = await queryCurrentUser();
+      // @ts-ignore
+      if (response.code != 200) {
+        history.push(allowPaths[0]);
+        // @ts-ignore
+        message.warning(response.message)
+        return undefined;
+      }
+      return response.data;
     } catch (error) {
       history.push(allowPaths[0]);
     }
@@ -86,7 +91,7 @@ export const layout: RunTimeLayoutConfig = ({initialState}) => {
     menu: {
       locale: false,
       params: {
-        userId: initialState?.currentUser?.userid,
+        userId: initialState?.currentUser?.account,
       },
       request: async (params: Record<string, any>, defaultMenuData: MenuDataItem[]) => {
         return [{
@@ -112,7 +117,7 @@ export const layout: RunTimeLayoutConfig = ({initialState}) => {
     rightContentRender: () => <RightContent/>,
     disableContentMargin: false,
     waterMarkProps: {
-      content: initialState?.currentUser?.name,
+      content: initialState?.currentUser?.nick_name,
     },
     menuDataRender: fixMenuItemIcon,
     footerRender: () => <Footer/>,
@@ -146,6 +151,13 @@ const errorHandler = (error: { response: RequestConfig; }) => {
   }
   if (!response) {
     return message.error('您的网络发生异常');
+  }
+  if (response.code == 503 || response.code == 403) {
+    history.push(allowPaths[0]);
+    return message.warning('请先登录您的账号');
+  }
+  if (response.code == 401) {
+    return message.warning("您暂无权限操作");
   }
   return response;
 };

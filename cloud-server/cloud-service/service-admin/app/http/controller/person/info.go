@@ -7,6 +7,7 @@ import (
 func (ControllerPerson) Info(c *sinking_server.Context) {
 	user := c.GetSystemUserInfo()
 	c.SuccessWithData("获取用户信息成功", Info{
+		Id:        user.Id,
 		Account:   user.Account,
 		NickName:  user.NickName,
 		Avatar:    user.Avatar,

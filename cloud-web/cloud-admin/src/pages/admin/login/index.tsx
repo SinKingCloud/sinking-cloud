@@ -4,11 +4,10 @@ import React, {useEffect, useState} from 'react';
 import {LoginForm, ProFormCaptcha, ProFormText} from '@ant-design/pro-form';
 import Footer from '@/components/Footer';
 import {login} from '@/services/admin/login';
-import {getFakeCaptcha} from '@/services/ant-design-pro/login';
 import defaultSettings from '@/../config/defaultSettings';
 import styles from './index.less';
 import {getRandStr} from "@/util/string";
-import {history} from "umi";
+import {history, useModel} from "umi";
 import {setLoginToken} from "@/util/auth";
 
 
@@ -33,20 +32,20 @@ const Login: React.FC = () => {
     setCaptchaUrl(defaultSettings.api + "/auth/verify/code?token=" + tempToken)
   }
   useEffect(changeCaptcha, [])
-  //const {initialState, setInitialState} = useModel('@@initialState');
+  const {initialState, setInitialState} = useModel('@@initialState');
 
   /**
    * 获取当前用户信息
    */
-  // const fetchUserInfo = async () => {
-  //   const userInfo = await initialState?.fetchUserInfo?.();
-  //   if (userInfo) {
-  //     await setInitialState((s) => ({
-  //       ...s,
-  //       currentUser: userInfo,
-  //     }));
-  //   }
-  // };
+  const fetchUserInfo = async () => {
+    const userInfo = await initialState?.fetchUserInfo?.();
+    if (userInfo) {
+      await setInitialState((s) => ({
+        ...s,
+        currentUser: userInfo,
+      }));
+    }
+  };
   /**
    * 提交登录
    * @param values 登陆表单
@@ -58,15 +57,14 @@ const Login: React.FC = () => {
       // 登录
       const response = await login(values);
       if (response.code == 200) {
-        //await fetchUserInfo();
         message.success(response.message)
         setLoginToken("web", response.data)
+        await fetchUserInfo();
         /** 此方法会跳转到 redirect 参数所在的位置 */
         if (!history) return;
         const {query} = history.location;
         const {redirect} = query as { redirect: string };
         history.push(redirect || '/');
-
         return;
       } else {
         message.error(response.message)
@@ -174,13 +172,7 @@ const Login: React.FC = () => {
                   },
                 ]}
                 onGetCaptcha={async (phone) => {
-                  const result = await getFakeCaptcha({
-                    phone,
-                  });
-                  if (result === false) {
-                    return;
-                  }
-                  message.success('获取验证码成功！验证码为：1234');
+                  message.success(phone + '获取验证码成功！验证码为：1234');
                 }}
               />
             </>

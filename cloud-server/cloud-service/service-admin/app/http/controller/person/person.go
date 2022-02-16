@@ -7,6 +7,7 @@ type ControllerPerson struct {
 
 // Info 个人信息
 type Info struct {
+	Id        int          `json:"id"`
 	Account   string       `json:"account"`
 	NickName  string       `json:"nick_name"`
 	Avatar    string       `json:"avatar"`

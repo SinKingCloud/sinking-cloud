@@ -109,4 +109,17 @@ declare namespace API {
     data?: any;
     request_id?: string;
   }
+  /**
+   * 用户信息
+   */
+  type UserInfo = {
+    id?: number;
+    account?: string;
+    nick_name?: string;
+    avatar?: string;
+    email?: string;
+    phone?: string;
+    login_ip?: string;
+    login_time?: string;
+  }
 }
