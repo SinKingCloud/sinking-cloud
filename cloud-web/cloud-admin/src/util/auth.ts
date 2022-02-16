@@ -25,6 +25,14 @@ export function getLoginType() {
 }
 
 /**
+ * 删除token
+ */
+export function deleteHeader() {
+  localStorage.removeItem('sinking-token');
+  localStorage.removeItem('sinking-device');
+}
+
+/**
  * 返回请求header
  * @returns {{}}
  */

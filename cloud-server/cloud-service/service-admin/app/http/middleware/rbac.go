@@ -15,7 +15,7 @@ func Rbac() sinking_web.HandlerFunc {
 		if rbac.CheckAccessByCache(userInfo.RoleId, c.Request.RequestURI, c.Request.Method) {
 			c.Next()
 		} else {
-			c.NotAllow("无权限", nil)
+			c.NotAllow("您的帐户暂无权限操作", nil)
 			c.Abort()
 		}
 	})

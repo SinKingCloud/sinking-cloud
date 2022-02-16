@@ -41,12 +41,18 @@ export async function getInitialState(): Promise<{
       const response = await queryCurrentUser();
       // @ts-ignore
       if (response.code != 200) {
+        if (auth.getLoginToken() != null && auth.getLoginType() != null) {
+          // @ts-ignore
+          message.warning(response.message)
+        }
+        auth.deleteHeader()
         history.push(allowPaths[0]);
         return undefined;
       }
       return response.data;
     } catch (error) {
       history.push(allowPaths[0]);
+      auth.deleteHeader()
     }
     return undefined;
   };
@@ -152,10 +158,10 @@ const errorHandler = (error: { response: RequestConfig; }) => {
   }
   if (response.code == 503 || response.code == 403) {
     history.push(allowPaths[0]);
-    return message.warning('请先登录您的账号');
+    return message.warning(response.message);
   }
   if (response.code == 401) {
-    message.warning("您暂无权限操作");
+    message.warning(response.message);
   }
   return response;
 };
