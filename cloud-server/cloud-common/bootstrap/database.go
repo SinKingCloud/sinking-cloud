@@ -17,4 +17,7 @@ func LoadDatabase() {
 		conf.GetString(config.MysqlPassword),
 		conf.GetString(config.MysqlDatabase),
 	)
+	if util.Database.DbError != nil {
+		panic(util.Database.DbError)
+	}
 }

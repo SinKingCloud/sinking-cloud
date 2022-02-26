@@ -77,8 +77,8 @@ const Login: React.FC = () => {
       <div className={styles.content}>
         <LoginForm
           logo={<img alt="logo" src="/logo.svg"/>}
-          title="SinKing Admin"
-          subTitle="后台管理系统登陆"
+          title={defaultSettings.title}
+          subTitle="后台管理系统"
           onFinish={async (values) => {
             await handleSubmit(values as AdminAPI.LoginParams);
           }}

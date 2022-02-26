@@ -4,7 +4,7 @@ let Settings = {
   splitMenus: false,
   fixedHeader: true,
   fixSiderbar: true,
-  primaryColor: '#5c72ff',
+  primaryColor: '#0051eb',
   navTheme: 'light',
   title: '沉沦云网络',
   logo: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
@@ -19,7 +19,7 @@ let Settings = {
 //配置合并
 Settings = Object.assign(Settings, {
   title: '沉沦云网络',
-  logo: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
+  logo: '/logo.svg',
   pwa: false,
   footer: '沉沦云科技开发',
   loadingTitle: '沉沦云平台',

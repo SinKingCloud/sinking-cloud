@@ -8,7 +8,7 @@
 @message-radius: 10px; //消息圆角
 @button-menu-radius: 10px; //按钮菜单圆角
 @modal-radius: 10px; //弹窗圆角
-@card-radius: 10px; //card圆角
+@card-radius: 5px; //card圆角
 @card-shadow: 0px 0px 20px 5px #e1e1e1; //card阴影
 @card-search-radius: 10px; //card-search圆角
 @card-search-shadow: 0px 0px 20px 5px #e1e1e1; //card-search阴影
@@ -196,6 +196,14 @@ ol {
 
 .ant-menu-vertical.ant-menu-sub:not([class*='-active']), .ant-menu-vertical-left.ant-menu-sub:not([class*='-active']), .ant-menu-vertical-right.ant-menu-sub:not([class*='-active']) {
   border-radius: @menu-radius !important;
+}
+
+.ant-page-header.has-breadcrumb {
+    padding-top: 7px !important;
+}
+
+.ant-page-header {
+    padding: 7px 24px !important;
 }
 
 /**

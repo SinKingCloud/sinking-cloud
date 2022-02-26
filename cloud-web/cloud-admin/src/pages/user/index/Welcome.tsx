@@ -1,9 +1,9 @@
 import React from 'react';
-import { PageContainer } from '@ant-design/pro-layout';
-import { Card, Alert, Typography } from 'antd';
+import {PageContainer} from '@ant-design/pro-layout';
+import {Alert, Card, Typography} from 'antd';
 import styles from './Welcome.less';
 
-const CodePreview: React.FC = ({ children }) => (
+const CodePreview: React.FC = ({children}) => (
   <pre className={styles.pre}>
     <code>
       <Typography.Text copyable>{children}</Typography.Text>
@@ -13,10 +13,10 @@ const CodePreview: React.FC = ({ children }) => (
 
 export default (): React.ReactNode => {
   return (
-    <PageContainer>
+    <PageContainer title={false}>
       <Card>
         <Alert
-          message="测试消息"
+          message="测试信息"
           type="success"
           showIcon
           banner
