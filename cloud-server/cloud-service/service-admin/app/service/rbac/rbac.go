@@ -34,8 +34,8 @@ func CheckAccess(roleId int, url string, method string) bool {
 		return true
 	}
 	//获取权限信息
-	access := access2.GetRoleServiceIns().FindByIdWithCache(url, strings.ToUpper(method), false)
-	if access == nil {
+	access := access2.GetRoleServiceIns().FindByUriMethodWithCache(url, strings.ToUpper(method), false)
+	if access == nil || access.Id == 0 {
 		return true
 	}
 	//判断是否含有权限

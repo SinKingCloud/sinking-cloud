@@ -1,0 +1,14 @@
+package page
+
+import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/menu"
+	role2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/role"
+	user2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/user"
+)
+
+func (ControllerPage) Menu(c *sinking_server.Context) {
+	user := user2.GetCurrentUserInfo(c.GetSystemUserInfo().Id, false)
+	role := role2.GetRoleServiceIns().FindByIdWithCache(user.RoleId, false)
+	c.SuccessWithData("获取菜单数据成功", menu.SelectMenuByIdsWithCache(role.Id, role.Menus, false))
+}

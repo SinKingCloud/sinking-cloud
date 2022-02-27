@@ -29,8 +29,8 @@ func (*service) FindByUriMethod(url string, method string) *model.SystemAccess {
 	return access
 }
 
-// FindByIdWithCache 根据缓存查询角色信息(根据角色ID)
-func (s *service) FindByIdWithCache(url string, method string, refresh bool) *model.SystemAccess {
+// FindByUriMethodWithCache 根据缓存查询接口信息
+func (s *service) FindByUriMethodWithCache(url string, method string, refresh bool) *model.SystemAccess {
 	var access *model.SystemAccess
 	key := constant.CacheNameWithSystemAccess + url + method
 	if refresh {

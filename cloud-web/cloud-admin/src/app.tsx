@@ -13,6 +13,7 @@ import {message} from 'antd';
 import defaultSettings from '../config/defaultSettings';
 import * as auth from './util/auth';
 import {MenuDataItem} from "@umijs/route-utils";
+import {getMenus} from "@/services/page/menu";
 
 /**
  * 开发环境
@@ -100,6 +101,8 @@ export const layout: RunTimeLayoutConfig = ({initialState}) => {
         userId: initialState?.currentUser?.account,
       },
       request: async (params: Record<string, any>, defaultMenuData: MenuDataItem[]) => {
+        const data = await getMenus()
+        console.log(data)
         return [{
           path: '/index',
           name: '用户首页',

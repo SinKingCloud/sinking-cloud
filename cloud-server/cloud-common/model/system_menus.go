@@ -13,9 +13,10 @@ type SystemMenu struct {
 	Title      string       `gorm:"column:title" json:"title"`
 	Type       int          `gorm:"column:type" json:"type"`
 	Key        string       `gorm:"column:key" json:"key"`
-	Value      string       `gorm:"column:value" json:"value"`
+	Path       string       `gorm:"column:path" json:"path"`
 	Icon       string       `gorm:"column:icon" json:"icon"`
 	Status     int          `gorm:"column:status" json:"status"`
+	Sort       int          `gorm:"column:sort" json:"sort"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }
