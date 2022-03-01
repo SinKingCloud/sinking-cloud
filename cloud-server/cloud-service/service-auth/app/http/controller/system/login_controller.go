@@ -10,7 +10,7 @@ func (ControllerSystem) Login(c *sinking_server.Context) {
 	type Form struct {
 		Account  string `form:"account" json:"account" default:"" validate:"required" label:"账户"`
 		Password string `form:"password" json:"password" default:"" validate:"required" label:"密码"`
-		Device   string `form:"device" json:"device" default:"web" validate:"oneof=web pc mobile android" label:"登陆设备"`
+		Device   string `form:"device" json:"device" default:"web" validate:"required,oneof=web pc mobile android" label:"登陆设备"`
 		Token    string `form:"token" json:"token" default:"" validate:"required,len=16" label:"验证码标识"`
 		Captcha  string `form:"captcha" json:"captcha" default:"" validate:"required,numeric,len=4" label:"验证码"`
 	}

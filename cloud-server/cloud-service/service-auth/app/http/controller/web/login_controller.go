@@ -7,7 +7,7 @@ import (
 )
 
 func (ControllerWeb) Login(c *sinking_server.Context) {
-	user := service.GetWebUserServiceIns().FindById(1)
+	user, _ := service.GetWebUserServiceIns().FindById(1)
 	token := jwt.GetToken(user, nil)
 	c.SuccessWithData("请求成功", token)
 }

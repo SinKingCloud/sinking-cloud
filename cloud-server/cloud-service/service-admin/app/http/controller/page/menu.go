@@ -8,7 +8,16 @@ import (
 )
 
 func (ControllerPage) Menu(c *sinking_server.Context) {
-	user := user2.GetCurrentUserInfo(c.GetSystemUserInfo().Id, false)
-	role := role2.GetRoleServiceIns().FindByIdWithCache(user.RoleId, false)
-	c.SuccessWithData("获取菜单数据成功", menu.SelectMenuByIdsWithCache(role.Id, role.Menus, false))
+	user := user2.GetIns().GetCurrentUserInfo(c.GetSystemUserInfo().Id, false)
+	role, err := role2.GetIns().FindByIdWithCache(user.RoleId, false)
+	if err != nil {
+		c.Error("获取权限信息失败")
+		return
+	}
+	menus, err2 := menu.GetIns().SelectMenuByIdsWithCache(role.Id, role.Menus, false)
+	if err2 != nil {
+		c.Error("获取菜单数据失败")
+		return
+	}
+	c.SuccessWithData("获取菜单数据成功", menus)
 }

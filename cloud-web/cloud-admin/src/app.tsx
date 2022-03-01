@@ -14,6 +14,7 @@ import defaultSettings from '../config/defaultSettings';
 import * as auth from './util/auth';
 import {MenuDataItem} from "@umijs/route-utils";
 import {getMenus} from "@/services/page/menu";
+import {toTreeData} from "@/util/tree";
 
 /**
  * 开发环境
@@ -98,22 +99,19 @@ export const layout: RunTimeLayoutConfig = ({initialState}) => {
     menu: {
       locale: false,
       params: {
-        userId: initialState?.currentUser?.account,
+        userId: initialState?.currentUser?.id,
       },
-      request: async (params: Record<string, any>, defaultMenuData: MenuDataItem[]) => {
-        const data = await getMenus()
-        console.log(data)
-        return [{
-          path: '/index',
-          name: '用户首页',
-          icon: 'smile',
-          routes: [
-            {
-              path: 'index',
-              name: '示例首页12',
-            },
-          ],
-        }];
+      request: async () => {
+        let menu = [];
+        const response = await getMenus()
+        if (response.code == 200) {
+          menu = toTreeData(response.data, 0, "id", "pid", "routes", (item: any) => {
+            item.name = item.title;
+            delete item.title
+            return item;
+          })
+        }
+        return menu;
       },
     },
     onPageChange: () => {

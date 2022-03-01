@@ -6,7 +6,7 @@ import (
 )
 
 func (ControllerPerson) Info(c *sinking_server.Context) {
-	user := user2.GetCurrentUserInfo(c.GetSystemUserInfo().Id, false)
+	user := user2.GetIns().GetCurrentUserInfo(c.GetSystemUserInfo().Id, false)
 	c.SuccessWithData("获取用户信息成功", Info{
 		Id:        user.Id,
 		Account:   user.Account,

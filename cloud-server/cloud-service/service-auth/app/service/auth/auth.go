@@ -13,7 +13,11 @@ import (
 
 // GetSystemUserInfoByPwd 根据用户名密码获取系统用户信息
 func GetSystemUserInfoByPwd(account string, pwd string) (u *model.SystemUser, e error) {
-	util.Database.Db.Where("account=?", account).First(&u)
+	e = util.Database.Db.Where("account=?", account).First(&u).Error
+	if e != nil {
+		e = errors.New("系统执行错误")
+		return
+	}
 	if u == nil {
 		e = errors.New("该用户不存在")
 		return
@@ -46,7 +50,7 @@ func GetJwtToken(types string, u *model.SystemUser, u2 *model.WebUser, ip string
 		tempToken := fun(types, token, u.LoginToken)
 		if tempToken != "" {
 			tempU := model.SystemUser{Id: u.Id, LoginToken: tempToken, LoginTime: loginTime, LoginIp: ip}
-			util.Database.Db.Updates(&tempU)
+			e = util.Database.Db.Updates(&tempU).Error
 		} else {
 			e = errors.New("生成token失败")
 			return
@@ -59,7 +63,7 @@ func GetJwtToken(types string, u *model.SystemUser, u2 *model.WebUser, ip string
 		tempToken := fun(types, token, u2.LoginToken)
 		if tempToken != "" {
 			tempU := model.WebUser{Id: u2.Id, LoginToken: tempToken, LoginTime: loginTime, LoginIp: ip}
-			util.Database.Db.Updates(&tempU)
+			e = util.Database.Db.Updates(&tempU).Error
 		} else {
 			e = errors.New("生成token失败")
 			return

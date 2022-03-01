@@ -20,7 +20,12 @@ func CheckWebUser() sinking_web.HandlerFunc {
 		jwtUser := c.GetWebUserInfo()
 		jwtToken := jwt.GetLoginToken(jwtUser.LoginToken)
 		//获取用户最新信息
-		webUser := service.GetWebUserServiceIns().FindByIdWithCache(jwtUser.Id, false)
+		webUser, err := service.GetWebUserServiceIns().FindByIdWithCache(jwtUser.Id, false)
+		if err != nil {
+			c.TokenError("登陆超时,请重新登陆", nil)
+			c.Abort()
+			return
+		}
 		webToken := jwt.GetLoginToken(webUser.LoginToken)
 		//判断用户token一致性
 		if jwtToken[types] != webToken[types] {
@@ -39,7 +44,12 @@ func CheckSystemUser() sinking_web.HandlerFunc {
 		jwtUser := c.GetSystemUserInfo()
 		jwtToken := jwt.GetLoginToken(jwtUser.LoginToken)
 		//获取用户最新信息
-		systemUser := service.GetSystemUserServiceIns().FindByIdWithCache(jwtUser.Id, false)
+		systemUser, err := service.GetSystemUserServiceIns().FindByIdWithCache(jwtUser.Id, false)
+		if err != nil {
+			c.TokenError("登陆超时,请重新登陆", nil)
+			c.Abort()
+			return
+		}
 		systemToken := jwt.GetLoginToken(systemUser.LoginToken)
 		//判断用户token一致性
 		if jwtToken[types] != systemToken[types] {

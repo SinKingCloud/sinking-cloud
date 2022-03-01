@@ -16,7 +16,16 @@ func (ControllerPage) Control(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	user := user2.GetCurrentUserInfo(c.GetSystemUserInfo().Id, false)
-	role := role2.GetRoleServiceIns().FindByIdWithCache(user.RoleId, false)
-	c.SuccessWithData("获取页面控件数据成功", menu.SelectRoleControlWithCache(role.Id, role.Menus, form.Id, false))
+	user := user2.GetIns().GetCurrentUserInfo(c.GetSystemUserInfo().Id, false)
+	role, err := role2.GetIns().FindByIdWithCache(user.RoleId, false)
+	if err != nil {
+		c.Error("获取权限信息失败")
+		return
+	}
+	controls, err2 := menu.GetIns().SelectRoleControlWithCache(role.Id, role.Menus, form.Id, false)
+	if err2 != nil {
+		c.Error("获取控件信息失败")
+		return
+	}
+	c.SuccessWithData("获取页面控件数据成功", controls)
 }

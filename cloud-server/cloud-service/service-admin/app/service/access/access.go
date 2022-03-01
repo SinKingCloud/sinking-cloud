@@ -14,8 +14,8 @@ type service struct {
 // obj 单例对象
 var obj *service
 
-// GetRoleServiceIns 获取单例
-func GetRoleServiceIns() *service {
+// GetIns 获取单例
+func GetIns() *service {
 	if obj == nil {
 		obj = &service{}
 	}

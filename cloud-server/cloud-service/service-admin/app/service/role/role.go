@@ -15,8 +15,8 @@ type service struct {
 // obj 单例对象
 var obj *service
 
-// GetRoleServiceIns 获取单例
-func GetRoleServiceIns() *service {
+// GetIns 获取单例
+func GetIns() *service {
 	if obj == nil {
 		obj = &service{}
 	}
@@ -24,18 +24,19 @@ func GetRoleServiceIns() *service {
 }
 
 // FindById 查询角色信息(根据角色ID)
-func (*service) FindById(id int) *model.SystemRole {
-	var role *model.SystemRole
-	util.Database.Db.Where("id = ? and status=0", id).First(&role)
-	return role
+func (*service) FindById(id int) (role *model.SystemRole, err error) {
+	err = util.Database.Db.Where("id = ? and status=0", id).First(&role).Error
+	return
 }
 
 // FindByIdWithCache 根据缓存查询角色信息(根据角色ID)
-func (s *service) FindByIdWithCache(id int, refresh bool) *model.SystemRole {
-	var role *model.SystemRole
+func (s *service) FindByIdWithCache(id int, refresh bool) (role *model.SystemRole, err error) {
 	key := constant.CacheNameWithSystemRole + strconv.Itoa(id)
 	if refresh {
-		role = s.FindById(id)
+		role, err = s.FindById(id)
+		if err != nil {
+			return
+		}
 		data, err := json.Marshal(role)
 		if err == nil {
 			util.Cache.SetWithExpire(key, string(data), constant.CacheTimeWithSystemRole)
@@ -45,12 +46,15 @@ func (s *service) FindByIdWithCache(id int, refresh bool) *model.SystemRole {
 		if exists {
 			_ = json.Unmarshal([]byte(data), &role)
 		} else {
-			role = s.FindById(id)
+			role, err = s.FindById(id)
+			if err != nil {
+				return
+			}
 			data, err := json.Marshal(role)
 			if err == nil {
 				util.Cache.SetWithExpire(key, string(data), constant.CacheTimeWithSystemRole)
 			}
 		}
 	}
-	return role
+	return
 }
