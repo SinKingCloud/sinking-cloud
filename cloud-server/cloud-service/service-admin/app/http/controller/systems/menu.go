@@ -1,0 +1,144 @@
+package systems
+
+import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/menu"
+)
+
+// List 获取菜单数据
+func (ControllerMenu) List(c *sinking_server.Context) {
+	pageInfo := page.ValidatePageDefault(c)
+	type Form struct {
+		OrderByField string `form:"order_by_field" json:"order_by_field" default:"sort" validate:"oneof=id sort update_time create_time statu" label:"排序字段"`
+		OrderByType  string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
+		Title        string `form:"title" default:"" validate:"omitempty,max=100" label:"标题"`
+		Key          string `form:"key" default:"" validate:"omitempty,max=50" label:"标识"`
+		Path         string `form:"path" default:"" validate:"omitempty,max=50" label:"目录"`
+		Type         string `form:"type" default:"" validate:"omitempty,oneof=0 1" label:"类型"`
+		Status       string `form:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorGet(form); !ok {
+		c.Error(msg)
+		return
+	}
+	where := make(map[string]string)
+	if form.Title != "" {
+		where["title"] = form.Title
+	}
+	if form.Key != "" {
+		where["key"] = form.Key
+	}
+	if form.Path != "" {
+		where["path"] = form.Path
+	}
+	if form.Status != "" {
+		where["status"] = form.Status
+	}
+	if form.Type != "" {
+		where["type"] = form.Type
+	}
+	data, total, err := menu.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	if err != nil {
+		c.Error("获取菜单数据失败")
+	} else {
+		c.SuccessWithData("获取菜单数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
+	}
+}
+
+// Update 修改菜单数据
+func (ControllerMenu) Update(c *sinking_server.Context) {
+	type Form struct {
+		Ids    []int  `json:"ids" default:"" validate:"required,min=1,unique" label:"ID列表"`
+		Title  string `json:"title" default:"" validate:"omitempty,max=100" label:"标题"`
+		Key    string `json:"key" default:"" validate:"omitempty,max=50" label:"标识"`
+		Path   string `json:"path" default:"" validate:"omitempty,max=50" label:"目录"`
+		Icon   string `json:"icon" default:"" validate:"omitempty" label:"图标"`
+		Sort   string `json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
+		Status string `json:"status" default:"" validate:"omitempty,numeric,oneof=0 1" label:"状态"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	data := make(map[string]interface{})
+	if form.Title != "" {
+		data["title"] = form.Title
+	}
+	if form.Key != "" {
+		data["key"] = form.Key
+	}
+	if form.Path != "" {
+		data["path"] = form.Path
+	}
+	if form.Icon != "" {
+		data["icon"] = form.Icon
+	}
+	if form.Sort != "" {
+		data["sort"] = form.Sort
+	}
+	if form.Status != "" {
+		data["status"] = form.Status
+	}
+	err := menu.GetIns().UpdateByIds(form.Ids, data)
+	if err == nil {
+		c.Success("修改数据成功")
+	} else {
+		c.Error("修改数据失败")
+	}
+}
+
+// Create 添加菜单数据
+func (ControllerMenu) Create(c *sinking_server.Context) {
+	type Form struct {
+		Pid    int    `json:"pid" default:"" validate:"numeric" label:"父级id"`
+		Type   int    `json:"type" default:"" validate:"numeric,oneof=0 1" label:"类型"`
+		Title  string `json:"title" default:"" validate:"required,max=100" label:"标题"`
+		Key    string `json:"key" default:"" validate:"required,max=50" label:"标识"`
+		Path   string `json:"path" default:"" validate:"omitempty,max=50" label:"目录"`
+		Icon   string `json:"icon" default:"" validate:"omitempty" label:"图标"`
+		Sort   int    `json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
+		Status int    `json:"status" default:"" validate:"numeric,oneof=0 1" label:"状态"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	err := menu.GetIns().Create(&model.SystemMenu{
+		Pid:    form.Pid,
+		Title:  form.Title,
+		Type:   form.Type,
+		Key:    form.Key,
+		Path:   form.Path,
+		Icon:   form.Icon,
+		Status: form.Status,
+		Sort:   form.Sort,
+	})
+	if err == nil {
+		c.Success("添加数据成功")
+	} else {
+		c.Error("添加数据失败")
+	}
+}
+
+// Delete 添加接口信息
+func (ControllerMenu) Delete(c *sinking_server.Context) {
+	type Form struct {
+		Ids []int `json:"ids" default:"" validate:"required,min=1,unique" label:"ID列表"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	err := menu.GetIns().DeleteByIds(form.Ids)
+	if err == nil {
+		c.Success("删除数据成功")
+	} else {
+		c.Error("删除数据失败")
+	}
+}

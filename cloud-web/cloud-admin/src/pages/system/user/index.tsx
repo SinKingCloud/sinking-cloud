@@ -4,7 +4,7 @@ import {Alert} from 'antd';
 export default (): React.ReactNode => {
   return (
     <Alert
-      message="测试文本"
+      message="用户列表"
       type="success"
       showIcon
       banner

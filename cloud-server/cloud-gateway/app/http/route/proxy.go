@@ -7,6 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/constant"
 	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/http/middleware"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"net/http"
@@ -36,8 +37,11 @@ func InitProxyRouter(route *sinking_web.Engine) {
 			}
 			patten := k
 			tempGroup.ANY(k1, sinking_server.HandleFunc(func(s *sinking_server.Context) {
+				s.Set(constant.ServerGroupName, groupName.(string))
+				s.Set(constant.ServerName, name.(string))
 				url, exists := util.Consul.GetService(groupName.(string), name.(string))
 				if exists {
+					s.Set(constant.ServerAddr, url.Addr)
 					s.Proxy(prefix+url.Addr, func(r *http.Request) *http.Request {
 						r.URL.Path = strings.Replace(s.Request.URL.Path, patten, "", 1)
 						r.URL.RawPath, r.RequestURI = r.URL.Path, r.URL.Path

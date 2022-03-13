@@ -14,7 +14,7 @@ func (ControllerPage) Menu(c *sinking_server.Context) {
 		c.Error("获取权限信息失败")
 		return
 	}
-	menus, err2 := menu.GetIns().SelectMenuByIdsWithCache(role.Id, role.Menus, false)
+	menus, err2 := menu.GetIns().SelectByIdsWithCache(role.Id, role.Menus, false)
 	if err2 != nil {
 		c.Error("获取菜单数据失败")
 		return

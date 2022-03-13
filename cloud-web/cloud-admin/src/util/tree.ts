@@ -25,3 +25,25 @@ export function toTreeData(data: any, pid: any, name: string, parentName: string
 
   return tree(pid)
 }
+
+/**
+ * 获取tree数据
+ * @param data 数据
+ * @param name 子集名称
+ */
+export function getTreeData(data: any, name: string): any {
+  let temp: any[] = [];
+
+  function tree(data: any) {
+    data.forEach((item: any) => {
+      if (item[name] != undefined && item[name].length > 0) {
+        tree(item[name])
+      }
+      delete item[name];
+      temp.push(item)
+    })
+  }
+
+  tree(data)
+  return temp.reverse()
+}

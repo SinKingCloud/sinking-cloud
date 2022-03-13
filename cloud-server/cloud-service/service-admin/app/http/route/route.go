@@ -21,7 +21,23 @@ func loadSystemsRoute(s *sinking_web.Engine) {
 	//权限管理
 	accessHandle := &systems.ControllerAccess{}
 	access := r.Group("/access")
-	access.GET("/list", sinking_server.HandleFunc(accessHandle.List)) //权限列表
+	access.GET("/list", sinking_server.HandleFunc(accessHandle.List))      //权限列表
+	access.POST("/update", sinking_server.HandleFunc(accessHandle.Update)) //权限修改
+	access.POST("/create", sinking_server.HandleFunc(accessHandle.Create)) //权限添加
+	access.POST("/delete", sinking_server.HandleFunc(accessHandle.Delete)) //权限删除
+	//菜单管理
+	menuHandle := &systems.ControllerMenu{}
+	menu := r.Group("/menu")
+	menu.GET("/list", sinking_server.HandleFunc(menuHandle.List))      //菜单列表
+	menu.POST("/update", sinking_server.HandleFunc(menuHandle.Update)) //菜单更新
+	menu.POST("/create", sinking_server.HandleFunc(menuHandle.Create)) //菜单添加
+	menu.POST("/delete", sinking_server.HandleFunc(menuHandle.Delete)) //菜单删除
+	//请求日志
+	logRequestHandle := &systems.ControllerLogRequest{}
+	logRequest := r.Group("/log_request")
+	logRequest.GET("/list", sinking_server.HandleFunc(logRequestHandle.List))
+	logRequest.GET("/info", sinking_server.HandleFunc(logRequestHandle.Info))
+	logRequest.POST("/delete", sinking_server.HandleFunc(logRequestHandle.Delete))
 }
 
 // loadPageRoute 加载页面操作路由

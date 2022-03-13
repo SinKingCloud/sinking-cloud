@@ -12,7 +12,7 @@ func Rbac() sinking_web.HandlerFunc {
 		//获取用户信息
 		userInfo := c.GetSystemUserInfo()
 		//判断权限信息
-		if rbac.GetIns().CheckAccessByCache(userInfo.RoleId, c.Request.RequestURI, c.Request.Method) {
+		if rbac.GetIns().CheckAccessByCache(userInfo.RoleId, c.Request.URL.Path, c.Request.Method) {
 			c.Next()
 		} else {
 			c.NotAllow("您的帐户暂无权限操作", nil)

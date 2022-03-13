@@ -45,13 +45,16 @@ func (s *service) CheckAccessByCache(roleId int, url string, method string) bool
 // CheckAccess 判断是否含有权限
 func (s *service) CheckAccess(roleId int, url string, method string) bool {
 	role, err := role2.GetIns().FindByIdWithCache(roleId, false)
-	if err == nil || role == nil {
+	if err != nil || role == nil {
 		return true
 	}
 	//获取权限信息
-	access := access2.GetIns().FindByUriMethodWithCache(url, strings.ToUpper(method), false)
-	if access == nil || access.Id == 0 {
+	access, err := access2.GetIns().FindByUriMethodWithCache(url, strings.ToUpper(method), false)
+	if err != nil || access == nil || access.Id == 0 {
 		return true
+	}
+	if access.Status == 1 {
+		return false
 	}
 	//判断是否含有权限
 	var roleAccessIds []int

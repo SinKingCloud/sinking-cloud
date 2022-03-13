@@ -10,7 +10,7 @@
 @modal-radius: 10px; //弹窗圆角
 @card-radius: 5px; //card圆角
 @card-shadow: 0px 0px 20px 5px #e1e1e1; //card阴影
-@card-search-radius: 10px; //card-search圆角
+@card-search-radius: 5px; //card-search圆角
 @card-search-shadow: 0px 0px 20px 5px #e1e1e1; //card-search阴影
 @tooltip-radius: 10px; //提示圆角
 @page-container-shadow: 0 0 20px 0 #e7e7e7; //导航阴影
@@ -20,9 +20,10 @@
 @btn-radius: 5px; //按钮圆角
 @radio-group-radius: 5px; //按钮组圆角
 @input-group-radius: 5px; //输入框组组圆角
+@input-radius: 5px; //输入框圆角
 @notice-panel-radius: 10px; //消息面板圆角
 @number-input-radius: 5px; //数字输入框圆角
-@tag-radius: 10px; //tag圆角
+@tag-radius: 5px; //tag圆角
 @alert-radius: 5px; //alert圆角
 
 html,
@@ -113,11 +114,19 @@ ol {
 }
 
 .ant-modal-mask {
-  background-color: #72727240 !important;
+  background-color: #7272727a !important;
+}
+
+.ant-input{
+  border-radius: @input-radius !important;
+}
+
+.ant-alert-info{
+  border-radius: @alert-radius !important;
 }
 
 .ant-modal-body {
-  max-height: 75vh;
+  max-height: 50vh;
   overflow: auto;
 }
 

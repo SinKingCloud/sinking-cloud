@@ -9,7 +9,7 @@ import (
 
 func (ControllerPage) Control(c *sinking_server.Context) {
 	type Form struct {
-		Id int `form:"id" json:"id" default:"" validate:"required" label:"页面ID"`
+		Key string `form:"key" default:"" validate:"required" label:"页面ID"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorGet(form); !ok {
@@ -22,7 +22,12 @@ func (ControllerPage) Control(c *sinking_server.Context) {
 		c.Error("获取权限信息失败")
 		return
 	}
-	controls, err2 := menu.GetIns().SelectRoleControlWithCache(role.Id, role.Menus, form.Id, false)
+	page, err := menu.GetIns().FindByKeyWithCache(form.Key, false)
+	if err != nil {
+		c.Error("获取页面信息失败")
+		return
+	}
+	controls, err2 := menu.GetIns().SelectControlWithCache(role.Id, role.Menus, page.Id, false)
 	if err2 != nil {
 		c.Error("获取控件信息失败")
 		return

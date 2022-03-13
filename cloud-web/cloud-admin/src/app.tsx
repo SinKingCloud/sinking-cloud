@@ -7,7 +7,7 @@ import type {RunTimeLayoutConfig} from 'umi';
 import {history, Link, RequestConfig} from 'umi';
 import RightContent from '@/components/RightContent';
 import Footer from '@/components/Footer';
-import {queryCurrentUser} from './services/user/info';
+import {queryCurrentUser} from './services/person/info';
 import * as allIcons from '@ant-design/icons';
 import {message} from 'antd';
 import defaultSettings from '../config/defaultSettings';
@@ -104,7 +104,7 @@ export const layout: RunTimeLayoutConfig = ({initialState}) => {
       request: async () => {
         let menu = [];
         const response = await getMenus()
-        if (response.code == 200) {
+        if (response != undefined && response.code == 200) {
           menu = toTreeData(response.data, 0, "id", "pid", "routes", (item: any) => {
             item.name = item.title;
             delete item.title
@@ -114,10 +114,9 @@ export const layout: RunTimeLayoutConfig = ({initialState}) => {
         return menu;
       },
     },
-    onPageChange: () => {
-      const {location} = history;
+    onPageChange: (location) => {
       // 如果没有登录，重定向到 login
-      if (!initialState?.currentUser && allowPaths.indexOf(location.pathname) < 0) {
+      if (!initialState?.currentUser && allowPaths.indexOf(location?.pathname as string) < 0) {
         history.push(allowPaths[0]);
       }
     },
@@ -159,13 +158,6 @@ const errorHandler = (error: { response: RequestConfig; }) => {
   if (!response) {
     return message.error('您的网络发生异常');
   }
-  if (response.code == 503 || response.code == 403) {
-    history.push(allowPaths[0]);
-    return message.warning(response.message);
-  }
-  if (response.code == 401) {
-    message.warning(response.message);
-  }
   return response;
 };
 /**
@@ -177,8 +169,15 @@ const requestMiddleware = async (ctx: any, next: () => void) => {
   ctx.req.url = defaultSettings.api + ctx.req.url;
   ctx.req.options.headers = auth.getHeaders();
   await next();
+  if (ctx.res.code == 503 || ctx.res.code == 403) {
+    history.push(allowPaths[0]);
+    return message.warning(ctx.res.message);
+  }
+  if (ctx.res.code == 401) {
+    message.warning(ctx.res.message);
+  }
 };
 export const request: RequestConfig = {
-  errorHandler,
   middlewares: [requestMiddleware],
+  errorHandler,
 };

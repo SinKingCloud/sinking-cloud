@@ -8,7 +8,7 @@ import (
 
 // SystemLogRequest 请求日志表
 type SystemLogRequest struct {
-	Id             int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
+	Id             string       `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	RequestId      string       `gorm:"column:request_id" json:"request_id"`
 	RequestIp      string       `gorm:"column:request_ip" json:"request_ip"`
 	RequestUrl     string       `gorm:"column:request_url" json:"request_url"`

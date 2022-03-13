@@ -1,3 +1,4 @@
+// @ts-ignore
 import {request} from "umi";
 
 /** 获取当前用户信息 GET /admin/person/info */

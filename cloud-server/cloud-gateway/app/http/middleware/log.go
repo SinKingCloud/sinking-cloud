@@ -2,15 +2,15 @@ package middleware
 
 import (
 	"bytes"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/constant"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -18,7 +18,7 @@ import (
 func Log() sinking_web.HandlerFunc {
 	return sinking_server.HandleFunc(func(c *sinking_server.Context) {
 		//websocket直接通过
-		if c.Request.Header.Get("Connection") == "Upgrade" {
+		if c.Request.Header.Get("Connection") == "Upgrade" || c.Request.Method == "OPTIONS" {
 			c.Next()
 			return
 		}
@@ -69,7 +69,7 @@ func Log() sinking_web.HandlerFunc {
 		}
 		//拼接日志
 		log := &model.SystemLogRequest{
-			Id:             str.GetSnowWorkIns().GetId(),
+			Id:             strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10),
 			RequestId:      requestId,
 			RequestIp:      requestIp,
 			RequestUrl:     requestUrl,
@@ -81,9 +81,9 @@ func Log() sinking_web.HandlerFunc {
 			ResponseHeader: getHeader(responseHeader),
 			ResponseBody:   responseBody,
 			ResponseTime:   int(time.Since(requestTime).Microseconds() / 1000),
-			GroupName:      util.Conf.GetString(config.ConfApplicationGroup),
-			AppName:        util.Conf.GetString(config.ConfApplicationName),
-			AppAddr:        util.Conf.GetString(config.ConfApplicationAddr) + ":" + util.Conf.GetString(config.ConfApplicationPort),
+			GroupName:      c.GetString(constant.ServerGroupName),
+			AppName:        c.GetString(constant.ServerName),
+			AppAddr:        c.GetString(constant.ServerAddr),
 		}
 		sinking.NewLogRequestProducer().Build(log).Send()
 	})

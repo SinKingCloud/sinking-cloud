@@ -23,18 +23,19 @@ func GetIns() *service {
 }
 
 // FindByUriMethod 查询接口信息
-func (*service) FindByUriMethod(url string, method string) *model.SystemAccess {
-	var access *model.SystemAccess
-	util.Database.Db.Where("url = ? and method=? and status=0", url, method).First(&access)
-	return access
+func (*service) FindByUriMethod(url string, method string) (access *model.SystemAccess, err error) {
+	err = util.Database.Db.Where("`url` = ? and `method`=?", url, method).First(&access).Error
+	return
 }
 
 // FindByUriMethodWithCache 根据缓存查询接口信息
-func (s *service) FindByUriMethodWithCache(url string, method string, refresh bool) *model.SystemAccess {
-	var access *model.SystemAccess
+func (s *service) FindByUriMethodWithCache(url string, method string, refresh bool) (access *model.SystemAccess, err error) {
 	key := constant.CacheNameWithSystemAccess + url + method
 	if refresh {
-		access = s.FindByUriMethod(url, method)
+		access, err = s.FindByUriMethod(url, method)
+		if err != nil {
+			return
+		}
 		data, err := json.Marshal(access)
 		if err == nil {
 			util.Cache.SetWithExpire(key, string(data), constant.CacheTimeWithSystemAccess)
@@ -44,12 +45,15 @@ func (s *service) FindByUriMethodWithCache(url string, method string, refresh bo
 		if exists {
 			_ = json.Unmarshal([]byte(data), &access)
 		} else {
-			access = s.FindByUriMethod(url, method)
+			access, err = s.FindByUriMethod(url, method)
+			if err != nil {
+				return
+			}
 			data, err := json.Marshal(access)
 			if err == nil {
 				util.Cache.SetWithExpire(key, string(data), constant.CacheTimeWithSystemAccess)
 			}
 		}
 	}
-	return access
+	return
 }
