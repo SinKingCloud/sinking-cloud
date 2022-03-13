@@ -6,7 +6,7 @@ require (
 	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211125053718-b26199caff3f
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211125053718-b26199caff3f
 	github.com/apache/rocketmq-client-go/v2 v2.1.0
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/dgrijalva/jwt-go v3.2.1+incompatible
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/gomodule/redigo v1.8.5
 	github.com/json-iterator/go v1.1.12 // indirect
