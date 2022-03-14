@@ -23,12 +23,6 @@ func GetIns() *service {
 	return obj
 }
 
-// FindById 查询角色信息(根据角色ID)
-func (*service) FindById(id int) (role *model.SystemRole, err error) {
-	err = util.Database.Db.Where("id = ? and status=0", id).First(&role).Error
-	return
-}
-
 // FindByIdWithCache 根据缓存查询角色信息(根据角色ID)
 func (s *service) FindByIdWithCache(id int, refresh bool) (role *model.SystemRole, err error) {
 	key := constant.CacheNameWithSystemRole + strconv.Itoa(id)

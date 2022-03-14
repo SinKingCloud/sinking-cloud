@@ -7,7 +7,9 @@
  * @param childrenName 子集名称
  * @param callback 回调函数
  */
-export function toTreeData(data: any, pid: any, name: string, parentName: string, childrenName: string, callback: Function): any {
+export function toTreeData(data: any, pid: any, name: string, parentName: string, childrenName: string, callback: Function = (item: any): any => {
+  return item;
+}): any {
   function tree(id: any) {
     let arr: any = []
     data.filter((item: any) => {
@@ -30,17 +32,23 @@ export function toTreeData(data: any, pid: any, name: string, parentName: string
  * 获取tree数据
  * @param data 数据
  * @param name 子集名称
+ * @param callback 回调函数
  */
-export function getTreeData(data: any, name: string): any {
+export function getTreeData(data: any, name: string, callback: Function = (item: any): any => {
+  return item;
+}): any {
   let temp: any[] = [];
 
   function tree(data: any) {
     data.forEach((item: any) => {
-      if (item[name] != undefined && item[name].length > 0) {
-        tree(item[name])
+      item = callback(item);
+      if (item != undefined) {
+        if (item[name] != undefined && item[name].length > 0) {
+          tree(item[name])
+        }
+        delete item[name];
+        temp.push(item)
       }
-      delete item[name];
-      temp.push(item)
     })
   }
 

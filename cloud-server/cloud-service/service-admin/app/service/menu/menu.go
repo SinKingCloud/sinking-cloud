@@ -71,3 +71,20 @@ func (s *service) SelectControlWithCache(roleId int, menuIds string, pid int, re
 	}
 	return
 }
+
+// GetAccessIdsByMenuIds 通过菜单获取关联接口权限
+func (s *service) GetAccessIdsByMenuIds(ids []int) (accessIds []int, err error) {
+	menus, err := s.SelectFullByIds(ids)
+	if err != nil {
+		return
+	}
+	for _, v := range menus {
+		var tempAccessIds []int
+		tempErr := json.Unmarshal([]byte(v.Accesses), &tempAccessIds)
+		if tempErr != nil {
+			continue
+		}
+		accessIds = append(accessIds, tempAccessIds...)
+	}
+	return
+}

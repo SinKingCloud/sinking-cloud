@@ -2,7 +2,6 @@ import React, {useEffect, useRef, useState} from 'react';
 import {Button, DatePicker, Descriptions, Form, message, Modal, Spin, Typography} from 'antd';
 import {PageContainer} from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
-import {checkMobile} from "@/util/device";
 import {getPageControls, getParams} from "@/util/page";
 import {deleteLogRequest, getLogRequestInfo, getLogRequestList} from "@/services/system/log_request";
 import {ExclamationCircleOutlined} from "@ant-design/icons";
@@ -27,7 +26,6 @@ export default (): React.ReactNode => {
   /**
    * table表格渲染
    */
-  const hidden = !checkMobile();
   const columns = [
     {
       title: 'ID',
@@ -37,28 +35,24 @@ export default (): React.ReactNode => {
       hideInTable: true,
       sorter: true,
       editable: false,
-      ellipsis: hidden,
     },
     {
       title: '请求ID',
       dataIndex: 'request_id',
       tip: '该请求的唯一ID',
       sorter: true,
-      ellipsis: hidden,
     },
     {
       title: '请求IP',
       dataIndex: 'request_ip',
       tip: '请求者IP',
       copyable: true,
-      ellipsis: hidden,
     },
     {
       title: '请求地址',
       dataIndex: 'request_url',
       tip: '请求地址',
       copyable: true,
-      ellipsis: hidden,
     },
     {
       title: '请求方式',
@@ -89,7 +83,6 @@ export default (): React.ReactNode => {
       dataIndex: 'request_time',
       tip: '发起请求时间',
       sorter: true,
-      ellipsis: hidden,
       hideInSearch: true,
       editable: false,
     },
@@ -98,7 +91,6 @@ export default (): React.ReactNode => {
       valueType: 'dateTime',
       dataIndex: 'response_time',
       tip: '请求响应时间',
-      ellipsis: hidden,
       hideInSearch: true,
       editable: false,
       render: (text: string, record: any) => {
@@ -109,25 +101,21 @@ export default (): React.ReactNode => {
       title: '响应码',
       dataIndex: 'response_code',
       tip: 'HTTP响应码',
-      ellipsis: hidden,
     },
     {
       title: '服务组',
       dataIndex: 'group_name',
       tip: '微服务服务组名称',
-      ellipsis: hidden,
     },
     {
       title: '服务名',
       dataIndex: 'app_name',
       tip: '微服务服务名称',
-      ellipsis: hidden,
     },
     {
       title: '服务地址',
       dataIndex: 'app_addr',
       tip: '微服务节点服务地址',
-      ellipsis: hidden,
     },
     {
       title: '请求时间',

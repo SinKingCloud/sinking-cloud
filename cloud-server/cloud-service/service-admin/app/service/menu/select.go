@@ -11,9 +11,15 @@ func (s *service) SelectControl(menuIds []int, pid int) (menus []*Menu, err erro
 	return
 }
 
-// SelectByIds 根据id查询角色菜单
+// SelectByIds 根据id查询菜单
 func (s *service) SelectByIds(menuIds []int) (menus []*Menu, err error) {
 	err = util.Database.Db.Model(&model.SystemMenu{}).Where("`id` in ? and `type`=0 and `status`=0", menuIds).Order("`sort` desc").Find(&menus).Error
+	return
+}
+
+// SelectFullByIds 根据id查询菜单全部信息
+func (s *service) SelectFullByIds(menuIds []int) (menus []*model.SystemMenu, err error) {
+	err = util.Database.Db.Model(&model.SystemMenu{}).Where("`id` in ?", menuIds).Find(&menus).Error
 	return
 }
 

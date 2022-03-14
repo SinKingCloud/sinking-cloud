@@ -3,7 +3,6 @@ import {Button, Dropdown, Form, Input, Menu, message, Modal, Select, Table} from
 import {FooterToolbar, PageContainer} from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import {createAccess, deleteAccess, getAccessList, updateAccess} from "@/services/system/access";
-import {checkMobile} from "@/util/device";
 import {getPageControls, getParams} from "@/util/page";
 import {DownOutlined, ExclamationCircleOutlined} from "@ant-design/icons";
 
@@ -126,7 +125,6 @@ export default (): React.ReactNode => {
   /**
    * table表格渲染
    */
-  const hidden = !checkMobile();
   const columns = [
     {
       title: 'ID',
@@ -134,26 +132,22 @@ export default (): React.ReactNode => {
       tip: '记录ID',
       hideInSearch: true,
       sorter: true,
-      editable: false,
     },
     {
       title: '名称',
       dataIndex: 'name',
       tip: '接口名称',
-      ellipsis: hidden,
     },
     {
       title: '描述',
       dataIndex: 'describe',
-      tip: '接口描述描述',
-      ellipsis: hidden,
+      tip: '接口描述',
     },
     {
       title: '地址',
       dataIndex: 'url',
       tip: '接口地址',
       copyable: true,
-      ellipsis: hidden,
     },
     {
       title: '方式',
@@ -184,9 +178,7 @@ export default (): React.ReactNode => {
       dataIndex: 'update_time',
       tip: '上次修改时间',
       sorter: true,
-      ellipsis: hidden,
       hideInSearch: true,
-      editable: false,
     },
     {
       title: '添加时间',
@@ -194,9 +186,7 @@ export default (): React.ReactNode => {
       dataIndex: 'create_time',
       tip: '上次修改时间',
       sorter: true,
-      ellipsis: hidden,
       hideInSearch: true,
-      editable: false,
     },
     {
       title: '修改时间',

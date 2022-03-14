@@ -38,6 +38,13 @@ func loadSystemsRoute(s *sinking_web.Engine) {
 	logRequest.GET("/list", sinking_server.HandleFunc(logRequestHandle.List))
 	logRequest.GET("/info", sinking_server.HandleFunc(logRequestHandle.Info))
 	logRequest.POST("/delete", sinking_server.HandleFunc(logRequestHandle.Delete))
+	//角色管理
+	roleHandle := &systems.ControllerRole{}
+	role := r.Group("/role")
+	role.GET("/list", sinking_server.HandleFunc(roleHandle.List))      //角色列表
+	role.POST("/update", sinking_server.HandleFunc(roleHandle.Update)) //角色更新
+	role.POST("/create", sinking_server.HandleFunc(roleHandle.Create)) //角色添加
+	role.POST("/delete", sinking_server.HandleFunc(roleHandle.Delete)) //角色删除
 }
 
 // loadPageRoute 加载页面操作路由

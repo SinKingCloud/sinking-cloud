@@ -31,12 +31,13 @@ export function getParams(params: any, sort: any): any {
 /**
  * 获取页面控件
  */
-export async function getPageControls(): Promise<any> {
+export async function getPageControls(path: string = ""): Promise<any> {
+  path = path == "" ? location.pathname : path;
   let key = location.pathname.replaceAll("/", ".").substring(1);
   let response = await getControls({key: key});
-  if(response.code==200){
+  if (response.code == 200) {
     let data = {};
-    response.data.forEach((k:any)=>{
+    response.data.forEach((k: any) => {
       data[k.key] = k;
     })
     return data;

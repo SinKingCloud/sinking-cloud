@@ -12,6 +12,7 @@ type SystemMenu struct {
 	Pid        int          `gorm:"column:pid" json:"pid"`
 	Title      string       `gorm:"column:title" json:"title"`
 	Type       int          `gorm:"column:type" json:"type"`
+	Accesses   string       `gorm:"column:accesses" json:"accesses"`
 	Key        string       `gorm:"column:key" json:"key"`
 	Path       string       `gorm:"column:path" json:"path"`
 	Icon       string       `gorm:"column:icon" json:"icon"`

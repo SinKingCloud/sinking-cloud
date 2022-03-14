@@ -1,21 +1,40 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {getPageControls, getParams} from "@/util/page";
-import {checkMobile} from "@/util/device";
 import ProTable from "@ant-design/pro-table";
 import {PageContainer} from "@ant-design/pro-layout";
 import {createMenu, deleteMenu, getMenuList, updateMenu} from "@/services/system/menu";
 import {getTreeData, toTreeData} from "@/util/tree";
 import {Button, Dropdown, Form, Input, InputNumber, Menu, message, Modal, Select, Space, Tag} from "antd";
 import * as allIcons from "@ant-design/icons";
+import {getAccessList} from "@/services/system/access";
 
 export default (): React.ReactNode => {
   /**
-   * 控件权限
+   * 获取控件权限机权限列表
    */
   const [controls, setControls] = useState({});
+  const [access, setAccess] = useState([]);
+  const [accessMap, setAccessMap] = useState({});
   useEffect(() => {
     getPageControls().then((d) => {
       setControls(d)
+    });
+    getAccessList({page_size: 1000}).then((r) => {
+      if (r.code != 200) {
+        message.error(r.message || "请求失败").then()
+      } else {
+        // @ts-ignore
+        const children = [];
+        const map = {};
+        r.data.list.forEach((item: any) => {
+          map[item?.id] = item;
+          children.push(<Select.Option key={item?.id} title={item?.id + item?.name + item?.method}
+                                       value={item?.id}>{item?.name}-{item?.method}</Select.Option>);
+        })
+        // @ts-ignore
+        setAccess(children)
+        setAccessMap(map)
+      }
     })
   }, []);
 
@@ -23,13 +42,11 @@ export default (): React.ReactNode => {
    * table表格渲染
    */
   const actionRef = useRef();
-  const hidden = !checkMobile();
   const columns = [
     {
       title: '名称',
       dataIndex: 'title',
       tip: '名称',
-      ellipsis: hidden,
       render: (test: string, record: any) => {
         return (
           <div>
@@ -42,7 +59,6 @@ export default (): React.ReactNode => {
       title: '类型',
       dataIndex: 'type',
       tip: '控件类型',
-      ellipsis: hidden,
       valueEnum: {
         0: {
           text: '菜单',
@@ -52,12 +68,27 @@ export default (): React.ReactNode => {
         },
       },
       render: (text: string, record: any) => {
+        if (record?.children != undefined && record?.children.length > 0) {
+          let isPage = true;
+          record?.children.forEach((item: any) => {
+            if (item.type == 0) {
+              isPage = false
+            }
+          })
+          if (isPage) {
+            return <Space size={0}>
+              <Tag color="red">
+                <allIcons.GoldOutlined/>
+                页面</Tag>
+            </Space>;
+          }
+        }
         return <Space size={0}>
           {record?.type == 0 ? <Tag color="blue">
             <allIcons.PaperClipOutlined/>
             菜单</Tag> : <Tag color="green">
             <allIcons.GoldOutlined/>
-            按钮</Tag>}
+            控件</Tag>}
         </Space>;
       }
     },
@@ -65,19 +96,45 @@ export default (): React.ReactNode => {
       title: '标识',
       dataIndex: 'key',
       tip: '标识KEY',
-      ellipsis: hidden,
+    },
+    {
+      title: '关联权限',
+      dataIndex: 'accesses',
+      tip: '该菜单关联的权限',
+      hideInSearch: true,
+      render: (text: string, record: any) => {
+        let tempRecord = record;
+        const node: any[] = [];
+        if (tempRecord.accesses != undefined && tempRecord.accesses != "") {
+          let arr = Array.isArray(tempRecord?.accesses) ? tempRecord?.accesses : JSON.parse(tempRecord.accesses);
+          if (arr != undefined && arr.length > 0) {
+            arr.forEach((item: any) => {
+              const info = accessMap[item];
+              const color = {
+                GET: "#984eff",
+                POST: "#ff8847",
+                PUT: "#4ec4ff",
+                DELETE: "#d246ff",
+              };
+              node.push(<Tag color={color[info.method] || "red"} key={tempRecord?.id + "-" + item}>{info.name}</Tag>);
+            });
+          }
+        }
+        if (node.length <= 0) {
+          node.push(<Tag color="default" key={tempRecord?.id + "-0"}>无关联</Tag>);
+        }
+        return node;
+      }
     },
     {
       title: '目录',
       dataIndex: 'path',
       tip: '地址栏目录',
-      ellipsis: hidden,
     },
     {
       title: '排序',
       dataIndex: 'sort',
       tip: '排序',
-      ellipsis: hidden,
     },
     {
       title: '状态',
@@ -111,6 +168,14 @@ export default (): React.ReactNode => {
             </Menu.Item>}
             <Menu.Item key={"edit"} hidden={controls["system.menu:edit"] == undefined}>
               <a style={{fontSize: "small"}} onClick={() => {
+                if (!Array.isArray(record?.accesses)) {
+                  let arr = [];
+                  if (record?.accesses != undefined && record?.accesses != "") {
+                    arr = JSON.parse(record?.accesses);
+                  }
+                  record.accesses = arr;
+                }
+                //record.accesses = Array.isArray(record?.accesses) ? record?.accesses : JSON.parse(record?.accesses);
                 form.setFieldsValue(record)
                 setIsFormVisible(true)
               }}>
@@ -148,6 +213,7 @@ export default (): React.ReactNode => {
       values.sort = values.sort.toString();
       delete values.id;
     }
+    values.accesses = JSON.stringify(values.accesses != undefined && values.accesses.length > 0 ? values.accesses : []);
     api(values).then((r) => {
       if (r.code != 200) {
         message.error(r.message || "请求失败").then()
@@ -217,7 +283,7 @@ export default (): React.ReactNode => {
             <Select placeholder="请输入添加的类型"
                     disabled={(form.getFieldValue("pid") == undefined || form.getFieldValue("id") != undefined) || form.getFieldValue("pid") == 0}>
               <Select.Option value={0}>菜单</Select.Option>
-              <Select.Option value={1}>按钮</Select.Option>
+              <Select.Option value={1}>控件</Select.Option>
             </Select>
           </Form.Item>
           <Form.Item name={"title"} label="标题" rules={[{required: true}]}>
@@ -226,7 +292,16 @@ export default (): React.ReactNode => {
           <Form.Item name={"key"} label="标识" rules={[{required: true}]}>
             <Input placeholder="请输入标识"/>
           </Form.Item>
-          <Form.Item name={"path"} label="目录">
+          <Form.Item name={"accesses"} label="权限">
+            <Select mode="multiple" allowClear placeholder="请输入绑定权限"
+                    filterOption={(inputValue: string, option?: any) => {
+                      return option?.title.indexOf(inputValue) != -1
+                    }}>
+              {access}
+            </Select>
+          </Form.Item>
+          <Form.Item name={"path"} label="目录"
+                     hidden={form.getFieldValue("id") != undefined && form.getFieldValue("type") == 1}>
             <Input placeholder="请输入目录"/>
           </Form.Item>
           <Form.Item name={"icon"} label="图标">
@@ -253,7 +328,7 @@ export default (): React.ReactNode => {
         columns={columns}
         indentSize={20}
         request={async (params, sort) => {
-          params.pageSize = 1999;
+          params.pageSize = 1000;
           //params.type = 0;
           const response = await getMenuList(getParams(params, sort));
           let data = response.data.list === undefined || response.data.list === null || response.data.list.length <= 0 ? [] : response.data.list;

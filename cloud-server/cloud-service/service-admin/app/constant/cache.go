@@ -1,7 +1,7 @@
 package constant
 
 const (
-	CacheTime = 1 //默认缓存时间
+	CacheTime = 60 //默认缓存时间
 
 	CacheNameWithSystemRole = "SystemRole_"    //权限角色信息缓存
 	CacheTimeWithSystemRole = CacheTime * 1000 //权限角色缓存时间
