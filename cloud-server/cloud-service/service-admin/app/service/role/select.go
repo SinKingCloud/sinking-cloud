@@ -5,9 +5,15 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 )
 
-// SelectByIds 根据id查询角色菜单
+// SelectByIds 根据id查询角色
 func (s *service) SelectByIds(ids []int) (roles []*model.SystemRole, err error) {
 	err = util.Database.Db.Model(&model.SystemRole{}).Where("`id` in ? ", ids).Find(&roles).Error
+	return
+}
+
+// SelectAll 根据所有角色
+func (s *service) SelectAll() (roles []*model.SystemRole, err error) {
+	err = util.Database.Db.Model(&model.SystemRole{}).Find(&roles).Error
 	return
 }
 

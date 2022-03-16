@@ -12,6 +12,17 @@ export async function getRoleList(params?: {}, options?: { [key: string]: any })
   });
 }
 
+/** 重置角色权限 GET /admin/systems/role/reset_access */
+export async function resetAccess(params?: {}, options?: { [key: string]: any }) {
+  return request<API.Response>('/admin/systems/role/reset_access', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
 /** 添加角色 POST /admin/systems/role/create */
 export async function createRole(body: any, options?: { [key: string]: any }) {
   return request<API.Response>('/admin/systems/role/create', {

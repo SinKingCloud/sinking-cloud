@@ -29,6 +29,11 @@ func (c *Context) GetSystemConfig(key string) interface{} {
 	return c.get(util.SystemConfig, key)
 }
 
+// GetSystemConfigWithDefault 获取系统字典配置信息()
+func (c *Context) GetSystemConfigWithDefault(key string) interface{} {
+	return c.get(util.SystemConfig, key)
+}
+
 // SetWebUserConfig 设置网站用户配置信息
 func (c *Context) SetWebUserConfig(config map[string]string) {
 	c.set(util.WebUserConfig, config)

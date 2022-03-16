@@ -22,6 +22,10 @@ func GetSystemUserInfoByPwd(account string, pwd string) (u *model.SystemUser, e 
 		e = errors.New("该用户不存在")
 		return
 	}
+	if u.Status != 0 {
+		e = errors.New("该用户已被禁止登陆")
+		return
+	}
 	if !str.NetStringTool(u.Password).CheckPassword(pwd) {
 		e = errors.New("用户名或密码错误")
 		return

@@ -1,7 +1,7 @@
 /**
  * 判断设备是否为手机
  */
-export function checkMobile() {
+export function checkMobile(): boolean {
   let i;
   const pda_user_agent_list = ["2.0 MMP", "240320", "AvantGo", "BlackBerry", "Blazer",
     "Cellphone", "Danger", "DoCoMo", "Elaine/3.0", "EudoraWeb", "hiptop", "IEMobile", "KYOCERA/WX310K", "LG/U990",

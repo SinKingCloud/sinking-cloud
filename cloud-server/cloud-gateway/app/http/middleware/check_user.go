@@ -33,6 +33,11 @@ func CheckWebUser() sinking_web.HandlerFunc {
 			c.Abort()
 			return
 		}
+		if webUser.Status != 0 {
+			c.TokenError("您的账户已被禁止登陆,请联系管理员", nil)
+			c.Abort()
+			return
+		}
 		c.Next()
 	})
 }
@@ -54,6 +59,11 @@ func CheckSystemUser() sinking_web.HandlerFunc {
 		//判断用户token一致性
 		if jwtToken[types] != systemToken[types] {
 			c.TokenError("您的账户已在其他设备登陆,请重新登陆", nil)
+			c.Abort()
+			return
+		}
+		if systemUser.Status != 0 {
+			c.TokenError("您的账户已被禁止登陆,请联系管理员", nil)
 			c.Abort()
 			return
 		}

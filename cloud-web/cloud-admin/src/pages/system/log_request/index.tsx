@@ -14,7 +14,7 @@ export default (): React.ReactNode => {
   useEffect(() => {
     getPageControls().then((d) => {
       setControls(d)
-    })
+    });
   }, [])
 
   /**

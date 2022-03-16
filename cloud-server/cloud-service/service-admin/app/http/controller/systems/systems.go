@@ -14,3 +14,9 @@ type ControllerRole struct {
 
 type ControllerUser struct {
 }
+
+type ControllerConfig struct {
+}
+
+type ControllerLog struct {
+}

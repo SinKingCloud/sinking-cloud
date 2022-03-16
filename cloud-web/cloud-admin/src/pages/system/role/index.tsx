@@ -4,7 +4,7 @@ import {FooterToolbar, PageContainer} from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import {getPageControls, getParams} from "@/util/page";
 import {DownOutlined, ExclamationCircleOutlined} from "@ant-design/icons";
-import {createRole, deleteRole, getRoleList, updateRole} from "@/services/system/role";
+import {createRole, deleteRole, getRoleList, resetAccess, updateRole} from "@/services/system/role";
 import {getMenuList} from "@/services/system/menu";
 import {getTreeData, toTreeData} from "@/util/tree";
 
@@ -195,7 +195,7 @@ export default (): React.ReactNode => {
     },
     {
       title: '修改时间',
-      valueType: 'dateRange',
+      valueType: 'dateTimeRange',
       dataIndex: 'update_time',
       tip: '上次修改时间',
       hideInTable: true,
@@ -210,7 +210,7 @@ export default (): React.ReactNode => {
     },
     {
       title: '添加时间',
-      valueType: 'dateRange',
+      valueType: 'dateTimeRange',
       dataIndex: 'create_time',
       tip: '添加记录时间',
       hideInTable: true,
@@ -348,7 +348,7 @@ export default (): React.ReactNode => {
         columns={columns}
         defaultSize={"small"}
         form={{layout: "vertical"}}
-        headerTitle={'接口列表'}
+        headerTitle={'角色列表'}
         actionRef={actionRef}
         formRef={ref}
         rowKey={'id'}
@@ -377,12 +377,31 @@ export default (): React.ReactNode => {
           labelWidth: 'auto',
         }}
         toolBarRender={() => [
-          <Button key="primary" type="primary" onClick={() => {
+          <Button key="add" type="primary" onClick={() => {
             setCheckedKeys([]);
             setFormCheckedKeys([]);
             setIsModalVisible(true)
           }} hidden={controls["system.role:add"] == undefined}>
             {(controls["system.role:add"])?.title || "新建"}
+          </Button>,
+          <Button key="reset" type="primary" ghost onClick={() => {
+            Modal.confirm({
+              title: '您确定要刷新角色权限吗?',
+              icon: <ExclamationCircleOutlined/>,
+              content: '本操作将会刷新角色菜单关联权限',
+              okType: 'danger',
+              onOk() {
+                resetAccess().then((r) => {
+                  if (r.code != 200) {
+                    message.error(r.message || "请求失败").then()
+                  } else {
+                    message.success(r.message).then()
+                  }
+                });
+              },
+            });
+          }} hidden={controls["system.role:edit"] == undefined}>
+            更新
           </Button>,
         ]}/>
       {selectedRowsState?.length > 0 && (

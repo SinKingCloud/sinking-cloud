@@ -6,9 +6,9 @@ import Footer from '@/components/Footer';
 import {login} from '@/services/admin/login';
 import defaultSettings from '@/../config/defaultSettings';
 import styles from './index.less';
-import {getRandStr} from "@/util/string";
 import {history, useModel} from "umi";
 import {setLoginToken} from "@/util/auth";
+import {getCaptchaUrl} from "@/services/common/captcha";
 
 const Login: React.FC = () => {
   /**
@@ -24,9 +24,9 @@ const Login: React.FC = () => {
    * 加载验证码
    */
   const changeCaptcha = () => {
-    let tempToken = getRandStr(16)
-    setToken(tempToken)
-    setCaptchaUrl(defaultSettings.api + "/auth/verify/code?token=" + tempToken)
+    let cap = getCaptchaUrl();
+    setToken(cap.token)
+    setCaptchaUrl(cap.url)
   }
   useEffect(changeCaptcha, [])
   const {initialState, setInitialState} = useModel('@@initialState');
@@ -83,7 +83,7 @@ const Login: React.FC = () => {
             await handleSubmit(values as AdminAPI.LoginParams);
           }}
         >
-          <Tabs activeKey={type} onChange={setType}>
+          <Tabs activeKey={type} onChange={setType} hidden={true}>
             <Tabs.TabPane
               key="account"
               tab='账户密码登录'

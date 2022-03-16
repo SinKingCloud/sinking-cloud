@@ -3,6 +3,7 @@ package route
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/system"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/upload"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/verify"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/web"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -13,6 +14,7 @@ func loadRoute(s *sinking_web.Engine) {
 	loadWebRoute(s)
 	loadSystemRoute(s)
 	loadVerifyRoute(s)
+	loadUploadRoute(s)
 }
 
 // loadWebRoute 加载网站授权路由
@@ -34,4 +36,11 @@ func loadVerifyRoute(s *sinking_web.Engine) {
 	r := s.Group("/verify")
 	handle := &verify.ControllerVerify{}
 	r.GET("/code", sinking_server.HandleFunc(handle.Code))
+}
+
+// loadUploadRoute 加载上传路由
+func loadUploadRoute(s *sinking_web.Engine) {
+	r := s.Group("/upload")
+	handle := &upload.ControllerUpload{}
+	r.POST("/file", sinking_server.HandleFunc(handle.File))
 }

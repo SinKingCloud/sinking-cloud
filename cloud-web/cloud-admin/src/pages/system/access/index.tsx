@@ -190,7 +190,7 @@ export default (): React.ReactNode => {
     },
     {
       title: '修改时间',
-      valueType: 'dateRange',
+      valueType: 'dateTimeRange',
       dataIndex: 'update_time',
       tip: '上次修改时间',
       hideInTable: true,
@@ -205,7 +205,7 @@ export default (): React.ReactNode => {
     },
     {
       title: '添加时间',
-      valueType: 'dateRange',
+      valueType: 'dateTimeRange',
       dataIndex: 'create_time',
       tip: '添加记录时间',
       hideInTable: true,

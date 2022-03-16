@@ -2,6 +2,7 @@ package rbac
 
 import (
 	"encoding/json"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/constant"
 	access2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/access"
@@ -25,47 +26,50 @@ func GetIns() *service {
 	return obj
 }
 
-func (s *service) CheckAccessByCache(roleId int, url string, method string) bool {
+func (s *service) CheckAccessByCache(roleId int, url string, method string) (bool, *model.SystemAccess) {
 	key := constant.CacheNameWithRbac + strconv.Itoa(roleId) + url + ":" + method
 	res, exists := util.Cache.Get(key)
+	var access *model.SystemAccess
 	if exists {
-		return res == "1"
+		return res == "1", nil
 	} else {
 		//写入缓存
-		if s.CheckAccess(roleId, url, method) {
+		r, d := s.CheckAccess(roleId, url, method)
+		access = d
+		if r {
 			res = strconv.Itoa(1)
 		} else {
 			res = strconv.Itoa(0)
 		}
 		util.Cache.SetWithExpire(key, res, constant.CacheTimeWithRbac)
 	}
-	return res == "1"
+	return res == "1", access
 }
 
 // CheckAccess 判断是否含有权限
-func (s *service) CheckAccess(roleId int, url string, method string) bool {
+func (s *service) CheckAccess(roleId int, url string, method string) (bool, *model.SystemAccess) {
 	role, err := role2.GetIns().FindByIdWithCache(roleId, false)
 	if err != nil || role == nil {
-		return true
+		return true, nil
 	}
 	//获取权限信息
 	access, err := access2.GetIns().FindByUriMethodWithCache(url, strings.ToUpper(method), false)
 	if err != nil || access == nil || access.Id == 0 {
-		return true
+		return true, nil
 	}
 	if access.Status == 1 {
-		return false
+		return false, access
 	}
 	//判断是否含有权限
 	var roleAccessIds []int
 	err = json.Unmarshal([]byte(role.Accesses), &roleAccessIds)
 	if err != nil {
-		return true
+		return true, access
 	}
 	for _, v := range roleAccessIds {
 		if v == access.Id {
-			return true
+			return true, access
 		}
 	}
-	return false
+	return false, access
 }

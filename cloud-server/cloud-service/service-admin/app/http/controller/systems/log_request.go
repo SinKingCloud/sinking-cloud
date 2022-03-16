@@ -8,7 +8,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/log_request"
 )
 
-// List 接口列表
+// List 列表
 func (ControllerLogRequest) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {

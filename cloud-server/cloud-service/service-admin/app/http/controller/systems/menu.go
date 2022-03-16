@@ -11,7 +11,7 @@ import (
 func (ControllerMenu) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField string `form:"order_by_field" json:"order_by_field" default:"sort" validate:"oneof=id sort update_time create_time statu" label:"排序字段"`
+		OrderByField string `form:"order_by_field" json:"order_by_field" default:"sort" validate:"oneof=id sort update_time create_time status" label:"排序字段"`
 		OrderByType  string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
 		Title        string `form:"title" default:"" validate:"omitempty,max=100" label:"标题"`
 		Key          string `form:"key" default:"" validate:"omitempty,max=50" label:"标识"`

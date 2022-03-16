@@ -2,7 +2,6 @@ package route
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
-	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/http/middleware"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -11,7 +10,7 @@ import (
 
 // loadCommonMiddleware 加载全局中间件
 func loadCommonMiddleware(s *sinking_web.Engine) {
-	s.Use(middleware.Log(), middleware.Cors(), middleware2.LoadConfig())
+	s.Use(middleware.Log(), middleware.Cors())
 }
 
 // loadErrorHandle 设置错误回调

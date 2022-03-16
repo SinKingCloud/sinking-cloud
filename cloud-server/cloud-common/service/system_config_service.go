@@ -56,3 +56,43 @@ func (c systemConfigService) GetByCache(refresh bool) map[string]string {
 	}
 	return config
 }
+
+// SelectByGroupWithMap 获取配置组获取
+func (systemConfigService) SelectByGroupWithMap(group string) map[string]string {
+	var configs []*model.SystemConfig
+	table := &model.SystemConfig{}
+	temp := make(map[string]string)
+	util.Database.Db.Model(&table).Select("a.*").
+		Joins("AS a LEFT JOIN `"+table.TableName()+"` as b ON a.`pid`=b.`id`").
+		Where("b.`key` = ?", group).
+		Scan(&configs)
+	for _, v := range configs {
+		temp[v.Key] = v.Value
+	}
+	return temp
+}
+
+// GetGroupByCache 获取系统配置组
+func (c systemConfigService) GetGroupByCache(group string, refresh bool) map[string]string {
+	config := make(map[string]string)
+	key := util2.CacheNameWithSystemConfig + "_" + group
+	if refresh {
+		config = c.SelectByGroupWithMap(group)
+		data, err := json.Marshal(config)
+		if err == nil {
+			util.Cache.SetWithExpire(key, string(data), util2.CacheTimeWithSystemConfig)
+		}
+	} else {
+		data, exists := util.Cache.Get(key)
+		if exists {
+			_ = json.Unmarshal([]byte(data), &config)
+		} else {
+			config = c.SelectByGroupWithMap(group)
+			data, err := json.Marshal(config)
+			if err == nil {
+				util.Cache.SetWithExpire(key, string(data), util2.CacheTimeWithSystemConfig)
+			}
+		}
+	}
+	return config
+}

@@ -10,7 +10,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/user"
 )
 
-// List 接口列表
+// List 列表
 func (ControllerRole) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
@@ -59,7 +59,7 @@ func (ControllerRole) List(c *sinking_server.Context) {
 	c.Error("获取数据失败")
 }
 
-// Update 修改接口信息
+// Update 修改信息
 func (r ControllerRole) Update(c *sinking_server.Context) {
 	type Form struct {
 		Ids      []int  `json:"ids" default:"" validate:"required,min=1,unique" label:"ID列表"`
@@ -95,7 +95,7 @@ func (r ControllerRole) Update(c *sinking_server.Context) {
 	}
 }
 
-// Create 添加接口信息
+// Create 添加信息
 func (r ControllerRole) Create(c *sinking_server.Context) {
 	type Form struct {
 		Name     string `json:"name" validate:"required,max=20" label:"名称"`
@@ -122,7 +122,7 @@ func (r ControllerRole) Create(c *sinking_server.Context) {
 	}
 }
 
-// Delete 删除接口信息
+// Delete 删除信息
 func (ControllerRole) Delete(c *sinking_server.Context) {
 	type Form struct {
 		Ids []int `json:"ids" default:"" validate:"required,min=1,unique" label:"ID列表"`
@@ -159,4 +159,19 @@ func (ControllerRole) getRoleIdsBYMenuIds(menus string) string {
 		}
 	}
 	return accessIds
+}
+
+// ResetAllRoleAccess 刷新角色关联权限
+func (r ControllerRole) ResetAllRoleAccess(c *sinking_server.Context) {
+	go func() {
+		roles, err := role.GetIns().SelectAll()
+		if err == nil {
+			for _, v := range roles {
+				go func() {
+					_ = role.GetIns().UpdateById(v.Id, map[string]interface{}{"accesses": v.Menus})
+				}()
+			}
+		}
+	}()
+	c.Success("更新权限数据成功")
 }

@@ -10,7 +10,7 @@ import (
 
 // loadCommonMiddleware 加载全局中间件
 func loadCommonMiddleware(s *sinking_web.Engine) {
-	s.Use(middleware.ServiceCheck(), middleware.LoadConfig(), middleware.AuthUser())
+	s.Use(middleware.ServiceCheck(), middleware.AuthUser())
 }
 
 // loadErrorHandle 设置错误回调

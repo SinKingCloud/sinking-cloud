@@ -8,9 +8,11 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/constant"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -47,13 +49,17 @@ func Log() sinking_web.HandlerFunc {
 			return scheme + request.Host + c.Request.URL.RequestURI()
 		}(c.Request) //请求地址
 		//获取请求体
-		ioBody := c.Request.Body
-		body, err := ioutil.ReadAll(ioBody)
-		if err != nil {
-			return
+		var ioBody io.ReadCloser
+		var body []byte
+		if !strings.Contains(c.Request.Header.Get("Content-Type"), "multipart/form-data") {
+			ioBody = c.Request.Body
+			body, err := ioutil.ReadAll(ioBody)
+			if err != nil {
+				return
+			}
+			//放回body，防止后面读取不到
+			c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 		}
-		//放回body，防止后面读取不到
-		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 		//接管write，方便捕获返回数据
 		writer := responseBodyWriter{
 			ResponseWriter: c.Writer,

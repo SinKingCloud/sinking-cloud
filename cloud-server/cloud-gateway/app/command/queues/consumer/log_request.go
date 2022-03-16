@@ -7,7 +7,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
-	"log"
 )
 
 // logRequestIns 消费者单例
@@ -33,7 +32,7 @@ func (l *logRequest) Listen() {
 		}
 	})
 	if err != nil {
-		log.Println(err)
+		util.Log.Println(err)
 		return
 	}
 }
