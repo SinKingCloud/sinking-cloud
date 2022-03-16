@@ -13,7 +13,7 @@ func (s *service) Select(where map[string]string, orderByField string, orderByTy
 		Select("l.*,u.`account`,u.`nick_name`,u.`avatar`,u.`email`,u.`Phone`").
 		Joins("AS l LEFT JOIN `" + table.TableName() + "` as u ON l.`user_id`=u.`id`")
 	if where["request_id"] != "" {
-		query.Where("l.`request_id` = ?", where["type"])
+		query.Where("l.`request_id` = ?", where["request_id"])
 	}
 	if where["request_ip"] != "" {
 		query.Where("l.`request_ip` = ?", where["request_ip"])

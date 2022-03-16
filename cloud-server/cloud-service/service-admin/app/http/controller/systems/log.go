@@ -18,6 +18,7 @@ func (ControllerLog) List(c *sinking_server.Context) {
 		Phone           string `form:"phone" default:"" validate:"omitempty,numeric" label:"用户手机"`
 		RequestId       string `form:"request_id" default:"" validate:"omitempty,len=36" label:"请求ID"`
 		RequestIp       string `form:"request_ip" default:"" validate:"omitempty,max=20" label:"请求IP"`
+		Type            string `form:"title" default:"" validate:"omitempty,numeric" label:"类型"`
 		Title           string `form:"title" default:"" validate:"omitempty,max=50" label:"标题"`
 		Content         string `form:"content" default:"" validate:"omitempty,max=100" label:"内容"`
 		CreateTimeStart string `form:"create_time_start" default:"" validate:"-" label:"创建起始时间"`
@@ -29,6 +30,9 @@ func (ControllerLog) List(c *sinking_server.Context) {
 		return
 	}
 	where := make(map[string]string)
+	if form.Type != "" {
+		where["type"] = form.Type
+	}
 	if form.Account != "" {
 		where["account"] = form.Account
 	}
