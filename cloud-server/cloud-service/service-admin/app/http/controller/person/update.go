@@ -1,0 +1,40 @@
+package person
+
+import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/user"
+)
+
+func (ControllerPerson) Update(c *sinking_server.Context) {
+	type Form struct {
+		Phone    string `json:"phone" default:"" validate:"omitempty,numeric,len=11" label:"手机号"`
+		Email    string `json:"email" default:"" validate:"omitempty,email" label:"邮箱"`
+		NickName string `json:"nick_name" default:"" validate:"omitempty,max=50" label:"用户昵称"`
+		Avatar   string `json:"avatar" default:"" validate:"omitempty,uri" label:"用户头像"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	data := make(map[string]interface{})
+	if form.Phone != "" {
+		data["phone"] = form.Phone
+	}
+	if form.Email != "" {
+		data["email"] = form.Email
+	}
+	if form.NickName != "" {
+		data["nick_name"] = form.NickName
+	}
+	if form.Avatar != "" {
+		data["avatar"] = form.Avatar
+	}
+	if err := user.GetIns().UpdateByIds([]int{c.GetSystemUserInfo().Id}, data); err == nil {
+		service.GetSystemUserServiceIns().ClearCache(c.GetSystemUserInfo().Id)
+		c.Success("更新资料成功")
+	} else {
+		c.Error("更新资料失败")
+	}
+}

@@ -10,6 +10,7 @@ type Info struct {
 	Id        int          `json:"id"`
 	Account   string       `json:"account"`
 	NickName  string       `json:"nick_name"`
+	RoleName  string       `json:"role_name"`
 	Avatar    string       `json:"avatar"`
 	Email     string       `json:"email"`
 	Phone     int64        `json:"phone"`

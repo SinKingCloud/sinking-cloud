@@ -80,4 +80,6 @@ func loadPersonRoute(s *sinking_web.Engine) {
 	r := s.Group("/person")
 	handle := &person.ControllerPerson{}
 	r.GET("/info", sinking_server.HandleFunc(handle.Info))
+	r.POST("/update", sinking_server.HandleFunc(handle.Update))
+	r.POST("/password", sinking_server.HandleFunc(handle.Password))
 }

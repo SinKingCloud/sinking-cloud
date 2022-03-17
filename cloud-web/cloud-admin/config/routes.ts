@@ -79,6 +79,18 @@
     ],
   },
   {
+    path: '/person',
+    routes: [
+      {
+        path: 'setting',
+        component: './person/setting',
+      },
+      {
+        redirect: '/person/setting',
+      },
+    ],
+  },
+  {
     path: '/',
     redirect: '/index/index',
   },

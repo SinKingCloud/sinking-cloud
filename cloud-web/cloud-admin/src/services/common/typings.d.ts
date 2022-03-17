@@ -41,6 +41,7 @@ declare namespace API {
   type UserInfo = {
     id?: number;
     account?: string;
+    role_name?: string;
     nick_name?: string;
     avatar?: string;
     email?: string;
