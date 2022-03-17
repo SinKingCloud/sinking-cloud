@@ -1,12 +1,16 @@
 import React, {useState} from 'react';
 import {PageContainer} from "@ant-design/pro-layout";
 import ProCard from '@ant-design/pro-card';
+import {Button} from "antd";
 
 export default (): React.ReactNode => {
   const [tab, setTab] = useState('tab1');
   return (
     <PageContainer title={false}>
       <ProCard
+        title="配置管理"
+        headerBordered={true}
+        extra={<Button type="primary">新建</Button>}
         tabs={{
           activeKey: tab,
           onChange: (key) => {

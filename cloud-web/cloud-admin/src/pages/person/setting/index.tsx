@@ -164,7 +164,7 @@ export default (): React.ReactNode => {
                   <ProFormText
                     width="md"
                     name="login_time"
-                    initialValue={"2021-12-50 23:00:04"}
+                    initialValue={currentUser?.login_time}
                     label="登陆时间"
                     tooltip="上次登陆时间"
                     disabled={true}
