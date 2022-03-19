@@ -9,6 +9,9 @@ import (
 func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.SystemConfig, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.SystemConfig{})
+	if where["pid"] != "" {
+		query.Where("`pid` = ?", where["pid"])
+	}
 	if where["name"] != "" {
 		query.Where("`name` like ?", "%"+where["name"]+"%")
 	}

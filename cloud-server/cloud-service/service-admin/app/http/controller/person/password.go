@@ -18,7 +18,7 @@ func (ControllerPerson) Password(c *sinking_server.Context) {
 	}
 	u := user.GetIns().GetCurrentUserInfo(c.GetSystemUserInfo().Id, true)
 	if !str.NetStringTool(u.Password).CheckPassword(form.OldPassword) {
-		c.Error("旧密码输入错误")
+		c.Error("旧密码验证失败")
 		return
 	}
 	if err := user.GetIns().UpdateByIds([]int{u.Id}, map[string]interface{}{

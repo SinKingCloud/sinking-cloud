@@ -28,10 +28,6 @@ func (ControllerSystem) Login(c *sinking_server.Context) {
 		c.Error(err.Error())
 		return
 	}
-	if user.Status != 0 {
-		c.Error("您的帐号已被封禁")
-		return
-	}
 	token, err := auth.GetJwtToken(form.Device, user, nil, c.GetRequestIp())
 	if err != nil {
 		c.Error(err.Error())

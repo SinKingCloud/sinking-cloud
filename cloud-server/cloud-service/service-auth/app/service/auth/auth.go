@@ -8,22 +8,66 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/jwt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"strconv"
 	"time"
 )
 
-// GetSystemUserInfoByPwd 根据用户名密码获取系统用户信息
-func GetSystemUserInfoByPwd(account string, pwd string) (u *model.SystemUser, e error) {
-	e = util.Database.Db.Where("account=?", account).First(&u).Error
-	if e != nil {
-		e = errors.New("系统执行错误")
+// GetWebUserInfoByPhone 根据短信验证码获取网站用户信息
+func GetWebUserInfoByPhone(phone string, code string) (u *model.WebUser, e error) {
+	if !SmsCheck(phone, code) {
+		e = errors.New("短信验证码验证失败")
 		return
 	}
-	if u == nil {
-		e = errors.New("该用户不存在")
+	e = util.Database.Db.Where("`phone` = ?", phone).First(&u).Error
+	if e != nil || u == nil {
+		//创建用户
+		tempPhone, _ := strconv.ParseInt(phone, 10, 64)
+		e = util.Database.Db.Create(&model.WebUser{
+			NickName: str.NewNickTool().GetRand(),
+			Phone:    tempPhone,
+			Money:    0,
+			Status:   0,
+		}).Error
+		if e != nil {
+			e = errors.New("注册账号失败")
+			return
+		}
+		util.Database.Db.Where("`phone` = ?", phone).First(&u)
+	}
+	if u.Status != 0 {
+		e = errors.New("您的账户已被禁止登陆")
+		return
+	}
+	return
+}
+
+// GetWebUserInfoByPwd 根据用户名密码获取网站用户信息
+func GetWebUserInfoByPwd(account string, pwd string) (u *model.WebUser, e error) {
+	e = util.Database.Db.Where("`account` = ?", account).First(&u).Error
+	if e != nil || u == nil {
+		e = errors.New("用户不存在")
 		return
 	}
 	if u.Status != 0 {
-		e = errors.New("该用户已被禁止登陆")
+		e = errors.New("您的账户已被禁止登陆")
+		return
+	}
+	if !str.NetStringTool(u.Password).CheckPassword(pwd) {
+		e = errors.New("用户名或密码错误")
+		return
+	}
+	return
+}
+
+// GetSystemUserInfoByPwd 根据用户名密码获取系统用户信息
+func GetSystemUserInfoByPwd(account string, pwd string) (u *model.SystemUser, e error) {
+	e = util.Database.Db.Where("`account`= ?", account).First(&u).Error
+	if e != nil || u == nil {
+		e = errors.New("用户不存在")
+		return
+	}
+	if u.Status != 0 {
+		e = errors.New("您的账户已被禁止登陆")
 		return
 	}
 	if !str.NetStringTool(u.Password).CheckPassword(pwd) {

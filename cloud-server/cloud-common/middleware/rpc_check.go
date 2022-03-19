@@ -1,0 +1,20 @@
+package middleware
+
+import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-go/sinking-web"
+)
+
+// RpcCheck 微服务间调用安全判断
+func RpcCheck() sinking_web.HandlerFunc {
+	return sinking_server.HandleFunc(func(c *sinking_server.Context) {
+		if c.Request.Header.Get("sinking_rpc_token") != util.Conf.GetString(config.ConfRegisterTokenKey) {
+			c.ServiceError("微服务调用失败")
+			c.Abort()
+		} else {
+			c.Next()
+		}
+	})
+}

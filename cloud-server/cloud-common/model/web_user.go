@@ -15,10 +15,12 @@ type WebUser struct {
 	Avatar     string       `gorm:"column:avatar" json:"avatar"`
 	Email      string       `gorm:"column:email" json:"email"`
 	Phone      int64        `gorm:"column:phone" json:"phone"`
+	Money      float64      `gorm:"column:money" json:"money"`
 	LoginToken string       `gorm:"column:login_token" json:"login_token"`
 	LoginIp    string       `gorm:"column:login_ip" json:"login_ip"`
 	LoginTime  str.DateTime `gorm:"column:login_time" json:"login_time"`
 	Status     int          `gorm:"column:status" json:"status"`
+	RealAuth   int          `gorm:"column:real_auth" json:"real_auth"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }

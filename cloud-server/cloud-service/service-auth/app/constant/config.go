@@ -1,7 +1,6 @@
 package constant
 
 const (
-	AliyunGroup           = "aliyun"                  //阿里云设置组
 	AliyunAccessKey       = "aliyun.access.key"       //阿里云AliyunAccessKeyId
 	AliyunAccessSecret    = "aliyun.access.secret"    //阿里云AliyunAccessKeySecret
 	AliyunOssEndPoint     = "aliyun.oss.endPoint"     //阿里云ossEndPoint

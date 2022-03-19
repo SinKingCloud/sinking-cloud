@@ -54,12 +54,13 @@ func loadSystemsRoute(s *sinking_web.Engine) {
 	user.POST("/create", sinking_server.HandleFunc(userHandle.Create)) //用户添加
 	user.POST("/delete", sinking_server.HandleFunc(userHandle.Delete)) //用户删除
 	//配置管理
-	configHandle := &systems.ControllerUser{}
+	configHandle := &systems.ControllerConfig{}
 	config := r.Group("/config")
-	config.GET("/list", sinking_server.HandleFunc(configHandle.List))      //配置列表
-	config.POST("/update", sinking_server.HandleFunc(configHandle.Update)) //配置更新
-	config.POST("/create", sinking_server.HandleFunc(configHandle.Create)) //配置添加
-	config.POST("/delete", sinking_server.HandleFunc(configHandle.Delete)) //配置删除
+	config.GET("/list", sinking_server.HandleFunc(configHandle.List))        //配置列表
+	config.POST("/update", sinking_server.HandleFunc(configHandle.Update))   //配置更新
+	config.POST("/updates", sinking_server.HandleFunc(configHandle.Updates)) //配置更新(批量)
+	config.POST("/create", sinking_server.HandleFunc(configHandle.Create))   //配置添加
+	config.POST("/delete", sinking_server.HandleFunc(configHandle.Delete))   //配置删除
 	//日志管理
 	logHandle := &systems.ControllerLog{}
 	log := r.Group("/log")

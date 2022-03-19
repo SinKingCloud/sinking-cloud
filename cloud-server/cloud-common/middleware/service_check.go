@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
@@ -11,7 +12,7 @@ import (
 func ServiceCheck() sinking_web.HandlerFunc {
 	return sinking_server.HandleFunc(func(c *sinking_server.Context) {
 		requestId := c.Request.Header.Get(util2.RequestId)
-		if requestId == "" || c.Request.Header.Get(util.Conf.GetString("register.tokenKey")) != util.Conf.GetString("register.tokenValue") {
+		if requestId == "" || c.Request.Header.Get(util.Conf.GetString(config.ConfRegisterTokenKey)) != util.Conf.GetString(config.ConfRegisterTokenValue) {
 			c.ServiceError("微服务安全认证失败")
 			c.Abort()
 		} else {

@@ -12,6 +12,7 @@ export default (): React.ReactNode => {
   const {initialState, setInitialState} = useModel('@@initialState');
   // @ts-ignore
   const {currentUser} = initialState;
+  const [isUploadAvatarLoading, setIsUploadAvatarLoading] = useState(false);
   /**
    * 获取当前用户信息
    */
@@ -70,6 +71,7 @@ export default (): React.ReactNode => {
                 <Space direction="vertical" size={"small"}>
                   <Avatar style={{width: "150px", height: "150px"}} src={
                     <Image
+                      style={{width: "150px", height: "150px"}}
                       src={currentUser?.avatar || "https://q1.qlogo.cn/g?b=qq&nk=10086&s=100&t=20190225"}/>
                   }/>
                   <Alert message={currentUser?.nick_name} style={{fontWeight: "bolder", fontSize: "20px"}} type="info"/>
@@ -82,18 +84,20 @@ export default (): React.ReactNode => {
                       const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
                       if (!isJpgOrPng) {
                         message.error('请上传图片格式文件');
-                        return;
+                        return false;
                       }
                       const isLt2M = file.size / 1024 / 1024 < 2;
                       if (!isLt2M) {
                         message.error('图片不能大于2MB');
-                        return;
+                        return false;
                       }
                       return isJpgOrPng && isLt2M;
                     }} onChange={(info: any) => {
                       if (info.file.status === 'done') {
+                        setIsUploadAvatarLoading(true);
                         const url = info.file.response.data.url;
                         updateInfo({avatar: url}).then(async (r) => {
+                          setIsUploadAvatarLoading(false);
                           if (r.code != 200) {
                             message.error(r.message || "请求失败").then()
                           } else {
@@ -105,7 +109,7 @@ export default (): React.ReactNode => {
                         message.error(`文件上传失败`);
                       }
                     }}>
-                      <Button>
+                      <Button loading={isUploadAvatarLoading}>
                         <UploadOutlined/> 上传头像
                       </Button>
                     </Upload>
@@ -126,13 +130,19 @@ export default (): React.ReactNode => {
                   })
                 }}>
                   <ProFormText width="md" label="账号">
-                    <Input type="text" value="admin" style={{maxWidth: 120}} disabled={true}/>
-                    <Button style={{marginLeft: "5px", padding: "0 9px 0 9px"}} onClick={() => {
-                      passwordForm.resetFields();
-                      setIsPasswordModalVisible(true);
-                    }}>
-                      <LockOutlined/>修改密码
-                    </Button>
+                    <Row gutter={6} wrap={false}>
+                      <Col flex={5}>
+                        <Input type="text" value={currentUser?.account} disabled={true}/>
+                      </Col>
+                      <Col flex={7}>
+                        <Button onClick={() => {
+                          passwordForm.resetFields();
+                          setIsPasswordModalVisible(true);
+                        }}>
+                          <LockOutlined/>修改密码
+                        </Button>
+                      </Col>
+                    </Row>
                   </ProFormText>
                   <ProFormText
                     width="md"

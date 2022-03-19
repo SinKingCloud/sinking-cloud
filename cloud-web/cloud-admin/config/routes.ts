@@ -79,9 +79,11 @@
     ],
   },
   {
+    name: "账号管理",
     path: '/person',
     routes: [
       {
+        name: "账号资料",
         path: 'setting',
         component: './person/setting',
       },

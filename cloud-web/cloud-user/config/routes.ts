@@ -1,0 +1,122 @@
+﻿export default [
+  {
+    path: '/user',
+    layout: false,
+    routes: [
+      {
+        path: '/user',
+        routes: [
+          {
+            name: '账户登录',
+            path: '/user/login',
+            component: './user/login',
+          },
+        ],
+      },
+      {
+        component: './404',
+      },
+    ],
+  },
+  {
+    name: "数据概览",
+    icon: "HomeOutlined",
+    path: '/index',
+    routes: [
+      {
+        name: "控制台",
+        path: 'index',
+        component: './index/index/welcome',
+      },
+      {
+        redirect: '/index/index',
+      },
+    ],
+  },
+  {
+    name: "应用管理",
+    icon: "AppstoreAddOutlined",
+    path: '/app',
+    routes: [
+      {
+        name: "云端挂机",
+        path: 'uin',
+        routes: [
+          {
+            name: "挂机概览",
+            path: 'home',
+            component: './index/index/welcome',
+          },
+          {
+            name: "挂机列表",
+            path: 'list',
+            component: './index/index/welcome',
+          },
+          {
+            name: "开发文档",
+            path: 'doc',
+            component: './index/index/welcome',
+          },
+          {
+            redirect: '/index/index',
+          },
+        ],
+      },
+      {
+        redirect: '/index/index',
+      },
+    ],
+  },
+  {
+    name: "财务管理",
+    icon: "DollarCircleOutlined",
+    path: '/pay',
+    routes: [
+      {
+        name: "财务充值",
+        path: 'recharge',
+        component: './index/index/welcome',
+      },
+      {
+        name: "财务明细",
+        path: 'log',
+        component: './index/index/welcome',
+      },
+      {
+        redirect: '/index/index',
+      },
+    ],
+  },
+  {
+    name: "账户管理",
+    icon: "UserOutlined",
+    path: '/person',
+    routes: [
+      {
+        name: "资料管理",
+        path: 'setting',
+        component: './person/setting',
+      },
+      {
+        name: "实名认证",
+        path: 'real',
+        component: './index/index/welcome',
+      },
+      {
+        name: "操作日志",
+        path: 'log',
+        component: './index/index/welcome',
+      },
+      {
+        redirect: '/index/index',
+      },
+    ],
+  },
+  {
+    path: '/',
+    redirect: '/index/index',
+  },
+  {
+    component: './404',
+  },
+];

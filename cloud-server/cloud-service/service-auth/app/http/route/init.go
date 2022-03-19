@@ -45,6 +45,8 @@ func Init() {
 	loadCommonMiddleware(r)
 	//加载路由
 	loadRoute(r)
+	//加载Rpc
+	loadRpc(r)
 	//启动http server
 	err := r.Run("0.0.0.0:" + util.Conf.GetString(config.ConfApplicationPort))
 	if err != nil {

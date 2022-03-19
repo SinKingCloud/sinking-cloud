@@ -21,7 +21,7 @@ func loadRoute(s *sinking_web.Engine) {
 func loadWebRoute(s *sinking_web.Engine) {
 	r := s.Group("/web")
 	handle := &web.ControllerWeb{}
-	r.GET("/login", sinking_server.HandleFunc(handle.Login))
+	r.POST("/login", sinking_server.HandleFunc(handle.Login))
 }
 
 // loadWebRoute 加载后台授权路由
@@ -36,6 +36,7 @@ func loadVerifyRoute(s *sinking_web.Engine) {
 	r := s.Group("/verify")
 	handle := &verify.ControllerVerify{}
 	r.GET("/code", sinking_server.HandleFunc(handle.Code))
+	r.POST("/sms", sinking_server.HandleFunc(handle.Sms))
 }
 
 // loadUploadRoute 加载上传路由

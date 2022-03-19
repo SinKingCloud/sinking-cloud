@@ -22,6 +22,11 @@ func GetSystemConfigServiceIns() *systemConfigService {
 	return systemConfigObj
 }
 
+// ClearCache 清理缓存
+func (systemConfigService) ClearCache() {
+	util.Cache.Delete(util2.CacheNameWithSystemConfig)
+}
+
 // SelectAllWithMap 获取map类型配置
 func (systemConfigService) SelectAllWithMap() map[string]string {
 	var configs []*model.SystemConfig

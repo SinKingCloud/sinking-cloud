@@ -1,0 +1,77 @@
+package rpc
+
+import (
+	"encoding/json"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
+	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go"
+)
+
+type rpc struct {
+	groupName string
+	name      string
+	res       string
+	err       error
+	requestId string
+}
+
+type Response struct {
+	Code      int         `json:"code"`
+	Message   string      `json:"message"`
+	RequestId string      `json:"request_id"`
+	Data      interface{} `json:"data"`
+}
+
+type Param map[string]interface{}
+
+// New 新建调用实例
+func New(groupName string, name string) *rpc {
+	return &rpc{
+		groupName: groupName,
+		name:      name,
+	}
+}
+
+// Call 调用指定地址
+func (r *rpc) Call(url string, param *Param) *rpc {
+	r.requestId = str.GetSnowWorkIns().GetUuid()
+	r.res, r.err = util.Consul.Rpc(r.groupName, r.name).Method("POST").Header(map[string]string{
+		util2.RequestId: r.requestId,
+		util.Conf.GetString(config.ConfRegisterTokenKey): util.Conf.GetString(config.ConfRegisterTokenValue),
+		"sinking_rpc_token": util.Conf.GetString(config.ConfRegisterTokenKey),
+	}).Timeout(5).ReTry(5).Call(url, &sinking_sdk_go.Param{
+		"data":  param,
+		"group": util.Conf.GetString(config.ConfApplicationGroup),
+		"name":  util.Conf.GetString(config.ConfApplicationName),
+	})
+	return r
+}
+
+// Body 获取结果
+func (r *rpc) Body() (string, error) {
+	return r.res, r.err
+}
+
+// Unmarshal 获取结果
+func (r *rpc) Unmarshal(v interface{}) (interface{}, error) {
+	if r.err != nil {
+		return nil, r.err
+	}
+	err := json.Unmarshal([]byte(r.res), v)
+	if err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// Response 获取响应对象
+func (r *rpc) Response() (*Response, error) {
+	var response Response
+	data, err := r.Unmarshal(&response)
+	if err != nil {
+		return nil, err
+	}
+	return data.(*Response), nil
+}

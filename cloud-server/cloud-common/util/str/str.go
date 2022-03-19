@@ -11,7 +11,9 @@ import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"io"
+	rand2 "math/rand"
 	"strings"
+	"time"
 )
 
 // StringTool 字符串工具
@@ -22,6 +24,11 @@ type StringTool struct {
 // NetStringTool 实例化工具类
 func NetStringTool(str string) *StringTool {
 	return &StringTool{string: str}
+}
+
+// NetStrTool 实例化工具类
+func NetStrTool() *StringTool {
+	return &StringTool{}
 }
 
 // GetBetween 获取文本中间字符
@@ -141,4 +148,26 @@ func (stringTool StringTool) CheckPassword(password string) bool {
 	} else {
 		return true
 	}
+}
+
+// GenValidateCode 生成指定位数验证码
+func (stringTool StringTool) GenValidateCode(width int) string {
+	numeric := [10]byte{1, 2, 3, 4, 5, 6, 7, 8, 9}
+	r := len(numeric)
+	rand2.Seed(time.Now().UnixNano())
+	var sb strings.Builder
+	for i := 0; i < width; i++ {
+		_, err := fmt.Fprintf(&sb, "%d", numeric[rand2.Intn(r)])
+		if err != nil {
+			return ""
+		}
+	}
+	return sb.String()
+}
+
+func (stringTool StringTool) RandInt64(min, max int64) int64 {
+	if min >= max || min == 0 || max == 0 {
+		return max
+	}
+	return rand2.Int63n(max-min) + min
 }

@@ -7,7 +7,7 @@ import (
 
 const (
 	prefix    = "Captcha_"
-	cacheTime = 90 * 1000
+	cacheTime = 600 * 1000
 )
 
 // Get 获取验证码
