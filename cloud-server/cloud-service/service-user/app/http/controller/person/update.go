@@ -98,7 +98,7 @@ func (ControllerPerson) Phone(c *sinking_server.Context) {
 	if err := user.GetIns().UpdateById(c.GetWebUserInfo().Id,
 		map[string]interface{}{"phone": form.Phone}); err == nil {
 		service.GetWebUserServiceIns().ClearCache(u.Id)
-		c.Success("修改密码成功")
+		c.Success("修改绑定手机号成功")
 	} else {
 		c.Error("修改密码失败")
 	}

@@ -1,6 +1,6 @@
 package constant
 
 const (
-	CacheNameWithSmsPhone = "CacheNameWithSmsPhone_" //手机验证码储存名称
-	CacheTimeWithSmsPhone = 600 * 1000               //手机验证码储存时间
+	CacheNameWithSmsPhone = "SmsPhone_" //手机验证码储存名称
+	CacheTimeWithSmsPhone = 600 * 1000  //手机验证码储存时间
 )
