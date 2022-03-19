@@ -1,6 +1,9 @@
-package constant
+package config
 
 const (
+	SystemGateway = "system.gateway" //服务端地址
+	SystemUrl     = "system.url"     //前台地址
+
 	AliyunAccessKey       = "aliyun.access.key"       //阿里云AliyunAccessKeyId
 	AliyunAccessSecret    = "aliyun.access.secret"    //阿里云AliyunAccessKeySecret
 	AliyunOssEndPoint     = "aliyun.oss.endPoint"     //阿里云ossEndPoint
@@ -11,4 +14,5 @@ const (
 	AliyunOssAllowExt     = "aliyun.oss.allowExt"     //阿里云oss允许上传的文件类型
 	AliyunSmsSignName     = "aliyun.sms.signName"     //阿里云smsSignName
 	AliyunSmsTemplateCode = "aliyun.sms.TemplateCode" //阿里云smsTemplateCode
+	AliyunAuthSceneId     = "aliyun.auth.sceneId"     //阿里云实名认证场景ID
 )

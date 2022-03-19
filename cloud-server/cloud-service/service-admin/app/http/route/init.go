@@ -11,7 +11,7 @@ import (
 
 // loadCommonMiddleware 加载全局中间件
 func loadCommonMiddleware(s *sinking_web.Engine) {
-	s.Use(middleware.ServiceCheck(), middleware.LoadConfig(), middleware.AuthAdmin(), middleware2.Rbac())
+	s.Use(middleware.ServiceCheck(), middleware.AuthAdmin(), middleware2.Rbac())
 }
 
 // loadErrorHandle 设置错误回调

@@ -12,8 +12,6 @@ type SystemUserConfig struct {
 	UserId     int          `gorm:"column:user_id" json:"user_id"`
 	Key        string       `gorm:"column:key" json:"key"`
 	Value      string       `gorm:"column:value" json:"value"`
-	Describe   string       `gorm:"column:describe" json:"describe"`
-	Status     int          `gorm:"column:status" json:"status"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }

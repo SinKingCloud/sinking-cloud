@@ -2,6 +2,7 @@ package route
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/callback"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/system"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/upload"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/verify"
@@ -15,6 +16,7 @@ func loadRoute(s *sinking_web.Engine) {
 	loadSystemRoute(s)
 	loadVerifyRoute(s)
 	loadUploadRoute(s)
+	loadCallbackRoute(s)
 }
 
 // loadWebRoute 加载网站授权路由
@@ -44,4 +46,11 @@ func loadUploadRoute(s *sinking_web.Engine) {
 	r := s.Group("/upload")
 	handle := &upload.ControllerUpload{}
 	r.POST("/file", sinking_server.HandleFunc(handle.File))
+}
+
+// loadCallbackRoute 加载回调路由
+func loadCallbackRoute(s *sinking_web.Engine) {
+	r := s.Group("/callback")
+	handle := &callback.ControllerCallback{}
+	r.GET("/face", sinking_server.HandleFunc(handle.Face))
 }

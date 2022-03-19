@@ -11,7 +11,7 @@ import (
 func RpcCheck() sinking_web.HandlerFunc {
 	return sinking_server.HandleFunc(func(c *sinking_server.Context) {
 		if c.Request.Header.Get("sinking_rpc_token") != util.Conf.GetString(config.ConfRegisterTokenKey) {
-			c.ServiceError("微服务调用失败")
+			c.ServiceError("RPC安全认证失败")
 			c.Abort()
 		} else {
 			c.Next()

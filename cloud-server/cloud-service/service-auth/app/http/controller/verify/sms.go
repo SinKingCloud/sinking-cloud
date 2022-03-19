@@ -1,6 +1,8 @@
 package verify
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/config"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/aliyun"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
@@ -25,13 +27,14 @@ func (ControllerVerify) Sms(c *sinking_server.Context) {
 		c.Error("验证码验证失败请重试")
 		return
 	}
+	configs := service.GetSystemConfigServiceIns().GetByCache(false)
 	code := strconv.FormatInt(str.NetStrTool().RandInt64(100000, 999999), 10)
 	if aliyun.Sms.Send(
-		c.GetSystemConfig(constant.AliyunAccessKey).(string),
-		c.GetSystemConfig(constant.AliyunAccessSecret).(string),
+		configs[config.AliyunAccessKey],
+		configs[config.AliyunAccessSecret],
 		form.Phone,
-		c.GetSystemConfig(constant.AliyunSmsSignName).(string),
-		c.GetSystemConfig(constant.AliyunSmsTemplateCode).(string),
+		configs[config.AliyunSmsSignName],
+		configs[config.AliyunSmsTemplateCode],
 		"{\"code\":"+code+"}",
 	) {
 		util.Cache.SetWithExpire(constant.CacheNameWithSmsPhone+form.Phone, code, constant.CacheTimeWithSmsPhone)

@@ -171,3 +171,19 @@ func (stringTool StringTool) RandInt64(min, max int64) int64 {
 	}
 	return rand2.Int63n(max-min) + min
 }
+
+// Show 显示首尾数据字符个数
+func (stringTool StringTool) Show(left int, right int, str string) string {
+	nameRune := []rune(stringTool.string)
+	lens := len(nameRune)
+	leftStr := nameRune[0:left]
+	rightStr := nameRune[lens-right : lens]
+	if len(leftStr)+len(rightStr) >= lens {
+		return string(leftStr) + string(rightStr)
+	}
+	temp := ""
+	for i := 0; i < lens-len(leftStr)-len(rightStr); i++ {
+		temp += str
+	}
+	return string(leftStr) + temp + string(rightStr)
+}

@@ -15,8 +15,10 @@ func loadRoute(s *sinking_web.Engine) {
 func loadPersonRoute(s *sinking_web.Engine) {
 	r := s.Group("/person")
 	handle := &person.ControllerPerson{}
-	r.GET("/info", sinking_server.HandleFunc(handle.Info))
-	r.POST("/update/info", sinking_server.HandleFunc(handle.Update))
-	r.POST("/update/password", sinking_server.HandleFunc(handle.Password))
-	r.POST("/update/phone", sinking_server.HandleFunc(handle.Phone))
+	r.GET("/info", sinking_server.HandleFunc(handle.Info))                 //个人信息
+	r.POST("/update/info", sinking_server.HandleFunc(handle.Update))       //更新资料
+	r.POST("/update/password", sinking_server.HandleFunc(handle.Password)) //修改密码
+	r.POST("/update/phone", sinking_server.HandleFunc(handle.Phone))       //修改手机
+	r.GET("/auth/info", sinking_server.HandleFunc(handle.AuthInfo))        //实名信息
+	r.POST("/auth/init", sinking_server.HandleFunc(handle.AuthInit))       //提交实名
 }

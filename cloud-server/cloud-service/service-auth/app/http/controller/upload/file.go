@@ -1,10 +1,11 @@
 package upload
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/config"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/aliyun"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/constant"
 	"path"
 	"strconv"
 	"strings"
@@ -19,7 +20,8 @@ func (ControllerUpload) File(c *sinking_server.Context) {
 		return
 	}
 	ext := path.Ext(file.Filename)
-	if !strings.Contains(c.GetSystemConfig(constant.AliyunOssAllowExt).(string), ext) {
+	configs := service.GetSystemConfigServiceIns().GetByCache(false)
+	if !strings.Contains(configs[config.AliyunOssAllowExt], ext) {
 		c.Error("该文件类型不允许上传")
 		return
 	}
@@ -34,18 +36,18 @@ func (ControllerUpload) File(c *sinking_server.Context) {
 		c.Error("读取文件失败")
 		return
 	}
-	maxSize, err := strconv.Atoi(c.GetSystemConfig(constant.AliyunOssMaxSize).(string))
+	maxSize, err := strconv.Atoi(configs[config.AliyunOssMaxSize])
 	if err != nil || count/1000 > maxSize {
 		c.Error("超过最大上传文件大小")
 		return
 	}
 	hash := str.NetByteTool(data).Md5()
-	savePath := c.GetSystemConfig(constant.AliyunOssSavePath).(string) + "/" + time.Now().Format("20060102") + "/" + hash + ext
+	savePath := configs[config.AliyunOssSavePath] + "/" + time.Now().Format("20060102") + "/" + hash + ext
 	if aliyun.Oss.Upload(
-		c.GetSystemConfig(constant.AliyunAccessKey).(string),
-		c.GetSystemConfig(constant.AliyunAccessSecret).(string),
-		c.GetSystemConfig(constant.AliyunOssEndPoint).(string),
-		c.GetSystemConfig(constant.AliyunOssBuckName).(string),
+		configs[config.AliyunAccessKey],
+		configs[config.AliyunAccessSecret],
+		configs[config.AliyunOssEndPoint],
+		configs[config.AliyunOssBuckName],
 		data,
 		savePath,
 	) {
@@ -58,7 +60,7 @@ func (ControllerUpload) File(c *sinking_server.Context) {
 		}
 		c.SuccessWithData("上传文件成功", &File{
 			Name:       file.Filename,
-			Url:        c.GetSystemConfig(constant.AliyunOssDomain).(string) + savePath,
+			Url:        configs[config.AliyunOssDomain] + savePath,
 			Hash:       hash,
 			Extensions: ext,
 			Size:       count,

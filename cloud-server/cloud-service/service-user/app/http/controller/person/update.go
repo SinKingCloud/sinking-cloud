@@ -14,7 +14,7 @@ func (ControllerPerson) Update(c *sinking_server.Context) {
 	type Form struct {
 		Account  string `json:"account" default:"" validate:"omitempty,min=5,max=25" label:"账号"`
 		Email    string `json:"email" default:"" validate:"omitempty,email" label:"邮箱"`
-		NickName string `json:"nick_name" default:"" validate:"omitempty,max=50" label:"用户昵称"`
+		NickName string `json:"nick_name" default:"" validate:"omitempty,min=1,max=15" label:"用户昵称"`
 		Avatar   string `json:"avatar" default:"" validate:"omitempty,uri" label:"用户头像"`
 	}
 	form := &Form{}
