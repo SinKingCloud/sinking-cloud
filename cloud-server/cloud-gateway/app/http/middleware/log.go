@@ -53,10 +53,11 @@ func Log() sinking_web.HandlerFunc {
 		var body []byte
 		if !strings.Contains(c.Request.Header.Get("Content-Type"), "multipart/form-data") {
 			ioBody = c.Request.Body
-			body, err := ioutil.ReadAll(ioBody)
+			temp, err := ioutil.ReadAll(ioBody)
 			if err != nil {
 				return
 			}
+			body = temp
 			//放回body，防止后面读取不到
 			c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 		}
@@ -73,6 +74,7 @@ func Log() sinking_web.HandlerFunc {
 		if responseHeader.Get("Content-Type") == "application/json" {
 			responseBody = writer.body.String()
 		}
+
 		//拼接日志
 		log := &model.SystemLogRequest{
 			Id:             strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10),
