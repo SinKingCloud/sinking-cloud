@@ -23,15 +23,20 @@ func GetIns() *service {
 
 // Check 判断验证码是否正确
 func (*service) Check(phone string, code string) bool {
-	type Data struct {
-		Code      int         `json:"code"`
-		Message   string      `json:"message"`
-		RequestId string      `json:"request_id"`
-		Data      interface{} `json:"data"`
-	}
 	client, err := rpc.New(group.CloudService, name.ServiceAuth).Call("/rpc/sms/check", &rpc.Param{
 		"phone": phone,
 		"code":  code,
+	}).Response()
+	if err != nil {
+		return false
+	}
+	return client.Data.(bool)
+}
+
+// Send 发送短信验证码
+func (*service) Send(phone string) bool {
+	client, err := rpc.New(group.CloudService, name.ServiceAuth).Call("/rpc/sms/send", &rpc.Param{
+		"phone": phone,
 	}).Response()
 	if err != nil {
 		return false

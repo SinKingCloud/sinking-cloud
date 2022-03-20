@@ -14,7 +14,7 @@ type Info struct {
 	NickName  string       `json:"nick_name"`
 	Avatar    string       `json:"avatar"`
 	Email     string       `json:"email"`
-	Phone     int64        `json:"phone"`
+	Phone     string       `json:"phone"`
 	LoginIp   string       `json:"login_ip"`
 	LoginTime str.DateTime `json:"login_time"`
 }

@@ -11,10 +11,14 @@ import (
 func loadRpc(s *sinking_web.Engine) {
 	r := s.Group("/rpc")
 	r.Use(middleware.RpcCheck())
-	registerSmsService(r)
+	registerService(r)
 }
 
-func registerSmsService(g *sinking_web.RouterGroup) {
+func registerService(g *sinking_web.RouterGroup) {
 	r := g.Group("/sms")
 	r.POST("/check", sinking_server.HandleFunc(rpc.Sms.Check))
+	r.POST("/send", sinking_server.HandleFunc(rpc.Sms.Send))
+
+	r2 := g.Group("/captcha")
+	r2.POST("/check", sinking_server.HandleFunc(rpc.Captcha.Check))
 }

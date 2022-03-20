@@ -12,3 +12,8 @@ func (ControllerSms) Check(c *sinking_server.Context) {
 	data := c.GetRpcData()
 	c.SuccessWithData("success", auth.SmsCheck(data["phone"].(string), data["code"].(string)))
 }
+
+func (ControllerSms) Send(c *sinking_server.Context) {
+	data := c.GetRpcData()
+	c.SuccessWithData("success", auth.SmsSend(data["phone"].(string)))
+}

@@ -47,7 +47,7 @@ export default (): React.ReactNode => {
         setIsPasswordModalVisible(false);
         passwordForm.resetFields();
       }}>
-        <SmsVerify form={passwordForm} phone={currentUser?.phone} onFinish={async (values) => {
+        <SmsVerify form={passwordForm} onFinish={async (values) => {
           setIsPasswordModalLoading(true);
           updatePassword(values).then((r) => {
             setIsPasswordModalLoading(false);

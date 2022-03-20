@@ -7,7 +7,7 @@ import {sendSms} from "@/services/common/sms";
 export type SmsVerifyProps = {
   onFinish: (value?: any) => Promise<boolean | void>;
   form: FormInstance<any>;
-  phone: string;
+  phone?: string;
   topNodes?: React.ReactNode;
   bottomNodes?: React.ReactNode;
 };
@@ -39,7 +39,7 @@ const SmsVerify: React.FC<SmsVerifyProps> = (props) => {
       e.target.innerHTML = `${time}秒后重新获取`;
       // eslint-disable-next-line no-plusplus
       time--;
-      if (time <= 0 || e == undefined) {
+      if (time <= 0) {
         getCaptchaUrl();
         setIsCaptchaHidden(false);
         setSendCodeDisabled(false);
@@ -68,7 +68,7 @@ const SmsVerify: React.FC<SmsVerifyProps> = (props) => {
             </Col>
             <Col flex={2}>
               <Button disabled={sendCodeDisabled} loading={isSmsSendLoading} onClick={(e) => {
-                if (!/^[1][3,4,5,6,7,8,9][0-9]{9}$/.test(phone)) {
+                if (phone != undefined && phone != "" && !/^[1][3,4,5,6,7,8,9][0-9]{9}$/.test(phone)) {
                   message.error("请输入正确的手机号码")
                   return;
                 }
@@ -78,7 +78,7 @@ const SmsVerify: React.FC<SmsVerifyProps> = (props) => {
                   return;
                 }
                 setIsSmsSendLoading(true);
-                sendSms({phone: phone.toString(), token: token, captcha: captcha}).then((r) => {
+                sendSms({phone: phone?.toString() || "", token: token, captcha: captcha}).then((r) => {
                   setIsSmsSendLoading(false);
                   changeCaptcha();
                   if (r.code != 200) {

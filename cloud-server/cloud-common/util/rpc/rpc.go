@@ -40,7 +40,7 @@ func (r *rpc) Call(url string, param *Param) *rpc {
 	r.res, r.err = util.Consul.Rpc(r.groupName, r.name).Method("POST").Header(map[string]string{
 		util2.RequestId: r.requestId,
 		util.Conf.GetString(config.ConfRegisterTokenKey): util.Conf.GetString(config.ConfRegisterTokenValue),
-		"sinking_rpc_token": util.Conf.GetString(config.ConfRegisterTokenKey),
+		util2.RpcHeaderTokenName:                         util.Conf.GetString(config.ConfRegisterTokenValue),
 	}).Timeout(5).ReTry(5).Call(url, &sinking_sdk_go.Param{
 		"data":  param,
 		"group": util.Conf.GetString(config.ConfApplicationGroup),
