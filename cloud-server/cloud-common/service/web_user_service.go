@@ -5,7 +5,10 @@ import (
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"gorm.io/gorm"
 	"strconv"
+	"time"
 )
 
 // webUserService 单例对象
@@ -61,5 +64,18 @@ func (w webUserService) FindByIdWithCache(id int, refresh bool) (user *model.Web
 			}
 		}
 	}
+	return
+}
+
+// Money 用户余额调整(根据用户ID)
+func (webUserService) Money(id int, money string, mod int) (err error) {
+	l := "+"
+	if mod == 0 {
+		l = "-"
+	}
+	err = util.Database.Db.Model(&model.WebUser{Id: id}).Updates(map[string]interface{}{
+		"money":       gorm.Expr("`money`" + l + money),
+		"update_time": str.DateTime(time.Now()),
+	}).Error
 	return
 }

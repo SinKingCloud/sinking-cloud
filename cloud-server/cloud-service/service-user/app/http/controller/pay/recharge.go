@@ -2,8 +2,11 @@ package pay
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/config"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/order"
 	"strconv"
 )
 
@@ -23,6 +26,20 @@ func (ControllerPay) Recharge(c *sinking_server.Context) {
 		c.Error("系统限制最低充值" + strconv.Itoa(min) + "元")
 		return
 	}
-
-	c.Success("下单成功")
+	//创建订单
+	tradeNo := str.GetSnowWorkIns().GetId()
+	err := order.GetIns().Create(&model.WebUserOrder{
+		UserId:    c.GetWebUserInfo().Id,
+		PayType:   form.Type,
+		OrderType: 0,
+		Money:     float64(form.Money),
+		TradeNo:   strconv.FormatInt(tradeNo, 10),
+		Name:      "账户余额充值",
+		Status:    0,
+	})
+	if err == nil {
+		c.SuccessWithData("创建订单成功", tradeNo)
+	} else {
+		c.Error("创建订单失败")
+	}
 }

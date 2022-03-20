@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211125053718-b26199caff3f
+	github.com/go-pay/gopay v1.5.74
 )
 
 require (

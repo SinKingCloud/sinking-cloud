@@ -25,6 +25,7 @@ func loadPersonRoute(s *sinking_web.Engine) {
 	r.POST("/update/phone", sinking_server.HandleFunc(handle.Phone))       //修改手机
 	r.GET("/auth/info", sinking_server.HandleFunc(handle.AuthInfo))        //实名信息
 	r.POST("/auth/init", sinking_server.HandleFunc(handle.AuthInit))       //提交实名
+	r.GET("/log", sinking_server.HandleFunc(handle.Log))                   //操作记录
 }
 
 // loadWebRoute 加载验证器路由

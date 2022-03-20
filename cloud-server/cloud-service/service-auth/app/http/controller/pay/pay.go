@@ -1,4 +1,39 @@
 package pay
 
+import (
+	"context"
+	"errors"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/config"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/pay"
+	"github.com/go-pay/gopay"
+)
+
 type ControllerPay struct {
+}
+
+// Alipay 支付宝支付
+func (ControllerPay) Alipay(tradeNo string, money string, name string) (url string, err error) {
+	configs := service.GetSystemConfigServiceIns().GetByCache(false)
+	client, err := pay.NewAliPay(configs[config.PayAlipayAppid], configs[config.PayAlipayPrivateKey], true)
+	if err != nil {
+		err = errors.New("初始化支付请求失败")
+		return
+	}
+	ctx := context.Background()
+	client.SetReturnUrl(configs[config.SystemUrl] + "/pay/recharge").
+		SetNotifyUrl(configs[config.SystemGateway] + "/auth/callback/alipay")
+	bm := make(gopay.BodyMap)
+	bm.Set("subject", name).
+		Set("out_trade_no", tradeNo).
+		Set("total_amount", money).
+		Set("product_code", "FAST_INSTANT_TRADE_PAY").
+		Set("timeout_express", "1c")
+	url, err = client.TradePagePay(ctx, bm)
+	if err != nil {
+		err = errors.New("请求支付接口失败")
+		return
+	}
+	ctx.Done()
+	return
 }
