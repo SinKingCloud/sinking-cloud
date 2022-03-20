@@ -1,4 +1,4 @@
-package sinking
+package producer
 
 import (
 	"encoding/json"
@@ -6,39 +6,40 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 )
 
 // logRequestProducerIns 生产者单例
-var logRequestProducerIns queue.MqProducer
+var logProducerIns queue.MqProducer
 
 // logSendProducerTask 异步发送
-var logSendProducerTask chan *model.SystemLogRequest
+var logSendProducerTask chan *model.WebUserLog
 
-// NewLogRequestProducer 实例化logRequest
-func NewLogRequestProducer() *logRequest {
-	return &logRequest{}
+// NewWebUserLogProducer 实例化log
+func NewWebUserLogProducer() *log {
+	return &log{}
 }
 
-// logRequest 结构
-type logRequest struct {
-	log *model.SystemLogRequest
+// log 结构
+type log struct {
+	log *model.WebUserLog
 }
 
 // Build 构建消息
-func (l *logRequest) Build(request *model.SystemLogRequest) *logRequest {
+func (l *log) Build(request *model.WebUserLog) *log {
 	l.log = request
 	return l
 }
 
 // run 异步执行
-func (l *logRequest) run() {
-	go func(tasks chan *model.SystemLogRequest) {
+func (l *log) run() {
+	go func(tasks chan *model.WebUserLog) {
 		for task := range tasks {
 			bytes, err := json.Marshal(task)
 			if err != nil {
 				continue
 			}
-			_, err = logRequestProducerIns.SendByteMsg(queue3.LogRequestTopic, "", bytes)
+			_, err = logProducerIns.SendByteMsg(queue3.WebLogTopic, "", bytes)
 			if err != nil {
 				util.Log.Println(err)
 				return
@@ -48,10 +49,10 @@ func (l *logRequest) run() {
 }
 
 // Send 发送消息
-func (l *logRequest) Send() {
-	if logRequestProducerIns == nil {
-		logRequestProducerIns = GetRocketProducerServer(queue3.LogRequestGroup, 1)
-		logSendProducerTask = make(chan *model.SystemLogRequest)
+func (l *log) Send() {
+	if logProducerIns == nil {
+		logProducerIns = sinking.GetRocketProducerServer(queue3.WebLogGroup, 1)
+		logSendProducerTask = make(chan *model.WebUserLog)
 		l.run()
 	}
 	logSendProducerTask <- l.log

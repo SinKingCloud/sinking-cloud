@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// SystemLog 系统角色表
+// SystemLog 系统日志表
 type SystemLog struct {
 	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	UserId     int          `gorm:"column:user_id" json:"user_id"`

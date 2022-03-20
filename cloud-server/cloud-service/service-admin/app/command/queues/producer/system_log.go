@@ -39,7 +39,7 @@ func (l *log) run() {
 			if err != nil {
 				continue
 			}
-			_, err = logProducerIns.SendByteMsg(queue3.LogTopic, "", bytes)
+			_, err = logProducerIns.SendByteMsg(queue3.SystemLogTopic, "", bytes)
 			if err != nil {
 				util.Log.Println(err)
 				return
@@ -51,7 +51,7 @@ func (l *log) run() {
 // Send 发送消息
 func (l *log) Send() {
 	if logProducerIns == nil {
-		logProducerIns = sinking.GetRocketProducerServer(queue3.LogGroup, 1)
+		logProducerIns = sinking.GetRocketProducerServer(queue3.SystemLogGroup, 1)
 		logSendProducerTask = make(chan *model.SystemLog)
 		l.run()
 	}

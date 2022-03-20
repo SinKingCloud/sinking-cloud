@@ -10,7 +10,7 @@ import (
 // UpdateById 通过ID更新
 func (s *service) UpdateById(id int, data map[string]interface{}) (err error) {
 	data["update_time"] = str.DateTime(time.Now())
-	err = util.Database.Db.Debug().Model(&model.SystemRole{}).Where("`id` = ? ", id).Updates(data).Error
+	err = util.Database.Db.Model(&model.SystemRole{}).Where("`id` = ? ", id).Updates(data).Error
 	return
 }
 

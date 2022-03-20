@@ -3,7 +3,6 @@ package middleware
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/rbac"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
@@ -18,32 +17,7 @@ func Rbac() sinking_web.HandlerFunc {
 			c.Next()
 			return
 		}
-		if r, d := rbac.GetIns().CheckAccessByCache(userInfo.RoleId, c.Request.URL.Path, c.Request.Method); r {
-			if d != nil {
-				types := 0
-				switch d.Method {
-				case "GET":
-					types = 0
-					break
-				case "POST":
-					types = 1
-					break
-				case "UPDATE":
-					types = 2
-					break
-				case "DELETE":
-					types = 3
-					break
-				}
-				log.GetIns().CreateByQueue(
-					c.GetSystemUserInfo().Id,
-					c.GetRequestId(),
-					c.GetRequestIp(),
-					types,
-					d.Name,
-					d.Describe,
-				)
-			}
+		if r := rbac.GetIns().CheckAccessByCache(userInfo.RoleId, c.Request.URL.Path, c.Request.Method); r {
 			c.Next()
 		} else {
 			c.NotAllow("您的帐户暂无权限操作", nil)

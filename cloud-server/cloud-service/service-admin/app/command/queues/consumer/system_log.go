@@ -22,13 +22,13 @@ type log struct {
 
 func (l *log) Listen() {
 	if logIns == nil {
-		logIns = sinking.GetRocketConsumerServer(queue3.LogGroup, false)
+		logIns = sinking.GetRocketConsumerServer(queue3.SystemLogGroup, false)
 	}
-	err := logIns.ListenReceiveMsgDo(queue3.LogTopic, "", func(mqMsg queue.MqMsg) {
+	err := logIns.ListenReceiveMsgDo(queue3.SystemLogTopic, "", func(mqMsg queue.MqMsg) {
 		s := &model.SystemLog{}
 		err := json.Unmarshal(mqMsg.Body, s)
 		if err == nil {
-			util.Database.Db.Debug().Create(s)
+			util.Database.Db.Create(s)
 		}
 	})
 	if err != nil {

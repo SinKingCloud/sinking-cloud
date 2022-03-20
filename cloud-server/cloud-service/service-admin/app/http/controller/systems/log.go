@@ -65,9 +65,10 @@ func (ControllerLog) List(c *sinking_server.Context) {
 	}
 	data, total, err := log.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
-		c.Error("获取配置数据失败")
+		c.Error("获取日志数据失败")
 	} else {
-		c.SuccessWithData("获取配置数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
+		log.GetIns().CreateByQueue(c, 0, "查看日志", "查看用户日志")
+		c.SuccessWithData("获取日志数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }
 
@@ -84,6 +85,7 @@ func (ControllerLog) Delete(c *sinking_server.Context) {
 	}
 	err := log.GetIns().DeleteByRequestTime(form.RequestTimeStart, form.RequestTimeEnd)
 	if err == nil {
+		log.GetIns().CreateByQueue(c, 2, "清理日志", "清理用户日志")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

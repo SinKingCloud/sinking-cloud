@@ -14,3 +14,9 @@ func NewLogstash(hostname string, port int, timeout int) Logs {
 	}
 	return l
 }
+
+// NewSystemLog 实例化系统log
+func NewSystemLog() Logs {
+	l := &SystemLog{}
+	return l
+}

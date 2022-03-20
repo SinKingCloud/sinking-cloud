@@ -3,6 +3,7 @@ package person
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/user"
 )
 
@@ -24,6 +25,7 @@ func (ControllerPerson) Password(c *sinking_server.Context) {
 	if err := user.GetIns().UpdateByIds([]int{u.Id}, map[string]interface{}{
 		"password": str.NetStringTool(form.Password).GetPassword(),
 	}); err == nil {
+		log.GetIns().CreateByQueue(c, 3, "修改密码", "修改账户密码")
 		c.Success("修改密码成功")
 	} else {
 		c.Error("修改密码失败")

@@ -26,16 +26,14 @@ func GetIns() *service {
 	return obj
 }
 
-func (s *service) CheckAccessByCache(roleId int, url string, method string) (bool, *model.SystemAccess) {
+func (s *service) CheckAccessByCache(roleId int, url string, method string) bool {
 	key := constant.CacheNameWithRbac + strconv.Itoa(roleId) + url + ":" + method
 	res, exists := util.Cache.Get(key)
-	var access *model.SystemAccess
 	if exists {
-		return res == "1", nil
+		return res == "1"
 	} else {
 		//写入缓存
-		r, d := s.CheckAccess(roleId, url, method)
-		access = d
+		r, _ := s.CheckAccess(roleId, url, method)
 		if r {
 			res = strconv.Itoa(1)
 		} else {
@@ -43,7 +41,7 @@ func (s *service) CheckAccessByCache(roleId int, url string, method string) (boo
 		}
 		util.Cache.SetWithExpire(key, res, constant.CacheTimeWithRbac)
 	}
-	return res == "1", access
+	return res == "1"
 }
 
 // CheckAccess 判断是否含有权限

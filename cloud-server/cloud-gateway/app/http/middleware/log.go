@@ -3,9 +3,9 @@ package middleware
 import (
 	"bytes"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/constant"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"io"
@@ -91,7 +91,7 @@ func Log() sinking_web.HandlerFunc {
 			AppName:        c.GetString(constant.ServerName),
 			AppAddr:        c.GetString(constant.ServerAddr),
 		}
-		sinking.NewLogRequestProducer().Build(log).Send()
+		producer.NewLogRequest().Build(log).Send()
 	})
 }
 

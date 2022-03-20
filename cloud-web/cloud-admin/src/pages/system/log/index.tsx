@@ -69,8 +69,16 @@ export default (): React.ReactNode => {
           status: 'success',
         },
         1: {
-          text: '操作',
+          text: '新增',
           status: 'warning',
+        },
+        2: {
+          text: '删除',
+          status: 'error',
+        },
+        3: {
+          text: '修改',
+          status: 'default',
         },
       },
     },
