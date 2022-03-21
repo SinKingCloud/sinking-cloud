@@ -126,15 +126,15 @@ const Login: React.FC = () => {
               }
               setIsLoanding(true);
               login(values).then(async (r) => {
-                setIsLoanding(false);
                 changeCaptcha();
                 if (r.code != 200) {
+                  setIsLoanding(false);
                   message.error(r.message || "请求失败").then()
                 } else {
                   setLoginToken("web", r.data)
                   await fetchUserInfo();
+                  setIsLoanding(false);
                   message.success(r.message);
-                  setIsLoanding(false)
                   /** 此方法会跳转到 redirect 参数所在的位置 */
                   if (!history) return;
                   const {query} = history.location;

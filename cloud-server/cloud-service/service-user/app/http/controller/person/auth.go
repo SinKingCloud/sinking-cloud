@@ -1,14 +1,12 @@
 package person
 
 import (
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/aliyun"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/aliyun"
 	user2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/user"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
-	"strconv"
 )
 
 // AuthInfo 获取实名信息
@@ -38,29 +36,30 @@ func (ControllerPerson) AuthInit(c *sinking_server.Context) {
 		c.Error("您已实名成功,无需重复实名")
 		return
 	}
-	//写入信息
-	service.GetWebUserConfSrvIns().SetConfigs(user.Id, map[string]string{
-		"person.card_no":   form.CardNo,
-		"person.card_name": form.CardName,
-	})
-	configs := service.GetSystemConfigServiceIns().GetByCache(false)
-	id, url, err := aliyun.NewFace(configs[config.AliyunAccessKey], configs[config.AliyunAccessSecret]).
-		Init(strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10),
-			configs[config.AliyunAuthSceneId],
-			"FACE",
-			"IDENTITY_CARD",
-			form.CardNo,
-			form.CardName,
-			configs[config.SystemUrl],
-			configs[config.SystemGateway]+"/auth/callback/face",
-		)
+	id, url, err := aliyun.FaceInit(user.Id, form.CardNo, form.CardName)
 	if err != nil {
 		c.Error("发起认证请求失败，请检查资料")
 		return
 	}
-	//写入用户配置
-	service.GetWebUserConfSrvIns().SetConfig(user.Id, "person.card_id", id)
 	c.SuccessWithData("初始化实名数据成功", sinking_web.H{
+		"id":  id,
 		"url": url,
 	})
+}
+
+// AuthCheck 实人验证结果
+func (ControllerPerson) AuthCheck(c *sinking_server.Context) {
+	type Form struct {
+		CertifyId string `form:"certifyId" validate:"required,len=32" label:"认证ID"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorGet(form); !ok {
+		c.Error(msg)
+		return
+	}
+	if aliyun.FaceCheck(form.CertifyId) {
+		c.Success("success")
+	} else {
+		c.Error("error")
+	}
 }

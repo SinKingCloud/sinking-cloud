@@ -39,9 +39,6 @@ func (s *service) Select(where map[string]string, orderByField string, orderByTy
 	if where["phone"] != "" {
 		query.Where("u.`phone` like ?", "%"+where["phone"]+"%")
 	}
-	if where["phone"] != "" {
-		query.Where("u.`phone` like ?", "%"+where["phone"]+"%")
-	}
 	if where["create_time_start"] != "" {
 		query.Where("l.`create_time` >= ?", where["create_time_start"])
 	}

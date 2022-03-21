@@ -1,7 +1,47 @@
 package pay
 
-import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/pay_log"
+	"strconv"
+)
 
 func (ControllerPay) LogList(c *sinking_server.Context) {
-	c.Success("获取消费记录成功")
+	pageInfo := page.ValidatePageDefault(c)
+	type Form struct {
+		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id create_time" label:"排序字段"`
+		OrderByType     string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
+		Type            string `form:"type" default:"" validate:"omitempty,oneof=0 1" label:"记录类型"`
+		LogType         string `form:"log_type" default:"" validate:"omitempty,numeric" label:"日志类型"`
+		CreateTimeStart string `form:"create_time_start" default:"" validate:"-" label:"创建起始时间"`
+		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"-" label:"创建结束时间"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorGet(form); !ok {
+		c.Error(msg)
+		return
+	}
+	where := make(map[string]string)
+	where["user_id"] = strconv.Itoa(c.GetWebUserInfo().Id)
+	if form.Type != "" {
+		where["type"] = form.Type
+	}
+	if form.LogType != "" {
+		where["log_type"] = form.LogType
+	}
+	if form.CreateTimeStart != "" {
+		where["create_time_start"] = form.CreateTimeStart
+	}
+	if form.CreateTimeEnd != "" {
+		where["create_time_end"] = form.CreateTimeEnd
+	}
+	data, total, err := pay_log.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	if err != nil {
+		c.Error("获取消费记录失败")
+	} else {
+		log.GetIns().CreateByQueue(c, 1, "查看消费", "查看消费记录")
+		c.SuccessWithData("获取消费记录成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
+	}
 }

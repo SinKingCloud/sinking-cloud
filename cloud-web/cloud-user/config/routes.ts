@@ -73,12 +73,17 @@
     path: '/pay',
     routes: [
       {
-        name: "财务充值",
+        name: "账户充值",
         path: 'recharge',
         component: './index/index/welcome',
       },
       {
-        name: "财务明细",
+        name: "订单记录",
+        path: 'order',
+        component: './index/index/welcome',
+      },
+      {
+        name: "消费明细",
         path: 'log',
         component: './index/index/welcome',
       },
@@ -100,7 +105,7 @@
       {
         name: "实名认证",
         path: 'real',
-        component: './index/index/welcome',
+        component: './person/real',
       },
       {
         name: "操作日志",
