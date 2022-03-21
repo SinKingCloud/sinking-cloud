@@ -3,15 +3,13 @@
 
 ### 项目规划
 
-- [ ] 云账号系统
-- [ ] tob大数据采集系统
-- [ ] CRM系统
-- [ ] 表单系统
+- [ ] 开放云平台
+- [ ] 后台管理
 
 ### 技术栈
 
 - 前端:react,antd design,antd pro
-- 后端:sinking-web,gorm-sqlite,sinking-websocket,sinking-consul
+- 后端:sinking-web,gorm-mysql,sinking-websocket,sinking-consul
 
 ### 加入我们
 
