@@ -12,7 +12,7 @@ import (
 
 func (ControllerPay) Recharge(c *sinking_server.Context) {
 	type Form struct {
-		Money int `json:"money" default:"" validate:"required,numeric,min=1,max=99999" label:"充值金额"`
+		Money int `json:"money" default:"" validate:"min=1,max=99999" label:"充值金额"`
 		Type  int `json:"type" default:"" validate:"oneof=0 1" label:"充值方式"`
 	}
 	form := &Form{}
@@ -27,13 +27,13 @@ func (ControllerPay) Recharge(c *sinking_server.Context) {
 		return
 	}
 	//创建订单
-	tradeNo := str.GetSnowWorkIns().GetId()
+	tradeNo := strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10)
 	err := order.GetIns().Create(&model.WebUserOrder{
 		UserId:    c.GetWebUserInfo().Id,
 		PayType:   form.Type,
 		OrderType: 0,
 		Money:     float64(form.Money),
-		TradeNo:   strconv.FormatInt(tradeNo, 10),
+		TradeNo:   tradeNo,
 		Name:      "账户余额充值",
 		Status:    0,
 	})

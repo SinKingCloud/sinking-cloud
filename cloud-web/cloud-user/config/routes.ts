@@ -75,7 +75,7 @@
       {
         name: "账户充值",
         path: 'recharge',
-        component: './index/index/welcome',
+        component: './pay/recharge',
       },
       {
         name: "订单记录",
@@ -110,7 +110,7 @@
       {
         name: "操作日志",
         path: 'log',
-        component: './index/index/welcome',
+        component: './person/log',
       },
       {
         redirect: '/index/index',

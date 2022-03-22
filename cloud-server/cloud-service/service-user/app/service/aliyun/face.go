@@ -12,7 +12,7 @@ import (
 )
 
 // FaceInit 初始化人脸识别
-func FaceInit(userId int, cardNo string, cardName string) (string, string, error) {
+func FaceInit(userId int, cardType string, cardNo string, cardName string) (string, string, error) {
 	type Form struct {
 		UserId   int    `json:"user_id"`
 		CardNo   string `json:"card_no"`
@@ -28,7 +28,7 @@ func FaceInit(userId int, cardNo string, cardName string) (string, string, error
 		Init(strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10),
 			configs[config.AliyunAuthSceneId],
 			"FACE",
-			"IDENTITY_CARD",
+			cardType,
 			cardNo,
 			cardName,
 			configs[config.SystemUrl],

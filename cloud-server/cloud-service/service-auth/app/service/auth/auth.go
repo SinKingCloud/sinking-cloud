@@ -120,6 +120,27 @@ func GetJwtToken(types string, u *model.SystemUser, u2 *model.WebUser, ip string
 		u2.LoginTime = loginTime
 		service.GetWebUserServiceIns().ClearCache(u2.Id)
 	}
-	s = jwt.GetToken(u2, u)
+	var webUser *jwt.WebUser
+	var sysUser *jwt.SystemUser
+	if u2 != nil {
+		webUser = &jwt.WebUser{
+			Id:         u2.Id,
+			LoginToken: u2.LoginToken,
+			LoginIp:    u2.LoginIp,
+			LoginTime:  loginTime,
+			Status:     u2.Status,
+			RealAuth:   u2.RealAuth,
+		}
+	}
+	if u != nil {
+		sysUser = &jwt.SystemUser{
+			Id:         u.Id,
+			LoginToken: u.LoginToken,
+			LoginIp:    u.LoginIp,
+			LoginTime:  loginTime,
+			Status:     u.Status,
+		}
+	}
+	s = jwt.GetToken(webUser, sysUser)
 	return
 }

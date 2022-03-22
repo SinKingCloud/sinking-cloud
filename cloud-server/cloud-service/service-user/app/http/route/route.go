@@ -42,5 +42,5 @@ func loadPayRoute(s *sinking_web.Engine) {
 	handle := &pay.ControllerPay{}
 	r.GET("/order", sinking_server.HandleFunc(handle.OrderList))    //订单记录
 	r.POST("/recharge", sinking_server.HandleFunc(handle.Recharge)) //充值
-	r.POST("/log", sinking_server.HandleFunc(handle.LogList))       //消费记录
+	r.GET("/log", sinking_server.HandleFunc(handle.LogList))        //消费记录
 }

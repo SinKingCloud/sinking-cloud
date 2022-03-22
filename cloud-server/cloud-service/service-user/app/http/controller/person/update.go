@@ -63,7 +63,8 @@ func (ControllerPerson) Password(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	if !rpc.Sms.Check(strconv.FormatInt(c.GetWebUserInfo().Phone, 10), form.Code) {
+	u := user.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, false)
+	if !rpc.Sms.Check(strconv.FormatInt(u.Phone, 10), form.Code) {
 		c.Error("短信验证码校验失败")
 		return
 	}

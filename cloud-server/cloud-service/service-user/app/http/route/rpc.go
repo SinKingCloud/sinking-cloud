@@ -17,4 +17,7 @@ func loadRpc(s *sinking_web.Engine) {
 func registerService(g *sinking_web.RouterGroup) {
 	r := g.Group("/face")
 	r.POST("/check", sinking_server.HandleFunc(rpc.Face.Check))
+
+	r2 := g.Group("/log")
+	r2.POST("/create", sinking_server.HandleFunc(rpc.Log.Create))
 }

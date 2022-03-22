@@ -9,9 +9,9 @@
 @button-menu-radius: 10px; //按钮菜单圆角
 @modal-radius: 10px; //弹窗圆角
 @card-radius: 5px; //card圆角
-@card-shadow: 0px 0px 20px 5px #e1e1e1; //card阴影
+@card-shadow: 0px 0px 5px 0.5px #efefef; //card阴影
 @card-search-radius: 5px; //card-search圆角
-@card-search-shadow: 0px 0px 20px 5px #e1e1e1; //card-search阴影
+@card-search-shadow: 0px 0px 5px 0.5px #efefef; //card-search阴影
 @tooltip-radius: 10px; //提示圆角
 @page-container-shadow: 0 0 20px 0 #e7e7e7; //导航阴影
 @drawer-radius: 10px; //抽屉圆角
@@ -244,6 +244,12 @@ ol {
   box-shadow: @card-shadow !important;
 }
 
+.ant-pro-card-title {
+  padding-left: 10px !important;
+  border-left: 5px solid @primary-color !important;
+  margin-left: -10px !important;
+}
+
 .ant-card-actions {
   border-radius: 0 0 @card-radius @card-radius !important;
 }
@@ -258,6 +264,12 @@ ol {
 .ant-pro-table-search {
   border-radius: @card-search-radius !important;
   box-shadow: @card-search-shadow !important;
+}
+
+.ant-pro-table-list-toolbar-title {
+  border-left: 5px solid @primary-color !important;
+  padding-left: 10px !important;
+  margin-left: -10px !important;
 }
 
 /**
@@ -449,4 +461,5 @@ textarea {
  */
 .ant-pro-card {
   border-radius: @card-radius !important;
+  box-shadow: @card-shadow !important;
 }

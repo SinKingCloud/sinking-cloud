@@ -3,16 +3,36 @@ package jwt
 import (
 	"encoding/json"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/golang-jwt/jwt"
 	"time"
 )
 
 // MyClaims jwt载体
 type MyClaims struct {
-	WebUser    *model.WebUser
-	SystemUser *model.SystemUser
+	WebUser    *WebUser
+	SystemUser *SystemUser
 	jwt.StandardClaims
+}
+
+// SystemUser 系统用户表
+type SystemUser struct {
+	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
+	RoleId     int          `gorm:"column:role_id" json:"role_id"`
+	LoginToken string       `gorm:"column:login_token" json:"login_token"`
+	LoginIp    string       `gorm:"column:login_ip" json:"login_ip"`
+	LoginTime  str.DateTime `gorm:"column:login_time" json:"login_time"`
+	Status     int          `gorm:"column:status" json:"status"`
+}
+
+// WebUser 会员用户表
+type WebUser struct {
+	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
+	LoginToken string       `gorm:"column:login_token" json:"login_token"`
+	LoginIp    string       `gorm:"column:login_ip" json:"login_ip"`
+	LoginTime  str.DateTime `gorm:"column:login_time" json:"login_time"`
+	Status     int          `gorm:"column:status" json:"status"`
+	RealAuth   int          `gorm:"column:real_auth" json:"real_auth"`
 }
 
 // getKey 获取加密key
@@ -28,7 +48,7 @@ func GetLoginToken(token string) map[string]string {
 }
 
 // GetToken 生成token user 用户信息
-func GetToken(webUser *model.WebUser, systemUser *model.SystemUser) string {
+func GetToken(webUser *WebUser, systemUser *SystemUser) string {
 	setClaim := MyClaims{
 		WebUser:    webUser,
 		SystemUser: systemUser,

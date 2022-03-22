@@ -331,6 +331,9 @@ export default (): React.ReactNode => {
           params.pageSize = 1000;
           //params.type = 0;
           const response = await getMenuList(getParams(params, sort));
+          if (response.code != 200) {
+            message.error(response.message);
+          }
           let data = response.data.list === undefined || response.data.list === null || response.data.list.length <= 0 ? [] : response.data.list;
           return {
             data: toTreeData(data, 0, "id", "pid", "children", (item: any) => {

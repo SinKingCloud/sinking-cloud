@@ -5,8 +5,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 )
 
-// Select 获取请求日志数据
-func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.WebUserOrder, total int64, err error) {
+// Select 获取数据
+func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*WebUserOrder, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.WebUserOrder{})
 	if where["user_id"] != "" {

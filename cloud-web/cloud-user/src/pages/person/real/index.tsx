@@ -1,6 +1,6 @@
 // @ts-ignore
 import React, {useEffect, useState} from 'react';
-import {Alert, Button, Col, Descriptions, Form, Input, message, Result, Row, Space, Steps} from 'antd';
+import {Alert, Button, Col, Descriptions, Form, Input, message, Result, Row, Select, Space, Steps} from 'antd';
 import {PageContainer} from "@ant-design/pro-layout";
 import ProCard from "@ant-design/pro-card";
 import {authInit, checkAuth, getAuthInfo} from "@/services/person/auth";
@@ -8,6 +8,7 @@ import {checkMobile} from "@/util/device";
 // @ts-ignore
 import QRCode from "qrcode.react/lib/index";
 import {history} from "umi";
+import {useModel} from "@@/plugin-model/useModel";
 
 
 export default (): React.ReactNode => {
@@ -18,7 +19,23 @@ export default (): React.ReactNode => {
   const [authData, setAuthData] = useState({id: "", url: ""});
   const [formHidden, setFormHidden] = useState(false);
   const [qrcodeHidden, setQrcodeHidden] = useState(true);
+  const {initialState, setInitialState} = useModel('@@initialState');
+  /**
+   * 刷新当前用户信息
+   */
+  const fetchUserInfo = async () => {
+    const userInfo = await initialState?.fetchUserInfo?.();
+    if (userInfo) {
+      await setInitialState((s) => ({
+        ...s,
+        currentUser: userInfo,
+      }));
+    }
+  };
 
+  /**
+   * 初始化信息
+   */
   const initAuthInfo = () => {
     getAuthInfo().then((r) => {
       if (r.code != 200) {
@@ -44,7 +61,7 @@ export default (): React.ReactNode => {
    */
   const checkStatus = (id: string) => {
     if (id != "" && localStorage.getItem('internal') == id && location.pathname == "/person/real" && current == 1) {
-      checkAuth({certifyId: id}).then((r) => {
+      checkAuth({certifyId: id}).then(async (r) => {
         if (r.code != 200) {
           setTimeout(() => {
             checkStatus(id);
@@ -52,6 +69,7 @@ export default (): React.ReactNode => {
         } else {
           localStorage.removeItem('internal');
           initAuthInfo();
+          await fetchUserInfo();
         }
       });
     } else {
@@ -71,7 +89,7 @@ export default (): React.ReactNode => {
   return (
     <PageContainer title={false}>
       <ProCard loading={isLoading}>
-        <Steps current={current}  direction="horizontal">
+        <Steps current={current} direction="horizontal">
           <Steps.Step key="0" title="隐私说明"/>
           <Steps.Step key="1" title="验证身份"/>
           <Steps.Step key="2" title="验证结果"/>
@@ -127,6 +145,9 @@ export default (): React.ReactNode => {
                             size={150}
                             fgColor="#000000"
                           />
+                          <div style={{marginTop: "10px", color: "#8c8c8c"}}>
+                            请打开支付宝APP扫码完成验证
+                          </div>
                           <div style={{marginTop: "30px"}}>
                             <Button type="primary" onClick={() => {
                               localStorage.removeItem('internal');
@@ -157,6 +178,16 @@ export default (): React.ReactNode => {
                             }
                           })
                         }}>
+                          <Form.Item name="card_type" label="证件类型" initialValue={"IDENTITY_CARD"}
+                                     rules={[{required: true}]}>
+                            <Select>
+                              <Select.Option value="IDENTITY_CARD">身份证</Select.Option>
+                              <Select.Option value="HOME_VISIT_PERMIT_HK_MC">港澳通行证</Select.Option>
+                              <Select.Option value="HOME_VISIT_PERMIT_TAIWAN">台湾通行证</Select.Option>
+                              <Select.Option value="RESIDENCE_PERMIT_HK_MC">港澳居住证</Select.Option>
+                              <Select.Option value="RESIDENCE_PERMIT_TAIWAN">台湾居住证</Select.Option>
+                            </Select>
+                          </Form.Item>
                           <Form.Item name="card_name" label="身份证姓名" rules={[{required: true}]}>
                             <Input placeholder="请输入您的身份证姓名"/>
                           </Form.Item>

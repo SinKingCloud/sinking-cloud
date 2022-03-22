@@ -28,7 +28,7 @@ func (ControllerPay) Alipay(tradeNo string, money string, name string) (url stri
 		Set("out_trade_no", tradeNo).
 		Set("total_amount", money).
 		Set("product_code", "FAST_INSTANT_TRADE_PAY").
-		Set("timeout_express", "1c")
+		Set("timeout_express", "1h")
 	url, err = client.TradePagePay(ctx, bm)
 	if err != nil {
 		err = errors.New("请求支付接口失败")

@@ -3,6 +3,7 @@ package verify
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/user"
 	"strconv"
 )
 
@@ -18,7 +19,8 @@ func (ControllerVerify) Sms(c *sinking_server.Context) {
 		return
 	}
 	if form.Phone == "" {
-		form.Phone = strconv.FormatInt(c.GetWebUserInfo().Phone, 10)
+		u := user.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, false)
+		form.Phone = strconv.FormatInt(u.Phone, 10)
 	}
 	if !rpc.Captcha.Check(form.Token, form.Captcha) {
 		c.Error("验证码验证失败请重试")

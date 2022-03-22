@@ -4,7 +4,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/command/queues/producer"
 )
 
@@ -17,13 +16,11 @@ func (s *service) Create(data *model.SystemLog) (err error) {
 // CreateByQueue 插入数据(异步消息队列)
 func (s *service) CreateByQueue(c *sinking_server.Context, types int, title string, content string) {
 	producer.NewWebUserLogProducer().Build(&model.WebUserLog{
-		UserId:     c.GetWebUserInfo().Id,
-		RequestId:  c.GetRequestId(),
-		RequestIp:  c.GetRequestIp(),
-		Type:       types,
-		Title:      title,
-		Content:    content,
-		CreateTime: str.DateTime{},
-		UpdateTime: str.DateTime{},
+		UserId:    c.GetWebUserInfo().Id,
+		RequestId: c.GetRequestId(),
+		RequestIp: c.GetRequestIp(),
+		Type:      types,
+		Title:     title,
+		Content:   content,
 	}).Send()
 }

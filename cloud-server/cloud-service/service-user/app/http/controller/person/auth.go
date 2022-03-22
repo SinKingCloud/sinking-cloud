@@ -23,8 +23,9 @@ func (ControllerPerson) AuthInfo(c *sinking_server.Context) {
 // AuthInit 初始化实名信息
 func (ControllerPerson) AuthInit(c *sinking_server.Context) {
 	type Form struct {
-		CardNo   string `json:"card_no" default:"" validate:"required,numeric,len=18" label:"身份证号"`
-		CardName string `json:"card_name" default:"" validate:"required,min=1,max=4" label:"姓名"`
+		CardType string `json:"card_type" default:"" validate:"required,oneof=IDENTITY_CARD HOME_VISIT_PERMIT_HK_MC HOME_VISIT_PERMIT_TAIWAN RESIDENCE_PERMIT_HK_MC RESIDENCE_PERMIT_TAIWAN" label:"身份证号"`
+		CardNo   string `json:"card_no" default:"" validate:"required" label:"身份证号"`
+		CardName string `json:"card_name" default:"" validate:"required" label:"姓名"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorJson(form); !ok {
@@ -36,7 +37,7 @@ func (ControllerPerson) AuthInit(c *sinking_server.Context) {
 		c.Error("您已实名成功,无需重复实名")
 		return
 	}
-	id, url, err := aliyun.FaceInit(user.Id, form.CardNo, form.CardName)
+	id, url, err := aliyun.FaceInit(user.Id, form.CardType, form.CardNo, form.CardName)
 	if err != nil {
 		c.Error("发起认证请求失败，请检查资料")
 		return
