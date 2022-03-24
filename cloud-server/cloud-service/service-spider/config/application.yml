@@ -8,7 +8,7 @@ application:
   name: service-spider #应用标识
   group: cloud-service #服务分组
   addr: 127.0.0.1 #应用地址
-  port: 1004 #应用端口
+  port: 1006 #应用端口
   timeout:
     read: 60 #超时读(s)
     write: 60 #超时写(s)
