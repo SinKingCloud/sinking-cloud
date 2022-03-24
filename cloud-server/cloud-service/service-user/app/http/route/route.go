@@ -2,6 +2,7 @@ package route
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/http/controller/app"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/http/controller/pay"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/http/controller/person"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/http/controller/verify"
@@ -13,6 +14,7 @@ func loadRoute(s *sinking_web.Engine) {
 	loadPersonRoute(s)
 	loadVerifyRoute(s)
 	loadPayRoute(s)
+	loadAppRoute(s)
 }
 
 // loadPersonRoute 加载个人操作路由
@@ -43,4 +45,14 @@ func loadPayRoute(s *sinking_web.Engine) {
 	r.GET("/order", sinking_server.HandleFunc(handle.OrderList))    //订单记录
 	r.POST("/recharge", sinking_server.HandleFunc(handle.Recharge)) //充值
 	r.GET("/log", sinking_server.HandleFunc(handle.LogList))        //消费记录
+}
+
+// loadAppRoute 加载应用路由
+func loadAppRoute(s *sinking_web.Engine) {
+	r := s.Group("/app")
+	handle := &app.ControllerApp{}
+	r.GET("/list", sinking_server.HandleFunc(handle.List))
+	r.POST("/create", sinking_server.HandleFunc(handle.Create))
+	r.POST("/update", sinking_server.HandleFunc(handle.Update))
+	r.POST("/delete", sinking_server.HandleFunc(handle.Delete))
 }

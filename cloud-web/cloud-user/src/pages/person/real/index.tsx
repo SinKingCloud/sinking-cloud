@@ -181,7 +181,7 @@ export default (): React.ReactNode => {
                           <Form.Item name="card_type" label="证件类型" initialValue={"IDENTITY_CARD"}
                                      rules={[{required: true}]}>
                             <Select>
-                              <Select.Option value="IDENTITY_CARD">身份证</Select.Option>
+                              <Select.Option value="IDENTITY_CARD">居民身份证</Select.Option>
                               <Select.Option value="HOME_VISIT_PERMIT_HK_MC">港澳通行证</Select.Option>
                               <Select.Option value="HOME_VISIT_PERMIT_TAIWAN">台湾通行证</Select.Option>
                               <Select.Option value="RESIDENCE_PERMIT_HK_MC">港澳居住证</Select.Option>

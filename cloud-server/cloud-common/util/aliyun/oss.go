@@ -25,3 +25,19 @@ func (ossIns) Upload(accessKeyId string, accessKeySecret string, endPoint string
 	}
 	return true
 }
+
+func (ossIns) Delete(accessKeyId string, accessKeySecret string, endPoint string, bucketName string, filePath string) bool {
+	client, err := oss.New(endPoint, accessKeyId, accessKeySecret)
+	if err != nil {
+		return false
+	}
+	bucket, err := client.Bucket(bucketName)
+	if err != nil {
+		return false
+	}
+	err = bucket.DeleteObject(filePath)
+	if err != nil {
+		return false
+	}
+	return true
+}

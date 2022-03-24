@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {Avatar, Button, Col, Form, Image, Input, message, Row, Tooltip} from 'antd';
+import React, {useRef, useState} from 'react';
+import {Avatar, Button, Col, Form, Image, Input, message, Modal, Row, Tooltip} from 'antd';
 import {PageContainer} from "@ant-design/pro-layout";
 import ProCard, {CheckCard} from "@ant-design/pro-card";
 import {useModel} from "@@/plugin-model/useModel";
@@ -7,7 +7,7 @@ import {getParams} from "@/services/common/page";
 import ProTable from "@ant-design/pro-table";
 import {getPayOrder} from "@/services/pay/order";
 import {paySubmit} from "@/services/common/pay";
-import {AlipayCircleOutlined, SyncOutlined} from "@ant-design/icons";
+import {AlipayCircleOutlined, ExclamationCircleOutlined, SyncOutlined} from "@ant-design/icons";
 import {recharge} from "@/services/pay/pay";
 
 export default (): React.ReactNode => {
@@ -31,6 +31,7 @@ export default (): React.ReactNode => {
   const [refreshIcon, setRefreshIcon] = useState(false);
   const [money, setMoney] = useState("");
   const [form] = Form.useForm();
+  const ref = useRef();
   /**
    * table表格渲染
    */
@@ -50,9 +51,9 @@ export default (): React.ReactNode => {
       copyable: true,
     },
     {
-      title: '订单金额',
+      title: '充值金额',
       dataIndex: 'money',
-      tip: '订单金额',
+      tip: '充值金额',
       render: (text: string, record: any) => {
         return record?.money.toFixed(2) + "元";
       }
@@ -140,7 +141,17 @@ export default (): React.ReactNode => {
                           if (r.code != 200) {
                             message.error(r?.message || "获取支付链接失败")
                           } else {
+                            // @ts-ignore
+                            ref.current?.reload();
                             window.open(r.data);
+                            Modal.confirm({
+                              title: '订单是否已支付成功?',
+                              icon: <ExclamationCircleOutlined/>,
+                              content: '如支付成功请点击确认或点击刷新按钮刷新余额',
+                              async onOk() {
+                                await fetchUserInfo();
+                              },
+                            });
                           }
                         });
                       }
@@ -241,6 +252,7 @@ export default (): React.ReactNode => {
         </Col>
         <Col xs={{span: 24, offset: 0}} lg={{span: 16, offset: 0}} style={{paddingBottom: "20px"}}>
           <ProTable
+            actionRef={ref}
             defaultSize={"small"}
             form={{layout: "vertical"}}
             headerTitle={'充值记录'}

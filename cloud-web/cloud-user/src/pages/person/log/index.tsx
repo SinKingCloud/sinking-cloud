@@ -57,12 +57,8 @@ export default (): React.ReactNode => {
           status: 'default',
         },
         4: {
-          text: '购买',
+          text: '创建',
           status: 'success',
-        },
-        5: {
-          text: '消费',
-          status: 'warning',
         },
       },
     },

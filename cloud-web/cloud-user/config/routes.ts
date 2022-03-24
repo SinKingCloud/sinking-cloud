@@ -34,16 +34,16 @@
     ],
   },
   {
-    name: "应用管理",
+    name: "能力管理",
     icon: "AppstoreAddOutlined",
-    path: '/app',
+    path: '/open',
     routes: [
       {
         name: "云端挂机",
         path: 'uin',
         routes: [
           {
-            name: "挂机概览",
+            name: "能力概览",
             path: 'home',
             component: './index/index/welcome',
           },
@@ -53,17 +53,32 @@
             component: './index/index/welcome',
           },
           {
-            name: "开发文档",
-            path: 'doc',
-            component: './index/index/welcome',
-          },
-          {
             redirect: '/index/index',
           },
         ],
       },
       {
         redirect: '/index/index',
+      },
+    ],
+  },
+  {
+    name: "对接管理",
+    icon: "SettingOutlined",
+    path: '/app',
+    routes: [
+      {
+        name: "应用列表",
+        path: 'list',
+        component: './app/list',
+      },
+      {
+        name: "开发文档",
+        path: 'doc',
+        component: './app/doc',
+      },
+      {
+        redirect: '/app/list',
       },
     ],
   },
@@ -80,15 +95,15 @@
       {
         name: "订单记录",
         path: 'order',
-        component: './index/index/welcome',
+        component: './pay/order',
       },
       {
         name: "消费明细",
         path: 'log',
-        component: './index/index/welcome',
+        component: './pay/log',
       },
       {
-        redirect: '/index/index',
+        redirect: '/pay/recharge',
       },
     ],
   },
@@ -113,7 +128,7 @@
         component: './person/log',
       },
       {
-        redirect: '/index/index',
+        redirect: '/person/setting',
       },
     ],
   },
