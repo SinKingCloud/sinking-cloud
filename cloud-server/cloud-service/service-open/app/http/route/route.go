@@ -1,12 +1,34 @@
 package route
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/test"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/api"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/app"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 // loadRoute 加载路由
 func loadRoute(s *sinking_web.Engine) {
-	s.GET("/test", sinking_server.HandleFunc(test.Index))
+	loadApiRoute(s)
+	loadUserRoute(s)
+}
+
+//加载api路由
+func loadApiRoute(s *sinking_web.Engine) {
+	g := s.Group("/api")
+	g.GET("/test", sinking_server.HandleFunc(api.Index))
+}
+
+// 用户系统路由
+func loadUserRoute(s *sinking_web.Engine) {
+	g := s.Group("/user")
+	g.Use(middleware.AuthUser())
+	//用户应用
+	handle := &app.ControllerApp{}
+	appGroup := g.Group("/app")
+	appGroup.GET("/list", sinking_server.HandleFunc(handle.List))
+	appGroup.POST("/create", sinking_server.HandleFunc(handle.Create))
+	appGroup.POST("/update", sinking_server.HandleFunc(handle.Update))
+	appGroup.POST("/delete", sinking_server.HandleFunc(handle.Delete))
 }

@@ -24,19 +24,20 @@ func InitProxyRouter(route *sinking_web.Engine) {
 			name := tempV1["name"]
 			protocol := tempV1["protocol"]
 			login := tempV1["login"]
-			tempGroup := route.Group(k)
+			tempGroup := route.Group(strings.Replace(k, "/*", "", -1))
+			tempGroup2 := tempGroup.Group(strings.Replace(k1, "/*", "", -1))
 			if login == "user" {
-				tempGroup.Use(middleware.AuthUser(), middleware2.CheckWebUser())
+				tempGroup2.Use(middleware.AuthUser(), middleware2.CheckWebUser())
 			}
 			if login == "admin" {
-				tempGroup.Use(middleware.AuthAdmin(), middleware2.CheckSystemUser())
+				tempGroup2.Use(middleware.AuthAdmin(), middleware2.CheckSystemUser())
 			}
 			prefix := "http://"
 			if protocol == "ws://" {
 				prefix = protocol.(string)
 			}
 			patten := k
-			tempGroup.ANY(k1, sinking_server.HandleFunc(func(s *sinking_server.Context) {
+			tempGroup2.ANY(strings.Replace(k1, strings.Replace(k1, "/*", "", -1), "", -1), sinking_server.HandleFunc(func(s *sinking_server.Context) {
 				s.Set(constant.ServerGroupName, groupName.(string))
 				s.Set(constant.ServerName, name.(string))
 				url, exists := util.Consul.GetService(groupName.(string), name.(string))

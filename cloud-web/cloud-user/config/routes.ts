@@ -34,7 +34,7 @@
     ],
   },
   {
-    name: "能力管理",
+    name: "应用管理",
     icon: "AppstoreAddOutlined",
     path: '/open',
     routes: [
@@ -53,7 +53,7 @@
             component: './index/index/welcome',
           },
           {
-            redirect: '/index/index',
+            redirect: '/open/uin/home',
           },
         ],
       },

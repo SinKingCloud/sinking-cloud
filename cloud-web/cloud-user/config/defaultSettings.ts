@@ -18,7 +18,7 @@ let Settings = {
 
 //配置合并
 Settings = Object.assign(Settings, {
-  title: '开放云平台',
+  title: '云开放平台',
   logo: '/logo.svg',
   pwa: false,
   footer: '沉沦云科技开发',
