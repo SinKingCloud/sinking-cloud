@@ -20,6 +20,15 @@ func (ControllerApp) Update(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
+	info, err := app.GetIns().FindById(form.Id)
+	if err != nil || info == nil || info.UserId != c.GetWebUserInfo().Id {
+		c.Error("应用不存在")
+		return
+	}
+	if info.Status == 1 {
+		c.Error("该应用已被封禁，无法操作")
+		return
+	}
 	data := make(map[string]interface{})
 	if form.Key != "" {
 		data["key"] = form.Key
@@ -33,9 +42,9 @@ func (ControllerApp) Update(c *sinking_server.Context) {
 	if form.Status != "" {
 		data["status"] = form.Status
 	}
-	err := app.GetIns().UpdateById(form.Id, data)
+	err = app.GetIns().UpdateById(form.Id, data)
 	if err == nil {
-		log.GetIns().CreateByQueue(c, 3, "修改应用", "修改应用"+form.Name)
+		log.GetIns().CreateByQueue(c, 3, "修改应用", "修改应用"+info.Name)
 		c.Success("修改应用信息成功")
 	} else {
 		c.Error("修改应用信息失败")
