@@ -1,4 +1,4 @@
-package app
+package web_app
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"

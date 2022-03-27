@@ -2,8 +2,8 @@ package app
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/app"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_app"
 )
 
 // Update 添加信息
@@ -20,7 +20,7 @@ func (ControllerApp) Update(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	info, err := app.GetIns().FindById(form.Id)
+	info, err := web_app.GetIns().FindById(form.Id)
 	if err != nil || info == nil || info.UserId != c.GetWebUserInfo().Id {
 		c.Error("应用不存在")
 		return
@@ -42,9 +42,9 @@ func (ControllerApp) Update(c *sinking_server.Context) {
 	if form.Status != "" {
 		data["status"] = form.Status
 	}
-	err = app.GetIns().UpdateById(form.Id, data)
+	err = web_app.GetIns().UpdateById(form.Id, data)
 	if err == nil {
-		rpc.Log.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), 3, "修改应用", "修改应用"+info.Name)
+		rpc.WebUserLog.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), 3, "修改应用", "修改应用"+info.Name)
 		c.Success("修改应用信息成功")
 	} else {
 		c.Error("修改应用信息失败")

@@ -4,8 +4,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/app"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_app"
 	"strings"
 )
 
@@ -21,7 +21,7 @@ func (ControllerApp) Create(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := app.GetIns().Create(&model.WebUserApp{
+	err := web_app.GetIns().Create(&model.WebUserApp{
 		UserId:   c.GetWebUserInfo().Id,
 		Key:      strings.ToUpper(str.NetStringTool(str.GetSnowWorkIns().GetUuid()).Md5()),
 		Name:     form.Name,
@@ -29,7 +29,7 @@ func (ControllerApp) Create(c *sinking_server.Context) {
 		Status:   form.Status,
 	})
 	if err == nil {
-		rpc.Log.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), 4, "创建应用", "创建应用信息")
+		rpc.WebUserLog.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), 4, "创建应用", "创建应用信息")
 		c.Success("创建应用成功")
 	} else {
 		c.Error("创建应用失败")

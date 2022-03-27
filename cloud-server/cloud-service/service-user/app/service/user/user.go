@@ -21,7 +21,7 @@ func GetIns() *service {
 	return obj
 }
 
-// GetCurrentUserInfo  获取登录用户最新信息
+// GetCurrentUserInfo  获取用户信息
 func (s *service) GetCurrentUserInfo(id int, refresh bool) *model.WebUser {
 	user, _ := service2.GetWebUserServiceIns().FindByIdWithCache(id, refresh)
 	return user

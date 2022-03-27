@@ -80,7 +80,6 @@ export default (): React.ReactNode => {
         message.error(r.message || "请求失败").then()
       } else {
         getApps(page.currentPage)
-        message.success(r.message).then()
       }
     });
   }
@@ -129,7 +128,6 @@ export default (): React.ReactNode => {
                 message.error(r.message || "请求失败").then()
               } else {
                 getApps(page.currentPage)
-                message.success(r.message).then()
               }
             });
           },

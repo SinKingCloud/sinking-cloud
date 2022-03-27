@@ -1,4 +1,4 @@
-package app
+package log
 
 // service 单例对象
 type service struct {

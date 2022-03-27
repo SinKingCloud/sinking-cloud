@@ -1,4 +1,4 @@
-package log
+package system_rbac
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/group"
@@ -21,14 +21,16 @@ func GetIns() *service {
 	return obj
 }
 
-// Create 创建用户日志
-func (*service) Create(userId int, requestId string, requestIp string, types int, title string, content string) {
-	_, _ = rpc.New(group.CloudService, name.ServiceUser).Call("/rpc/log/create", &rpc.Param{
-		"user_id":    userId,
-		"request_id": requestId,
-		"request_ip": requestIp,
-		"type":       types,
-		"title":      title,
-		"content":    content,
+// Check 判断rbac
+func (*service) Check(userId int, roleId int, path string, method string) bool {
+	client, err := rpc.New(group.CloudService, name.ServiceAdmin).Call("/rpc/rbac/check", &rpc.Param{
+		"user_id": userId,
+		"role_id": roleId,
+		"path":    path,
+		"method":  method,
 	}).Response()
+	if err != nil {
+		return false
+	}
+	return client.Data.(bool)
 }

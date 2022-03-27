@@ -49,7 +49,7 @@ func (w systemUserService) FindByIdWithCache(id int, refresh bool) (user *model.
 	} else {
 		data, exists := util.Cache.Get(key)
 		if exists {
-			_ = json.Unmarshal([]byte(data), &user)
+			err = json.Unmarshal([]byte(data), &user)
 		} else {
 			user, err = w.FindById(id)
 			if err != nil {

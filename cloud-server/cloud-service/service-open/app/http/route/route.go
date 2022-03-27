@@ -5,6 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/api"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/app"
+	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/middleware"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
@@ -17,6 +18,7 @@ func loadRoute(s *sinking_web.Engine) {
 //加载api路由
 func loadApiRoute(s *sinking_web.Engine) {
 	g := s.Group("/api")
+	g.Use(middleware2.ApiCheck())
 	g.GET("/test", sinking_server.HandleFunc(api.Index))
 }
 
@@ -31,4 +33,10 @@ func loadUserRoute(s *sinking_web.Engine) {
 	appGroup.POST("/create", sinking_server.HandleFunc(handle.Create))
 	appGroup.POST("/update", sinking_server.HandleFunc(handle.Update))
 	appGroup.POST("/delete", sinking_server.HandleFunc(handle.Delete))
+}
+
+// 后台系统路由
+func loadAdminRoute(s *sinking_web.Engine) {
+	g := s.Group("/admin")
+	g.Use(middleware.AuthAdmin(), middleware2.Rbac())
 }
