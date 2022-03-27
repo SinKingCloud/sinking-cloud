@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-// WebAppConfig 应用配置
-type WebAppConfig struct {
+// AppConfig 应用配置
+type AppConfig struct {
 	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	IdentId    int          `gorm:"column:ident_id" json:"ident_id"`
 	Key        string       `gorm:"column:key" json:"key"`
@@ -17,18 +17,18 @@ type WebAppConfig struct {
 }
 
 // TableName 获取表名
-func (WebAppConfig) TableName() string {
-	return "web_app_configs"
+func (AppConfig) TableName() string {
+	return "app_configs"
 }
 
 // BeforeCreate 创建前
-func (t *WebAppConfig) BeforeCreate(tx *gorm.DB) error {
+func (t *AppConfig) BeforeCreate(tx *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *WebAppConfig) BeforeUpdate(tx *gorm.DB) error {
+func (t *AppConfig) BeforeUpdate(tx *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-// WebUserApp 用户应用列表
-type WebUserApp struct {
+// UserApp 用户应用列表
+type UserApp struct {
 	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	UserId     int          `gorm:"column:user_id" json:"user_id"`
 	Key        string       `gorm:"column:key" json:"key"`
@@ -19,18 +19,18 @@ type WebUserApp struct {
 }
 
 // TableName 获取表名
-func (WebUserApp) TableName() string {
-	return "web_user_apps"
+func (UserApp) TableName() string {
+	return "user_apps"
 }
 
 // BeforeCreate 创建前
-func (t *WebUserApp) BeforeCreate(tx *gorm.DB) error {
+func (t *UserApp) BeforeCreate(tx *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *WebUserApp) BeforeUpdate(tx *gorm.DB) error {
+func (t *UserApp) BeforeUpdate(tx *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

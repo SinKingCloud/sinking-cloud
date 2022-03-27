@@ -59,3 +59,9 @@ func (s *service) FindByIdWithCache(id int, refresh bool) (user *model.SystemUse
 	}
 	return
 }
+
+// GetCurrentUserInfo  获取登录用户最新信息
+func (s *service) GetCurrentUserInfo(id int, refresh bool) *model.SystemUser {
+	user, _ := s.FindByIdWithCache(id, refresh)
+	return user
+}

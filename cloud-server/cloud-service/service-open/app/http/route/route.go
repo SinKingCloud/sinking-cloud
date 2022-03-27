@@ -3,6 +3,7 @@ package route
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/admin"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/api"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/app"
 	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/middleware"
@@ -39,4 +40,5 @@ func loadUserRoute(s *sinking_web.Engine) {
 func loadAdminRoute(s *sinking_web.Engine) {
 	g := s.Group("/admin")
 	g.Use(middleware.AuthAdmin(), middleware2.Rbac())
+	g.GET("/test", sinking_server.HandleFunc(admin.Index))
 }

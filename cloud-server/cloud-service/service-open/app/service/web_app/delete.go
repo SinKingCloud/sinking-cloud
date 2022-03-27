@@ -7,6 +7,6 @@ import (
 
 // DeleteById 通过ID删除
 func (s *service) DeleteById(id int) (err error) {
-	err = util.Database.Db.Where("`id` = ? ", id).Delete(&model.WebUserApp{}).Error
+	err = util.Database.Db.Where("`id` = ? ", id).Delete(&model.UserApp{}).Error
 	return
 }

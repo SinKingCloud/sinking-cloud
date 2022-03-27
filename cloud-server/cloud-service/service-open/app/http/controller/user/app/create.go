@@ -21,7 +21,7 @@ func (ControllerApp) Create(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := web_app.GetIns().Create(&model.WebUserApp{
+	err := web_app.GetIns().Create(&model.UserApp{
 		UserId:   c.GetWebUserInfo().Id,
 		Key:      strings.ToUpper(str.NetStringTool(str.GetSnowWorkIns().GetUuid()).Md5()),
 		Name:     form.Name,

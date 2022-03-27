@@ -7,10 +7,10 @@ import (
 )
 
 // GetAppInfo 获取app信息
-func GetAppInfo(c *sinking_server.Context) *model.WebUserApp {
+func GetAppInfo(c *sinking_server.Context) *model.UserApp {
 	data, exists := c.Get(constant.AppInfo)
 	if exists {
-		return data.(*model.WebUserApp)
+		return data.(*model.UserApp)
 	} else {
 		return nil
 	}
