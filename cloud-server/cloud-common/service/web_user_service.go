@@ -68,12 +68,12 @@ func (w webUserService) FindByIdWithCache(id int, refresh bool) (user *model.Web
 }
 
 // Money 用户余额调整(根据用户ID)
-func (webUserService) Money(id int, money string, mod int) (err error) {
+func (webUserService) Money(userId int, money string, mod int) (err error) {
 	l := "+"
 	if mod == 0 {
 		l = "-"
 	}
-	err = util.Database.Db.Model(&model.WebUser{Id: id}).Updates(map[string]interface{}{
+	err = util.Database.Db.Model(&model.WebUser{Id: userId}).Updates(map[string]interface{}{
 		"money":       gorm.Expr("`money`" + l + money),
 		"update_time": str.DateTime(time.Now()),
 	}).Error

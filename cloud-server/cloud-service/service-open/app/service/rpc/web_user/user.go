@@ -39,3 +39,16 @@ func (*service) FindById(userId int) *model.WebUser {
 	}
 	return response.Data
 }
+
+// Money 用户余额操作
+func (*service) Money(userId int, mod int, money string) bool {
+	response, err := rpc.New(group.CloudService, name.ServiceUser).Call("/rpc/user/money", &rpc.Param{
+		"user_id": userId,
+		"mod":     mod,
+		"money":   money,
+	}).Response()
+	if err != nil || response.Code != 200 {
+		return false
+	}
+	return true
+}

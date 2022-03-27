@@ -23,4 +23,8 @@ func registerService(g *sinking_web.RouterGroup) {
 
 	r3 := g.Group("/user")
 	r3.POST("/findById", sinking_server.HandleFunc(rpc.User.FindById))
+	r3.POST("/money", sinking_server.HandleFunc(rpc.User.Money))
+
+	r4 := g.Group("/pay_log")
+	r4.POST("/create", sinking_server.HandleFunc(rpc.PayLog.Create))
 }

@@ -14,3 +14,9 @@ func GetIns() *service {
 	}
 	return obj
 }
+
+// AppUinServer QQ服务器列表
+type AppUinServer struct {
+	Key  string `gorm:"column:key" json:"key"`
+	Name string `gorm:"column:name" json:"name"`
+}

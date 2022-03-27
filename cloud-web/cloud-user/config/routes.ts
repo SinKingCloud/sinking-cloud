@@ -34,7 +34,7 @@
     ],
   },
   {
-    name: "应用管理",
+    name: "能力管理",
     icon: "AppstoreAddOutlined",
     path: '/open',
     routes: [
@@ -63,7 +63,7 @@
     ],
   },
   {
-    name: "对接管理",
+    name: "应用管理",
     icon: "SettingOutlined",
     path: '/app',
     routes: [
