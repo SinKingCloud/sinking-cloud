@@ -65,3 +65,8 @@ func (s *service) GetCurrentUserInfo(id int, refresh bool) *model.WebUser {
 	user, _ := s.FindByIdWithCache(id, refresh)
 	return user
 }
+
+// Clear 清理缓存
+func (s *service) Clear(id int) bool {
+	return util.Cache.Delete(util2.CacheNameWithWebUser + strconv.Itoa(id))
+}

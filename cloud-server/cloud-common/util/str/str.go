@@ -21,13 +21,13 @@ type StringTool struct {
 	string string
 }
 
-// NetStringTool 实例化工具类
-func NetStringTool(str string) *StringTool {
+// NewStringTool 实例化工具类
+func NewStringTool(str string) *StringTool {
 	return &StringTool{string: str}
 }
 
-// NetStrTool 实例化工具类
-func NetStrTool() *StringTool {
+// NewStrTool 实例化工具类
+func NewStrTool() *StringTool {
 	return &StringTool{}
 }
 

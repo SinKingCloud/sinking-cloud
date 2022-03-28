@@ -52,7 +52,7 @@ func GetWebUserInfoByPwd(account string, pwd string) (u *model.WebUser, e error)
 		e = errors.New("您的账户已被禁止登陆")
 		return
 	}
-	if !str.NetStringTool(u.Password).CheckPassword(pwd) {
+	if !str.NewStringTool(u.Password).CheckPassword(pwd) {
 		e = errors.New("用户名或密码错误")
 		return
 	}
@@ -70,7 +70,7 @@ func GetSystemUserInfoByPwd(account string, pwd string) (u *model.SystemUser, e 
 		e = errors.New("您的账户已被禁止登陆")
 		return
 	}
-	if !str.NetStringTool(u.Password).CheckPassword(pwd) {
+	if !str.NewStringTool(u.Password).CheckPassword(pwd) {
 		e = errors.New("用户名或密码错误")
 		return
 	}
@@ -80,7 +80,7 @@ func GetSystemUserInfoByPwd(account string, pwd string) (u *model.SystemUser, e 
 // GetJwtToken 生成jwtToken
 func GetJwtToken(types string, u *model.SystemUser, u2 *model.WebUser, ip string) (s string, e error) {
 	//生成token
-	token := str.NetStringTool(time.Now().String()).Md5()
+	token := str.NewStringTool(time.Now().String()).Md5()
 	loginTime := str.DateTime(time.Now())
 	jwtLoginToken, _ := json.Marshal(map[string]string{types: token})
 	fun := func(types string, newToken string, oldToken string) string {

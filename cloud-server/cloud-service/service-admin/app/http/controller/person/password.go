@@ -18,12 +18,12 @@ func (ControllerPerson) Password(c *sinking_server.Context) {
 		return
 	}
 	u := user.GetIns().GetCurrentUserInfo(c.GetSystemUserInfo().Id, true)
-	if !str.NetStringTool(u.Password).CheckPassword(form.OldPassword) {
+	if !str.NewStringTool(u.Password).CheckPassword(form.OldPassword) {
 		c.Error("旧密码验证失败")
 		return
 	}
 	if err := user.GetIns().UpdateByIds([]int{u.Id}, map[string]interface{}{
-		"password": str.NetStringTool(form.Password).GetPassword(),
+		"password": str.NewStringTool(form.Password).GetPassword(),
 	}); err == nil {
 		log.GetIns().CreateByQueue(c, 3, "修改密码", "修改账户密码")
 		c.Success("修改密码成功")

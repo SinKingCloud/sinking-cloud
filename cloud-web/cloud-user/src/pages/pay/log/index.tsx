@@ -74,7 +74,15 @@ export default (): React.ReactNode => {
       tip: '记录详细',
       hideInSearch: true,
     },
-
+    {
+      title: '金额',
+      dataIndex: 'money',
+      tip: '金额',
+      hideInSearch: true,
+      render: (text: string, record: any) => {
+        return record?.money.toFixed(2) + "元";
+      }
+    },
     {
       title: '操作时间',
       valueType: 'dateTime',

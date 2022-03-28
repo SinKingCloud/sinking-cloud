@@ -15,8 +15,8 @@ func (ControllerPerson) AuthInfo(c *sinking_server.Context) {
 	configs := service.GetWebUserConfSrvIns().GetConfigs(user.Id)
 	c.SuccessWithData("获取实名信息成功", sinking_web.H{
 		"real_auth": user.RealAuth,
-		"card_no":   str.NetStringTool(configs["person.card_no"]).Show(4, 2, "*"),
-		"card_name": str.NetStringTool(configs["person.card_name"]).Show(1, 0, "*"),
+		"card_no":   str.NewStringTool(configs["person.card_no"]).Show(4, 2, "*"),
+		"card_name": str.NewStringTool(configs["person.card_name"]).Show(1, 0, "*"),
 	})
 }
 

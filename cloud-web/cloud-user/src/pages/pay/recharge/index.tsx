@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Avatar, Button, Col, Form, Image, Input, message, Modal, Row, Tooltip} from 'antd';
 import {PageContainer} from "@ant-design/pro-layout";
 import ProCard, {CheckCard} from "@ant-design/pro-card";
@@ -26,6 +26,13 @@ export default (): React.ReactNode => {
       }));
     }
   };
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    setLoading(true);
+    fetchUserInfo().then(() => {
+      setLoading(false)
+    });
+  }, []);
   const [moneyInput, setMoneyInput] = useState(true);
   const [payBtnLoading, setPayBtnLoading] = useState(false);
   const [refreshIcon, setRefreshIcon] = useState(false);
@@ -97,7 +104,7 @@ export default (): React.ReactNode => {
         <Col xs={{span: 24, offset: 0}} lg={{span: 8, offset: 0}} style={{paddingBottom: "20px"}}>
           <Row style={{paddingBottom: "20px"}}>
             <Col xs={{span: 24}} lg={{span: 24}}>
-              <ProCard bordered>
+              <ProCard bordered loading={loading}>
                 <div style={{float: "left"}}>
                   <div style={{float: "left"}}>
                     <Avatar style={{width: "80px", height: "80px"}} src={

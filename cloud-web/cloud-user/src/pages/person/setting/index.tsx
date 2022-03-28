@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {PageContainer} from "@ant-design/pro-layout";
 import ProCard from "@ant-design/pro-card";
 import {Alert, Avatar, Button, Col, Form, Image, Input, message, Modal, Row, Space, Tag, Upload} from "antd";
@@ -26,6 +26,13 @@ export default (): React.ReactNode => {
       }));
     }
   };
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    setLoading(true);
+    fetchUserInfo().then(() => {
+      setLoading(false)
+    });
+  }, []);
   /**
    * 修改密码modal
    */
@@ -99,7 +106,7 @@ export default (): React.ReactNode => {
       </Modal>
       <Row>
         <Col xs={{span: 24, offset: 0}} lg={{span: 14, offset: 5}}>
-          <ProCard title="账户设置" headerBordered>
+          <ProCard title="账户设置" headerBordered loading={loading}>
             <Row>
               <Col lg={{span: 7, offset: 0}} style={{textAlign: "center", margin: "0px auto 20px auto"}}>
                 <Space direction="vertical" size={"small"}>

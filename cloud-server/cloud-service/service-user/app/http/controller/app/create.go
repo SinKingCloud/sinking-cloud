@@ -23,7 +23,7 @@ func (ControllerApp) Create(c *sinking_server.Context) {
 	}
 	err := app.GetIns().Create(&model.WebUserApp{
 		UserId:   c.GetWebUserInfo().Id,
-		Key:      strings.ToUpper(str.NetStringTool(str.GetSnowWorkIns().GetUuid()).Md5()),
+		Key:      strings.ToUpper(str.NewStringTool(str.GetSnowWorkIns().GetUuid()).Md5()),
 		Name:     form.Name,
 		Describe: form.Describe,
 		Status:   form.Status,

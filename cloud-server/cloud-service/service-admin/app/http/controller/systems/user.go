@@ -110,7 +110,7 @@ func (ControllerUser) Update(c *sinking_server.Context) {
 		data["avatar"] = form.Avatar
 	}
 	if form.Password != "" {
-		data["password"] = str.NetStringTool(form.Password).GetPassword()
+		data["password"] = str.NewStringTool(form.Password).GetPassword()
 	}
 	if form.Status != "" {
 		data["status"] = form.Status
@@ -171,7 +171,7 @@ func (ControllerUser) Create(c *sinking_server.Context) {
 	err := user.GetIns().Create(&model.SystemUser{
 		RoleId:   form.RoleId,
 		Account:  form.Account,
-		Password: str.NetStringTool(form.Password).GetPassword(),
+		Password: str.NewStringTool(form.Password).GetPassword(),
 		NickName: form.NickName,
 		Avatar:   form.Avatar,
 		Email:    form.Email,

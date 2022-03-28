@@ -34,7 +34,7 @@ func SmsSend(phone string) bool {
 	}
 	//发送验证码
 	configs := service.GetSystemConfigServiceIns().GetByCache(false)
-	code := strconv.FormatInt(str.NetStrTool().RandInt64(100000, 999999), 10)
+	code := strconv.FormatInt(str.NewStrTool().RandInt64(100000, 999999), 10)
 	if aliyun.Sms.Send(
 		configs[config.AliyunAccessKey],
 		configs[config.AliyunAccessSecret],

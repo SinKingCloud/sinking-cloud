@@ -69,7 +69,7 @@ func (ControllerPerson) Password(c *sinking_server.Context) {
 		return
 	}
 	if err := user.GetIns().UpdateById(c.GetWebUserInfo().Id,
-		map[string]interface{}{"password": str.NetStringTool(form.Password).GetPassword()}); err == nil {
+		map[string]interface{}{"password": str.NewStringTool(form.Password).GetPassword()}); err == nil {
 		service.GetWebUserServiceIns().ClearCache(c.GetWebUserInfo().Id)
 		log.GetIns().CreateByQueue(c, 3, "修改密码", "修改账户密码")
 		c.Success("修改密码成功")
@@ -91,7 +91,7 @@ func (ControllerPerson) Phone(c *sinking_server.Context) {
 		return
 	}
 	u := user.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, true)
-	if !str.NetStringTool(u.Password).CheckPassword(form.Password) {
+	if !str.NewStringTool(u.Password).CheckPassword(form.Password) {
 		c.Error("密码验证失败")
 		return
 	}

@@ -28,6 +28,7 @@ func (ControllerApp) Delete(c *sinking_server.Context) {
 	err = web_app.GetIns().DeleteById(form.Id)
 	if err == nil {
 		rpc.WebUserLog.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), 2, "删除应用", "删除应用"+info.Name)
+		web_app.GetIns().Clear(form.Id)
 		c.Success("删除应用成功")
 	} else {
 		c.Error("删除应用失败")

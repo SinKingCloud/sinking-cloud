@@ -12,7 +12,6 @@ type AppUinLevel struct {
 	Name               string       `gorm:"column:name" json:"name"`
 	Describe           string       `gorm:"column:describe" json:"describe"`
 	Price              float64      `gorm:"column:price" json:"price"`
-	UinNum             int          `gorm:"column:uin_num" json:"uin_num"`
 	MonthSpend         float64      `gorm:"column:month_spend" json:"month_spend"`
 	MonthPrice         float64      `gorm:"column:month_price" json:"month_price"`
 	QuarterPrice       float64      `gorm:"column:quarter_price" json:"quarter_price"`

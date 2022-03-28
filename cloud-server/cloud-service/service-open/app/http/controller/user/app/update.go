@@ -45,6 +45,7 @@ func (ControllerApp) Update(c *sinking_server.Context) {
 	err = web_app.GetIns().UpdateById(form.Id, data)
 	if err == nil {
 		rpc.WebUserLog.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), 3, "修改应用", "修改应用"+info.Name)
+		web_app.GetIns().Clear(form.Id)
 		c.Success("修改应用信息成功")
 	} else {
 		c.Error("修改应用信息失败")

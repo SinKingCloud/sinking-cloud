@@ -24,5 +24,5 @@ func GetRocketConsumerServer(groupName string, allListen bool) queue.MqConsumer 
 
 // GetServerHash 获取节点hash
 func GetServerHash(name string) string {
-	return name + str.NetStringTool(util.Conf.GetString(config.ConfApplicationAddr)+":"+util.Conf.GetString(config.ConfApplicationPort)).Md5()
+	return name + str.NewStringTool(util.Conf.GetString(config.ConfApplicationAddr)+":"+util.Conf.GetString(config.ConfApplicationPort)).Md5()
 }

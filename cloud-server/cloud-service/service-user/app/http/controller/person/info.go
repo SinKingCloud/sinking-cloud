@@ -16,7 +16,7 @@ func (ControllerPerson) Info(c *sinking_server.Context) {
 		Avatar:    user.Avatar,
 		Money:     user.Money,
 		Email:     user.Email,
-		Phone:     str.NetStringTool(strconv.FormatInt(user.Phone, 10)).Show(3, 4, "*"),
+		Phone:     str.NewStringTool(strconv.FormatInt(user.Phone, 10)).Show(3, 4, "*"),
 		RealAuth:  user.RealAuth,
 		LoginIp:   user.LoginIp,
 		LoginTime: user.LoginTime,
