@@ -1,4 +1,4 @@
-package speed
+package uin_tool
 
 import "encoding/json"
 

@@ -42,88 +42,63 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 	if price > 0 && !rpc.WebUser.Money(userId, 0, fmt.Sprintf("%.2f", price)) {
 		return errors.New("扣款失败，请联系管理员")
 	}
-	uinInfo, err := uin2.GetIns().FindByAppIdWithUin(user.Id, uin)
+	uinInfo, err := uin2.GetIns().FindByUserIdWithUin(user.Id, uin)
 	if err != nil || uinInfo == nil {
 		server, err2 := GetServer(serverKey)
 		if err2 != nil || server == nil {
-			return errors.New("未获取到可用节点,请更换挂机节点")
-		}
-		//写入qq记录
-		uinLog := &model.AppUin{
-			UserId:    user.Id,
-			AppId:     appId,
-			ServerId:  server.Id,
-			ServerKey: server.Key,
-			Uin:       uin,
-			Password:  pwd,
-			UinStatus: 1,
-			SignDay:   0,
-			PlayerDay: 0,
-			RunDay:    0,
-			Setting:   str.NewJsonTool(Setting).ToString(),
-			Timing:    0,
-			Status:    0,
-		}
-		err3 := uin2.GetIns().Create(uinLog)
-		if err3 == nil {
-			go func() {
-				_ = server2.GetIns().UpdateById(server.Id, map[string]interface{}{
-					"uin_num": gorm.Expr("`uin_num`+1"),
-				})
-			}()
-			uinInfo, err = uin2.GetIns().FindByAppIdWithUin(user.Id, uin)
+			err = errors.New("未获取到可用节点,请更换挂机节点")
+		} else {
+			//写入qq记录
+			uinLog := &model.AppUin{
+				UserId:    user.Id,
+				AppId:     appId,
+				ServerId:  server.Id,
+				ServerKey: server.Key,
+				Uin:       uin,
+				Password:  pwd,
+				UinStatus: 1,
+				SignDay:   0,
+				PlayerDay: 0,
+				RunDay:    0,
+				Setting:   str.NewJsonTool(Setting).ToString(),
+				Timing:    0,
+				Status:    0,
+			}
+			err = uin2.GetIns().Create(uinLog)
+			if err == nil {
+				go func() {
+					_ = server2.GetIns().UpdateById(server.Id, map[string]interface{}{
+						"uin_num": gorm.Expr("`uin_num`+1"),
+					})
+				}()
+				uinInfo, err = uin2.GetIns().FindByUserIdWithUin(user.Id, uin)
+			}
 		}
 	}
 	var orderErr error
 	//写入qq记录失败,退回余额
 	if err != nil || uinInfo == nil {
-		orderErr = errors.New("写入QQ记录失败，请联系管理员")
+		orderErr = err
 	} else {
-		//更新到期时间
 		data := make(map[string]interface{})
+		//应用ID变动
+		if appId != uinInfo.AppId {
+			data["app_id"] = appId
+		}
+		//更改到期时间
 		if types == 0 || types == 1 {
 			data["player_day"] = gorm.Expr("`player_day`+" + strconv.Itoa(month*30))
 		}
 		if types == 0 || types == 2 {
 			data["sign_day"] = gorm.Expr("`sign_day`+" + strconv.Itoa(month*30))
 		}
-		if pwd != uinInfo.Password {
-			data["password"] = pwd
-			data["uin_status"] = 1
-			go func() {
-				_ = log.GetIns().Create(&model.AppUinLog{
-					UserId:  user.Id,
-					AppId:   appId,
-					UinId:   uinInfo.Id,
-					Title:   "修改密码",
-					Content: "修改挂机密码",
-				})
-			}()
+		//密码变动
+		if pwd != "" && pwd != uinInfo.Password {
+			_ = ChangePassword(uinInfo.Id, pwd)
 		}
-		if serverKey != uinInfo.ServerKey {
-			server, err := GetServer(serverKey)
-			if err != nil || server == nil {
-				return errors.New("未获取到可用节点,请更换挂机节点")
-			}
-			data["server_key"] = server.Key
-			data["server_id"] = server.Id
-			data["uin_status"] = 1
-			go func() {
-				//写入QQ操作记录
-				_ = log.GetIns().Create(&model.AppUinLog{
-					UserId:  user.Id,
-					AppId:   appId,
-					UinId:   uinInfo.Id,
-					Title:   "挂机地点变动",
-					Content: "挂机地点变动为" + server.Name,
-				})
-				_ = server2.GetIns().UpdateById(uinInfo.ServerId, map[string]interface{}{
-					"uin_num": gorm.Expr("`uin_num`-1"),
-				})
-				_ = server2.GetIns().UpdateById(server.Id, map[string]interface{}{
-					"uin_num": gorm.Expr("`uin_num`+1"),
-				})
-			}()
+		//挂机地点变动
+		if serverKey != "" && serverKey != uinInfo.ServerKey {
+			_ = ChangeServer(uinInfo.Id, serverKey)
 		}
 		err = uin2.GetIns().UpdateById(uinInfo.Id, data)
 		if err != nil {

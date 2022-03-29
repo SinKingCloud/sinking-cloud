@@ -1,4 +1,4 @@
-package speed
+package uin_tool
 
 import (
 	"encoding/json"
@@ -24,7 +24,7 @@ func getClient() *http.Client {
 
 // sendRequest 发送请求
 func (s *speed) sendRequest(url string, data interface{}) (*response, error) {
-	url = s.addr + url
+	url = "http://" + s.addr + url
 	req, _ := http.NewRequest("POST", url, strings.NewReader(s.toJson(data)))
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
 	resp, err := getClient().Do(req)

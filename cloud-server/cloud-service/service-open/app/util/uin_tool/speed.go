@@ -1,32 +1,36 @@
-package speed
+package uin_tool
 
-import "errors"
+import (
+	"errors"
+)
 
 type speed struct {
 	addr string //服务器地址
 }
 
-// NewSpeed 实例化
-func NewSpeed(addr string) *speed {
+// NewUinTool 实例化
+func NewUinTool(addr string) *speed {
 	return &speed{addr: addr}
 }
 
 // Login 登陆账号
-func (s *speed) Login(uin string, pwd string) (int, error) {
+func (s *speed) Login(uin string, pwd string) (int, error, string) {
 	if s.add(uin, pwd) {
 		return s.login(uin, "")
 	}
-	return Error, errors.New("初始化登录请求失败")
+	return Error, errors.New("初始化登录请求失败"), ""
 }
 
 // CaptchaLogin 验证滑动验证码登陆
 func (s *speed) CaptchaLogin(uin string, ticket string) (int, error) {
-	return s.login(uin, ticket)
+	a, b, _ := s.login(uin, ticket)
+	return a, b
 }
 
 // SmsLogin 验证设备锁登陆
 func (s *speed) SmsLogin(uin string, code string) (int, error) {
-	return s.login(uin, code)
+	a, b, _ := s.login(uin, code)
+	return a, b
 }
 
 // Delete 删除QQ
@@ -54,46 +58,49 @@ const (
 // Speed QQ项目加速
 func (s *speed) Speed(uin string, pwd string, jobs []int) map[int]bool {
 	res := make(map[int]bool)
-	login, err := s.Login(uin, pwd)
-	if err != nil || login != Success {
-		return res
-	}
 	mobileLogin := false //是否登录手机
 	pcLogin := false     //是否登录pc
-	loginA := func() bool {
-		c, err := s.login(uin, "")
-		if err != nil {
-			return false
-		}
-		mobileLogin = c == Success
-		return mobileLogin
-	}
-	loginP := func() bool {
-		if !mobileLogin {
-			if !loginA() {
-				return false
-			}
-		}
-		if s.pcSpeed(uin) {
-			pcLogin = true
-		}
-		return pcLogin
-	}
 	speedA := func(f func() bool) bool {
 		if !mobileLogin {
-			loginA()
+			if !s.add(uin, pwd) {
+				return false
+			}
+			c, err, _ := s.login(uin, "")
+			if err != nil {
+				return false
+			}
+			mobileLogin = c == Success || err == nil
 		}
 		if mobileLogin {
-			return f()
+			r := f()
+			if !r {
+				r = f()
+			}
+			return r
 		}
 		return false
 	}
 	speedP := func(f func() bool) bool {
 		if !pcLogin {
-			loginP()
+			if !mobileLogin {
+				speedA(func() bool {
+					return mobileLogin
+				})
+			}
+			if !mobileLogin {
+				return false
+			}
+			if s.pcSpeed(uin) {
+				pcLogin = true
+			}
+			return pcLogin
 		}
 		if pcLogin {
-			return f()
+			r := f()
+			if !r {
+				r = f()
+			}
+			return r
 		}
 		return false
 	}
@@ -101,10 +108,24 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) map[int]bool {
 	for _, v := range jobs {
 		switch v {
 		case Mobile:
-			res[Mobile] = loginA()
+			res[Mobile] = speedA(func() bool {
+				return mobileLogin
+			})
 			break
 		case Pc:
-			res[Pc] = loginP()
+			res[Pc] = speedP(func() bool {
+				return pcLogin
+			})
+			break
+		case Online:
+			res[Online] = speedP(func() bool {
+				return pcLogin
+			})
+			break
+		case Medal:
+			res[Medal] = speedP(func() bool {
+				return pcLogin
+			})
 			break
 		case Zone:
 			res[Zone] = speedP(func() bool {

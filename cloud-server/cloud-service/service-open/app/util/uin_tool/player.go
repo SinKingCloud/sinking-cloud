@@ -1,4 +1,4 @@
-package speed
+package uin_tool
 
 // sportSpeed 运动加速
 func (s *speed) sportSpeed(uin string) bool {
@@ -10,7 +10,7 @@ func (s *speed) sportSpeed(uin string) bool {
 	if err != nil {
 		return false
 	}
-	return res.State == "0" || res.State == "-10001"
+	return res.State == "0" || res.State == "-10001" || res.State == "-10003"
 }
 
 // microShowSpeed 厘米秀加速

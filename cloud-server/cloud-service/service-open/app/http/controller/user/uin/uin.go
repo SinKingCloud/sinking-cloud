@@ -3,7 +3,10 @@ package uin
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin"
+	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/uin"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/util/uin_tool"
 	"strconv"
 )
 
@@ -75,6 +78,162 @@ func (ControllerUin) List(c *sinking_server.Context) {
 	}
 }
 
+// Buy 下单
+func (ControllerUin) Buy(c *sinking_server.Context) {
+	type Form struct {
+		Uin       string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		ServerKey string `json:"server_key" validate:"omitempty,max=10" label:"挂机地区"`
+		AppId     int    `json:"app_id" validate:"omitempty,numeric,gte=0" label:"应用ID"`
+		Pwd       string `json:"pwd" validate:"omitempty,len=32" label:"QQ密码"`
+		Type      int    `json:"type" validate:"oneof=0 1 2" label:"下单类型"`
+		Month     int    `json:"month" validate:"oneof=1 3 6 12" label:"下单月数"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		//新开通
+		if form.Pwd == "" || len(form.Pwd) != 32 {
+			c.Error("QQ密码格式不正确")
+			return
+		}
+		if form.ServerKey == "" {
+			c.Error("挂机地区不能为空")
+			return
+		}
+	}
+	err = web_uin.Buy(c.GetWebUserInfo().Id, form.AppId, form.ServerKey, form.Uin, form.Pwd, form.Type, form.Month)
+	if err != nil {
+		c.Error(err.Error())
+	} else {
+		c.Success("下单成功")
+	}
+}
+
+// ChangePassword 更改挂机QQ密码
+func (ControllerUin) ChangePassword(c *sinking_server.Context) {
+	type Form struct {
+		Uin string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Pwd string `json:"pwd" validate:"required,len=32" label:"QQ密码"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	err = web_uin.ChangePassword(uinInfo.Id, form.Pwd)
+	if err == nil {
+		c.Success("更改挂机密码成功,请重新登录上线")
+	} else {
+		c.Error("更改挂机密码失败")
+	}
+}
+
+// ChangeServer 更改挂机地区
+func (ControllerUin) ChangeServer(c *sinking_server.Context) {
+	type Form struct {
+		Uin       string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		ServerKey string `json:"server_key" validate:"required,max=32" label:"挂机地区"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	err = web_uin.ChangeServer(uinInfo.Id, form.ServerKey)
+	if err == nil {
+		c.Success("更改挂机地区成功,请重新登录上线")
+	} else {
+		c.Error("更改挂机地区失败")
+	}
+}
+
+// Login 登陆QQ
+func (ControllerUin) Login(c *sinking_server.Context) {
+	type Form struct {
+		Uin    string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Step   string `json:"step" validate:"oneof=normal captcha sms" label:"登陆步骤"`
+		Ticket string `json:"ticket" validate:"omitempty,max=500" label:"登陆ticket"`
+		Code   string `json:"code" validate:"omitempty,numeric,len=6" label:"短信验证码"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	server, err := server2.GetIns().FindById(uinInfo.ServerId)
+	if err != nil || server == nil {
+		c.Error("未查询到挂机地区信息,请更换挂机地区")
+		return
+	}
+	q := uin_tool.NewUinTool(server.Addr)
+	switch form.Step {
+	case "normal":
+		code, err, s := q.Login(uinInfo.Uin, uinInfo.Password)
+		if err != nil || code != uin_tool.Success {
+			if code == uin_tool.NeedCaptcha {
+				c.Return(400, err.Error(), s)
+			} else {
+				c.Error(err.Error())
+			}
+			return
+		}
+		break
+	case "captcha":
+		if form.Ticket == "" {
+			c.Error("ticket不能为空")
+			return
+		}
+		code, err := q.CaptchaLogin(uinInfo.Uin, form.Ticket)
+		if err != nil || code != uin_tool.Success {
+			if code == uin_tool.NeedCode {
+				c.Return(401, err.Error(), nil)
+			} else {
+				c.Error(err.Error())
+			}
+			return
+		}
+		break
+	case "sms":
+		if form.Code == "" {
+			c.Error("验证码不能为空")
+			return
+		}
+		code, err := q.SmsLogin(uinInfo.Uin, form.Code)
+		if err != nil || code != uin_tool.Success {
+			c.Error(err.Error())
+			return
+		}
+		break
+	}
+	//更改QQ状态
+	_ = uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{"uin_status": 0})
+	c.Success("登陆成功")
+}
+
+// Job 执行任务
+func (ControllerUin) Job(c *sinking_server.Context) {
+	c.Success("success")
+}
+
 // Self 账户信息
 func (ControllerUin) Self(c *sinking_server.Context) {
 	c.Success("success")
@@ -82,16 +241,6 @@ func (ControllerUin) Self(c *sinking_server.Context) {
 
 // Count 统计信息
 func (ControllerUin) Count(c *sinking_server.Context) {
-	c.Success("success")
-}
-
-// Buy 下单
-func (ControllerUin) Buy(c *sinking_server.Context) {
-	c.Success("success")
-}
-
-// Login 登陆QQ
-func (ControllerUin) Login(c *sinking_server.Context) {
 	c.Success("success")
 }
 

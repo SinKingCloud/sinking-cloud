@@ -18,7 +18,7 @@ func (s *service) FindByUserIdWithUin(userId int, uin string) (data *model.AppUi
 }
 
 // FindByAppIdWithUin 通过应用id uin查询
-func (s *service) FindByAppIdWithUin(userId int, uin string) (data *model.AppUin, err error) {
-	err = util.Database.Db.Where("`app_id` = ? and `uin` = ?", userId, uin).First(&data).Error
+func (s *service) FindByAppIdWithUin(appId int, uin string) (data *model.AppUin, err error) {
+	err = util.Database.Db.Where("`app_id` = ? and `uin` = ?", appId, uin).First(&data).Error
 	return
 }
