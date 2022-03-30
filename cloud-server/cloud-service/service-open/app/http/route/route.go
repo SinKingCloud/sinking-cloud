@@ -39,16 +39,16 @@ func loadUserRoute(s *sinking_web.Engine) {
 	//挂机应用
 	uinGroup := g.Group("/uin")
 	handleUin := &uin.ControllerUin{}
-	uinGroup.GET("/list", sinking_server.HandleFunc(handleUin.List))      //挂机列表
-	uinGroup.POST("/delete", sinking_server.HandleFunc(handleUin.Delete)) //删除挂机
-	uinGroup.GET("/self", sinking_server.HandleFunc(handleUin.Self))      //概览信息
-	uinGroup.GET("/count", sinking_server.HandleFunc(handleUin.Count))    //统计信息
-	uinGroup.POST("/buy", sinking_server.HandleFunc(handleUin.Buy))       //业务下单
+	uinGroup.GET("/list", sinking_server.HandleFunc(handleUin.List))   //挂机列表
+	uinGroup.GET("/self", sinking_server.HandleFunc(handleUin.Self))   //概览信息
+	uinGroup.GET("/count", sinking_server.HandleFunc(handleUin.Count)) //统计信息
+	uinGroup.POST("/buy", sinking_server.HandleFunc(handleUin.Buy))    //业务下单
 
 	//QQ操作
 	uinSetGroup := uinGroup.Group("/operate")
-	uinSetGroup.POST("/login", sinking_server.HandleFunc(handleUin.Login))             //登陆QQ
-	uinSetGroup.POST("/run", sinking_server.HandleFunc(handleUin.Job))                 //执行任务
+	uinSetGroup.POST("/login", sinking_server.HandleFunc(handleUin.Login))             //登陆挂机QQ
+	uinSetGroup.POST("/delete", sinking_server.HandleFunc(handleUin.Delete))           //删除挂机QQ
+	uinSetGroup.POST("/run", sinking_server.HandleFunc(handleUin.Job))                 //执行挂机任务
 	uinSetGroup.POST("/setting", sinking_server.HandleFunc(handleUin.Setting))         //修改功能设置
 	uinSetGroup.POST("/password", sinking_server.HandleFunc(handleUin.ChangePassword)) //修改挂机密码
 	uinSetGroup.POST("/server", sinking_server.HandleFunc(handleUin.ChangeServer))     //修改挂机地区

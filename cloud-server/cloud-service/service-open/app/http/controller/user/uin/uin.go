@@ -164,7 +164,7 @@ func (ControllerUin) ChangeServer(c *sinking_server.Context) {
 	if err == nil {
 		c.Success("更改挂机地区成功,请重新登录上线")
 	} else {
-		c.Error("更改挂机地区失败")
+		c.Error(err.Error())
 	}
 }
 

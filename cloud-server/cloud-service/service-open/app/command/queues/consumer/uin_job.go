@@ -74,7 +74,7 @@ func (l *uinJob) run(uin *model.AppUin) {
 					util.Log.Println(param, i)
 				})
 			}
-		}, Thread: 10}).Run()
+		}, Thread: 20}).Run()
 		g.Wait()
 		serverLock.Unlock()
 	}

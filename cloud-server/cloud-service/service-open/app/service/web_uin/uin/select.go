@@ -55,7 +55,7 @@ func (s *service) Select(where map[string]string, orderByField string, orderByTy
 // SelectUinJob 查询代挂任务
 func (s *service) SelectUinJob(limit int, minute int64, runTime string) (list []*model.AppUin, err error) {
 	query := util.Database.Db.Model(&model.AppUin{})
-	query.Where("`uin_status`=0 and `status` =0 and `timing`=? and `run_time`<=?", minute, runTime)
+	query.Where("`uin_status`=0 and `status` =0 and `timing`=? and `run_time`<=? and (`player_day`>0 or `sign_day`>0)", minute, runTime)
 	err = query.Limit(limit).Find(&list).Error
 	return
 }
