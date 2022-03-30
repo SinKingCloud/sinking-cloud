@@ -43,20 +43,20 @@ func (s *speed) Delete(uin string) bool {
 }
 
 const (
-	Mobile      = iota //手机QQ加速
-	Pc                 //Pc加速
-	Online             //非隐身加速
-	Zone               //访客加速
-	Medal              //勋章墙加速
-	Ws                 //微视加速
-	MicroShow          //厘米秀加速
-	Safe               //管家加速
-	Game               //游戏加速
-	Sport              //运动加速
-	MobileClock        //手Q打卡
-	ZoneClock          //空间打卡
-	Login              //连续登陆加速
-	Friend             //加好友加速
+	Mobile      = iota //0.手机QQ加速
+	Pc                 //1.Pc加速
+	Online             //2.非隐身加速
+	Zone               //3.访客加速
+	Medal              //4.勋章墙加速
+	Ws                 //5.微视加速
+	MicroShow          //6.厘米秀加速
+	Safe               //7.管家加速
+	Game               //8.游戏加速
+	Sport              //9.运动加速
+	MobileClock        //10.手Q打卡
+	ZoneClock          //11.空间打卡
+	Login              //12.连续登陆加速
+	Friend             //13.加好友加速
 )
 
 // Speed QQ项目加速

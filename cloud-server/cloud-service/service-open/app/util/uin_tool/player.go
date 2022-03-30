@@ -62,7 +62,7 @@ func (s *speed) safeSpeed(uin string) bool {
 	if err != nil {
 		return false
 	}
-	return res.State == "0"
+	return res.State != "-1"
 }
 
 // zoneSpeed 空间加速
@@ -80,7 +80,7 @@ func (s *speed) zoneSpeed(uin string) bool {
 
 // zoneClockSpeed 空间打卡加速
 func (s *speed) zoneClockSpeed(uin string) bool {
-	url := "/?&type=Android/&pe=sign/"
+	url := "/?&type=Android/&pe=qzone/"
 	data := map[string]string{
 		"Uin": uin,
 	}

@@ -48,6 +48,7 @@ func loadUserRoute(s *sinking_web.Engine) {
 	//QQ操作
 	uinSetGroup := uinGroup.Group("/operate")
 	uinSetGroup.POST("/login", sinking_server.HandleFunc(handleUin.Login))             //登陆QQ
+	uinSetGroup.POST("/run", sinking_server.HandleFunc(handleUin.Job))                 //执行任务
 	uinSetGroup.POST("/setting", sinking_server.HandleFunc(handleUin.Setting))         //修改功能设置
 	uinSetGroup.POST("/password", sinking_server.HandleFunc(handleUin.ChangePassword)) //修改挂机密码
 	uinSetGroup.POST("/server", sinking_server.HandleFunc(handleUin.ChangeServer))     //修改挂机地区

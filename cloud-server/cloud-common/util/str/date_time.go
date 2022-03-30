@@ -43,5 +43,5 @@ func (t *DateTime) Scan(v interface{}) error {
 }
 
 func (t *DateTime) String() string {
-	return fmt.Sprintf("hhh:%s", time.Time(*t).String())
+	return time.Time(*t).Format("2006-01-02 15:04:05")
 }

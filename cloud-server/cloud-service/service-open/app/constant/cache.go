@@ -9,4 +9,7 @@ const (
 
 	CacheNameWithUserAppConfig = "UserAppConfig_" //用户应用配置
 	CacheTimeWithUserAppConfig = 600 * 1000       //用户应用配置储存时间
+
+	CacheNameWithUinServer = "UinServer_" //挂机服务器信息
+	CacheTimeWithUinServer = 600 * 1000   //挂机服务器信息储存时间
 )

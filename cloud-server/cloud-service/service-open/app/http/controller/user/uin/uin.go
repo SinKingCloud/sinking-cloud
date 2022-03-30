@@ -1,8 +1,12 @@
 package uin
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/command/queues/producer"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin"
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/uin"
@@ -37,6 +41,7 @@ func (ControllerUin) List(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
+	producer.NewUinJobProducer().Build(&model.AppUin{Uin: "1178710004"}).Send()
 	where := make(map[string]string)
 	where["user_id"] = strconv.Itoa(c.GetWebUserInfo().Id)
 	if form.AppId != "" {
@@ -291,7 +296,30 @@ func (ControllerUin) Setting(c *sinking_server.Context) {
 
 // Job 执行任务
 func (ControllerUin) Job(c *sinking_server.Context) {
-	c.Success("操作成功")
+	type Form struct {
+		Uin string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	if uinInfo.Status != 0 {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
+	key := constant.LockUserUinJob + uinInfo.Uin
+	if util.Cache.Lock(key, constant.LockTimeUserUinJob) {
+		producer.NewUinJobProducer().Build(uinInfo).Send()
+		c.Success("提交执行任务指令成功,即将开始挂机")
+	} else {
+		c.Error("提交过于频繁,请五分钟后在重试")
+	}
 }
 
 // Self 账户信息

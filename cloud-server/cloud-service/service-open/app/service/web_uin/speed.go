@@ -14,6 +14,29 @@ var Setting = map[string]string{
 	"sport":        "1",
 	"mobile_clock": "1",
 	"zone_clock":   "1",
+	"login":        "1",
+	"friend":       "1",
+}
+
+// JobMap 映射表
+var JobMap = map[string]map[string]int{
+	"speed": {
+		"mobile":       0,
+		"pc":           1,
+		"online":       2,
+		"zone":         3,
+		"medal":        4,
+		"ws":           5,
+		"micro_show":   6,
+		"safe":         7,
+		"game":         8,
+		"sport":        9,
+		"mobile_clock": 10,
+		"zone_clock":   11,
+		"login":        12,
+		"friend":       13,
+	},
+	"sign": {},
 }
 
 // Project 项目列表
@@ -92,4 +115,5 @@ var Project = map[string]map[string]map[string]string{
 			"edit":     "true",
 		},
 	},
+	"sign": {},
 }
