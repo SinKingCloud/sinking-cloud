@@ -30,6 +30,7 @@ const (
 	PassError          //密码错误
 	EnvError           //环境异常
 	UinLock            //账号冻结
+	NotCreate          //未创建QQ
 )
 
 type captcha struct {
@@ -50,11 +51,11 @@ func (s *speed) login(uin string, code string) (int, error, string) {
 	}
 	var state *captcha
 	err = json.Unmarshal([]byte(res.State), &state)
-	if (err != nil || state == nil) && res.State != "0" {
+	if (err != nil || state == nil) && res.State != "0" && res.State != "-1" {
 		return Error, errors.New("未知状态"), ""
 	}
 	if state.Stype == "-1" {
-		return Error, errors.New("系统不存在此QQ"), ""
+		return NotCreate, errors.New("系统不存在此QQ"), ""
 	}
 	if state.Stype == "0" || res.State == "0" {
 		return Success, nil, ""

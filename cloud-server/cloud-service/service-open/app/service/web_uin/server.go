@@ -32,6 +32,7 @@ func ChangeServer(uinId int, key string) error {
 		data["server_id"] = server.Id
 		data["uin_status"] = 1
 		go func() {
+			_ = ServerUinCreate(uinInfo.ServerId, uinInfo.Uin, uinInfo.Password)
 			//写入QQ操作记录
 			_ = log.GetIns().Create(&model.AppUinLog{
 				UserId:  uinInfo.UserId,

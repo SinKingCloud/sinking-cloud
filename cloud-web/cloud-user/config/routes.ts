@@ -45,12 +45,12 @@
           {
             name: "能力概览",
             path: 'home',
-            component: './index/index/welcome',
+            component: './open/uin/home',
           },
           {
             name: "挂机列表",
             path: 'list',
-            component: './index/index/welcome',
+            component: './open/uin/list',
           },
           {
             redirect: '/open/uin/home',

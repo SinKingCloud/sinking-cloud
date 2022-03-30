@@ -116,3 +116,16 @@ func (s *speed) pcSpeed(uin string) bool {
 	}
 	return res.State == "0"
 }
+
+// friendSpeed 加好友加速
+func (s *speed) friendSpeed(uin string) bool {
+	url := "/?&type=Android/&pe=Friends/"
+	data := map[string]string{
+		"Uin": uin,
+	}
+	res, err := s.sendRequest(url, data)
+	if err != nil {
+		return false
+	}
+	return res.State == "0"
+}

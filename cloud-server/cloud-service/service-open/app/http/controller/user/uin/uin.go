@@ -7,12 +7,14 @@ import (
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/uin"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/util/uin_tool"
+	"gorm.io/gorm"
 	"strconv"
 )
 
 type ControllerUin struct {
 }
 
+// List 列表
 func (ControllerUin) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
@@ -179,6 +181,10 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
+	if uinInfo.Status != 0 {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
 	server, err := server2.GetIns().FindById(uinInfo.ServerId)
 	if err != nil || server == nil {
 		c.Error("未查询到挂机地区信息,请更换挂机地区")
@@ -229,22 +235,77 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	c.Success("登陆成功")
 }
 
-// Job 执行任务
-func (ControllerUin) Job(c *sinking_server.Context) {
-	c.Success("success")
-}
-
-// Self 账户信息
-func (ControllerUin) Self(c *sinking_server.Context) {
-	c.Success("success")
-}
-
-// Count 统计信息
-func (ControllerUin) Count(c *sinking_server.Context) {
-	c.Success("success")
+// Delete 删除QQ
+func (ControllerUin) Delete(c *sinking_server.Context) {
+	type Form struct {
+		Uin string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	if uinInfo.Status != 0 {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
+	err = uin.GetIns().DeleteById(uinInfo.Id)
+	if err != nil {
+		c.Error("删除QQ失败")
+		return
+	}
+	_ = server2.GetIns().UpdateById(uinInfo.ServerId, map[string]interface{}{
+		"uin_num": gorm.Expr("`uin_num`-1"),
+	})
+	c.Success("删除QQ成功")
 }
 
 // Setting 功能设置
 func (ControllerUin) Setting(c *sinking_server.Context) {
-	c.Success("success")
+	type Form struct {
+		Uin     string            `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Setting map[string]string `json:"setting" validate:"required,min=1" label:"设置项"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	err = web_uin.ChangeSetting(uinInfo.Id, form.Setting)
+	if err != nil {
+		c.Error(err.Error())
+		return
+	}
+	c.Success("操作成功")
+}
+
+// Job 执行任务
+func (ControllerUin) Job(c *sinking_server.Context) {
+	c.Success("操作成功")
+}
+
+// Self 账户信息
+func (ControllerUin) Self(c *sinking_server.Context) {
+	c.SuccessWithData("获取成功", web_uin.GetUserLevel(c.GetWebUserInfo().Id))
+}
+
+// Count 统计信息
+func (ControllerUin) Count(c *sinking_server.Context) {
+	u := c.GetWebUserInfo()
+	data := make(map[string]int64)
+	data["uin_num_all_normal"] = web_uin.GetAllNum(u.Id, 0)
+	data["uin_num_all_un_normal"] = web_uin.GetAllNum(u.Id, 1)
+	data["uin_num_today_normal"] = web_uin.GetTodayAddNum(u.Id, 0)
+	data["uin_num_today_un_normal"] = web_uin.GetTodayAddNum(u.Id, 1)
+	c.SuccessWithData("获取成功", data)
 }

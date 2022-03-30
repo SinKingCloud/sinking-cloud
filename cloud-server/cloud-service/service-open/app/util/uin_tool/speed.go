@@ -1,9 +1,5 @@
 package uin_tool
 
-import (
-	"errors"
-)
-
 type speed struct {
 	addr string //服务器地址
 }
@@ -13,12 +9,20 @@ func NewUinTool(addr string) *speed {
 	return &speed{addr: addr}
 }
 
+// Create 创建账号
+func (s *speed) Create(uin string, pwd string) bool {
+	return s.add(uin, pwd)
+}
+
 // Login 登陆账号
 func (s *speed) Login(uin string, pwd string) (int, error, string) {
-	if s.add(uin, pwd) {
-		return s.login(uin, "")
+	a, b, c := s.login(uin, "")
+	if a == NotCreate {
+		if s.add(uin, pwd) {
+			a, b, c = s.login(uin, "")
+		}
 	}
-	return Error, errors.New("初始化登录请求失败"), ""
+	return a, b, c
 }
 
 // CaptchaLogin 验证滑动验证码登陆
@@ -52,7 +56,7 @@ const (
 	MobileClock        //手Q打卡
 	ZoneClock          //空间打卡
 	Login              //连续登陆加速
-	Add                //加好友加速
+	Friend             //加好友加速
 )
 
 // Speed QQ项目加速
@@ -165,6 +169,16 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) map[int]bool {
 		case ZoneClock:
 			res[ZoneClock] = speedA(func() bool {
 				return s.zoneClockSpeed(uin)
+			})
+			break
+		case Login:
+			res[Login] = speedA(func() bool {
+				return mobileLogin
+			})
+			break
+		case Friend:
+			res[Friend] = speedA(func() bool {
+				return s.friendSpeed(uin)
 			})
 			break
 		default:
