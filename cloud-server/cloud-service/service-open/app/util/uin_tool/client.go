@@ -2,6 +2,7 @@ package uin_tool
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -16,7 +17,7 @@ var httpClient *http.Client
 func getClient() *http.Client {
 	if httpClient == nil {
 		httpClient = &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout: 20 * time.Second,
 		}
 	}
 	return httpClient
@@ -45,6 +46,7 @@ func (s *speed) sendRequest(url string, data interface{}) (*response, error) {
 	}
 	var res *response
 	err = json.Unmarshal(body, &res)
+	fmt.Println("请求地址", url, "请求参数", s.toJson(data), "结果", res)
 	if err != nil {
 		return nil, err
 	}

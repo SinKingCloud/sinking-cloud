@@ -6,8 +6,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/user"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_user"
 	"strconv"
 )
 
@@ -76,9 +76,9 @@ func (ControllerUser) List(c *sinking_server.Context) {
 	if form.UpdateTimeEnd != "" {
 		where["update_time_end"] = form.UpdateTimeEnd
 	}
-	data, total, err := user.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := system_user.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err == nil {
-		log.GetIns().CreateByQueue(c, 0, "查看用户", "查看用户列表")
+		system_log.GetIns().CreateByQueue(c, 0, "查看用户", "查看用户列表")
 		c.SuccessWithData("获取用户数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 		return
 	}
@@ -124,7 +124,7 @@ func (ControllerUser) Update(c *sinking_server.Context) {
 	if form.Phone != "" {
 		data["phone"] = form.Phone
 	}
-	err := user.GetIns().UpdateByIds(form.Ids, data)
+	err := system_user.GetIns().UpdateByIds(form.Ids, data)
 	if err == nil {
 		//刷新缓存
 		go func() {
@@ -132,7 +132,7 @@ func (ControllerUser) Update(c *sinking_server.Context) {
 				service.GetSystemUserServiceIns().ClearCache(v)
 			}
 		}()
-		log.GetIns().CreateByQueue(c, 3, "修改用户", "修改用户信息")
+		system_log.GetIns().CreateByQueue(c, 3, "修改用户", "修改用户信息")
 		c.Success("修改数据成功")
 	} else {
 		c.Error("修改数据失败")
@@ -156,11 +156,11 @@ func (ControllerUser) Create(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	if num, err := user.GetIns().CountByAccount(form.Account); err != nil || num > 0 {
+	if num, err := system_user.GetIns().CountByAccount(form.Account); err != nil || num > 0 {
 		c.Error("该账户名已被占用")
 		return
 	}
-	if num, err := user.GetIns().CountByPhone(form.Phone); err != nil || num > 0 {
+	if num, err := system_user.GetIns().CountByPhone(form.Phone); err != nil || num > 0 {
 		c.Error("该手机号已被占用")
 		return
 	}
@@ -168,7 +168,7 @@ func (ControllerUser) Create(c *sinking_server.Context) {
 		form.Password = "123456"
 	}
 	phone, _ := strconv.ParseInt(form.Phone, 10, 64)
-	err := user.GetIns().Create(&model.SystemUser{
+	err := system_user.GetIns().Create(&model.SystemUser{
 		RoleId:   form.RoleId,
 		Account:  form.Account,
 		Password: str.NewStringTool(form.Password).GetPassword(),
@@ -179,7 +179,7 @@ func (ControllerUser) Create(c *sinking_server.Context) {
 		Status:   form.Status,
 	})
 	if err == nil {
-		log.GetIns().CreateByQueue(c, 1, "添加用户", "添加用户记录")
+		system_log.GetIns().CreateByQueue(c, 1, "添加用户", "添加用户记录")
 		c.Success("添加数据成功")
 	} else {
 		c.Error("添加数据失败")
@@ -196,9 +196,9 @@ func (ControllerUser) Delete(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := user.GetIns().DeleteByIds(form.Ids)
+	err := system_user.GetIns().DeleteByIds(form.Ids)
 	if err == nil {
-		log.GetIns().CreateByQueue(c, 2, "删除用户", "删除用户记录")
+		system_log.GetIns().CreateByQueue(c, 2, "删除用户", "删除用户记录")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

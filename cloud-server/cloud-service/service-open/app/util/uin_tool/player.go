@@ -104,6 +104,19 @@ func (s *speed) mobileClockSpeed(uin string) bool {
 	return res.State == "0"
 }
 
+// pcOffline 电脑下线
+func (s *speed) pcOffline(uin string) bool {
+	url := "/?&type=Android/&pe=Offlinepc/"
+	data := map[string]string{
+		"Uin": uin,
+	}
+	res, err := s.sendRequest(url, data)
+	if err != nil {
+		return false
+	}
+	return res.State == "0"
+}
+
 // pcSpeed 电脑加速
 func (s *speed) pcSpeed(uin string) bool {
 	url := "/?&type=Android/&pe=pc/"

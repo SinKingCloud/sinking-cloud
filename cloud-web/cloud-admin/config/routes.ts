@@ -62,6 +62,10 @@
         component: './system/log_request',
       },
       {
+        path: 'file',
+        component: './system/file',
+      },
+      {
         redirect: '/system/user',
       },
     ],

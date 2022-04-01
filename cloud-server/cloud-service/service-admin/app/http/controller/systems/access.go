@@ -4,8 +4,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/access"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_access"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_log"
 )
 
 // List 接口列表
@@ -57,9 +57,9 @@ func (ControllerAccess) List(c *sinking_server.Context) {
 	if form.UpdateTimeEnd != "" {
 		where["update_time_end"] = form.UpdateTimeEnd
 	}
-	data, total, err := access.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := system_access.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err == nil {
-		log.GetIns().CreateByQueue(c, 0, "查看权限", "查看权限列表")
+		system_log.GetIns().CreateByQueue(c, 0, "查看权限", "查看权限列表")
 		c.SuccessWithData("获取权限数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 		return
 	}
@@ -97,9 +97,9 @@ func (ControllerAccess) Update(c *sinking_server.Context) {
 	if form.Status != "" {
 		data["status"] = form.Status
 	}
-	err := access.GetIns().UpdateByIds(form.Ids, data)
+	err := system_access.GetIns().UpdateByIds(form.Ids, data)
 	if err == nil {
-		log.GetIns().CreateByQueue(c, 3, "修改权限", "修改权限信息")
+		system_log.GetIns().CreateByQueue(c, 3, "修改权限", "修改权限信息")
 		c.Success("修改数据成功")
 	} else {
 		c.Error("修改数据失败")
@@ -120,7 +120,7 @@ func (ControllerAccess) Create(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := access.GetIns().Create(&model.SystemAccess{
+	err := system_access.GetIns().Create(&model.SystemAccess{
 		Name:     form.Name,
 		Describe: form.Describe,
 		Url:      form.Url,
@@ -128,7 +128,7 @@ func (ControllerAccess) Create(c *sinking_server.Context) {
 		Status:   form.Status,
 	})
 	if err == nil {
-		log.GetIns().CreateByQueue(c, 1, "添加权限", "添加权限信息")
+		system_log.GetIns().CreateByQueue(c, 1, "添加权限", "添加权限信息")
 		c.Success("添加数据成功")
 	} else {
 		c.Error("添加数据失败")
@@ -145,9 +145,9 @@ func (ControllerAccess) Delete(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := access.GetIns().DeleteByIds(form.Ids)
+	err := system_access.GetIns().DeleteByIds(form.Ids)
 	if err == nil {
-		log.GetIns().CreateByQueue(c, 2, "删除权限", "删除权限信息")
+		system_log.GetIns().CreateByQueue(c, 2, "删除权限", "删除权限信息")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

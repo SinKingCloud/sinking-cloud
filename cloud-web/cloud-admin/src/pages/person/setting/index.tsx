@@ -93,8 +93,9 @@ export default (): React.ReactNode => {
                       }
                       return isJpgOrPng && isLt2M;
                     }} onChange={(info: any) => {
-                      if (info.file.status === 'done') {
+                      if (info.file.status == "uploading") {
                         setIsUploadAvatarLoading(true);
+                      } else if (info.file.status === 'done') {
                         const url = info.file.response.data.url;
                         updateInfo({avatar: url}).then(async (r) => {
                           setIsUploadAvatarLoading(false);
@@ -106,6 +107,7 @@ export default (): React.ReactNode => {
                           }
                         })
                       } else if (info.file.status === 'error') {
+                        setIsUploadAvatarLoading(false);
                         message.error(`文件上传失败`);
                       }
                     }}>

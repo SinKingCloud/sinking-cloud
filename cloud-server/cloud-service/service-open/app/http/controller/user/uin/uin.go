@@ -136,6 +136,10 @@ func (ControllerUin) ChangePassword(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
+	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
 	err = web_uin.ChangePassword(uinInfo.Id, form.Pwd)
 	if err == nil {
 		c.Success("更改挂机密码成功,请重新登录上线")
@@ -158,6 +162,10 @@ func (ControllerUin) ChangeServer(c *sinking_server.Context) {
 	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
 	if err != nil || uinInfo == nil {
 		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
 	err = web_uin.ChangeServer(uinInfo.Id, form.ServerKey)
@@ -188,6 +196,10 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	}
 	if uinInfo.Status != 0 {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
+	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
 	server, err := server2.GetIns().FindById(uinInfo.ServerId)
@@ -286,6 +298,10 @@ func (ControllerUin) Setting(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
+	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
 	err = web_uin.ChangeSetting(uinInfo.Id, form.Setting)
 	if err != nil {
 		c.Error(err.Error())
@@ -311,6 +327,10 @@ func (ControllerUin) Job(c *sinking_server.Context) {
 	}
 	if uinInfo.Status != 0 {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
+	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
 	key := constant.LockUserUinJob + uinInfo.Uin

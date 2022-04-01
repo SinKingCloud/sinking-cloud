@@ -64,8 +64,13 @@ func loadSystemsRoute(s *sinking_web.Engine) {
 	//日志管理
 	logHandle := &systems.ControllerLog{}
 	log := r.Group("/log")
-	log.GET("/list", sinking_server.HandleFunc(logHandle.List))      //配置列表
-	log.POST("/delete", sinking_server.HandleFunc(logHandle.Delete)) //配置更新
+	log.GET("/list", sinking_server.HandleFunc(logHandle.List))      //日志列表
+	log.POST("/delete", sinking_server.HandleFunc(logHandle.Delete)) //日志清理
+	//附件管理
+	fileHandle := &systems.ControllerFile{}
+	file := r.Group("/file")
+	file.GET("/list", sinking_server.HandleFunc(fileHandle.List))      //附件列表
+	file.POST("/delete", sinking_server.HandleFunc(fileHandle.Delete)) //删除配置
 }
 
 // loadPageRoute 加载页面操作路由

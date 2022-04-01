@@ -3,8 +3,8 @@ package person
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/user"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_user"
 )
 
 func (ControllerPerson) Update(c *sinking_server.Context) {
@@ -32,9 +32,9 @@ func (ControllerPerson) Update(c *sinking_server.Context) {
 	if form.Avatar != "" {
 		data["avatar"] = form.Avatar
 	}
-	if err := user.GetIns().UpdateByIds([]int{c.GetSystemUserInfo().Id}, data); err == nil {
+	if err := system_user.GetIns().UpdateByIds([]int{c.GetSystemUserInfo().Id}, data); err == nil {
 		service.GetSystemUserServiceIns().ClearCache(c.GetSystemUserInfo().Id)
-		log.GetIns().CreateByQueue(c, 3, "修改资料", "修改账户资料")
+		system_log.GetIns().CreateByQueue(c, 3, "修改资料", "修改账户资料")
 		c.Success("更新资料成功")
 	} else {
 		c.Error("更新资料失败")

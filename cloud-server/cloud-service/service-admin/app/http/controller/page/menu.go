@@ -2,9 +2,9 @@ package page
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/menu"
-	role2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/role"
-	user2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/user"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_menu"
+	role2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_role"
+	user2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_user"
 )
 
 func (ControllerPage) Menu(c *sinking_server.Context) {
@@ -14,7 +14,7 @@ func (ControllerPage) Menu(c *sinking_server.Context) {
 		c.Error("获取权限信息失败")
 		return
 	}
-	menus, err2 := menu.GetIns().SelectByIdsWithCache(role.Id, role.Menus, false)
+	menus, err2 := system_menu.GetIns().SelectByIdsWithCache(role.Id, role.Menus, false)
 	if err2 != nil {
 		c.Error("获取菜单数据失败")
 		return

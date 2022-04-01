@@ -5,8 +5,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/config"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_config"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_log"
 )
 
 // List 获取菜单数据
@@ -58,11 +58,11 @@ func (ControllerConfig) List(c *sinking_server.Context) {
 	if form.UpdateTimeEnd != "" {
 		where["update_time_end"] = form.UpdateTimeEnd
 	}
-	data, total, err := config.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := system_config.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
 		c.Error("获取配置数据失败")
 	} else {
-		log.GetIns().CreateByQueue(c, 0, "查看配置", "查看配置列表")
+		system_log.GetIns().CreateByQueue(c, 0, "查看配置", "查看配置列表")
 		c.SuccessWithData("获取配置数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }
@@ -98,9 +98,9 @@ func (ControllerConfig) Update(c *sinking_server.Context) {
 	if form.Pid != "" {
 		data["pid"] = form.Pid
 	}
-	err := config.GetIns().UpdateByIds(form.Ids, data)
+	err := system_config.GetIns().UpdateByIds(form.Ids, data)
 	if err == nil {
-		log.GetIns().CreateByQueue(c, 3, "修改配置", "修改配置信息")
+		system_log.GetIns().CreateByQueue(c, 3, "修改配置", "修改配置信息")
 		c.Success("修改数据成功")
 	} else {
 		c.Error("修改数据失败")
@@ -122,11 +122,11 @@ func (ControllerConfig) Create(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	if num, err := config.GetIns().CountByKey(form.Key); err != nil || num > 0 {
+	if num, err := system_config.GetIns().CountByKey(form.Key); err != nil || num > 0 {
 		c.Error("该配置项名称已存在")
 		return
 	}
-	err := config.GetIns().Create(&model.SystemConfig{
+	err := system_config.GetIns().Create(&model.SystemConfig{
 		Pid:      form.Pid,
 		Name:     form.Name,
 		Describe: form.Describe,
@@ -136,7 +136,7 @@ func (ControllerConfig) Create(c *sinking_server.Context) {
 	})
 	if err == nil {
 		service.GetSystemConfigServiceIns().ClearCache()
-		log.GetIns().CreateByQueue(c, 1, "添加配置", "添加配置信息")
+		system_log.GetIns().CreateByQueue(c, 1, "添加配置", "添加配置信息")
 		c.Success("添加数据成功")
 	} else {
 		c.Error("添加数据失败")
@@ -153,10 +153,10 @@ func (ControllerConfig) Delete(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := config.GetIns().DeleteByIds(form.Ids)
+	err := system_config.GetIns().DeleteByIds(form.Ids)
 	if err == nil {
 		service.GetSystemConfigServiceIns().ClearCache()
-		log.GetIns().CreateByQueue(c, 2, "删除配置", "删除配置信息")
+		system_log.GetIns().CreateByQueue(c, 2, "删除配置", "删除配置信息")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")
@@ -198,9 +198,9 @@ func (ControllerConfig) Updates(c *sinking_server.Context) {
 		if v.Pid != "" {
 			data["pid"] = v.Pid
 		}
-		_ = config.GetIns().UpdateByKey(v.Key, data)
+		_ = system_config.GetIns().UpdateByKey(v.Key, data)
 	}
-	log.GetIns().CreateByQueue(c, 3, "修改配置", "修改配置信息")
+	system_log.GetIns().CreateByQueue(c, 3, "修改配置", "修改配置信息")
 	service.GetSystemConfigServiceIns().ClearCache()
 	c.Success("修改数据成功")
 }

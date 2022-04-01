@@ -1,5 +1,9 @@
 package uin_tool
 
+import (
+	"time"
+)
+
 type speed struct {
 	addr string //服务器地址
 }
@@ -60,21 +64,22 @@ const (
 )
 
 // Speed QQ项目加速
-func (s *speed) Speed(uin string, pwd string, jobs []int) map[int]bool {
+func (s *speed) Speed(uin string, pwd string, jobs []int) (bool, map[int]bool) {
 	res := make(map[int]bool)
 	mobileLogin := false //是否登录手机
 	pcLogin := false     //是否登录pc
+	isBreak := false     //是否有必要继续执行
 	speedA := func(f func() bool) bool {
 		if !mobileLogin {
-			if !s.add(uin, pwd) {
-				return false
+			c, _, _ := s.login(uin, "")
+			if c == NotCreate {
+				if s.add(uin, pwd) {
+					c, _, _ = s.login(uin, "")
+				}
 			}
-			c, err, _ := s.login(uin, "")
-			if err != nil {
-				return false
-			}
-			mobileLogin = c == Success || err == nil
+			mobileLogin = c == Success
 		}
+		isBreak = !mobileLogin
 		if mobileLogin {
 			r := f()
 			if !r {
@@ -96,6 +101,7 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) map[int]bool {
 			}
 			if s.pcSpeed(uin) {
 				pcLogin = true
+				time.Sleep(5 * time.Second)
 			}
 			return pcLogin
 		}
@@ -110,6 +116,10 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) map[int]bool {
 	}
 	//加速项目
 	for _, v := range jobs {
+		if isBreak {
+			res[v] = false
+			continue
+		}
 		switch v {
 		case Mobile:
 			res[Mobile] = speedA(func() bool {
@@ -186,5 +196,5 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) map[int]bool {
 			break
 		}
 	}
-	return res
+	return isBreak, res
 }

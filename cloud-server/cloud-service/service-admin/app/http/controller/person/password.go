@@ -3,8 +3,8 @@ package person
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/user"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_user"
 )
 
 func (ControllerPerson) Password(c *sinking_server.Context) {
@@ -17,15 +17,15 @@ func (ControllerPerson) Password(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	u := user.GetIns().GetCurrentUserInfo(c.GetSystemUserInfo().Id, true)
+	u := system_user.GetIns().GetCurrentUserInfo(c.GetSystemUserInfo().Id, true)
 	if !str.NewStringTool(u.Password).CheckPassword(form.OldPassword) {
 		c.Error("旧密码验证失败")
 		return
 	}
-	if err := user.GetIns().UpdateByIds([]int{u.Id}, map[string]interface{}{
+	if err := system_user.GetIns().UpdateByIds([]int{u.Id}, map[string]interface{}{
 		"password": str.NewStringTool(form.Password).GetPassword(),
 	}); err == nil {
-		log.GetIns().CreateByQueue(c, 3, "修改密码", "修改账户密码")
+		system_log.GetIns().CreateByQueue(c, 3, "修改密码", "修改账户密码")
 		c.Success("修改密码成功")
 	} else {
 		c.Error("修改密码失败")

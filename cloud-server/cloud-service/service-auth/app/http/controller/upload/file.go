@@ -1,7 +1,6 @@
 package upload
 
 import (
-	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
@@ -17,7 +16,6 @@ import (
 // File 上传文件
 func (ControllerUpload) File(c *sinking_server.Context) {
 	types, err2 := strconv.Atoi(c.DefaultForm("type", "0"))
-	fmt.Println(types)
 	if err2 != nil {
 		c.Error("文件属性错误")
 		return

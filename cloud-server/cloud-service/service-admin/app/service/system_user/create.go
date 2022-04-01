@@ -1,0 +1,12 @@
+package system_user
+
+import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+)
+
+// Create 插入数据
+func (s *service) Create(data *model.SystemUser) (err error) {
+	err = util.Database.Db.Create(&data).Error
+	return
+}

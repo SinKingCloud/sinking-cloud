@@ -74,7 +74,7 @@ func (l *uinJob) run(uin *model.AppUin) {
 					util.Log.Println(param, i)
 				})
 			}
-		}, Thread: 20}).Run()
+		}, Thread: 40}).Run()
 		g.Wait()
 		serverLock.Unlock()
 	}
@@ -120,15 +120,21 @@ func speed(uin *model.AppUin) {
 	}
 	stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", uin.RunTime.String(), time.Local)
 	if isCost && stamp.Unix() < str.NewTimeTool().GetZeroTime(time.Now()).Unix() {
-		data["player_day"] = gorm.Expr("`player_day`-1")
-		data["sign_day"] = gorm.Expr("`sign_day`-1")
+		if uin.PlayerDay > 0 {
+			data["player_day"] = gorm.Expr("`player_day`-1")
+		}
+		if uin.SignDay > 0 {
+			data["sign_day"] = gorm.Expr("`sign_day`-1")
+		}
 		data["run_day"] = gorm.Expr("`run_day`+1")
 	}
 	if len(jobs) > 0 {
 		s := uin_tool.NewUinTool(server.Addr)
-		res := s.Speed(uin.Uin, uin.Password, jobs)
-		if !res[uin_tool.Mobile] {
+		fail, _ := s.Speed(uin.Uin, uin.Password, jobs)
+		if fail {
 			data["uin_status"] = 1
+		} else {
+			data["uin_status"] = 0
 		}
 	}
 	_ = uin2.GetIns().UpdateById(uin.Id, data)

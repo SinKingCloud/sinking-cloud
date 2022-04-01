@@ -21,6 +21,7 @@ export default (): React.ReactNode => {
       dataIndex: 'id',
       tip: '记录ID',
       hideInSearch: true,
+      hideInTable: true,
       sorter: true,
     },
     {
@@ -72,7 +73,6 @@ export default (): React.ReactNode => {
       dataIndex: 'content',
       tip: '内容',
     },
-
     {
       title: '操作时间',
       valueType: 'dateTime',

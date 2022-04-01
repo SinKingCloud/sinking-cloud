@@ -5,10 +5,10 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/menu"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/role"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/user"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_menu"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_role"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_user"
 )
 
 // List 列表
@@ -52,9 +52,9 @@ func (ControllerRole) List(c *sinking_server.Context) {
 	if form.UpdateTimeEnd != "" {
 		where["update_time_end"] = form.UpdateTimeEnd
 	}
-	data, total, err := role.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := system_role.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err == nil {
-		log.GetIns().CreateByQueue(c, 0, "查看角色", "查看角色列表")
+		system_log.GetIns().CreateByQueue(c, 0, "查看角色", "查看角色列表")
 		c.SuccessWithData("获取角色数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 		return
 	}
@@ -89,9 +89,9 @@ func (r ControllerRole) Update(c *sinking_server.Context) {
 	if form.Status != "" {
 		data["status"] = form.Status
 	}
-	err := role.GetIns().UpdateByIds(form.Ids, data)
+	err := system_role.GetIns().UpdateByIds(form.Ids, data)
 	if err == nil {
-		log.GetIns().CreateByQueue(c, 3, "修改角色", "修改角色信息")
+		system_log.GetIns().CreateByQueue(c, 3, "修改角色", "修改角色信息")
 		c.Success("修改数据成功")
 	} else {
 		c.Error("修改数据失败")
@@ -111,7 +111,7 @@ func (r ControllerRole) Create(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := role.GetIns().Create(&model.SystemRole{
+	err := system_role.GetIns().Create(&model.SystemRole{
 		Name:     form.Name,
 		Describe: form.Describe,
 		Menus:    form.Menus,
@@ -119,7 +119,7 @@ func (r ControllerRole) Create(c *sinking_server.Context) {
 		Status:   form.Status,
 	})
 	if err == nil {
-		log.GetIns().CreateByQueue(c, 1, "添加角色", "添加角色信息")
+		system_log.GetIns().CreateByQueue(c, 1, "添加角色", "添加角色信息")
 		c.Success("添加数据成功")
 	} else {
 		c.Error("添加数据失败")
@@ -136,13 +136,13 @@ func (ControllerRole) Delete(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	if total, err := user.GetIns().CountByIds(form.Ids); err != nil || total > 0 {
+	if total, err := system_user.GetIns().CountByIds(form.Ids); err != nil || total > 0 {
 		c.Error("请先删除该角色下的账户")
 		return
 	}
-	err := role.GetIns().DeleteByIds(form.Ids)
+	err := system_role.GetIns().DeleteByIds(form.Ids)
 	if err == nil {
-		log.GetIns().CreateByQueue(c, 2, "删除角色", "删除角色记录")
+		system_log.GetIns().CreateByQueue(c, 2, "删除角色", "删除角色记录")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")
@@ -155,7 +155,7 @@ func (ControllerRole) getRoleIdsBYMenuIds(menus string) string {
 	var ids []int
 	err := json.Unmarshal([]byte(menus), &ids)
 	if err == nil {
-		accesses, tempErr := menu.GetIns().GetAccessIdsByMenuIds(ids)
+		accesses, tempErr := system_menu.GetIns().GetAccessIdsByMenuIds(ids)
 		if tempErr == nil {
 			text, tempErr := json.Marshal(accesses)
 			if tempErr == nil {
@@ -169,15 +169,15 @@ func (ControllerRole) getRoleIdsBYMenuIds(menus string) string {
 // ResetAllRoleAccess 刷新角色关联权限
 func (r ControllerRole) ResetAllRoleAccess(c *sinking_server.Context) {
 	go func() {
-		roles, err := role.GetIns().SelectAll()
+		roles, err := system_role.GetIns().SelectAll()
 		if err == nil {
 			for _, v := range roles {
 				go func() {
-					_ = role.GetIns().UpdateById(v.Id, map[string]interface{}{"accesses": v.Menus})
+					_ = system_role.GetIns().UpdateById(v.Id, map[string]interface{}{"accesses": v.Menus})
 				}()
 			}
 		}
 	}()
-	log.GetIns().CreateByQueue(c, 3, "刷新角色", "刷新角色权限")
+	system_log.GetIns().CreateByQueue(c, 3, "刷新角色", "刷新角色权限")
 	c.Success("更新权限数据成功")
 }

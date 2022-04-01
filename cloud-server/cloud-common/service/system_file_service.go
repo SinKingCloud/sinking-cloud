@@ -34,7 +34,14 @@ func (*systemFileService) Create(file *model.SystemFile) (err error) {
 	} else {
 		//修改
 		file.UpdateTime = str.DateTime(time.Now())
-		err = util.Database.Db.Where("`hash`=?", file.Hash).Updates(&file).Error
+		err = util.Database.Db.Model(&model.SystemFile{}).Where("`hash`=?", file.Hash).Updates(map[string]interface{}{
+			"size": file.Size,
+			"name": file.Name,
+			"path": file.Path,
+			"url":  file.Url,
+			"ext":  file.Ext,
+			"type": file.Type,
+		}).Error
 	}
 	return
 }

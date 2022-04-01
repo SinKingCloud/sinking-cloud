@@ -51,13 +51,13 @@ func (s *speed) login(uin string, code string) (int, error, string) {
 	}
 	var state *captcha
 	err = json.Unmarshal([]byte(res.State), &state)
-	if (err != nil || state == nil) && res.State != "0" && res.State != "-1" {
-		return Error, errors.New("未知状态"), ""
+	if err != nil || state == nil {
+		return Error, errors.New("解析服务器结果错误"), ""
 	}
-	if state.Stype == "-1" {
+	if state.Stype == "-2" {
 		return NotCreate, errors.New("系统不存在此QQ"), ""
 	}
-	if state.Stype == "0" || res.State == "0" {
+	if state.Stype == "0" || state.Stype == "-1" || res.State == "0" {
 		return Success, nil, ""
 	}
 	if state.Stype == "6" || state.Stype == "10" {

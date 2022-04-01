@@ -20,3 +20,6 @@ type ControllerConfig struct {
 
 type ControllerLog struct {
 }
+
+type ControllerFile struct {
+}
