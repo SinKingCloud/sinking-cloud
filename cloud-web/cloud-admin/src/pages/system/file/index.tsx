@@ -272,12 +272,12 @@ export default (): React.ReactNode => {
 
   return (
     <PageContainer title={false}>
-      <Modal key={"upload"} width={450} destroyOnClose={true} forceRender={true} title="上传文件"
+      <Modal key={"upload"} width={350} destroyOnClose={true} forceRender={true} title="上传文件"
              visible={isModalUploadVisible} onOk={() => {
         setIsModalUploadVisible(false);
       }} okText={"上传"} onCancel={() => {
         setIsModalUploadVisible(false);
-      }} footer={[<Upload name="file" data={{"type": uploadType}} showUploadList={false} action={getUploadUrl()}
+      }} footer={[<Upload key={"upload"} name="file" data={{"type": uploadType}} showUploadList={false} action={getUploadUrl()}
                           beforeUpload={(file: any) => {
                             return true;
                           }}
@@ -306,7 +306,7 @@ export default (): React.ReactNode => {
         </Button>
       </Upload>]}>
         <Form name="control-hooks" key="upload_form" labelAlign="right" labelCol={{span: 6}}
-              wrapperCol={{span: 16}}>
+              wrapperCol={{span: 18}}>
           <Form.Item name={"type"} label="文件所属" initialValue={uploadType}>
             <Select placeholder="请选择文件所属类型" onChange={(e) => {
               setUploadType(e);
@@ -354,7 +354,7 @@ export default (): React.ReactNode => {
           labelWidth: 'auto',
         }}
         toolBarRender={() => [
-          <Button type={"primary"} onClick={() => {
+          <Button type={"primary"} key="upload_button" onClick={() => {
             setIsModalUploadVisible(true);
           }}>
             上传

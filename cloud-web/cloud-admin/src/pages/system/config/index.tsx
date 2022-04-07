@@ -60,7 +60,6 @@ export default (): React.ReactNode => {
         tabs={{
           activeKey: tab,
           onChange: (key) => {
-            console.log(key)
             setTab(key);
           },
         }}

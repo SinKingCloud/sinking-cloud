@@ -72,7 +72,7 @@ export default (): React.ReactNode => {
                   <Avatar style={{width: "150px", height: "150px"}} src={
                     <Image
                       style={{width: "150px", height: "150px"}}
-                      src={currentUser?.avatar || "https://q1.qlogo.cn/g?b=qq&nk=10086&s=100&t=20190225"}/>
+                      src={currentUser?.avatar || "https://aliyun_id_photo_bucket.oss.aliyuncs.com/default_handsome.jpg"}/>
                   }/>
                   <Alert message={currentUser?.nick_name} style={{fontWeight: "bolder", fontSize: "20px"}} type="info"/>
                   <div>

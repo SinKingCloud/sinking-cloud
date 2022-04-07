@@ -10,7 +10,7 @@ func (s *service) Select(where map[string]string, orderByField string, orderByTy
 	offset := pageSize * (page - 1)
 	table := &model.SystemUser{}
 	query := util.Database.Db.Model(&model.SystemLog{}).
-		Select("l.*,u.`account`,u.`nick_name`,u.`avatar`,u.`email`,u.`Phone`").
+		Select("l.*,u.`account`,u.`nick_name`,u.`avatar`,u.`email`,u.`phone`").
 		Joins("AS l LEFT JOIN `" + table.TableName() + "` as u ON l.`user_id`=u.`id`")
 	if where["request_id"] != "" {
 		query.Where("l.`request_id` = ?", where["request_id"])

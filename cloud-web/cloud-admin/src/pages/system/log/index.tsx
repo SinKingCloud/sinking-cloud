@@ -152,7 +152,7 @@ export default (): React.ReactNode => {
 
   return (
     <PageContainer title={false}>
-      <Modal key={"delete"} width={400} destroyOnClose={true} forceRender={true} title="清理数据"
+      <Modal key={"delete"} width={350} destroyOnClose={true} forceRender={true} title="清理数据"
              visible={isDeleteModalVisible}
              onOk={deleteForm.submit} okText={"确 认"} onCancel={() => {
         setIsDeleteModalVisible(false);
@@ -161,7 +161,7 @@ export default (): React.ReactNode => {
         <Form form={deleteForm} layout="vertical" name="control-hooks" onFinish={onDeleteFinish} labelAlign="right"
               labelCol={{span: 6}}
               wrapperCol={{span: 24}}>
-          <Form.Item name="range-time-picker" label="时间范围" rules={[{required: true}]}>
+          <Form.Item name="range-time-picker" label="" rules={[{required: true}]}>
             <DatePicker.RangePicker showTime format="YYYY-MM-DD HH:mm:ss"/>
           </Form.Item>
         </Form>

@@ -1,9 +1,5 @@
 package uin_tool
 
-import (
-	"time"
-)
-
 type speed struct {
 	addr string //服务器地址
 }
@@ -63,6 +59,11 @@ const (
 	Friend             //13.加好友加速
 )
 
+// Status 获取挂机状态
+func (s *speed) Status(uin string) (*SpeedStatus, error) {
+	return s.getSpeedStatus(uin)
+}
+
 // Speed QQ项目加速
 func (s *speed) Speed(uin string, pwd string, jobs []int) (bool, map[int]bool) {
 	res := make(map[int]bool)
@@ -101,7 +102,6 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) (bool, map[int]bool) {
 			}
 			if s.pcSpeed(uin) {
 				pcLogin = true
-				time.Sleep(5 * time.Second)
 			}
 			return pcLogin
 		}
@@ -114,87 +114,91 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) (bool, map[int]bool) {
 		}
 		return false
 	}
-	//加速项目
-	for _, v := range jobs {
-		if isBreak {
-			res[v] = false
-			continue
-		}
-		switch v {
-		case Mobile:
-			res[Mobile] = speedA(func() bool {
-				return mobileLogin
-			})
-			break
-		case Pc:
-			res[Pc] = speedP(func() bool {
-				return pcLogin
-			})
-			break
-		case Online:
-			res[Online] = speedP(func() bool {
-				return pcLogin
-			})
-			break
-		case Medal:
-			res[Medal] = speedP(func() bool {
-				return pcLogin
-			})
-			break
-		case Zone:
-			res[Zone] = speedP(func() bool {
-				return s.zoneSpeed(uin)
-			})
-			break
-		case Ws:
-			res[Ws] = speedP(func() bool {
-				return s.wsSpeed(uin)
-			})
-			break
-		case MicroShow:
-			res[MicroShow] = speedA(func() bool {
-				return s.microShowSpeed(uin)
-			})
-			break
-		case Safe:
-			res[Safe] = speedP(func() bool {
-				return s.safeSpeed(uin)
-			})
-			break
-		case Game:
-			res[Game] = speedA(func() bool {
-				return s.gameSpeed(uin)
-			})
-			break
-		case Sport:
-			res[Sport] = speedA(func() bool {
-				return s.sportSpeed(uin)
-			})
-			break
-		case MobileClock:
-			res[MobileClock] = speedA(func() bool {
-				return s.mobileClockSpeed(uin)
-			})
-			break
-		case ZoneClock:
-			res[ZoneClock] = speedA(func() bool {
-				return s.zoneClockSpeed(uin)
-			})
-			break
-		case Login:
-			res[Login] = speedA(func() bool {
-				return mobileLogin
-			})
-			break
-		case Friend:
-			res[Friend] = speedA(func() bool {
-				return s.friendSpeed(uin)
-			})
-			break
-		default:
-			res[v] = true
-			break
+	speed := func(jobs []int) {
+		isBreak = false //初始化
+		//加速项目
+		for _, v := range jobs {
+			if isBreak {
+				res[v] = false
+				continue
+			}
+			switch v {
+			case Mobile:
+				res[Mobile] = speedA(func() bool {
+					return mobileLogin
+				})
+				break
+			case Pc:
+				res[Pc] = speedP(func() bool {
+					return pcLogin
+				})
+				break
+			case Online:
+				res[Online] = speedP(func() bool {
+					return pcLogin
+				})
+				break
+			case Medal:
+				res[Medal] = speedA(func() bool {
+					return pcLogin
+				})
+				break
+			case Zone:
+				res[Zone] = speedP(func() bool {
+					return s.zoneSpeed(uin)
+				})
+				break
+			case Ws:
+				res[Ws] = speedA(func() bool {
+					return s.wsSpeed(uin)
+				})
+				break
+			case MicroShow:
+				res[MicroShow] = speedA(func() bool {
+					return s.microShowSpeed(uin)
+				})
+				break
+			case Safe:
+				res[Safe] = speedA(func() bool {
+					return s.safeSpeed(uin)
+				})
+				break
+			case Game:
+				res[Game] = speedA(func() bool {
+					return s.gameSpeed(uin)
+				})
+				break
+			case Sport:
+				res[Sport] = speedA(func() bool {
+					return s.sportSpeed(uin)
+				})
+				break
+			case MobileClock:
+				res[MobileClock] = speedA(func() bool {
+					return s.mobileClockSpeed(uin)
+				})
+				break
+			case ZoneClock:
+				res[ZoneClock] = speedA(func() bool {
+					return s.zoneClockSpeed(uin)
+				})
+				break
+			case Login:
+				res[Login] = speedA(func() bool {
+					return mobileLogin
+				})
+				break
+			case Friend:
+				res[Friend] = speedA(func() bool {
+					return s.friendSpeed(uin)
+				})
+				break
+			default:
+				res[v] = true
+				break
+			}
 		}
 	}
+	speed(jobs) //执行挂机
 	return isBreak, res
 }

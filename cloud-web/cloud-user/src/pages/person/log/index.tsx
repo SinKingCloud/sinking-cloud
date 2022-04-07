@@ -1,7 +1,7 @@
 import React, {useRef} from 'react';
 import {PageContainer} from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
-import {getParams} from "@/services/common/page";
+import {getParams} from "@/util/page";
 import {getLogList} from "@/services/person/log";
 import {message} from "antd";
 

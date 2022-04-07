@@ -1,7 +1,7 @@
 import React, {useRef} from 'react';
 import {PageContainer} from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
-import {getParams} from "@/services/common/page";
+import {getParams} from "@/util/page";
 import {message} from "antd";
 import {getPayOrder} from "@/services/pay/order";
 
@@ -102,6 +102,36 @@ export default (): React.ReactNode => {
       dataIndex: 'update_time',
       tip: '订单创建时间',
       hideInSearch: true,
+    },
+    {
+      title: '支付时间',
+      valueType: 'dateTimeRange',
+      dataIndex: 'update_time',
+      tip: '订单支付时间',
+      hideInTable: true,
+      search: {
+        transform: (value: any) => {
+          return {
+            update_time_start: value[0],
+            update_time_end: value[1],
+          };
+        },
+      },
+    },
+    {
+      title: '创建时间',
+      valueType: 'dateTimeRange',
+      dataIndex: 'create_time',
+      tip: '订单创建时间',
+      hideInTable: true,
+      search: {
+        transform: (value: any) => {
+          return {
+            create_time_start: value[0],
+            create_time_end: value[1],
+          };
+        },
+      },
     },
   ];
 

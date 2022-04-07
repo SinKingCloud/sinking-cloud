@@ -6,8 +6,8 @@ import (
 )
 
 // SelectByIds 根据id查询用户
-func (s *service) SelectByIds(menuIds []int) (users []*model.SystemUser, err error) {
-	err = util.Database.Db.Model(&model.SystemUser{}).Where("`id` in ? ", menuIds).Find(&users).Error
+func (s *service) SelectByIds(ids []int) (users []*model.SystemUser, err error) {
+	err = util.Database.Db.Model(&model.SystemUser{}).Where("`id` in ? ", ids).Find(&users).Error
 	return
 }
 
@@ -22,19 +22,19 @@ func (s *service) Select(where map[string]string, orderByField string, orderByTy
 		query.Where("`status` = ?", where["status"])
 	}
 	if where["account"] != "" {
-		query.Where("`account` like ?", "%"+where["account"]+"%")
+		query.Where("`account` = ?", where["account"])
+	}
+	if where["email"] != "" {
+		query.Where("`email` = ?", where["email"])
+	}
+	if where["phone"] != "" {
+		query.Where("`phone` = ?", where["phone"])
+	}
+	if where["login_ip"] != "" {
+		query.Where("`login_ip` = ?", where["login_ip"])
 	}
 	if where["nick_name"] != "" {
 		query.Where("`nick_name` like ?", "%"+where["nick_name"]+"%")
-	}
-	if where["email"] != "" {
-		query.Where("`email` like ?", "%"+where["email"]+"%")
-	}
-	if where["phone"] != "" {
-		query.Where("`phone` like ?", "%"+where["phone"]+"%")
-	}
-	if where["login_ip"] != "" {
-		query.Where("`login_ip` like ?", "%"+where["login_ip"]+"%")
 	}
 	if where["login_time_start"] != "" {
 		query.Where("`login_time` >= ?", where["login_time_start"])

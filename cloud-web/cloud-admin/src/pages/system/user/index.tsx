@@ -428,7 +428,7 @@ export default (): React.ReactNode => {
             <Input type={"number"} placeholder="请输入用户手机"/>
           </Form.Item>
           <Form.Item name={"role_id"} label="角色" rules={[{required: true}]}>
-            <Select placeholder="请输入角色状态">
+            <Select placeholder="请选择用户角色">
               {
                 roleList.map((item: any): React.ReactNode => {
                   return (<Select.Option key={item?.id} value={item?.id}>{item?.name}</Select.Option>);

@@ -3,7 +3,7 @@ import {Avatar, Button, Col, Form, Image, Input, message, Modal, Row, Tooltip} f
 import {PageContainer} from "@ant-design/pro-layout";
 import ProCard, {CheckCard} from "@ant-design/pro-card";
 import {useModel} from "@@/plugin-model/useModel";
-import {getParams} from "@/services/common/page";
+import {getParams} from "@/util/page";
 import ProTable from "@ant-design/pro-table";
 import {getPayOrder} from "@/services/pay/order";
 import {paySubmit} from "@/services/common/pay";

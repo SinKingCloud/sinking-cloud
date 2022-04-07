@@ -59,3 +59,11 @@ func (s *service) SelectUinJob(limit int, minute int64, runTime string) (list []
 	err = query.Limit(limit).Find(&list).Error
 	return
 }
+
+// SelectUinCheckJob 查询挂机检测任务
+func (s *service) SelectUinCheckJob(limit int, startTime string, endTime string) (list []*model.AppUin, err error) {
+	query := util.Database.Db.Model(&model.AppUin{})
+	query.Where("`uin_status`=0 and `status` =0 and `check_time` between ? and ?", startTime, endTime)
+	err = query.Limit(limit).Find(&list).Error
+	return
+}

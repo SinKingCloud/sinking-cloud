@@ -5,6 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/http/controller/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/http/controller/person"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/http/controller/systems"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/http/controller/web"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
@@ -13,6 +14,7 @@ func loadRoute(s *sinking_web.Engine) {
 	loadPageRoute(s)
 	loadPersonRoute(s)
 	loadSystemsRoute(s)
+	loadWebRoute(s)
 }
 
 // loadSystemRoute 加载系统管理路由
@@ -71,6 +73,21 @@ func loadSystemsRoute(s *sinking_web.Engine) {
 	file := r.Group("/file")
 	file.GET("/list", sinking_server.HandleFunc(fileHandle.List))      //附件列表
 	file.POST("/delete", sinking_server.HandleFunc(fileHandle.Delete)) //删除配置
+}
+
+// loadWebRoute 加载网站管理路由
+func loadWebRoute(s *sinking_web.Engine) {
+	r := s.Group("/web")
+	//用户管理
+	userHandle := &web.ControllerUser{}
+	user := r.Group("/user")
+	user.GET("/list", sinking_server.HandleFunc(userHandle.List))      //用户列表
+	user.POST("/update", sinking_server.HandleFunc(userHandle.Update)) //用户更新
+	//订单管理
+	userOrderHandle := &web.ControllerUserOrder{}
+	userOrder := r.Group("/user_order")
+	userOrder.GET("/list", sinking_server.HandleFunc(userOrderHandle.List))      //订单列表
+	userOrder.POST("/delete", sinking_server.HandleFunc(userOrderHandle.Delete)) //订单删除
 }
 
 // loadPageRoute 加载页面操作路由

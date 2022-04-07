@@ -17,7 +17,7 @@ var httpClient *http.Client
 func getClient() *http.Client {
 	if httpClient == nil {
 		httpClient = &http.Client{
-			Timeout: 20 * time.Second,
+			Timeout: 30 * time.Second,
 		}
 	}
 	return httpClient
@@ -58,4 +58,54 @@ type response struct {
 	Type  string `json:"Type"`
 	State string `json:"State"`
 	Uin   int64  `json:"Uin"`
+}
+
+// SpeedStatus 任务状态
+type SpeedStatus struct {
+	QzoneVisitor        string `json:"QzoneVisitor"`
+	SVIPStar            string `json:"SVIPStar"`
+	WeishiVideoview     string `json:"WeishiVideoview"`
+	IAddFriend          string `json:"iAddFriend"`
+	IBaseDays           string `json:"iBaseDays"`
+	IBigClubGrowth      string `json:"iBigClubGrowth"`
+	IBigClubLevel       string `json:"iBigClubLevel"`
+	IBigClubSpeed       string `json:"iBigClubSpeed"`
+	IBigClubVipFlag     string `json:"iBigClubVipFlag"`
+	ICmshowActive       string `json:"iCmshowActive"`
+	IContinueLogin      string `json:"iContinueLogin"`
+	ICostMs             string `json:"iCostMs"`
+	IDailySign          string `json:"iDailySign"`
+	IMaxLvlRealDays     string `json:"iMaxLvlRealDays"`
+	IMaxLvlTotalDays    string `json:"iMaxLvlTotalDays"`
+	IMedal              string `json:"iMedal"`
+	IMobileGameOnline   string `json:"iMobileGameOnline"`
+	IMobileQQOnline     string `json:"iMobileQQOnline"`
+	IMobileQQOnlineTime string `json:"iMobileQQOnlineTime"`
+	IMqing              string `json:"iMqing"`
+	INextLevelDay       string `json:"iNextLevelDay"`
+	INoHideOnline       string `json:"iNoHideOnline"`
+	INoHideOnlineTime   string `json:"iNoHideOnlineTime"`
+	IPCQQOnline         string `json:"iPCQQOnline"`
+	IPCQQOnlineTime     string `json:"iPCQQOnlineTime"`
+	IPCSafeOnline       string `json:"iPCSafeOnline"`
+	IQQLevel            string `json:"iQQLevel"`
+	IQQSportStep        string `json:"iQQSportStep"`
+	IQzoneState         string `json:"iQzoneState"`
+	IRealDays           string `json:"iRealDays"`
+	ISVip               string `json:"iSVip"`
+	ISpeedType          string `json:"iSpeedType"`
+	ISqq                string `json:"iSqq"`
+	ISqqLevel           string `json:"iSqqLevel"`
+	ISqqSpeedRate       string `json:"iSqqSpeedRate"`
+	ISvrDays            string `json:"iSvrDays"`
+	ITotalActiveDay     string `json:"iTotalActiveDay"`
+	ITotalDays          string `json:"iTotalDays"`
+	IVip                string `json:"iVip"`
+	IVipLevel           string `json:"iVipLevel"`
+	IVipSpeedRate       string `json:"iVipSpeedRate"`
+	IYearBigClubFlag    string `json:"iYearBigClubFlag"`
+	IYearVip            string `json:"iYearVip"`
+	SFaceUrl            string `json:"sFaceUrl"`
+	SNickName           string `json:"sNickName"`
+	SpeedStar           string `json:"speedStar"`
 }

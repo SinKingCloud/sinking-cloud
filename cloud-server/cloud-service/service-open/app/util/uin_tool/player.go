@@ -1,5 +1,9 @@
 package uin_tool
 
+import (
+	"encoding/json"
+)
+
 // sportSpeed 运动加速
 func (s *speed) sportSpeed(uin string) bool {
 	url := "/?&type=Android/&pe=yundong/"
@@ -15,7 +19,7 @@ func (s *speed) sportSpeed(uin string) bool {
 
 // microShowSpeed 厘米秀加速
 func (s *speed) microShowSpeed(uin string) bool {
-	url := "/?&type=Android/&pe=limixiuo/"
+	url := "/?&type=Android/&pe=Limixiu/"
 	data := map[string]string{
 		"Uin": uin,
 	}
@@ -41,7 +45,7 @@ func (s *speed) gameSpeed(uin string) bool {
 
 // wsSpeed 微视加速
 func (s *speed) wsSpeed(uin string) bool {
-	url := "/?&type=Pc/&pe=weishi/"
+	url := "/?&type=Android/&pe=weishi/"
 	data := map[string]string{
 		"Uin": uin,
 	}
@@ -54,7 +58,7 @@ func (s *speed) wsSpeed(uin string) bool {
 
 // safeSpeed 管家加速
 func (s *speed) safeSpeed(uin string) bool {
-	url := "/?&type=Pc/&pe=guanjia/"
+	url := "/?&type=Android/&pe=guanjia/"
 	data := map[string]string{
 		"Uin": uin,
 	}
@@ -141,4 +145,19 @@ func (s *speed) friendSpeed(uin string) bool {
 		return false
 	}
 	return res.State == "0"
+}
+
+// getSpeedStatus 获取加速状态
+func (s *speed) getSpeedStatus(uin string) (d *SpeedStatus, e error) {
+	url := "/?&type=Android/&pe=querygrade/"
+	data := map[string]interface{}{
+		"Uin":  uin,
+		"code": 0,
+	}
+	res, e := s.sendRequest(url, data)
+	if e != nil {
+		return
+	}
+	e = json.Unmarshal([]byte(res.State), &d)
+	return
 }

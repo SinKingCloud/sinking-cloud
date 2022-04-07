@@ -1,7 +1,7 @@
 import React, {useRef, useState} from 'react';
 import {PageContainer} from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
-import {getParams} from "@/services/common/page";
+import {getParams} from "@/util/page";
 import {Avatar, Button, Dropdown, Menu, message, Tag} from "antd";
 import {getUinList} from "@/services/open/uin/uin";
 import {DownOutlined} from "@ant-design/icons";
@@ -88,6 +88,15 @@ export default (): React.ReactNode => {
       hideInSearch: true,
       render: (text: string, record: any) => {
         return servers[record?.server_key]?.name || record?.server_key;
+      }
+    },
+    {
+      title: '挂机时间',
+      dataIndex: 'timing',
+      tip: '定时挂机时间',
+      hideInSearch: true,
+      render: (text: string, record: any) => {
+        return (Array(2).join("0") + parseInt(String(record?.timing / 60))).slice(-2) + ":" + (Array(2).join("0") + parseInt(String(record?.timing % 60))).slice(-2);
       }
     },
     {

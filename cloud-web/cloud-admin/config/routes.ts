@@ -78,6 +78,10 @@
         component: './web/user',
       },
       {
+        path: 'order',
+        component: './web/user_order',
+      },
+      {
         redirect: '/web/user',
       },
     ],

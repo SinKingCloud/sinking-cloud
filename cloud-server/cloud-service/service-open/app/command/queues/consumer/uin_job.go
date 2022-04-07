@@ -119,6 +119,7 @@ func speed(uin *model.AppUin) {
 		"run_time": str.DateTime(time.Now()),
 	}
 	stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", uin.RunTime.String(), time.Local)
+	isCheck := true //是否是检测任务
 	if isCost && stamp.Unix() < str.NewTimeTool().GetZeroTime(time.Now()).Unix() {
 		if uin.PlayerDay > 0 {
 			data["player_day"] = gorm.Expr("`player_day`-1")
@@ -127,15 +128,84 @@ func speed(uin *model.AppUin) {
 			data["sign_day"] = gorm.Expr("`sign_day`-1")
 		}
 		data["run_day"] = gorm.Expr("`run_day`+1")
+		isCheck = false
 	}
 	if len(jobs) > 0 {
-		s := uin_tool.NewUinTool(server.Addr)
-		fail, _ := s.Speed(uin.Uin, uin.Password, jobs)
+		var fail bool
+		if isCheck {
+			//检测挂机
+			fail, _ = check(server.Addr, uin, jobs)
+		} else {
+			//正常挂机
+			fail, _ = uin_tool.NewUinTool(server.Addr).Speed(uin.Uin, uin.Password, jobs)
+		}
 		if fail {
 			data["uin_status"] = 1
 		} else {
 			data["uin_status"] = 0
+			if !isCheck {
+				data["check_time"] = str.DateTime(time.Now().Add(2.5 * 3600 * time.Second))
+			}
 		}
 	}
 	_ = uin2.GetIns().UpdateById(uin.Id, data)
+}
+
+// check 检测挂机失败的项目
+func check(addr string, uin *model.AppUin, jobs []int) (bool, map[int]bool) {
+	s := uin_tool.NewUinTool(addr)
+	jobStatus, err := s.Status(uin.Uin)
+	if err != nil || jobStatus == nil {
+		return false, nil
+	}
+	var newJobs []int
+	//判断项目并加速
+	for _, v := range jobs {
+		isCheck := false
+		switch v {
+		case uin_tool.Pc:
+			isCheck = jobStatus.IPCQQOnline != "1"
+			break
+		case uin_tool.Online:
+			isCheck = jobStatus.INoHideOnline != "1"
+			break
+		case uin_tool.Medal:
+			isCheck = jobStatus.IMedal != "1"
+			break
+		case uin_tool.Zone:
+			isCheck = jobStatus.IQzoneState != "1"
+			break
+		case uin_tool.Ws:
+			isCheck = jobStatus.WeishiVideoview != "1"
+			break
+		case uin_tool.MicroShow:
+			isCheck = jobStatus.ICmshowActive != "1"
+			break
+		case uin_tool.Safe:
+			isCheck = jobStatus.IPCSafeOnline != "1"
+			break
+		case uin_tool.Game:
+			isCheck = jobStatus.IMobileGameOnline != "1"
+			break
+		case uin_tool.Sport:
+			isCheck = jobStatus.IQQSportStep != "1"
+			break
+		case uin_tool.MobileClock:
+			isCheck = jobStatus.IDailySign != "1"
+			break
+		case uin_tool.ZoneClock:
+			isCheck = jobStatus.IQzoneState != "1"
+			break
+		case uin_tool.Friend:
+			isCheck = jobStatus.IAddFriend != "1"
+			break
+		}
+		if isCheck {
+			newJobs = append(newJobs, v)
+		}
+	}
+	if len(newJobs) > 0 {
+		return s.Speed(uin.Uin, uin.Password, newJobs)
+	}
+	return false, nil
 }
