@@ -135,10 +135,10 @@ const requestMiddleware = async (ctx: any, next: () => void) => {
   await next();
   if (ctx.res.code == 503 || ctx.res.code == 403) {
     history.push(allowPaths[0]);
-    return message.warning(ctx.res.message);
+    return message.warning(ctx.res.message || "登陆超时");
   }
   if (ctx.res.code == 401) {
-    message.warning(ctx.res.message);
+    return message.warning(ctx.res.message || "权限不足");
   }
 };
 export const request: RequestConfig = {

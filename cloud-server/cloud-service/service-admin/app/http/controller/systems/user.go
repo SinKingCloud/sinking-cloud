@@ -78,7 +78,7 @@ func (ControllerUser) List(c *sinking_server.Context) {
 	}
 	data, total, err := system_user.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 0, "查看用户", "查看用户列表")
+		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看用户", "查看用户列表")
 		c.SuccessWithData("获取用户数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 		return
 	}
@@ -132,7 +132,7 @@ func (ControllerUser) Update(c *sinking_server.Context) {
 				service.GetSystemUserServiceIns().ClearCache(v)
 			}
 		}()
-		system_log.GetIns().CreateByQueue(c, 3, "修改用户", "修改用户信息")
+		system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "修改用户", "修改用户信息")
 		c.Success("修改数据成功")
 	} else {
 		c.Error("修改数据失败")
@@ -179,7 +179,7 @@ func (ControllerUser) Create(c *sinking_server.Context) {
 		Status:   form.Status,
 	})
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 1, "添加用户", "添加用户记录")
+		system_log.GetIns().CreateByQueue(c, system_log.EventCreate, "添加用户", "添加用户记录")
 		c.Success("添加数据成功")
 	} else {
 		c.Error("添加数据失败")
@@ -198,7 +198,7 @@ func (ControllerUser) Delete(c *sinking_server.Context) {
 	}
 	err := system_user.GetIns().DeleteByIds(form.Ids)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 2, "删除用户", "删除用户记录")
+		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "删除用户", "删除用户记录")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

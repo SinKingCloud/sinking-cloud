@@ -34,7 +34,7 @@ func (ControllerPerson) Update(c *sinking_server.Context) {
 	}
 	if err := system_user.GetIns().UpdateByIds([]int{c.GetSystemUserInfo().Id}, data); err == nil {
 		service.GetSystemUserServiceIns().ClearCache(c.GetSystemUserInfo().Id)
-		system_log.GetIns().CreateByQueue(c, 3, "修改资料", "修改账户资料")
+		system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "修改资料", "修改账户资料")
 		c.Success("更新资料成功")
 	} else {
 		c.Error("更新资料失败")

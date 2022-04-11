@@ -61,7 +61,17 @@ const (
 
 // Status 获取挂机状态
 func (s *speed) Status(uin string) (*SpeedStatus, error) {
-	return s.getSpeedStatus(uin)
+	status, e := s.getSpeedStatus(uin)
+	if e != nil {
+		return nil, e
+	}
+	if status == nil {
+		code, _, _ := s.login(uin, "")
+		if code == Success {
+			status, e = s.getSpeedStatus(uin)
+		}
+	}
+	return status, e
 }
 
 // Speed QQ项目加速

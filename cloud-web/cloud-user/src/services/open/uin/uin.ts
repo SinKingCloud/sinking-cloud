@@ -22,3 +22,14 @@ export async function getServerList(params?: {}, options?: { [key: string]: any 
     ...(options || {}),
   });
 }
+
+/** 等级列表 GET /open/user/uin/levels */
+export async function getLevelList(params?: {}, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/levels', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}

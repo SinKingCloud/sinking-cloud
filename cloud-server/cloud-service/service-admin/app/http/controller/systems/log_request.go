@@ -88,7 +88,7 @@ func (ControllerLogRequest) List(c *sinking_server.Context) {
 	}
 	data, total, err := system_log_request.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 0, "查看日志", "查看请求日志")
+		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看日志", "查看请求日志")
 		c.SuccessWithData("获取请求数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 		return
 	}
@@ -116,7 +116,7 @@ func (ControllerLogRequest) Info(c *sinking_server.Context) {
 		err = errors.New("field error")
 	}
 	if err == nil && data != nil {
-		system_log.GetIns().CreateByQueue(c, 0, "查看日志", "查看详细请求日志")
+		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看日志", "查看详细请求日志")
 		c.SuccessWithData("获取详情数据成功", data)
 	} else {
 		c.Error("获取详情数据失败")
@@ -136,7 +136,7 @@ func (ControllerLogRequest) Delete(c *sinking_server.Context) {
 	}
 	err := system_log_request.GetIns().DeleteByRequestTime(form.RequestTimeStart, form.RequestTimeEnd)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 2, "清理日志", "清理请求日志")
+		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "清理日志", "清理请求日志")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

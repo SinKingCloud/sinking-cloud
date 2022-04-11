@@ -4,6 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc/web_user_log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_app"
 	"strconv"
 )
@@ -53,7 +54,7 @@ func (ControllerApp) List(c *sinking_server.Context) {
 	if err != nil {
 		c.Error("获取应用列表失败")
 	} else {
-		rpc.WebUserLog.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), 1, "查看应用", "查看应用列表")
+		rpc.WebUserLog.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), web_user_log.EventShow, "查看应用", "查看应用列表")
 		c.SuccessWithData("获取应用列表成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }

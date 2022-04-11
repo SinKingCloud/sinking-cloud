@@ -52,7 +52,7 @@ func (ControllerFile) List(c *sinking_server.Context) {
 	if err != nil {
 		c.Error("获取附件数据失败")
 	} else {
-		system_log.GetIns().CreateByQueue(c, 0, "查看附件", "查看附件列表")
+		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看附件", "查看附件列表")
 		c.SuccessWithData("获取附件数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }
@@ -71,7 +71,7 @@ func (ControllerFile) Delete(c *sinking_server.Context) {
 	err := system_file.GetIns().DeleteByIds(form.Ids)
 	if err == nil {
 		go system_file.GetIns().DeleteFiles(paths)
-		system_log.GetIns().CreateByQueue(c, 2, "删除附件", "删除系统附件")
+		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "删除附件", "删除系统附件")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

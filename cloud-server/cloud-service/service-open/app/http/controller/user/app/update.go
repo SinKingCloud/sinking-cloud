@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc/web_user_log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_app"
 )
 
@@ -44,7 +45,7 @@ func (ControllerApp) Update(c *sinking_server.Context) {
 	}
 	err = web_app.GetIns().UpdateById(form.Id, data)
 	if err == nil {
-		rpc.WebUserLog.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), 3, "修改应用", "修改应用"+info.Name)
+		rpc.WebUserLog.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), web_user_log.EventEdit, "修改应用", "修改应用"+info.Name)
 		web_app.GetIns().Clear(form.Id)
 		c.Success("修改应用信息成功")
 	} else {

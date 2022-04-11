@@ -76,7 +76,7 @@ func (ControllerUser) List(c *sinking_server.Context) {
 	}
 	data, total, err := web_user.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 0, "查看用户", "查看会员列表")
+		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看用户", "查看会员列表")
 		c.SuccessWithData("获取用户数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 		return
 	}
@@ -127,7 +127,7 @@ func (ControllerUser) Update(c *sinking_server.Context) {
 				service.GetWebUserServiceIns().ClearCache(v)
 			}
 		}()
-		system_log.GetIns().CreateByQueue(c, 3, "修改用户", "修改会员信息")
+		system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "修改用户", "修改会员信息")
 		c.Success("修改数据成功")
 	} else {
 		c.Error("修改数据失败")

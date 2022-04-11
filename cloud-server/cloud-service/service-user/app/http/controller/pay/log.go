@@ -41,7 +41,7 @@ func (ControllerPay) LogList(c *sinking_server.Context) {
 	if err != nil {
 		c.Error("获取消费记录失败")
 	} else {
-		log.GetIns().CreateByQueue(c, 1, "查看消费", "查看消费记录")
+		log.GetIns().CreateByQueue(c, log.EventShow, "查看消费", "查看消费记录")
 		c.SuccessWithData("获取消费记录成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }

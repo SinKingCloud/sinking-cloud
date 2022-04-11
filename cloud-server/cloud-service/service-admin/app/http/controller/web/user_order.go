@@ -82,7 +82,7 @@ func (ControllerUserOrder) List(c *sinking_server.Context) {
 	}
 	data, total, err := web_user_order.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 0, "查看订单", "查看订单列表")
+		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看订单", "查看订单列表")
 		c.SuccessWithData("获取订单数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 		return
 	}
@@ -125,7 +125,7 @@ func (ControllerUserOrder) Delete(c *sinking_server.Context) {
 	}
 	err := web_user_order.GetIns().Delete(where)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 2, "清理订单", "清理用户订单")
+		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "清理订单", "清理用户订单")
 		c.Success("删除订单成功")
 	} else {
 		c.Error("删除订单失败")

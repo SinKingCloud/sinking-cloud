@@ -59,7 +59,7 @@ func (ControllerAccess) List(c *sinking_server.Context) {
 	}
 	data, total, err := system_access.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 0, "查看权限", "查看权限列表")
+		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看权限", "查看权限列表")
 		c.SuccessWithData("获取权限数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 		return
 	}
@@ -99,7 +99,7 @@ func (ControllerAccess) Update(c *sinking_server.Context) {
 	}
 	err := system_access.GetIns().UpdateByIds(form.Ids, data)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 3, "修改权限", "修改权限信息")
+		system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "修改权限", "修改权限信息")
 		c.Success("修改数据成功")
 	} else {
 		c.Error("修改数据失败")
@@ -128,7 +128,7 @@ func (ControllerAccess) Create(c *sinking_server.Context) {
 		Status:   form.Status,
 	})
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 1, "添加权限", "添加权限信息")
+		system_log.GetIns().CreateByQueue(c, system_log.EventCreate, "添加权限", "添加权限信息")
 		c.Success("添加数据成功")
 	} else {
 		c.Error("添加数据失败")
@@ -147,7 +147,7 @@ func (ControllerAccess) Delete(c *sinking_server.Context) {
 	}
 	err := system_access.GetIns().DeleteByIds(form.Ids)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 2, "删除权限", "删除权限信息")
+		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "删除权限", "删除权限信息")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

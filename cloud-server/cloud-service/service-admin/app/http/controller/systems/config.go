@@ -62,7 +62,7 @@ func (ControllerConfig) List(c *sinking_server.Context) {
 	if err != nil {
 		c.Error("获取配置数据失败")
 	} else {
-		system_log.GetIns().CreateByQueue(c, 0, "查看配置", "查看配置列表")
+		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看配置", "查看配置列表")
 		c.SuccessWithData("获取配置数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }
@@ -100,7 +100,7 @@ func (ControllerConfig) Update(c *sinking_server.Context) {
 	}
 	err := system_config.GetIns().UpdateByIds(form.Ids, data)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 3, "修改配置", "修改配置信息")
+		system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "修改配置", "修改配置信息")
 		c.Success("修改数据成功")
 	} else {
 		c.Error("修改数据失败")
@@ -136,7 +136,7 @@ func (ControllerConfig) Create(c *sinking_server.Context) {
 	})
 	if err == nil {
 		service.GetSystemConfigServiceIns().ClearCache()
-		system_log.GetIns().CreateByQueue(c, 1, "添加配置", "添加配置信息")
+		system_log.GetIns().CreateByQueue(c, system_log.EventCreate, "添加配置", "添加配置信息")
 		c.Success("添加数据成功")
 	} else {
 		c.Error("添加数据失败")
@@ -156,7 +156,7 @@ func (ControllerConfig) Delete(c *sinking_server.Context) {
 	err := system_config.GetIns().DeleteByIds(form.Ids)
 	if err == nil {
 		service.GetSystemConfigServiceIns().ClearCache()
-		system_log.GetIns().CreateByQueue(c, 2, "删除配置", "删除配置信息")
+		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "删除配置", "删除配置信息")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")
@@ -200,7 +200,7 @@ func (ControllerConfig) Updates(c *sinking_server.Context) {
 		}
 		_ = system_config.GetIns().UpdateByKey(v.Key, data)
 	}
-	system_log.GetIns().CreateByQueue(c, 3, "修改配置", "修改配置信息")
+	system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "修改配置", "修改配置信息")
 	service.GetSystemConfigServiceIns().ClearCache()
 	c.Success("修改数据成功")
 }

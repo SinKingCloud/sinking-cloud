@@ -54,7 +54,7 @@ func (ControllerPay) OrderList(c *sinking_server.Context) {
 	if err != nil {
 		c.Error("获取订单记录失败")
 	} else {
-		log.GetIns().CreateByQueue(c, 1, "查看订单", "查看订单记录")
+		log.GetIns().CreateByQueue(c, log.EventShow, "查看订单", "查看订单记录")
 		c.SuccessWithData("获取订单记录成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }

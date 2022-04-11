@@ -67,7 +67,7 @@ func (ControllerLog) List(c *sinking_server.Context) {
 	if err != nil {
 		c.Error("获取日志数据失败")
 	} else {
-		system_log.GetIns().CreateByQueue(c, 0, "查看日志", "查看用户日志")
+		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看日志", "查看用户日志")
 		c.SuccessWithData("获取日志数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }
@@ -85,7 +85,7 @@ func (ControllerLog) Delete(c *sinking_server.Context) {
 	}
 	err := system_log.GetIns().DeleteByRequestTime(form.RequestTimeStart, form.RequestTimeEnd)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 2, "清理日志", "清理用户日志")
+		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "清理日志", "清理用户日志")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

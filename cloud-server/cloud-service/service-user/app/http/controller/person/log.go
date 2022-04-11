@@ -52,7 +52,7 @@ func (ControllerPerson) Log(c *sinking_server.Context) {
 	if err != nil {
 		c.Error("获取操作记录失败")
 	} else {
-		log.GetIns().CreateByQueue(c, 1, "查看日志", "查看操作日志")
+		log.GetIns().CreateByQueue(c, log.EventShow, "查看日志", "查看操作日志")
 		c.SuccessWithData("获取操作记录成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }

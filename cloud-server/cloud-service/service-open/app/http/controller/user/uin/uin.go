@@ -7,6 +7,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc/web_user_log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin"
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/uin"
@@ -81,6 +83,7 @@ func (ControllerUin) List(c *sinking_server.Context) {
 	if err != nil {
 		c.Error("获取挂机列表失败")
 	} else {
+		rpc.WebUserLog.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), web_user_log.EventShow, "查看挂机", "查看挂机列表")
 		c.SuccessWithData("获取挂机列表成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }

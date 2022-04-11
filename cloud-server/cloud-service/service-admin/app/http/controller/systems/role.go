@@ -54,7 +54,7 @@ func (ControllerRole) List(c *sinking_server.Context) {
 	}
 	data, total, err := system_role.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 0, "查看角色", "查看角色列表")
+		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看角色", "查看角色列表")
 		c.SuccessWithData("获取角色数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 		return
 	}
@@ -91,7 +91,7 @@ func (r ControllerRole) Update(c *sinking_server.Context) {
 	}
 	err := system_role.GetIns().UpdateByIds(form.Ids, data)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 3, "修改角色", "修改角色信息")
+		system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "修改角色", "修改角色信息")
 		c.Success("修改数据成功")
 	} else {
 		c.Error("修改数据失败")
@@ -119,7 +119,7 @@ func (r ControllerRole) Create(c *sinking_server.Context) {
 		Status:   form.Status,
 	})
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 1, "添加角色", "添加角色信息")
+		system_log.GetIns().CreateByQueue(c, system_log.EventCreate, "添加角色", "添加角色信息")
 		c.Success("添加数据成功")
 	} else {
 		c.Error("添加数据失败")
@@ -142,7 +142,7 @@ func (ControllerRole) Delete(c *sinking_server.Context) {
 	}
 	err := system_role.GetIns().DeleteByIds(form.Ids)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, 2, "删除角色", "删除角色记录")
+		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "删除角色", "删除角色记录")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")
@@ -178,6 +178,6 @@ func (r ControllerRole) ResetAllRoleAccess(c *sinking_server.Context) {
 			}
 		}
 	}()
-	system_log.GetIns().CreateByQueue(c, 3, "刷新角色", "刷新角色权限")
+	system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "刷新角色", "刷新角色权限")
 	c.Success("更新权限数据成功")
 }
