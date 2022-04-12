@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/app_config"
 	"strconv"
@@ -18,14 +19,14 @@ func GetUserLevel(userId int) (data *model.AppUinLevel) {
 	userConfigs := app_config.GetIns().GetUserConfigs(userId, true)
 	var levelId int
 	var err error
-	if userConfigs["uin.level"] != "" {
+	if userConfigs[constant.UserUinLevel] != "" {
 		//已设定等级
 		levelId, err = strconv.Atoi(userConfigs["uin.level"])
 		if err != nil {
 			levelId = 0
 		} else {
 			//判断等级是否到期
-			if userConfigs["uin.level.expire"] != "" {
+			if userConfigs[constant.UserUinLevelExpire] != "" {
 				stamp, err := time.ParseInLocation("2006-01-02 15:04:05", userConfigs["uin.level.expire"], time.Local)
 				if err != nil {
 					levelId = 0
@@ -55,8 +56,8 @@ func GetUserLevel(userId int) (data *model.AppUinLevel) {
 		//写入用户配置
 		if data != nil {
 			app_config.GetIns().SetUserConfigs(userId, map[string]string{
-				"uin.level":        strconv.Itoa(data.Id),
-				"uin.level.expire": str.NewTimeTool().GetFirstDateOfMonth(time.Now().AddDate(0, +1, 0)).Format("2006-01-02 15:04:05"),
+				constant.UserUinLevel:       strconv.Itoa(data.Id),
+				constant.UserUinLevelExpire: str.NewTimeTool().GetFirstDateOfMonth(time.Now().AddDate(0, +1, 0)).Format("2006-01-02 15:04:05"),
 			})
 		}
 	}

@@ -1,6 +1,7 @@
 package uin
 
 import (
+	"encoding/json"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
@@ -12,8 +13,10 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin"
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/uin"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_user"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/util/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/util/uin_tool"
+	sinking_web "github.com/SinKingCloud/sinking-go/sinking-web"
 	"gorm.io/gorm"
 	"strconv"
 )
@@ -359,6 +362,60 @@ func (ControllerUin) Job(c *sinking_server.Context) {
 	}
 }
 
+// Info 账号信息
+func (ControllerUin) Info(c *sinking_server.Context) {
+	type Form struct {
+		Uin string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	if uinInfo.Status != 0 {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
+	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
+	tempInfo := &uin.AppUin{
+		AppId:      uinInfo.AppId,
+		ServerKey:  uinInfo.ServerKey,
+		Uin:        uinInfo.Uin,
+		UinStatus:  uinInfo.UinStatus,
+		SignDay:    uinInfo.SignDay,
+		PlayerDay:  uinInfo.PlayerDay,
+		RunDay:     uinInfo.RunDay,
+		Timing:     uinInfo.Timing,
+		Status:     uinInfo.Status,
+		RunTime:    uinInfo.RunTime,
+		CreateTime: uinInfo.CreateTime,
+		UpdateTime: uinInfo.UpdateTime,
+	}
+	var tempSetting map[string]string
+	err = json.Unmarshal([]byte(uinInfo.Setting), &tempSetting)
+	if err != nil {
+		tempSetting = web_uin.Setting
+	} else {
+		for k, v := range web_uin.Setting {
+			if tempSetting[k] == "" {
+				tempSetting[k] = v
+			}
+		}
+	}
+	c.SuccessWithData("获取成功", sinking_web.H{
+		"uin":     tempInfo,
+		"setting": tempSetting,
+	})
+}
+
 // Project 功能列表
 func (ControllerUin) Project(c *sinking_server.Context) {
 	c.SuccessWithData("获取成功", web_uin.Project)
@@ -366,7 +423,10 @@ func (ControllerUin) Project(c *sinking_server.Context) {
 
 // Self 账户信息
 func (ControllerUin) Self(c *sinking_server.Context) {
-	c.SuccessWithData("获取成功", web_uin.GetUserLevel(c.GetWebUserInfo().Id))
+	c.SuccessWithData("获取成功", sinking_web.H{
+		"money": web_user.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, false).Money,
+		"level": web_uin.GetUserLevel(c.GetWebUserInfo().Id),
+	})
 }
 
 // Count 统计信息

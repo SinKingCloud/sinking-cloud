@@ -28,7 +28,7 @@ type AppUin struct {
 	SignDay    int          `gorm:"column:sign_day" json:"sign_day"`
 	PlayerDay  int          `gorm:"column:player_day" json:"player_day"`
 	RunDay     int          `gorm:"column:run_day" json:"run_day"`
-	Timing     string       `gorm:"column:timing" json:"timing"`
+	Timing     int          `gorm:"column:timing" json:"timing"`
 	Status     int          `gorm:"column:status" json:"status"`
 	RunTime    str.DateTime `gorm:"column:run_time" json:"run_time"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
