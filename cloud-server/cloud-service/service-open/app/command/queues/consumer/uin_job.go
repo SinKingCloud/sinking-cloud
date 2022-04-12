@@ -187,7 +187,7 @@ func check(addr string, uin *model.AppUin, jobs []int) (bool, map[int]bool) {
 			isCheck = jobStatus.IMedal != "1"
 			break
 		case uin_tool.Zone:
-			isCheck = jobStatus.IQzoneState != "1"
+			isCheck = jobStatus.QzoneVisitor != "1"
 			break
 		case uin_tool.Ws:
 			isCheck = jobStatus.WeishiVideoview != "1"

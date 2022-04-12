@@ -13,8 +13,8 @@ import (
 // ApiCheck api访问控制
 func ApiCheck() sinking_web.HandlerFunc {
 	return sinking_server.HandleFunc(func(c *sinking_server.Context) {
-		temp := c.Request.Header.Get("app_id")
-		appKey := c.Request.Header.Get("app_key")
+		temp := c.Request.Header.Get("app-id")
+		appKey := c.Request.Header.Get("app-key")
 		appId, err := strconv.Atoi(temp)
 		if temp == "" || err != nil {
 			c.TokenError("应用ID不能为空", nil)
@@ -33,7 +33,7 @@ func ApiCheck() sinking_web.HandlerFunc {
 			return
 		}
 		u, err := web_user.GetIns().FindByIdWithCache(app.UserId, false)
-		if err != nil || u == nil || u.Status != 0 || u.RealAuth != 0 {
+		if err != nil || u == nil || u.Status != 0 || u.RealAuth != 1 {
 			c.TokenError("获取应用所属账户异常,请检查账户状态以及是否实名", nil)
 			c.Abort()
 			return

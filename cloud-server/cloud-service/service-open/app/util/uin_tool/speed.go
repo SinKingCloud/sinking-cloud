@@ -49,7 +49,7 @@ func (s *speed) MobileOffline(uin string) bool {
 
 // PcOffline 下线电脑
 func (s *speed) PcOffline(uin string) bool {
-	return s.pcOffline(uin)
+	return s.pcLower(uin)
 }
 
 const (
@@ -164,9 +164,7 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) (bool, map[int]bool) {
 				})
 				break
 			case Zone:
-				res[Zone] = speedP(func() bool {
-					return s.zoneSpeed(uin)
-				})
+				res[Zone] = s.zoneSpeed(uin)
 				break
 			case Ws:
 				res[Ws] = speedA(func() bool {

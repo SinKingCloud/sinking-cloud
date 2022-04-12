@@ -4,7 +4,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/admin"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/api"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/app"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/uin"
 	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/middleware"
@@ -15,13 +14,25 @@ import (
 func loadRoute(s *sinking_web.Engine) {
 	loadApiRoute(s)
 	loadUserRoute(s)
+	loadAdminRoute(s)
 }
 
 //加载api路由
 func loadApiRoute(s *sinking_web.Engine) {
 	g := s.Group("/api")
 	g.Use(middleware2.ApiCheck())
-	g.GET("/test", sinking_server.HandleFunc(api.Index))
+	//云端挂机API
+	uinGroup := g.Group("/uin")
+	handleUin := &uin.ControllerUin{}
+	uinGroup.POST("/buy", sinking_server.HandleFunc(handleUin.Buy))                     //业务下单
+	uinGroup.GET("/servers", sinking_server.HandleFunc((&uin.ControllerServer{}).List)) //地区列表
+	uinSetGroup := uinGroup.Group("/operate")
+	uinSetGroup.POST("/login", sinking_server.HandleFunc(handleUin.Login))             //登陆挂机QQ
+	uinSetGroup.POST("/delete", sinking_server.HandleFunc(handleUin.Delete))           //删除挂机QQ
+	uinSetGroup.POST("/run", sinking_server.HandleFunc(handleUin.Job))                 //执行挂机任务
+	uinSetGroup.POST("/setting", sinking_server.HandleFunc(handleUin.Setting))         //修改功能设置
+	uinSetGroup.POST("/password", sinking_server.HandleFunc(handleUin.ChangePassword)) //修改挂机密码
+	uinSetGroup.POST("/server", sinking_server.HandleFunc(handleUin.ChangeServer))     //修改挂机地区
 }
 
 // 用户系统路由

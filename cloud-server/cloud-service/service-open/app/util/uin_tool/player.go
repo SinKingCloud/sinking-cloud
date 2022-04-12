@@ -184,6 +184,9 @@ func (s *speed) getSpeedStatus(uin string) (d *SpeedStatus, e error) {
 	if e != nil {
 		return
 	}
+	if res.State == "" {
+		return nil, nil
+	}
 	e = json.Unmarshal([]byte(res.State), &d)
 	return
 }

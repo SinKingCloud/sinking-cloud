@@ -12,6 +12,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin"
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/uin"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/util/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/util/uin_tool"
 	"gorm.io/gorm"
 	"strconv"
@@ -103,6 +104,7 @@ func (ControllerUin) Buy(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
+	//判断是否新添加
 	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
 	if err != nil || uinInfo == nil {
 		//新开通
@@ -115,6 +117,14 @@ func (ControllerUin) Buy(c *sinking_server.Context) {
 			return
 		}
 	}
+	//判断是否携带APPID
+	if form.AppId == 0 {
+		appInfo := server.GetAppInfo(c)
+		if appInfo != nil {
+			form.AppId = appInfo.Id
+		}
+	}
+	//下单
 	err = web_uin.Buy(c.GetWebUserInfo().Id, form.AppId, form.ServerKey, form.Uin, form.Pwd, form.Type, form.Month)
 	if err != nil {
 		c.Error(err.Error())
@@ -205,12 +215,12 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
-	server, err := server2.GetIns().FindById(uinInfo.ServerId)
-	if err != nil || server == nil {
+	srv, err := server2.GetIns().FindById(uinInfo.ServerId)
+	if err != nil || srv == nil {
 		c.Error("未查询到挂机地区信息,请更换挂机地区")
 		return
 	}
-	q := uin_tool.NewUinTool(server.Addr)
+	q := uin_tool.NewUinTool(srv.Addr)
 	switch form.Step {
 	case "normal":
 		code, err, s := q.Login(uinInfo.Uin, uinInfo.Password)
@@ -299,6 +309,10 @@ func (ControllerUin) Setting(c *sinking_server.Context) {
 	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
 	if err != nil || uinInfo == nil {
 		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	if uinInfo.Status != 0 {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
 	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
