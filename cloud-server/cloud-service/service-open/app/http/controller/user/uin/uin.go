@@ -359,6 +359,11 @@ func (ControllerUin) Job(c *sinking_server.Context) {
 	}
 }
 
+// Project 功能列表
+func (ControllerUin) Project(c *sinking_server.Context) {
+	c.SuccessWithData("获取成功", web_uin.Project)
+}
+
 // Self 账户信息
 func (ControllerUin) Self(c *sinking_server.Context) {
 	c.SuccessWithData("获取成功", web_uin.GetUserLevel(c.GetWebUserInfo().Id))
