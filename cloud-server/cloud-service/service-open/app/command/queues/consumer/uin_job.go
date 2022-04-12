@@ -74,7 +74,7 @@ func (l *uinJob) run(uin *model.AppUin) {
 					util.Log.Println(param, i)
 				})
 			}
-		}, Thread: 40}).Run()
+		}, Thread: 60}).Run()
 		g.Wait()
 		serverLock.Unlock()
 	}
@@ -135,17 +135,20 @@ func speed(uin *model.AppUin) {
 		if isCheck {
 			//检测挂机
 			fail, _ = check(server.Addr, uin, jobs)
+			//判断第几次挂机,每日距离首次挂机间隔2.5小时 7小时各检测补挂一次
+			stamp2, _ := time.ParseInLocation("2006-01-02 15:04:05", uin.CheckTime.String(), time.Local)
+			if stamp2.Unix() < stamp.Unix()+3*3600 {
+				data["check_time"] = str.DateTime(time.Now().Add(6.5 * 3600 * time.Second))
+			}
 		} else {
 			//正常挂机
 			fail, _ = uin_tool.NewUinTool(server.Addr).Speed(uin.Uin, uin.Password, jobs)
+			data["check_time"] = str.DateTime(time.Now().Add(2.5 * 3600 * time.Second))
 		}
 		if fail {
 			data["uin_status"] = 1
 		} else {
 			data["uin_status"] = 0
-			if !isCheck {
-				data["check_time"] = str.DateTime(time.Now().Add(2.5 * 3600 * time.Second))
-			}
 		}
 	}
 	_ = uin2.GetIns().UpdateById(uin.Id, data)
@@ -163,8 +166,19 @@ func check(addr string, uin *model.AppUin, jobs []int) (bool, map[int]bool) {
 	for _, v := range jobs {
 		isCheck := false
 		switch v {
+		case uin_tool.Mobile:
+			isCheck = jobStatus.IMobileQQOnline != "1"
+			if !isCheck {
+				//下线手机
+				s.MobileOffline(uin.Uin)
+			}
+			break
 		case uin_tool.Pc:
 			isCheck = jobStatus.IPCQQOnline != "1"
+			if !isCheck {
+				//下线PC
+				s.PcOffline(uin.Uin)
+			}
 			break
 		case uin_tool.Online:
 			isCheck = jobStatus.INoHideOnline != "1"

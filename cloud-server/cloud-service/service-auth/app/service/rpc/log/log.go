@@ -21,10 +21,24 @@ func GetIns() *service {
 	return obj
 }
 
-// Create 创建用户日志
-func (*service) Create(userId int, requestId string, requestIp string, types int, title string, content string) {
+// CreateUser 创建网站用户日志
+func (*service) CreateUser(userId int, requestId string, requestIp string, types int, title string, content string) {
 	go func(userId int, requestId string, requestIp string, types int, title string, content string) {
 		_, _ = rpc.New(group.CloudService, name.ServiceUser).Call("/rpc/log/create", &rpc.Param{
+			"user_id":    userId,
+			"request_id": requestId,
+			"request_ip": requestIp,
+			"type":       types,
+			"title":      title,
+			"content":    content,
+		}).Response()
+	}(userId, requestId, requestIp, types, title, content)
+}
+
+// CreateAdmin 创建后台用户日志
+func (*service) CreateAdmin(userId int, requestId string, requestIp string, types int, title string, content string) {
+	go func(userId int, requestId string, requestIp string, types int, title string, content string) {
+		_, _ = rpc.New(group.CloudService, name.ServiceAdmin).Call("/rpc/log/create", &rpc.Param{
 			"user_id":    userId,
 			"request_id": requestId,
 			"request_ip": requestIp,

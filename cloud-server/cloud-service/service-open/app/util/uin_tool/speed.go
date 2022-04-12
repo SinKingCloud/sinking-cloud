@@ -42,6 +42,16 @@ func (s *speed) Delete(uin string) bool {
 	return s.add(uin, "123456")
 }
 
+// MobileOffline 下线手机
+func (s *speed) MobileOffline(uin string) bool {
+	return s.mobileLower(uin)
+}
+
+// PcOffline 下线电脑
+func (s *speed) PcOffline(uin string) bool {
+	return s.pcOffline(uin)
+}
+
 const (
 	Mobile      = iota //0.手机QQ加速
 	Pc                 //1.Pc加速

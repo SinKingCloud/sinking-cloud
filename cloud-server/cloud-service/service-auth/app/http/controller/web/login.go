@@ -54,6 +54,6 @@ func (ControllerWeb) Login(c *sinking_server.Context) {
 		return
 	}
 	//写入登录日志
-	rpc.Log.Create(user.Id, c.GetRequestId(), c.GetRequestIp(), 0, "账户登录", "账户登陆成功")
+	rpc.Log.CreateUser(user.Id, c.GetRequestId(), c.GetRequestIp(), 0, "账户登录", "账户登陆成功")
 	c.SuccessWithData("登陆成功", token)
 }

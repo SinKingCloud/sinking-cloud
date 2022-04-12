@@ -147,6 +147,32 @@ func (s *speed) friendSpeed(uin string) bool {
 	return res.State == "0"
 }
 
+// mobileLower 安卓下线
+func (s *speed) mobileLower(uin string) bool {
+	url := "/?&type=Android/&pe=lower/"
+	data := map[string]string{
+		"Uin": uin,
+	}
+	res, err := s.sendRequest(url, data)
+	if err != nil {
+		return false
+	}
+	return res.State == "0"
+}
+
+// pcLower pc下线
+func (s *speed) pcLower(uin string) bool {
+	url := "/?&type=Pc/&pe=lower/"
+	data := map[string]string{
+		"Uin": uin,
+	}
+	res, err := s.sendRequest(url, data)
+	if err != nil {
+		return false
+	}
+	return res.State == "0"
+}
+
 // getSpeedStatus 获取加速状态
 func (s *speed) getSpeedStatus(uin string) (d *SpeedStatus, e error) {
 	url := "/?&type=Android/&pe=querygrade/"
