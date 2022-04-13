@@ -1,6 +1,12 @@
 package config
 
 const (
+	EnvApplicationAddr    = "APP_ADDR"
+	EnvApplicationPort    = "APP_PORT"
+	EnvRegisterServer     = "APP_REGISTER_SERVER"
+	EnvRegisterTokenKey   = "APP_REGISTER_TOKEN_KEY"
+	EnvRegisterTokenValue = "APP_REGISTER_TOKEN_VALUE"
+
 	ConfRegisterServer        = "register.server"
 	ConfRegisterTokenKey      = "register.tokenKey"
 	ConfRegisterTokenValue    = "register.tokenValue"
