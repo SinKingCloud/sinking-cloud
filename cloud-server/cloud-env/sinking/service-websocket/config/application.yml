@@ -1,7 +1,7 @@
 #项目信息
 project:
   name: cloud-server #项目名称
-  env: dev #项目环境
+  env: release #项目环境
 
 #应用信息
 application:
