@@ -135,9 +135,8 @@ func speed(uin *model.AppUin) {
 		if isCheck {
 			//检测挂机
 			fail, _ = check(server.Addr, uin, jobs)
-			//判断第几次挂机,每日距离首次挂机间隔2.5小时 7小时各检测补挂一次
-			stamp2, _ := time.ParseInLocation("2006-01-02 15:04:05", uin.CheckTime.String(), time.Local)
-			if stamp2.Unix() < stamp.Unix()+3*3600 {
+			//只允许9点前执行第三次挂机
+			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 && time.Now().Unix()-stamp.Unix() > 2*3600 {
 				data["check_time"] = str.DateTime(time.Now().Add(6.5 * 3600 * time.Second))
 			}
 		} else {
@@ -202,7 +201,7 @@ func check(addr string, uin *model.AppUin, jobs []int) (bool, map[int]bool) {
 			isCheck = jobStatus.IMobileGameOnline != "1"
 			break
 		case uin_tool.Sport:
-			isCheck = jobStatus.IQQSportStep != "1"
+			isCheck = false //jobStatus.IQQSportStep != "1"
 			break
 		case uin_tool.MobileClock:
 			isCheck = jobStatus.IDailySign != "1"
