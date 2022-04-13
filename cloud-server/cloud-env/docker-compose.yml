@@ -1,0 +1,210 @@
+version: "3"
+services:
+  ####################### nginx #######################
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:rw
+      - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
+      - ./nginx/log:/var/log/nginx:rw
+      - ./nginx/cert/:/etc/nginx/cert/:rw
+      - ./nginx/www/:/etc/nginx/www/:rw
+    environment:
+      - TZ=Asia/Shanghai
+  ####################### mysql #######################
+  mysql-5.7:
+    image: mysql:5.7
+    container_name: mysql-5.7
+    restart: always
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/config/my.cnf:/etc/my.cnf:ro
+      - ./mysql/init:/docker-entrypoint-initdb.d/
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=Qq@1178710004...
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: "phpmyadmin/phpmyadmin"
+    container_name: "phpmyadmin"
+    restart: always
+    ports:
+      - "3307:80"
+    environment:
+      - PMA_ARBITRARY=1
+
+  ####################### rocket #######################
+  rocket-namesrv:
+    image: foxiswho/rocketmq:4.8.0
+    container_name: rocket-namesrv
+    restart: always
+    ports:
+      - 9876:9876
+    volumes:
+      - ./rocket/logs:/home/rocketmq/logs
+      - ./rocket/store:/home/rocketmq/store
+    environment:
+      TZ: Asia/Shanghai
+      JAVA_OPT_EXT: "-Duser.home=/home/rocketmq -Xms512M -Xmx512M -Xmn128m"
+    command: sh mqnamesrv
+
+  rocket-broker:
+    image: foxiswho/rocketmq:4.8.0
+    container_name: rocket-broker
+    restart: always
+    ports:
+      - 10909:10909
+      - 10911:10911
+    volumes:
+      - ./rocket/logs:/home/rocketmq/logs
+      - ./rocket/store:/home/rocketmq/store
+      - ./rocket/brokerconf/broker.conf:/etc/rocketmq/broker.conf
+    environment:
+      TZ: Asia/Shanghai
+      NAMESRV_ADDR: "rocket-namesrv:9876"
+      JAVA_OPTS: "-Duser.home=/opt"
+      JAVA_OPT_EXT: "-Duser.home=/home/rocketmq -Xms512M -Xmx512M -Xmn128m"
+    command: sh mqbroker -c /etc/rocketmq/broker.conf
+
+  rocket-console:
+    image: styletang/rocketmq-console-ng
+    container_name: rocket-console
+    restart: always
+    ports:
+      - 8180:8080
+    environment:
+      TZ: Asia/Shanghai
+      JAVA_OPTS: "-Drocketmq.namesrv.addr=rocket-namesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+
+  ############################# redis #############################
+  redis:
+    image: redis:6
+    container_name: redis
+    restart: always
+    ports:
+      - 6379:6379
+    environment:
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+    volumes:
+      # 配置文件
+      - ./redis/conf/redis.conf:/usr/local/redis.conf
+      # 数据文件
+      - ./redis/data:/data
+    command: [ "redis-server","/usr/local/redis.conf" ]
+
+  ######################### sinking-consul ############################
+  sinking-consul:
+    image: sinkingcloud/sinking-consul:latest
+    container_name: sinking-consul
+    restart: always
+    ports:
+      - 1817:1817
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./sinking/sinking-consul/config/:/data/sinking-consul/config/
+
+  ################### sinking-cloud服务组(单机可使用容器名做注册地址,集群则注册地址必须使用外网IP) ############################
+  service-gateway:
+    image: sinkingcloud/service-gateway:latest
+    container_name: service-gateway
+    restart: always
+    ports:
+      - 1000:1000
+    environment:
+      - TZ=Asia/Shanghai
+      - APP_ADDR=service-gateway
+      - APP_PORT=1000
+      - APP_REGISTER_SERVER=203.135.100.55:1817
+      - APP_REGISTER_TOKEN_KEY=sinking-server-token
+      - APP_REGISTER_TOKEN_VALUE=97cb316ec237b3937307d94c38d21785
+    volumes:
+      - ./sinking/service-gateway/config/:/data/sinking/config/
+
+  service-auth:
+    image: sinkingcloud/service-auth:latest
+    container_name: service-auth
+    restart: always
+    ports:
+      - 1003:1003
+    environment:
+      - TZ=Asia/Shanghai
+      - APP_ADDR=service-auth
+      - APP_PORT=1003
+      - APP_REGISTER_SERVER=203.135.100.55:1817
+      - APP_REGISTER_TOKEN_KEY=sinking-server-token
+      - APP_REGISTER_TOKEN_VALUE=97cb316ec237b3937307d94c38d21785
+    volumes:
+      - ./sinking/service-auth/config/:/data/sinking/config/
+
+  service-websocket:
+    image: sinkingcloud/service-websocket:latest
+    container_name: service-websocket
+    restart: always
+    ports:
+      - 1005:1005
+    environment:
+      - TZ=Asia/Shanghai
+      - APP_ADDR=service-websocket
+      - APP_PORT=1005
+      - APP_REGISTER_SERVER=203.135.100.55:1817
+      - APP_REGISTER_TOKEN_KEY=sinking-server-token
+      - APP_REGISTER_TOKEN_VALUE=97cb316ec237b3937307d94c38d21785
+    volumes:
+      - ./sinking/service-websocket/config/:/data/sinking/config/
+
+  service-user:
+    image: sinkingcloud/service-user:latest
+    container_name: service-user
+    restart: always
+    ports:
+      - 1002:1002
+    environment:
+      - TZ=Asia/Shanghai
+      - APP_ADDR=service-user
+      - APP_PORT=1002
+      - APP_REGISTER_SERVER=203.135.100.55:1817
+      - APP_REGISTER_TOKEN_KEY=sinking-server-token
+      - APP_REGISTER_TOKEN_VALUE=97cb316ec237b3937307d94c38d21785
+    volumes:
+      - ./sinking/service-user/config/:/data/sinking/config/
+
+  service-admin:
+    image: sinkingcloud/service-admin:latest
+    container_name: service-admin
+    restart: always
+    ports:
+      - 1001:1001
+    environment:
+      - TZ=Asia/Shanghai
+      - APP_ADDR=service-admin
+      - APP_PORT=1001
+      - APP_REGISTER_SERVER=203.135.100.55:1817
+      - APP_REGISTER_TOKEN_KEY=sinking-server-token
+      - APP_REGISTER_TOKEN_VALUE=97cb316ec237b3937307d94c38d21785
+    volumes:
+      - ./sinking/service-admin/config/:/data/sinking/config/
+
+  service-open:
+    image: sinkingcloud/service-open:latest
+    container_name: service-open
+    restart: always
+    ports:
+      - 1004:1004
+    environment:
+      - TZ=Asia/Shanghai
+      - APP_ADDR=service-open
+      - APP_PORT=1004
+      - APP_REGISTER_SERVER=203.135.100.55:1817
+      - APP_REGISTER_TOKEN_KEY=sinking-server-token
+      - APP_REGISTER_TOKEN_VALUE=97cb316ec237b3937307d94c38d21785
+    volumes:
+      - ./sinking/service-open/config/:/data/sinking/config/
