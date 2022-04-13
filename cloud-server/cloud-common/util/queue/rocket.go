@@ -123,6 +123,7 @@ func RegisterRocketMqProducer(endPoints []string, groupName string, retry int) (
 		producer.WithNameServer(addr),
 		producer.WithRetry(retry),
 		producer.WithGroupName(groupName),
+		producer.WithVIPChannel(false),
 	)
 
 	if err != nil {
