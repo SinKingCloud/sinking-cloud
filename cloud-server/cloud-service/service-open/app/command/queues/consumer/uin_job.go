@@ -121,12 +121,6 @@ func speed(uin *model.AppUin) {
 	stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", uin.RunTime.String(), time.Local)
 	isCheck := true //是否是检测任务
 	if isCost && stamp.Unix() < str.NewTimeTool().GetZeroTime(time.Now()).Unix() {
-		if uin.PlayerDay > 0 {
-			data["player_day"] = gorm.Expr("`player_day`-1")
-		}
-		if uin.SignDay > 0 {
-			data["sign_day"] = gorm.Expr("`sign_day`-1")
-		}
 		data["run_day"] = gorm.Expr("`run_day`+1")
 		isCheck = false
 	}

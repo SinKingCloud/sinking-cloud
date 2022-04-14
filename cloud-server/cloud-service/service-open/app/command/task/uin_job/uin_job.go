@@ -7,6 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
 	uin2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/uin"
 	sinking_web "github.com/SinKingCloud/sinking-go/sinking-web"
+	"gorm.io/gorm"
 	"log"
 	"strconv"
 	"time"
@@ -45,18 +46,37 @@ func send(minute int64) {
 		//查询当前时间需要代挂的QQ
 		for {
 			if util.Cache.Lock(lock, constant.LockTimeUinJob) {
-				list, err := uin2.GetIns().SelectUinJob(100, minute, str.NewTimeTool().GetZeroTime(time.Now()).Format("2006-01-02 15:04:05"))
+				list, err := uin2.GetIns().SelectAllUinJob(5, minute, str.NewTimeTool().GetZeroTime(time.Now()).Format("2006-01-02 15:04:05"))
 				if err == nil && len(list) > 0 {
-					var ids []int
+					var idsPlayer []int
+					var idsSign []int
 					for _, v := range list {
+						stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", v.RunTime.String(), time.Local)
+						if stamp.Unix() < str.NewTimeTool().GetZeroTime(time.Now()).Unix() {
+							if v.PlayerDay > 0 {
+								idsPlayer = append(idsPlayer, v.Id)
+							}
+							if v.SignDay > 0 {
+								idsSign = append(idsSign, v.Id)
+							}
+						}
 						//发布到消息队列执行
-						producer.NewUinJobProducer().Build(v).Send()
-						ids = append(ids, v.Id)
+						if v.Status == 0 && v.UinStatus == 0 && (v.PlayerDay > 0 || v.SignDay > 0) {
+							producer.NewUinJobProducer().Build(v).Send()
+						}
 					}
-					//更改代挂状态
-					_ = uin2.GetIns().UpdateByIds(ids, map[string]interface{}{
-						"run_time": str.DateTime(time.Now()),
+					runTime := str.DateTime(time.Now())
+					//更改等级挂机天数
+					_ = uin2.GetIns().UpdateByIds(idsPlayer, map[string]interface{}{
+						"run_time":   runTime,
+						"player_day": gorm.Expr("`player_day`-1"),
 					})
+					//更改扩展挂机天数
+					_ = uin2.GetIns().UpdateByIds(idsSign, map[string]interface{}{
+						"run_time": runTime,
+						"sign_day": gorm.Expr("`sign_day`-1"),
+					})
+					util.Cache.UnLock(lock)
 				} else {
 					util.Cache.UnLock(lock)
 					break
