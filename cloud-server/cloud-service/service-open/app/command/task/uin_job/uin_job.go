@@ -46,8 +46,9 @@ func send(minute int64) {
 		//查询当前时间需要代挂的QQ
 		for {
 			if util.Cache.Lock(lock, constant.LockTimeUinJob) {
-				list, err := uin2.GetIns().SelectAllUinJob(5, minute, str.NewTimeTool().GetZeroTime(time.Now()).Format("2006-01-02 15:04:05"))
+				list, err := uin2.GetIns().SelectAllUinJob(200, minute, str.NewTimeTool().GetZeroTime(time.Now()).Format("2006-01-02 15:04:05"))
 				if err == nil && len(list) > 0 {
+					var ids []int
 					var idsPlayer []int
 					var idsSign []int
 					for _, v := range list {
@@ -60,22 +61,30 @@ func send(minute int64) {
 								idsSign = append(idsSign, v.Id)
 							}
 						}
+						ids = append(ids, v.Id)
 						//发布到消息队列执行
 						if v.Status == 0 && v.UinStatus == 0 && (v.PlayerDay > 0 || v.SignDay > 0) {
 							producer.NewUinJobProducer().Build(v).Send()
 						}
 					}
-					runTime := str.DateTime(time.Now())
 					//更改等级挂机天数
-					_ = uin2.GetIns().UpdateByIds(idsPlayer, map[string]interface{}{
-						"run_time":   runTime,
-						"player_day": gorm.Expr("`player_day`-1"),
-					})
+					if len(idsPlayer) > 0 {
+						_ = uin2.GetIns().UpdateByIds(idsPlayer, map[string]interface{}{
+							"player_day": gorm.Expr("`player_day`-1"),
+						})
+					}
 					//更改扩展挂机天数
-					_ = uin2.GetIns().UpdateByIds(idsSign, map[string]interface{}{
-						"run_time": runTime,
-						"sign_day": gorm.Expr("`sign_day`-1"),
-					})
+					if len(idsSign) > 0 {
+						_ = uin2.GetIns().UpdateByIds(idsSign, map[string]interface{}{
+							"sign_day": gorm.Expr("`sign_day`-1"),
+						})
+					}
+					//更改代挂状态
+					if len(ids) > 0 {
+						_ = uin2.GetIns().UpdateByIds(ids, map[string]interface{}{
+							"run_time": str.DateTime(time.Now()),
+						})
+					}
 					util.Cache.UnLock(lock)
 				} else {
 					util.Cache.UnLock(lock)
@@ -108,10 +117,7 @@ func check(t time.Time) {
 						producer.NewUinJobProducer().Build(v).Send()
 						ids = append(ids, v.Id)
 					}
-					//更改代挂状态
-					_ = uin2.GetIns().UpdateByIds(ids, map[string]interface{}{
-						"run_time": str.DateTime(time.Now()),
-					})
+					util.Cache.UnLock(lock)
 				} else {
 					util.Cache.UnLock(lock)
 					break
