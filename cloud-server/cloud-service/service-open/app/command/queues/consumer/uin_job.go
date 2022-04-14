@@ -142,7 +142,10 @@ func speed(uin *model.AppUin) {
 		} else {
 			//正常挂机
 			fail, _ = uin_tool.NewUinTool(server.Addr).Speed(uin.Uin, uin.Password, jobs)
-			data["check_time"] = str.DateTime(time.Now().Add(2.5 * 3600 * time.Second))
+			//只允许9点前执行第二次挂机
+			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 {
+				data["check_time"] = str.DateTime(time.Now().Add(2.5 * 3600 * time.Second))
+			}
 		}
 		if fail {
 			data["uin_status"] = 1

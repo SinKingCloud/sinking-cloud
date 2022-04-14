@@ -38,7 +38,9 @@ func ChangeServer(uinId int, key string) error {
 				UserId:  uinInfo.UserId,
 				AppId:   uinInfo.AppId,
 				UinId:   uinInfo.Id,
-				Title:   "挂机地点变动",
+				Uin:     uinInfo.Uin,
+				Type:    log.Server,
+				Title:   "地点变动",
 				Content: "挂机地点变动为" + server.Name,
 			})
 			_ = server2.GetIns().UpdateById(uinInfo.ServerId, map[string]interface{}{

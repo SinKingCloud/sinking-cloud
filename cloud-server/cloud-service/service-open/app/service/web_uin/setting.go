@@ -71,6 +71,8 @@ func ChangePassword(uinId int, pwd string) error {
 				UserId:  uinInfo.UserId,
 				AppId:   uinInfo.AppId,
 				UinId:   uinInfo.Id,
+				Uin:     uinInfo.Uin,
+				Type:    log.Password,
 				Title:   "修改密码",
 				Content: "修改挂机密码",
 			})

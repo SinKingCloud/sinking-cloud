@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/app_config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_app"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/log"
@@ -76,7 +78,10 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 			}
 		}
 	}
+	//下单错误异常
 	var orderErr error
+	//是否首次下单(1:否/2:是)
+	firstBuy := 1
 	//写入qq记录失败,退回余额
 	if err != nil || uinInfo == nil {
 		orderErr = err
@@ -86,12 +91,22 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 		if appId != uinInfo.AppId {
 			data["app_id"] = appId
 		}
+		//判断是否首次下单,首次下单赠送天数
+		if log.GetIns().Count(map[string]string{"user_id": strconv.Itoa(userId), "uin": uinInfo.Uin}) <= 0 {
+			appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
+			if appConfig[constant.AppUinFirstBuyGift] != "" {
+				n, e := strconv.Atoi(appConfig[constant.AppUinFirstBuyGift])
+				if e == nil {
+					firstBuy = n
+				}
+			}
+		}
 		//更改到期时间
 		if types == 0 || types == 1 {
-			data["player_day"] = gorm.Expr("`player_day`+" + strconv.Itoa(month*30))
+			data["player_day"] = gorm.Expr("`player_day`+" + strconv.Itoa(month*30*firstBuy))
 		}
 		if types == 0 || types == 2 {
-			data["sign_day"] = gorm.Expr("`sign_day`+" + strconv.Itoa(month*30))
+			data["sign_day"] = gorm.Expr("`sign_day`+" + strconv.Itoa(month*30*firstBuy))
 		}
 		//密码变动
 		if pwd != "" && pwd != uinInfo.Password {
@@ -120,12 +135,18 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 		} else if types == 2 {
 			typeName = "签到套装"
 		}
+		content := "在线下单" + strconv.Itoa(month) + "月" + typeName + "。"
+		if firstBuy > 1 {
+			content += "首次下单" + strconv.Itoa(firstBuy) + "倍到账"
+		}
 		_ = log.GetIns().Create(&model.AppUinLog{
 			UserId:  user.Id,
 			AppId:   appId,
 			UinId:   uinInfo.Id,
+			Uin:     uinInfo.Uin,
+			Type:    log.Buy,
 			Title:   "在线下单",
-			Content: "在线下单" + strconv.Itoa(month) + "月" + typeName,
+			Content: content,
 		})
 		_ = order.GetIns().Create(&model.AppUinOrder{
 			UserId: user.Id,
@@ -133,7 +154,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 			UinId:  uinInfo.Id,
 			Type:   types,
 			Money:  price,
-			Name:   "在线下单" + strconv.Itoa(month) + "月" + typeName,
+			Name:   content,
 			Status: 0,
 		})
 		rpc.WebUserPayLog.Create(user.Id, 1, 1, price, "在线消费", "为QQ"+uinInfo.Uin+"在线下单"+strconv.Itoa(month)+"月"+typeName)

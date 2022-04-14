@@ -14,3 +14,11 @@ func GetIns() *service {
 	}
 	return obj
 }
+
+const (
+	Buy      = iota //在线下单
+	Server          //修改地区
+	Password        //修改密码
+	Login           //登陆账号
+	Run             //执行补挂
+)

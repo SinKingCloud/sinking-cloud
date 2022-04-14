@@ -12,6 +12,8 @@ type AppUinLog struct {
 	UserId     int          `gorm:"column:user_id" json:"user_id"`
 	AppId      int          `gorm:"column:app_id" json:"app_id"`
 	UinId      int          `gorm:"column:uin_id" json:"uin_id"`
+	Uin        string       `gorm:"column:uin" json:"uin"`
+	Type       int          `gorm:"column:type" json:"type"`
 	Title      string       `gorm:"column:title" json:"title"`
 	Content    string       `gorm:"column:content" json:"content"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`

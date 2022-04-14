@@ -11,6 +11,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc/web_user_log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/log"
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/uin"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_user"
@@ -265,6 +266,16 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	}
 	//更改QQ状态
 	_ = uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{"uin_status": 0})
+	//写入记录
+	_ = log.GetIns().Create(&model.AppUinLog{
+		UserId:  uinInfo.UserId,
+		AppId:   uinInfo.AppId,
+		UinId:   uinInfo.Id,
+		Uin:     uinInfo.Uin,
+		Type:    log.Login,
+		Title:   "登陆账号",
+		Content: "更新账号状态",
+	})
 	c.Success("登陆成功")
 }
 
@@ -356,6 +367,16 @@ func (ControllerUin) Job(c *sinking_server.Context) {
 	key := constant.LockUserUinJob + uinInfo.Uin
 	if util.Cache.Lock(key, constant.LockTimeUserUinJob) {
 		producer.NewUinJobProducer().Build(uinInfo).Send()
+		//写入记录
+		_ = log.GetIns().Create(&model.AppUinLog{
+			UserId:  uinInfo.UserId,
+			AppId:   uinInfo.AppId,
+			UinId:   uinInfo.Id,
+			Uin:     uinInfo.Uin,
+			Type:    log.Run,
+			Title:   "执行挂机",
+			Content: "主动执行挂机",
+		})
 		c.Success("提交执行任务指令成功,即将开始挂机")
 	} else {
 		c.Error("提交过于频繁,请五分钟后在重试")
