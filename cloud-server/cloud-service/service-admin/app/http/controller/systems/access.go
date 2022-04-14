@@ -147,7 +147,7 @@ func (ControllerAccess) Delete(c *sinking_server.Context) {
 	}
 	err := system_access.GetIns().DeleteByIds(form.Ids)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "删除权限", "删除权限信息")
+		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "删除权限", "删除权限数据")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

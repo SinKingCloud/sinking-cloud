@@ -88,6 +88,14 @@ func loadWebRoute(s *sinking_web.Engine) {
 	userOrder := r.Group("/user_order")
 	userOrder.GET("/list", sinking_server.HandleFunc(userOrderHandle.List))      //订单列表
 	userOrder.POST("/delete", sinking_server.HandleFunc(userOrderHandle.Delete)) //订单删除
+	//公告管理
+	noticeHandle := &web.ControllerNotice{}
+	notice := r.Group("/notice")
+	notice.GET("/list", sinking_server.HandleFunc(noticeHandle.List))      //公告列表
+	notice.GET("/info", sinking_server.HandleFunc(noticeHandle.Info))      //公告详情
+	notice.POST("/update", sinking_server.HandleFunc(noticeHandle.Update)) //公告更新
+	notice.POST("/create", sinking_server.HandleFunc(noticeHandle.Create)) //公告添加
+	notice.POST("/delete", sinking_server.HandleFunc(noticeHandle.Delete)) //公告删除
 }
 
 // loadPageRoute 加载页面操作路由

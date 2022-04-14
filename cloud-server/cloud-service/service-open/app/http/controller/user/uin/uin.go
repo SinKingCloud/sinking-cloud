@@ -375,7 +375,7 @@ func (ControllerUin) Job(c *sinking_server.Context) {
 			Uin:     uinInfo.Uin,
 			Type:    log.Run,
 			Title:   "执行挂机",
-			Content: "主动执行挂机",
+			Content: "手动执行挂机",
 		})
 		c.Success("提交执行任务指令成功,即将开始挂机")
 	} else {
