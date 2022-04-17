@@ -73,6 +73,7 @@ func loadUserRoute(s *sinking_web.Engine) {
 	uinGroup.GET("/servers", sinking_server.HandleFunc(handleServer.List)) //地区列表
 	handleLevel := &uin.ControllerLevel{}
 	uinGroup.GET("/levels", sinking_server.HandleFunc(handleLevel.List)) //折扣列表
+	uinGroup.POST("/shop", sinking_server.HandleFunc(handleLevel.Buy))   //开通等级
 	handleOrder := &uin.ControllerOrder{}
 	uinGroup.GET("/orders", sinking_server.HandleFunc(handleOrder.List)) //订单列表
 	handleLog := &uin.ControllerLog{}

@@ -1,11 +1,12 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {PageContainer} from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import {getParams} from "@/util/page";
-import {Avatar, Button, Dropdown, Menu, message, Tag} from "antd";
+import {Avatar, Button, Dropdown, Menu, message, Select, Tag} from "antd";
 import {getUinList} from "@/services/open/uin/uin";
 import {DownOutlined} from "@ant-design/icons";
 import UpdateUin from "@/pages/open/uin/list/components/UpdateUin";
+import {getAppList} from "@/services/app/app";
 
 export default (): React.ReactNode => {
   /**
@@ -16,7 +17,24 @@ export default (): React.ReactNode => {
   /**
    * 挂机地区列表
    */
-  const [servers, setServers] = useState({})
+  const [servers, setServers] = useState({});
+  /**
+   * 应用列表
+   */
+  const [apps, setApps] = useState({});
+  useEffect(() => {
+    getAppList({page_size: 9999, page: 1}).then((r: any) => {
+      if (r.code != 200) {
+        message.error(r.message || "请求失败").then()
+      } else {
+        const map = {};
+        r.data.list.forEach((item: any) => {
+          map[item?.id] = item;
+        });
+        setApps(map);
+      }
+    });
+  }, [])
 
   /**
    * table表格渲染
@@ -79,6 +97,23 @@ export default (): React.ReactNode => {
             {record?.sign_day <= 0 && <Tag color="warning">扩展:无</Tag>}
           </>
         );
+      }
+    },
+    {
+      title: '所属应用',
+      dataIndex: 'app_id',
+      tip: '账号所属应用',
+      render: (text: string, record: any) => {
+        return apps[record?.app_id]?.name || "主应用";
+      },
+      renderFormItem: () => {
+        const list = new Array();
+        Object.keys(apps).forEach((key: any) => {
+          list.push(<Select.Option key={apps[key]?.id} value={apps[key]?.id}>{apps[key]?.name}</Select.Option>);
+        });
+        return <Select placeholder="请选择所属应用" allowClear={true}>
+          {list}
+        </Select>;
       }
     },
     {
@@ -193,20 +228,6 @@ export default (): React.ReactNode => {
 
             }}>
               执行挂机
-            </a>
-          </Menu.Item>
-          <Menu.Item key={"order"}>
-            <a style={{fontSize: "small"}} onClick={() => {
-
-            }}>
-              订单记录
-            </a>
-          </Menu.Item>
-          <Menu.Item key={"log"}>
-            <a style={{fontSize: "small"}} onClick={() => {
-              setUinVisible(true)
-            }}>
-              操作记录
             </a>
           </Menu.Item>
         </Menu>} trigger={['click']} placement="bottomCenter" arrow={true}>

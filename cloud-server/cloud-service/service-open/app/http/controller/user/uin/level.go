@@ -3,6 +3,7 @@ package uin
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/level"
 )
 
@@ -35,5 +36,24 @@ func (ControllerLevel) List(c *sinking_server.Context) {
 		c.Error("获取折扣列表失败")
 	} else {
 		c.SuccessWithData("获取折扣列表成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
+	}
+}
+
+// Buy 开通等级
+func (ControllerLevel) Buy(c *sinking_server.Context) {
+	type Form struct {
+		LevelId int `form:"level_id" json:"level_id" default:"" validate:"gte=0" label:"等级ID"`
+		Month   int `form:"month" json:"month" default:"" validate:"gte=1" label:"开通月份"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	e := web_uin.BuyLevel(c.GetWebUserInfo().Id, form.LevelId, form.Month, true)
+	if e == nil {
+		c.Success("开通折扣等级成功")
+	} else {
+		c.Error(e.Error())
 	}
 }

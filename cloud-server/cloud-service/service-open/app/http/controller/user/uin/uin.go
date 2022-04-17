@@ -8,6 +8,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/app_config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc/web_user_log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin"
@@ -129,7 +130,7 @@ func (ControllerUin) Buy(c *sinking_server.Context) {
 		}
 	}
 	//下单
-	err = web_uin.Buy(c.GetWebUserInfo().Id, form.AppId, form.ServerKey, form.Uin, form.Pwd, form.Type, form.Month)
+	err = web_uin.Buy(c.GetWebUserInfo().Id, form.AppId, form.ServerKey, form.Uin, form.Pwd, form.Type, form.Month, true)
 	if err != nil {
 		c.Error(err.Error())
 	} else {
@@ -444,9 +445,13 @@ func (ControllerUin) Project(c *sinking_server.Context) {
 
 // Self 账户信息
 func (ControllerUin) Self(c *sinking_server.Context) {
+	user := web_user.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, false)
+	level, _ := web_uin.GetUserLevelWithCache(user.Id, false)
+	userConfigs := app_config.GetIns().GetUserConfigs(user.Id, false)
 	c.SuccessWithData("获取成功", sinking_web.H{
-		"money": web_user.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, false).Money,
-		"level": web_uin.GetUserLevel(c.GetWebUserInfo().Id),
+		"money":  user.Money,
+		"level":  level,
+		"expire": userConfigs[constant.UserUinLevelExpire],
 	})
 }
 

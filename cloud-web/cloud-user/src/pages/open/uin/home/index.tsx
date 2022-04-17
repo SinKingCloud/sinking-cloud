@@ -1,12 +1,11 @@
 import React, {useRef, useState} from 'react';
 import {PageContainer, RouteContext} from '@ant-design/pro-layout';
-import {Button, Col, Descriptions, Empty, message, Row, Statistic, Tag, Timeline, Tooltip} from 'antd';
+import {Button, Col, Descriptions, Empty, message, Row, Statistic, Tag, Tooltip} from 'antd';
 import styles from './style.less';
 import {
   AreaChartOutlined,
   ArrowUpOutlined,
   BarChartOutlined,
-  ClockCircleOutlined,
   LineChartOutlined,
   StockOutlined
 } from "@ant-design/icons";
@@ -238,42 +237,7 @@ export default (): React.ReactNode => {
               <Row gutter={8} style={{paddingBottom: "20px"}}>
                 <Col xs={{span: 24, offset: 0}} lg={{span: 24, offset: 0}}>
                   <ProCard title="更新日志" bordered headerBordered={true}>
-                    <Timeline mode={"left"}>
-                      <Timeline.Item label={(<><Tag color={"green"}>2020/12/20</Tag><Tag color={"red"}>v1.0</Tag></>)}>
-                        <div style={{color: "#a6a6a6"}}>
-                          1.修复若干错误<br/>
-                          2.添加若干业务功能<br/>
-                          3.修复其他
-                        </div>
-                      </Timeline.Item>
-                      <Timeline.Item label={(<><Tag color={"green"}>2020/12/20</Tag><Tag color={"red"}>v1.0</Tag></>)}>
-                        <div style={{color: "#a6a6a6"}}>
-                          1.修复若干错误<br/>
-                          2.修复若干错误<br/>
-                          3.修复若干错误
-                        </div>
-                      </Timeline.Item>
-                      <Timeline.Item label={(<><Tag color={"green"}>2020/12/20</Tag><Tag color={"red"}>v1.0</Tag></>)}>
-                        <div style={{color: "#a6a6a6"}}>
-                          1.修复若干错误<br/>
-                          2.修复若干错误<br/>
-                          3.修复若干错误
-                        </div>
-                      </Timeline.Item>
-                      <Timeline.Item label={(<><Tag color={"green"}>2020/12/20</Tag><Tag color={"red"}>v1.0</Tag></>)}>
-                        <div style={{color: "#a6a6a6"}}>
-                          1.修复若干错误<br/>
-                          2.修复若干错误<br/>
-                          3.修复若干错误
-                        </div>
-                      </Timeline.Item>
-                      <Timeline.Item dot={<ClockCircleOutlined style={{fontSize: '16px'}}/>}
-                                     label={(<><Tag color={"green"}>2020/12/20</Tag><Tag color={"red"}>v1.0</Tag></>)}>
-                        <div style={{color: "#a6a6a6"}}>
-                          v1.0版本上线,感谢使用
-                        </div>
-                      </Timeline.Item>
-                    </Timeline>
+                    <Empty/>
                   </ProCard>
                 </Col>
               </Row>

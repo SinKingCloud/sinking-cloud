@@ -19,10 +19,10 @@ import (
 )
 
 // Buy 业务下单
-func Buy(userId int, appId int, serverKey string, uin string, pwd string, types int, month int) error {
-	user := web_user.GetIns().GetCurrentUserInfo(userId, false)
+func Buy(userId int, appId int, serverKey string, uin string, pwd string, types int, month int, cost bool) error {
+	user := web_user.GetIns().GetCurrentUserInfo(userId, true)
 	if user == nil {
-		return errors.New("获取用户资料失败")
+		return errors.New("获取用户信息失败")
 	}
 	if appId != 0 {
 		app, err := web_app.GetIns().FindByIdWithCache(appId, false)
@@ -36,13 +36,15 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 	}
 	//获取价格
 	price := GetPrice(level, types, month)
-	//判断用户余额是否足够
-	if user.Money < price {
-		return errors.New("账户余额不足,请充值")
-	}
-	//扣款
-	if price > 0 && !rpc.WebUser.Money(userId, 0, fmt.Sprintf("%.2f", price)) {
-		return errors.New("扣款失败，请联系管理员")
+	if cost {
+		//判断用户余额是否足够
+		if user.Money < price {
+			return errors.New("账户余额不足,请充值")
+		}
+		//扣款
+		if price > 0 && !rpc.WebUser.Money(userId, 0, fmt.Sprintf("%.2f", price)) {
+			return errors.New("扣款失败，请联系管理员")
+		}
 	}
 	uinInfo, err := uin2.GetIns().FindByUserIdWithUin(user.Id, uin)
 	if err != nil || uinInfo == nil {
@@ -122,7 +124,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 		}
 	}
 	if orderErr != nil {
-		if price > 0 {
+		if cost && price > 0 {
 			rpc.WebUser.Money(userId, 1, fmt.Sprintf("%.2f", price))
 		}
 		return orderErr
@@ -135,7 +137,11 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 		} else if types == 2 {
 			typeName = "签到套装"
 		}
-		content := "在线下单" + strconv.Itoa(month) + "月" + typeName + "。"
+		t := "在线"
+		if !cost {
+			t = "后台"
+		}
+		content := t + "下单" + strconv.Itoa(month) + "月" + typeName + "。"
 		if firstBuy > 1 {
 			content += "首次下单" + strconv.Itoa(firstBuy) + "倍到账"
 		}
@@ -157,7 +163,9 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 			Name:   content,
 			Status: 0,
 		})
-		rpc.WebUserPayLog.Create(user.Id, 1, 1, price, "在线消费", "为QQ"+uinInfo.Uin+"在线下单"+strconv.Itoa(month)+"月"+typeName)
+		if cost {
+			rpc.WebUserPayLog.Create(user.Id, 1, 1, price, "在线消费", "为QQ"+uinInfo.Uin+"在线下单"+strconv.Itoa(month)+"月"+typeName)
+		}
 		//清理用户缓存
 		web_user.GetIns().Clear(user.Id)
 	}()

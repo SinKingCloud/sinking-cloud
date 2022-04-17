@@ -59,6 +59,8 @@ func GetUserLevel(userId int) (data *model.AppUinLevel) {
 				constant.UserUinLevel:       strconv.Itoa(data.Id),
 				constant.UserUinLevelExpire: str.NewTimeTool().GetFirstDateOfMonth(time.Now().AddDate(0, +1, 0)).Format("2006-01-02 15:04:05"),
 			})
+			//刷新用户
+			app_config.GetIns().ClearUserConfig(userId)
 		}
 	}
 	if data == nil {
