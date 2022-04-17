@@ -59,8 +59,8 @@ func (ControllerPerson) AuthCheck(c *sinking_server.Context) {
 		return
 	}
 	if aliyun.FaceCheck(form.CertifyId) {
-		c.Success("success")
+		c.Success("实名成功")
 	} else {
-		c.Error("error")
+		c.Error("实名失败")
 	}
 }
