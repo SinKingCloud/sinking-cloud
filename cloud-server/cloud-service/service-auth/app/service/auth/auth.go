@@ -77,6 +77,35 @@ func GetSystemUserInfoByPwd(account string, pwd string) (u *model.SystemUser, e 
 	return
 }
 
+// OutLogin 注销登录
+func OutLogin(types string, u *model.SystemUser, u2 *model.WebUser) {
+	fun := func(types string, newToken string, oldToken string) string {
+		temp := make(map[string]string)
+		_ = json.Unmarshal([]byte(oldToken), &temp)
+		temp[types] = newToken
+		//生成新的json
+		jsonStr, err := json.Marshal(temp)
+		if err != nil {
+			return ""
+		}
+		return string(jsonStr)
+	}
+	if u != nil {
+		tempToken := fun(types, "", u.LoginToken)
+		if tempToken != "" {
+			tempU := model.SystemUser{Id: u.Id, LoginToken: tempToken}
+			_ = util.Database.Db.Updates(&tempU).Error
+		}
+	}
+	if u2 != nil {
+		tempToken := fun(types, "", u2.LoginToken)
+		if tempToken != "" {
+			tempU := model.WebUser{Id: u2.Id, LoginToken: tempToken}
+			_ = util.Database.Db.Updates(&tempU).Error
+		}
+	}
+}
+
 // GetJwtToken 生成jwtToken
 func GetJwtToken(types string, u *model.SystemUser, u2 *model.WebUser, ip string) (s string, e error) {
 	//生成token

@@ -12,3 +12,11 @@ export async function login(body: AdminAPI.LoginParams, options?: { [key: string
     ...(options || {}),
   });
 }
+
+/** 退出登录 GET /auth/system/out_login */
+export async function outLogin(options?: { [key: string]: any }) {
+  return request<API.Response>('/auth/system/out_login', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}

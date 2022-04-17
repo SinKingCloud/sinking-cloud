@@ -23,12 +23,14 @@ func GetIns() *service {
 
 // Create 创建日志
 func (*service) Create(userId int, requestId string, requestIp string, types int, title string, content string) {
-	_, _ = rpc.New(group.CloudService, name.ServiceAdmin).Call("/rpc/log/create", &rpc.Param{
-		"user_id":    userId,
-		"request_id": requestId,
-		"request_ip": requestIp,
-		"type":       types,
-		"title":      title,
-		"content":    content,
-	}).Response()
+	go func(userId int, requestId string, requestIp string, types int, title string, content string) {
+		_, _ = rpc.New(group.CloudService, name.ServiceAdmin).Call("/rpc/log/create", &rpc.Param{
+			"user_id":    userId,
+			"request_id": requestId,
+			"request_ip": requestIp,
+			"type":       types,
+			"title":      title,
+			"content":    content,
+		}).Response()
+	}(userId, requestId, requestIp, types, title, content)
 }

@@ -1,6 +1,7 @@
 package route
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/callback"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/pay"
@@ -26,6 +27,9 @@ func loadWebRoute(s *sinking_web.Engine) {
 	r := s.Group("/web")
 	handle := &web.ControllerWeb{}
 	r.POST("/login", sinking_server.HandleFunc(handle.Login))
+	outGroup := r.Group("/out_login")
+	outGroup.Use(middleware.AuthUser())
+	outGroup.GET("/", sinking_server.HandleFunc(handle.OutLogin))
 }
 
 // loadWebRoute 加载后台授权路由
@@ -33,6 +37,9 @@ func loadSystemRoute(s *sinking_web.Engine) {
 	r := s.Group("/system")
 	handle := &system.ControllerSystem{}
 	r.POST("/login", sinking_server.HandleFunc(handle.Login))
+	outGroup := r.Group("/out_login")
+	outGroup.Use(middleware.AuthAdmin())
+	outGroup.GET("/", sinking_server.HandleFunc(handle.OutLogin))
 }
 
 // loadWebRoute 加载验证器路由

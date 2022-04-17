@@ -33,7 +33,7 @@ export function getParams(params: any, sort: any): any {
  */
 export async function getPageControls(path: string = ""): Promise<any> {
   path = path == "" ? location.pathname : path;
-  let key = location.pathname.replaceAll("/", ".").substring(1);
+  let key = path.replaceAll("/", ".").substring(1);
   let response = await getControls({key: key});
   if (response.code == 200) {
     let data = {};
