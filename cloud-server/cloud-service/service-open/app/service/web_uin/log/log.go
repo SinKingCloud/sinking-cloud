@@ -21,4 +21,5 @@ const (
 	Password        //修改密码
 	Login           //登陆账号
 	Run             //执行补挂
+	Timing          //修改时间
 )

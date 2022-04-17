@@ -2,6 +2,7 @@ package web_uin
 
 import (
 	"errors"
+	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/log"
@@ -55,5 +56,33 @@ func ChangeServer(uinId int, key string) error {
 			return errors.New("更改挂机地区失败")
 		}
 	}
+	return nil
+}
+
+// ChangeTiming 修改挂机时间
+func ChangeTiming(uinId int, timing int) error {
+	uinInfo, err := uin.GetIns().FindById(uinId)
+	if err != nil || uinInfo == nil {
+		return errors.New("未查询到QQ信息")
+	}
+	//修改挂机时间
+	err = uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{
+		"timing": timing,
+	})
+	if err != nil {
+		return errors.New("更改挂机时间失败")
+	}
+	go func(timing int) {
+		//写入QQ操作记录
+		_ = log.GetIns().Create(&model.AppUinLog{
+			UserId:  uinInfo.UserId,
+			AppId:   uinInfo.AppId,
+			UinId:   uinInfo.Id,
+			Uin:     uinInfo.Uin,
+			Type:    log.Timing,
+			Title:   "时间变动",
+			Content: "挂机时间变动为" + fmt.Sprintf("%02d:%02d", timing/60, timing%60),
+		})
+	}(timing)
 	return nil
 }

@@ -154,6 +154,10 @@ func (ControllerUin) ChangePassword(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
+	if uinInfo.Status != 0 {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
 	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
@@ -182,6 +186,10 @@ func (ControllerUin) ChangeServer(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
+	if uinInfo.Status != 0 {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
 	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
@@ -189,6 +197,38 @@ func (ControllerUin) ChangeServer(c *sinking_server.Context) {
 	err = web_uin.ChangeServer(uinInfo.Id, form.ServerKey)
 	if err == nil {
 		c.Success("更改挂机地区成功,请重新登录上线")
+	} else {
+		c.Error(err.Error())
+	}
+}
+
+// ChangeTiming 修改挂机时间
+func (ControllerUin) ChangeTiming(c *sinking_server.Context) {
+	type Form struct {
+		Uin    string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Timing int    `json:"timing" validate:"numeric,gt=0,lt=1440" label:"挂机时间"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	if uinInfo.Status != 0 {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
+	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
+	err = web_uin.ChangeTiming(uinInfo.Id, form.Timing)
+	if err == nil {
+		c.Success("更改挂机时间成功")
 	} else {
 		c.Error(err.Error())
 	}

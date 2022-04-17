@@ -65,7 +65,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 				PlayerDay: 0,
 				RunDay:    0,
 				Setting:   str.NewJsonTool(Setting).ToString(),
-				Timing:    0,
+				Timing:    30,
 				Status:    0,
 			}
 			err = uin2.GetIns().Create(uinLog)
