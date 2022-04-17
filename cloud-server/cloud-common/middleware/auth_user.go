@@ -23,7 +23,7 @@ func AuthUser() sinking_web.HandlerFunc {
 			}
 			key := jwt.CheckToken(token)
 			if key == nil || time.Now().Unix() > key.ExpiresAt || key.WebUser == nil {
-				c.TokenError("登陆超时,请重新登陆", nil)
+				c.TokenError("您还未登陆,请登陆账户", nil)
 				c.Abort()
 				return
 			}

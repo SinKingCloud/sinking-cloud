@@ -7,6 +7,7 @@ import HeaderDropdown from '../HeaderDropdown';
 import styles from './index.less';
 import {outLogin} from '@/services/user/login';
 import type {MenuInfo} from 'rc-menu/lib/interface';
+import * as auth from "@/util/auth";
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -21,6 +22,7 @@ const loginOut = async () => {
   const {redirect} = query;
   // Note: There may be security issues, please note
   if (window.location.pathname !== '/user/login' && !redirect) {
+    auth.deleteHeader()
     history.replace({
       pathname: '/user/login',
       search: stringify({
@@ -86,7 +88,9 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({menu}) => {
   return (
     <HeaderDropdown overlay={menuHeaderDropdown} placement="bottomRight" arrow={true}>
       <span className={`${styles.action} ${styles.account}`}>
-        <Avatar size="small" className={styles.avatar} src={currentUser.avatar||"https://aliyun_id_photo_bucket.oss.aliyuncs.com/default_handsome.jpg"} alt="avatar"/>
+        <Avatar size="small" className={styles.avatar}
+                src={currentUser.avatar || "https://aliyun_id_photo_bucket.oss.aliyuncs.com/default_handsome.jpg"}
+                alt="avatar"/>
         <span className={`${styles.name} anticon`}>{currentUser.nick_name}</span>
       </span>
     </HeaderDropdown>

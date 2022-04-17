@@ -28,6 +28,11 @@ func CheckWebUser() sinking_web.HandlerFunc {
 		}
 		webToken := jwt.GetLoginToken(webUser.LoginToken)
 		//判断用户token一致性
+		if webToken[types] == "" {
+			c.TokenError("您的账户已注销登陆,请重新登陆", nil)
+			c.Abort()
+			return
+		}
 		if jwtToken[types] != webToken[types] {
 			c.TokenError("您的账户已在其他设备登陆,请重新登陆", nil)
 			c.Abort()
@@ -57,6 +62,11 @@ func CheckSystemUser() sinking_web.HandlerFunc {
 		}
 		systemToken := jwt.GetLoginToken(systemUser.LoginToken)
 		//判断用户token一致性
+		if systemToken[types] == "" {
+			c.TokenError("您的账户已注销登陆,请重新登陆", nil)
+			c.Abort()
+			return
+		}
 		if jwtToken[types] != systemToken[types] {
 			c.TokenError("您的账户已在其他设备登陆,请重新登陆", nil)
 			c.Abort()

@@ -135,7 +135,13 @@ const requestMiddleware = async (ctx: any, next: () => void) => {
   await next();
   if (ctx.res.code == 503 || ctx.res.code == 403) {
     history.push(allowPaths[0]);
-    return message.warning(ctx.res.message || "登陆超时");
+    let token = auth.getLoginToken();
+    auth.deleteHeader();
+    if (token != null && token != "") {
+      return message.warning(ctx.res.message || "登陆超时");
+    } else {
+      return false;
+    }
   }
   if (ctx.res.code == 401) {
     return message.warning(ctx.res.message || "权限不足");
