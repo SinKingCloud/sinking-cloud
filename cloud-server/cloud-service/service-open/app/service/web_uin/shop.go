@@ -20,6 +20,9 @@ func BuyLevel(userId int, levelId int, month int, cost bool) error {
 	if err != nil || level.Status != 0 {
 		return errors.New("获取折扣等级信息失败")
 	}
+	if level.Price <= 0 {
+		return errors.New("免费等级无需开通,将会自动结转")
+	}
 	user := web_user.GetIns().GetCurrentUserInfo(userId, true)
 	if user == nil {
 		return errors.New("获取用户信息失败")
