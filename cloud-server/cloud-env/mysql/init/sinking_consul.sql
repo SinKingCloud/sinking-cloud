@@ -7,7 +7,6 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 -- Table structure for sinking_apps
 -- ----------------------------
-DROP TABLE IF EXISTS `sinking_apps`;
 CREATE TABLE `sinking_apps`  (
   `id` bigint(32) NOT NULL DEFAULT 0,
   `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '标题',
@@ -27,7 +26,6 @@ INSERT INTO `sinking_apps` VALUES (1, '沉沦网络', 'cloud-server', '2021-10-1
 -- ----------------------------
 -- Table structure for sinking_configs
 -- ----------------------------
-DROP TABLE IF EXISTS `sinking_configs`;
 CREATE TABLE `sinking_configs`  (
   `id` bigint(32) NOT NULL DEFAULT 0,
   `app_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '应用标识',
@@ -63,7 +61,6 @@ INSERT INTO `sinking_configs` VALUES (10, 'cloud-server', 'release', '开放服�
 -- ----------------------------
 -- Table structure for sinking_envs
 -- ----------------------------
-DROP TABLE IF EXISTS `sinking_envs`;
 CREATE TABLE `sinking_envs`  (
   `id` bigint(32) NOT NULL DEFAULT 0 COMMENT '应用环境',
   `app_id` bigint(32) NOT NULL DEFAULT 0 COMMENT '应用ID',
@@ -85,7 +82,6 @@ INSERT INTO `sinking_envs` VALUES (2, 1, '生产环境', 'release', '2021-10-16 
 -- ----------------------------
 -- Table structure for sinking_roles
 -- ----------------------------
-DROP TABLE IF EXISTS `sinking_roles`;
 CREATE TABLE `sinking_roles`  (
   `id` bigint(32) NOT NULL DEFAULT 0 COMMENT '角色id',
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '角色名称',
@@ -104,7 +100,6 @@ CREATE TABLE `sinking_roles`  (
 -- ----------------------------
 -- Table structure for sinking_users
 -- ----------------------------
-DROP TABLE IF EXISTS `sinking_users`;
 CREATE TABLE `sinking_users`  (
   `id` bigint(32) NOT NULL DEFAULT 0,
   `role_id` bigint(32) NOT NULL DEFAULT 0 COMMENT '角色ID',

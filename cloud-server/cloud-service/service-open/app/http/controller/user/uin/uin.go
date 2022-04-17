@@ -18,7 +18,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_user"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/util/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/util/uin_tool"
-	sinking_web "github.com/SinKingCloud/sinking-go/sinking-web"
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"gorm.io/gorm"
 	"strconv"
 )
