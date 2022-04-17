@@ -266,12 +266,18 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		return
 	}
 	q := uin_tool.NewUinTool(srv.Addr)
+	var code int
+	var e error
+	var data string
+	var verify string
 	switch form.Step {
 	case "normal":
-		code, err, s := q.Login(uinInfo.Uin, uinInfo.Password)
+		code, e, data = q.Login(uinInfo.Uin, uinInfo.Password)
 		if err != nil || code != uin_tool.Success {
 			if code == uin_tool.NeedCaptcha {
-				c.Return(400, err.Error(), s)
+				c.Return(400, e.Error(), data)
+			} else if code == uin_tool.NeedCode {
+				c.Return(401, err.Error(), nil)
 			} else {
 				c.Error(err.Error())
 			}
@@ -283,40 +289,43 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			c.Error("ticket不能为空")
 			return
 		}
-		code, err := q.CaptchaLogin(uinInfo.Uin, form.Ticket)
-		if err != nil || code != uin_tool.Success {
-			if code == uin_tool.NeedCode {
-				c.Return(401, err.Error(), nil)
-			} else {
-				c.Error(err.Error())
-			}
-			return
-		}
+		verify = form.Ticket
 		break
 	case "sms":
 		if form.Code == "" {
 			c.Error("验证码不能为空")
 			return
 		}
-		code, err := q.SmsLogin(uinInfo.Uin, form.Code)
-		if err != nil || code != uin_tool.Success {
-			c.Error(err.Error())
-			return
-		}
+		verify = form.Code
 		break
 	}
-	//更改QQ状态
-	_ = uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{"uin_status": 0})
-	//写入记录
-	_ = log.GetIns().Create(&model.AppUinLog{
-		UserId:  uinInfo.UserId,
-		AppId:   uinInfo.AppId,
-		UinId:   uinInfo.Id,
-		Uin:     uinInfo.Uin,
-		Type:    log.Login,
-		Title:   "登陆账号",
-		Content: "更新账号状态",
-	})
+	if form.Step != "normal" {
+		code, e, data = q.VerifyLogin(uinInfo.Uin, verify)
+		if err != nil || code != uin_tool.Success {
+			if code == uin_tool.NeedCode {
+				c.Return(401, err.Error(), nil)
+			} else if code == uin_tool.NeedCaptcha {
+				c.Return(400, e.Error(), data)
+			} else {
+				c.Error(err.Error())
+			}
+			return
+		}
+	}
+	go func(uinInfo *model.AppUin) {
+		//更改QQ状态
+		_ = uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{"uin_status": 0})
+		//写入记录
+		_ = log.GetIns().Create(&model.AppUinLog{
+			UserId:  uinInfo.UserId,
+			AppId:   uinInfo.AppId,
+			UinId:   uinInfo.Id,
+			Uin:     uinInfo.Uin,
+			Type:    log.Login,
+			Title:   "登陆账号",
+			Content: "更新账号状态",
+		})
+	}(uinInfo)
 	c.Success("登陆成功")
 }
 
@@ -344,9 +353,11 @@ func (ControllerUin) Delete(c *sinking_server.Context) {
 		c.Error("删除QQ失败")
 		return
 	}
-	_ = server2.GetIns().UpdateById(uinInfo.ServerId, map[string]interface{}{
-		"uin_num": gorm.Expr("`uin_num`-1"),
-	})
+	go func(uinInfo *model.AppUin) {
+		_ = server2.GetIns().UpdateById(uinInfo.ServerId, map[string]interface{}{
+			"uin_num": gorm.Expr("`uin_num`-1"),
+		})
+	}(uinInfo)
 	c.Success("删除QQ成功")
 }
 
@@ -407,17 +418,19 @@ func (ControllerUin) Job(c *sinking_server.Context) {
 	}
 	key := constant.LockUserUinJob + uinInfo.Uin
 	if util.Cache.Lock(key, constant.LockTimeUserUinJob) {
-		producer.NewUinJobProducer().Build(uinInfo).Send()
-		//写入记录
-		_ = log.GetIns().Create(&model.AppUinLog{
-			UserId:  uinInfo.UserId,
-			AppId:   uinInfo.AppId,
-			UinId:   uinInfo.Id,
-			Uin:     uinInfo.Uin,
-			Type:    log.Run,
-			Title:   "执行挂机",
-			Content: "手动执行挂机",
-		})
+		go func(uinInfo *model.AppUin) {
+			producer.NewUinJobProducer().Build(uinInfo).Send()
+			//写入记录
+			_ = log.GetIns().Create(&model.AppUinLog{
+				UserId:  uinInfo.UserId,
+				AppId:   uinInfo.AppId,
+				UinId:   uinInfo.Id,
+				Uin:     uinInfo.Uin,
+				Type:    log.Run,
+				Title:   "执行挂机",
+				Content: "手动执行挂机",
+			})
+		}(uinInfo)
 		c.Success("提交执行任务指令成功,即将开始挂机")
 	} else {
 		c.Error("提交过于频繁,请五分钟后在重试")

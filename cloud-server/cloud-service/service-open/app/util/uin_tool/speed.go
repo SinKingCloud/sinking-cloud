@@ -25,16 +25,9 @@ func (s *speed) Login(uin string, pwd string) (int, error, string) {
 	return a, b, c
 }
 
-// CaptchaLogin 验证滑动验证码登陆
-func (s *speed) CaptchaLogin(uin string, ticket string) (int, error) {
-	a, b, _ := s.login(uin, ticket)
-	return a, b
-}
-
-// SmsLogin 验证设备锁登陆
-func (s *speed) SmsLogin(uin string, code string) (int, error) {
-	a, b, _ := s.login(uin, code)
-	return a, b
+// VerifyLogin 验证码登陆
+func (s *speed) VerifyLogin(uin string, code string) (int, error, string) {
+	return s.login(uin, code)
 }
 
 // Delete 删除QQ
