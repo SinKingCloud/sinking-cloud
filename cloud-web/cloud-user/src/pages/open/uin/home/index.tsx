@@ -122,15 +122,17 @@ export default (): React.ReactNode => {
       hideInSearch: true,
       editable: false,
       render: (text: string, record: any) => {
-        return <Button type="default" style={{fontSize: "10px"}} size="small" onClick={() => {
+        // @ts-ignore
+        const btn = selfInfo?.level.id == record?.id
+        return <Button type={btn ? "primary" : "default"} style={{fontSize: "10px"}} size="small" onClick={() => {
           if (record?.price <= 0) {
             message.warning("免费等级无需开通,系统自动结转");
             return;
           }
           Modal.confirm({
-            title: '确定要花费' + record?.price.toFixed(2) + '元开通' + record?.name + '等级吗?',
+            title: '确定要花费' + record?.price.toFixed(2) + '元开通1个月' + record?.name + '等级吗?',
             icon: <ExclamationCircleOutlined/>,
-            content: '开通不同等级则会清空已开通等级,同等级则顺延时长',
+            content: '开通不同等级则会清空已开通等级,同等级则顺延1月到期时间',
             okType: 'danger',
             onOk() {
               const key = "shop";
@@ -147,7 +149,7 @@ export default (): React.ReactNode => {
             },
           });
         }}>
-          开通
+          {btn ? "续期" : "开通"}
         </Button>;
       }
     },

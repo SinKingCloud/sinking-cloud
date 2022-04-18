@@ -3,9 +3,7 @@ package web_uin
 import (
 	"errors"
 	"fmt"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
-	model2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/app_config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc"
 	level2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/level"
@@ -67,16 +65,14 @@ func BuyLevel(userId int, levelId int, month int, cost bool) error {
 	})
 	//刷新用户配置
 	app_config.GetIns().ClearUserConfig(user.Id)
-	go func(user *model.WebUser, level *model2.AppUinLevel, cost bool, price float64) {
-		name := "自主"
-		if !cost {
-			price = 0
-			name = "管理员"
-		}
-		//写入用户余额记录
-		rpc.WebUserPayLog.Create(user.Id, 1, 1, price, "在线消费", name+"开通"+strconv.Itoa(month)+"月"+level.Name+"折扣等级")
-		//刷新用户折扣等级
-		_, _ = GetUserLevelWithCache(user.Id, true)
-	}(user, level, cost, price)
+	//刷新用户折扣等级
+	name := "自主"
+	if !cost {
+		price = 0
+		name = "管理员"
+	}
+	//写入用户余额记录
+	rpc.WebUserPayLog.Create(user.Id, 1, 1, price, "在线消费", name+"开通"+strconv.Itoa(month)+"月"+level.Name+"折扣等级")
+	_, _ = GetUserLevelWithCache(user.Id, true)
 	return nil
 }
