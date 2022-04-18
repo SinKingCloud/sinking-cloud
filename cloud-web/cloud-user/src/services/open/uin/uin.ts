@@ -33,3 +33,15 @@ export async function getLevelList(params?: {}, options?: { [key: string]: any }
     ...(options || {}),
   });
 }
+
+/** 提交挂机 POST /open/user/uin/operate/run */
+export async function uinRun(body: any, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/operate/run', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}

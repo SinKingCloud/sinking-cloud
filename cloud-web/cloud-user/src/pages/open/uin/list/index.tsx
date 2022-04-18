@@ -2,9 +2,9 @@ import React, {useEffect, useRef, useState} from 'react';
 import {PageContainer} from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import {getParams} from "@/util/page";
-import {Avatar, Button, Dropdown, Menu, message, Select, Tag} from "antd";
-import {getUinList} from "@/services/open/uin/uin";
-import {DownOutlined} from "@ant-design/icons";
+import {Avatar, Button, Dropdown, Menu, message, Modal, Select, Tag} from "antd";
+import {getUinList, uinRun} from "@/services/open/uin/uin";
+import {DownOutlined, ExclamationCircleOutlined} from "@ant-design/icons";
 import UpdateUin from "@/pages/open/uin/list/components/UpdateUin";
 import {getAppList} from "@/services/app/app";
 
@@ -34,8 +34,30 @@ export default (): React.ReactNode => {
         setApps(map);
       }
     });
-  }, [])
-
+  }, []);
+  /**
+   * 执行挂机
+   * @param uin 账号
+   */
+  const uinPlayer = (uin: string) => {
+    Modal.confirm({
+      title: '确定要执行挂机吗?',
+      icon: <ExclamationCircleOutlined/>,
+      content: '提交挂机后将会立即执行',
+      okType: 'danger',
+      onOk() {
+        const key = "uinPlayer";
+        message.loading({content: '正在提交挂机指令', key, duration: 60}).then();
+        uinRun({uin: uin}).then((r) => {
+          if (r.code == 200) {
+            message.success({content: r.message, key, duration: 2}).then();
+          } else {
+            message.error({content: r.message, key, duration: 2}).then();
+          }
+        });
+      },
+    });
+  };
   /**
    * table表格渲染
    */
@@ -225,7 +247,7 @@ export default (): React.ReactNode => {
           </Menu.Item>
           <Menu.Item key={"run"} hidden={hide}>
             <a style={{fontSize: "small"}} onClick={() => {
-
+              uinPlayer(record?.uin);
             }}>
               执行挂机
             </a>
@@ -242,24 +264,18 @@ export default (): React.ReactNode => {
    */
   const [uinVisible, setUinVisible] = useState(false);
   const [uin, setUin] = useState("");
-  const [pwd, setPwd] = useState("");
-  const [server, setServer] = useState("");
-  const showUinModal = (uin: string, server: string, pwd: string = "") => {
+  const showUinModal = (uin: string = "", server: string = "", pwd: string = "") => {
     setUin(uin);
-    setServer(server);
-    setPwd(pwd)
     setUinVisible(true);
   }
   const hideUinModal = () => {
     setUin("");
-    setServer("");
-    setPwd("")
     setUinVisible(false);
   }
 
   return (
     <PageContainer title={false}>
-      <UpdateUin visible={uinVisible} uin={uin} pwd={pwd} server={server} onOk={() => {
+      <UpdateUin visible={uinVisible} uin={uin} onOk={() => {
         hideUinModal()
       }} onCancel={() => {
         hideUinModal()
@@ -297,7 +313,7 @@ export default (): React.ReactNode => {
         }}
         toolBarRender={() => [
           <Button key="primary" type="primary" onClick={() => {
-
+            showUinModal();
           }}>
             添加
           </Button>,

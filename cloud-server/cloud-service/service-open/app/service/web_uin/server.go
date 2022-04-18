@@ -18,20 +18,25 @@ func GetServer(key string) (data *model.AppUinServer, err error) {
 }
 
 // ChangeServer 更改挂机地区
-func ChangeServer(uinId int, key string) error {
+func ChangeServer(uinId int, key string) (error, bool) {
 	uinInfo, err := uin.GetIns().FindById(uinId)
 	if err != nil || uinInfo == nil {
-		return errors.New("未查询到QQ信息")
+		return errors.New("未查询到QQ信息"), false
 	}
+	change := false
 	if uinInfo.ServerKey != key {
 		server, err := GetServer(key)
 		if err != nil || server == nil {
-			return errors.New("未获取到可用节点,请更换挂机节点")
+			return errors.New("未获取到可用节点,请更换挂机节点"), false
 		}
 		data := make(map[string]interface{})
 		data["server_key"] = server.Key
 		data["server_id"] = server.Id
-		data["uin_status"] = 1
+		uinServer, err := server2.GetIns().FindByIdWithCache(uinInfo.ServerId, false)
+		if err != nil || uinServer.Addr != server.Addr {
+			data["uin_status"] = 1
+			change = true
+		}
 		go func() {
 			_ = ServerUinCreate(uinInfo.ServerId, uinInfo.Uin, uinInfo.Password)
 			//写入QQ操作记录
@@ -53,10 +58,10 @@ func ChangeServer(uinId int, key string) error {
 		}()
 		err = uin.GetIns().UpdateById(uinInfo.Id, data)
 		if err != nil {
-			return errors.New("更改挂机地区失败")
+			return errors.New("更改挂机地区失败"), false
 		}
 	}
-	return nil
+	return nil, change
 }
 
 // ChangeTiming 修改挂机时间

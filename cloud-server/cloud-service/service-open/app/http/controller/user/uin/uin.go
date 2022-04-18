@@ -194,9 +194,13 @@ func (ControllerUin) ChangeServer(c *sinking_server.Context) {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
-	err = web_uin.ChangeServer(uinInfo.Id, form.ServerKey)
+	err, change := web_uin.ChangeServer(uinInfo.Id, form.ServerKey)
 	if err == nil {
-		c.Success("更改挂机地区成功,请重新登录上线")
+		t := ""
+		if change {
+			t = "请重新登录上线"
+		}
+		c.Success("更改挂机地区成功" + t)
 	} else {
 		c.Error(err.Error())
 	}
@@ -265,7 +269,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("未查询到挂机地区信息,请更换挂机地区")
 		return
 	}
-	q := uin_tool.NewUinTool(srv.Addr)
+	q := uin_tool.NewUinTool(srv.Addr, srv.Key)
 	var code int
 	var e error
 	var data string

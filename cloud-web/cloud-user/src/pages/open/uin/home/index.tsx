@@ -89,10 +89,10 @@ export default (): React.ReactNode => {
       tip: '挂机全套套餐下单价格',
       render: (text: string, record: any) => {
         return <div style={{maxWidth: "350px"}}>
-          <Tag color="green">月:3.00￥</Tag>
-          <Tag color="yellow">季:3.00￥</Tag>
-          <Tag color="blue">半年:3.00￥</Tag>
-          <Tag color="red">年:3.00￥</Tag>
+          <Tag color="green">月:{record?.month_price.toFixed(2) || "0.00"}￥</Tag>
+          <Tag color="yellow">季:{record?.quarter_price.toFixed(2) || "0.00"}￥</Tag>
+          <Tag color="blue">半年:{record?.half_price.toFixed(2) || "0.00"}￥</Tag>
+          <Tag color="red">年:{record?.year_price.toFixed(2) || "0.00"}￥</Tag>
         </div>;
       }
     },
@@ -101,18 +101,18 @@ export default (): React.ReactNode => {
       dataIndex: 'price',
       tip: '挂机单套套餐下单价格',
       render: (text: string, record: any) => {
-        return <div style={{maxWidth: "350px"}}>
+        return <div style={{maxWidth: "370px"}}>
           挂机：
-          <Tag color="green">月:3.00￥</Tag>
-          <Tag color="yellow">季:3.00￥</Tag>
-          <Tag color="blue">半年:3.00￥</Tag>
-          <Tag color="red">年:3.00￥</Tag>
+          <Tag color="green">月:{record?.player_month_price.toFixed(2) || "0.00"}￥</Tag>
+          <Tag color="yellow">季:{record?.player_quarter_price.toFixed(2) || "0.00"}￥</Tag>
+          <Tag color="blue">半年:{record?.player_half_price.toFixed(2) || "0.00"}￥</Tag>
+          <Tag color="red">年:{record?.player_year_price.toFixed(2) || "0.00"}￥</Tag>
           <br/>
           扩展：
-          <Tag color="green">月:3.00￥</Tag>
-          <Tag color="yellow">季:3.00￥</Tag>
-          <Tag color="blue">半年:3.00￥</Tag>
-          <Tag color="red">年:3.00￥</Tag>
+          <Tag color="green">月:{record?.sign_month_price.toFixed(2) || "0.00"}￥</Tag>
+          <Tag color="yellow">季:{record?.sign_quarter_price.toFixed(2) || "0.00"}￥</Tag>
+          <Tag color="blue">半年:{record?.sign_half_price.toFixed(2) || "0.00"}￥</Tag>
+          <Tag color="red">年:{record?.sign_year_price.toFixed(2) || "0.00"}￥</Tag>
         </div>;
       }
     },

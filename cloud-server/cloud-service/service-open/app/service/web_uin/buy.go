@@ -116,7 +116,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 		}
 		//挂机地点变动
 		if serverKey != "" && serverKey != uinInfo.ServerKey {
-			_ = ChangeServer(uinInfo.Id, serverKey)
+			_, _ = ChangeServer(uinInfo.Id, serverKey)
 		}
 		err = uin2.GetIns().UpdateById(uinInfo.Id, data)
 		if err != nil {

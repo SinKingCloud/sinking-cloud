@@ -2,11 +2,12 @@ package uin_tool
 
 type speed struct {
 	addr string //服务器地址
+	area string //区域
 }
 
 // NewUinTool 实例化
-func NewUinTool(addr string) *speed {
-	return &speed{addr: addr}
+func NewUinTool(addr string, area string) *speed {
+	return &speed{addr: addr, area: area}
 }
 
 // Create 创建账号

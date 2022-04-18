@@ -128,14 +128,14 @@ func speed(uin *model.AppUin) {
 		var fail bool
 		if isCheck {
 			//检测挂机
-			fail, _ = check(server.Addr, uin, jobs)
+			fail, _ = check(server.Addr, server.Key, uin, jobs)
 			//只允许9点前执行第三次挂机
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 && time.Now().Unix()-stamp.Unix() > 2*3600 {
 				data["check_time"] = str.DateTime(time.Now().Add(6.5 * 3600 * time.Second))
 			}
 		} else {
 			//正常挂机
-			fail, _ = uin_tool.NewUinTool(server.Addr).Speed(uin.Uin, uin.Password, jobs)
+			fail, _ = uin_tool.NewUinTool(server.Addr, server.Key).Speed(uin.Uin, uin.Password, jobs)
 			//只允许9点前执行第二次挂机
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 {
 				data["check_time"] = str.DateTime(time.Now().Add(2.5 * 3600 * time.Second))
@@ -151,8 +151,8 @@ func speed(uin *model.AppUin) {
 }
 
 // check 检测挂机失败的项目
-func check(addr string, uin *model.AppUin, jobs []int) (bool, map[int]bool) {
-	s := uin_tool.NewUinTool(addr)
+func check(addr string, key string, uin *model.AppUin, jobs []int) (bool, map[int]bool) {
+	s := uin_tool.NewUinTool(addr, key)
 	jobStatus, err := s.Status(uin.Uin)
 	if err != nil || jobStatus == nil {
 		return false, nil
