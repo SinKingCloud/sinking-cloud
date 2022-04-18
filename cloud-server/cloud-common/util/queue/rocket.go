@@ -156,10 +156,8 @@ func RegisterRocketMqConsumer(endPoints []string, groupName string, allListen bo
 		consumer.WithConsumerModel(consumerModel),
 		consumer.WithGroupName(groupName),
 	)
-
 	if err != nil {
 		return nil, err
 	}
-
 	return mqIns, nil
 }
