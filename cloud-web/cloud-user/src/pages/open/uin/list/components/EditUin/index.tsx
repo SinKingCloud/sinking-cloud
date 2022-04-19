@@ -138,6 +138,14 @@ const EditUin: React.FC<EditUinProps> = (props) => {
                 <Tag color={"processing"}>{
                   // @ts-ignore
                   info?.uin.uin}</Tag>
+                {// @ts-ignore
+                  info?.uin.uin_status == 0 &&
+                  <Tag color={"success"}>正常</Tag>
+                }
+                {// @ts-ignore
+                  info?.uin.uin_status != 0 &&
+                  <Tooltip title="需要更新状态后才能继续挂机"><Tag color={"red"}>异常</Tag></Tooltip>
+                }
               </div>
               <div style={{marginTop: "5px", fontSize: "8px", color: "rgb(140 140 140)"}}>
                 <span>挂机地区:<Tooltip title="点击修改挂机地区">
@@ -167,44 +175,49 @@ const EditUin: React.FC<EditUinProps> = (props) => {
               itemLayout="horizontal"
               // @ts-ignore
               dataSource={speedArr}
-              renderItem={item => (
-                <List.Item actions={[
-                  <>
-                    {// @ts-ignore
-                      item?.edit == "true" &&
-                      // @ts-ignore
-                      <Switch key={info?.uin.uin + item?.key} defaultChecked={(info?.setting[item?.key] || "0") == "1"}
+              renderItem={item => {
+                // @ts-ignore
+                let days = info?.uin[item?.type == "speed" ? "player_day" : "sign_day"]
+                return <>
+                  <List.Item actions={[
+                    <>
+                      {// @ts-ignore
+                        item?.edit == "true" &&
                         // @ts-ignore
-                              onChange={(checked) => {
-                                let form = {
-                                  uin: uin,
-                                  setting: {},
-                                };
-                                // @ts-ignore
-                                form["setting"][item?.key] = checked ? "1" : "0";
-                                changeUinSetting(form).then((r) => {
-                                  console.log(serverKey, timing)
-                                  if (r.code != 200) {
-                                    message.error(r.message)
-                                  }
-                                })
-                              }}/>}
-                    {// @ts-ignore
-                      item?.edit == "false" && "附加项目"}
-                  </>
-                ]}>
-                  <List.Item.Meta
-                    // @ts-ignore
-                    avatar={<Avatar src={item?.logo} style={{borderRadius: "0px"}}/>}
-                    // @ts-ignore
-                    title={<><a>{item?.name}</a>&nbsp;<Tag
-                      color={"success"}>剩余:{// @ts-ignore
-                      info?.uin[item?.type == "speed" ? "player_day" : "sign_day"]}天</Tag></>}
-                    // @ts-ignore
-                    description={<span style={{fontSize: "7px"}}>{item?.describe}</span>}
-                  />
-                </List.Item>
-              )}
+                        <Switch key={info?.uin.uin + item?.key}
+                          // @ts-ignore
+                                defaultChecked={(info?.setting[item?.key] || "0") == "1"}
+                                onChange={(checked) => {
+                                  let form = {
+                                    uin: uin,
+                                    setting: {},
+                                  };
+                                  // @ts-ignore
+                                  form["setting"][item?.key] = checked ? "1" : "0";
+                                  changeUinSetting(form).then((r) => {
+                                    console.log(serverKey, timing)
+                                    if (r.code != 200) {
+                                      message.error(r.message)
+                                    }
+                                  })
+                                }}/>}
+                      {// @ts-ignore
+                        item?.edit == "false" && "附加项目"}
+                    </>
+                  ]}>
+                    <List.Item.Meta
+                      // @ts-ignore
+                      avatar={<Avatar src={item?.logo} style={{borderRadius: "0px"}}/>}
+                      // @ts-ignore
+                      title={<><a>{item?.name}</a>&nbsp;{days <= 0 &&
+                        <Tag color={"red"}>天数不足</Tag>}
+                        {days > 0 && <Tag color={"success"}>剩余:{days}天</Tag>}</>}
+                      // @ts-ignore
+                      description={<span style={{fontSize: "7px"}}>{item?.describe}</span>}
+                    />
+                  </List.Item>
+                </>
+              }}
             />}
           </div>
         </Spin>

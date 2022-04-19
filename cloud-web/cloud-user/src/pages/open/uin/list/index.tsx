@@ -141,6 +141,7 @@ export default (): React.ReactNode => {
           <>
             {record?.player_day > 0 && <Tag color="processing">加速:{record?.player_day + "天"}</Tag>}
             {record?.player_day <= 0 && <Tag color="warning">加速:无</Tag>}
+            <br/>
             {record?.sign_day > 0 && <Tag color="success">扩展:{record?.sign_day + "天"}</Tag>}
             {record?.sign_day <= 0 && <Tag color="warning">扩展:无</Tag>}
           </>

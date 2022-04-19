@@ -133,7 +133,7 @@ export default (): React.ReactNode => {
             title: '确定要花费' + record?.price.toFixed(2) + '元开通1个月' + record?.name + '等级吗?',
             icon: <ExclamationCircleOutlined/>,
             content: '开通不同等级则会清空已开通等级,同等级则顺延1月到期时间',
-            okType: 'danger',
+            okType: 'primary',
             onOk() {
               const key = "shop";
               message.loading({content: '正在开通' + record?.name + '等级', key, duration: 60}).then();

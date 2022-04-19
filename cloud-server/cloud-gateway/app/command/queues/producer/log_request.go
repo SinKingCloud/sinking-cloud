@@ -42,7 +42,6 @@ func (l *logRequest) run() {
 			_, err = logRequestProducerIns.SendByteMsg(queue3.LogRequestTopic, "", bytes)
 			if err != nil {
 				util.Log.Println(err)
-				return
 			}
 		}
 	}(logSendProducerTask)

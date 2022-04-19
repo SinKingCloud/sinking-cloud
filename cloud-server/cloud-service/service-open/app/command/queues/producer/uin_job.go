@@ -42,7 +42,6 @@ func (l *uinJob) run() {
 			_, err = uinJobProducerIns.SendByteMsg(constant.UinJobTopic, "", bytes)
 			if err != nil {
 				util.Log.Println(err)
-				return
 			}
 		}
 	}(uinJobProducerTask)

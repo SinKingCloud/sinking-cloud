@@ -6,7 +6,6 @@ import (
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
-	"log"
 )
 
 // webSocketProducerIns 生产者单例
@@ -53,8 +52,6 @@ func (l *webSocketProducer) run() {
 				_, err = webSocketProducerIns.SendByteMsg(queue3.WebSocketSenderTopic, tag, bytes)
 				if err != nil {
 					util.Log.Println(err)
-					log.Println(err)
-					return
 				}
 			}
 		}
