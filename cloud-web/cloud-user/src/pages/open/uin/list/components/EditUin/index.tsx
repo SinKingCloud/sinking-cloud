@@ -1,7 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import {Avatar, Drawer, List, message, Spin, Switch, Tag, Tooltip} from "antd";
-import {changeUinSetting, getProject, getServerList, getUinInfo} from "@/services/open/uin/uin";
-import {EditOutlined} from "@ant-design/icons";
+import {Avatar, Drawer, List, message, Modal, Select, Spin, Switch, Tag, TimePicker, Tooltip} from "antd";
+import {
+  changeUinArea,
+  changeUinSetting,
+  changeUinTiming,
+  getProject,
+  getServerList,
+  getUinInfo
+} from "@/services/open/uin/uin";
+import moment from "moment";
+import {ExclamationCircleOutlined} from "@ant-design/icons";
 
 export type EditUinProps = {
   uin?: string;
@@ -12,6 +20,8 @@ export type EditUinProps = {
 const EditUin: React.FC<EditUinProps> = (props) => {
   const {uin, visible, onCancel} = props;
   const [u, setU] = useState(uin);
+  const [serverKey, setServerKey] = useState("ah");
+  const [timing, setTiming] = useState("00:00");
   const [info, setInfo] = useState(null);
   const [speedArr, setSpeedArr] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -28,6 +38,8 @@ const EditUin: React.FC<EditUinProps> = (props) => {
       setLoading(false);
       if (r.code == 200) {
         setInfo(r.data);
+        setServerKey(r.data.uin.server_key);
+        setTiming(((Array(2).join("0") + parseInt(String(r.data.uin?.timing / 60))).slice(-2) + ":" + (Array(2).join("0") + parseInt(String(r.data.uin?.timing % 60))).slice(-2)).toString())
       }
     });
   };
@@ -65,6 +77,53 @@ const EditUin: React.FC<EditUinProps> = (props) => {
     setU(uin);
     init();
   }
+  /**
+   * 修改挂机地区
+   */
+  const changeArea = (uin: string, serverKey: string) => {
+    Modal.confirm({
+      title: '确定要更改挂机地区吗?',
+      icon: <ExclamationCircleOutlined/>,
+      content: '更改挂机地区可能会影响挂机稳定',
+      okType: 'primary',
+      onOk() {
+        const key = "changeArea";
+        message.loading({content: '正在修改挂机地区', key, duration: 60}).then();
+        changeUinArea({uin: uin, server_key: serverKey}).then((r) => {
+          if (r.code == 200) {
+            setServerKey(serverKey);
+            message.success({content: r.message, key, duration: 2}).then();
+          } else {
+            message.error({content: r.message, key, duration: 2}).then();
+          }
+        });
+      },
+    });
+  }
+  /**
+   * 修改挂机时间
+   */
+  const changeTiming = (uin: string, timing: string) => {
+    Modal.confirm({
+      title: '确定要修改挂机时间为' + timing + '吗?',
+      icon: <ExclamationCircleOutlined/>,
+      content: '下次挂机将会在每日' + timing + "时刻挂机",
+      okType: 'primary',
+      onOk() {
+        const key = "changeTiming";
+        message.loading({content: '正在修改挂机时间', key, duration: 60}).then();
+        let tempArr = timing.split(":");
+        changeUinTiming({uin: uin, timing: parseInt(tempArr[0]) * 60 + parseInt(tempArr[1])}).then((r) => {
+          if (r.code == 200) {
+            setTiming(timing);
+            message.success({content: r.message, key, duration: 2}).then();
+          } else {
+            message.error({content: r.message, key, duration: 2}).then();
+          }
+        });
+      },
+    });
+  }
   return (
     <>
       <Drawer title="功能管理" key="EditUin" placement="right" onClose={onCancel} visible={visible}>
@@ -81,15 +140,27 @@ const EditUin: React.FC<EditUinProps> = (props) => {
                   info?.uin.uin}</Tag>
               </div>
               <div style={{marginTop: "5px", fontSize: "8px", color: "rgb(140 140 140)"}}>
-                <span>挂机地区:<Tooltip title="点击修改挂机地区"><a>{
-                  // @ts-ignore
-                  servers[info?.uin.server_key]?.name || "默认"}<EditOutlined
-                  style={{fontSize: "11px"}}/></a></Tooltip></span>
-                <span style={{marginLeft: "30px"}}>挂机时间:<Tooltip title="点击修改挂机时间"><a>{
-                  // @ts-ignore
-                  (Array(2).join("0") + parseInt(String(info?.uin?.timing / 60))).slice(-2) + ":" + (Array(2).join("0") + parseInt(String(info?.uin?.timing % 60))).slice(-2)
-                }<EditOutlined
-                  style={{fontSize: "13px"}}/></a></Tooltip></span>
+                <span>挂机地区:<Tooltip title="点击修改挂机地区">
+                   <Select key={"serverKey"} placeholder="请选择" style={{fontSize: "8px"}} value={serverKey}
+                           bordered={false} onChange={(e) => {
+                     // @ts-ignore
+                     changeArea(info?.uin.uin, e);
+                   }}>
+                    {Object.keys(servers).map((k) => {
+                      return <Select.Option key={k} value={k}>{servers[k]?.name || "默认"}</Select.Option>;
+                    })}
+                    </Select>
+                </Tooltip>
+                </span>
+                <span>挂机时间:<Tooltip title="点击修改挂机时间">
+                  <TimePicker key={"timing"} style={{maxWidth: "80px"}} bordered={false} allowClear={false}
+                              value={moment(timing, 'HH:mm')}
+                              format={'HH:mm'} onChange={(time: any, timeString: string) => {
+                    // @ts-ignore
+                    changeTiming(info?.uin.uin, timeString);
+                  }}/>
+                </Tooltip>
+                </span>
               </div>
             </div>
             {uin != null && <List
@@ -112,6 +183,7 @@ const EditUin: React.FC<EditUinProps> = (props) => {
                                 // @ts-ignore
                                 form["setting"][item?.key] = checked ? "1" : "0";
                                 changeUinSetting(form).then((r) => {
+                                  console.log(serverKey, timing)
                                   if (r.code != 200) {
                                     message.error(r.message)
                                   }

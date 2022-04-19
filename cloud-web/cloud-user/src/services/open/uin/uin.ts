@@ -69,6 +69,30 @@ export async function changeUinSetting(body: any, options?: { [key: string]: any
   });
 }
 
+/** 修改挂机地区 POST /open/user/uin/operate/server */
+export async function changeUinArea(body: any, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/operate/server', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 修改挂机时间 POST /open/user/uin/operate/timing */
+export async function changeUinTiming(body: any, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/operate/timing', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 删除挂机 POST /open/user/uin/operate/delete */
 export async function deleteUin(body: any, options?: { [key: string]: any }) {
   return request<API.Response>('/open/user/uin/operate/delete', {

@@ -15,6 +15,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/util/uin_tool"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"gorm.io/gorm"
+	"sort"
 	"sync"
 	"time"
 )
@@ -74,7 +75,7 @@ func (l *uinJob) run(uin *model.AppUin) {
 					util.Log.Println(param, i)
 				})
 			}
-		}, Thread: 30}).Run()
+		}, Thread: 40}).Run()
 		g.Wait()
 		serverLock.Unlock()
 	}
@@ -115,6 +116,7 @@ func speed(uin *model.AppUin) {
 			jobs = append(jobs, num)
 		}
 	}
+	sort.Sort(sort.Reverse(sort.IntSlice(jobs))) //项目降序执行
 	data := map[string]interface{}{
 		"run_time": str.DateTime(time.Now()),
 	}

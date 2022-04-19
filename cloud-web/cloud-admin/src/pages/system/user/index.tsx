@@ -463,7 +463,7 @@ export default (): React.ReactNode => {
         <Form form={edit} name="control-hooks" onFinish={onEditFinish} labelAlign="right" labelCol={{span: 6}}
               wrapperCol={{span: 16}}>
           <Form.Item name={"status"} label="状态">
-            <Select placeholder="请输入角色状态">
+            <Select placeholder="请选择角色状态">
               <Select.Option value={0}>正常</Select.Option>
               <Select.Option value={1}>封禁</Select.Option>
             </Select>
