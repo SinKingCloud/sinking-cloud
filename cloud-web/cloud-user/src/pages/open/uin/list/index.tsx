@@ -3,10 +3,11 @@ import {PageContainer} from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import {getParams} from "@/util/page";
 import {Avatar, Button, Dropdown, Menu, message, Modal, Select, Tag} from "antd";
-import {getUinList, uinRun} from "@/services/open/uin/uin";
+import {deleteUin, getUinList, uinRun} from "@/services/open/uin/uin";
 import {DownOutlined, ExclamationCircleOutlined} from "@ant-design/icons";
 import UpdateUin from "@/pages/open/uin/list/components/UpdateUin";
 import {getAppList} from "@/services/app/app";
+import EditUin from "@/pages/open/uin/list/components/EditUin";
 
 export default (): React.ReactNode => {
   /**
@@ -23,7 +24,7 @@ export default (): React.ReactNode => {
    */
   const [apps, setApps] = useState({});
   useEffect(() => {
-    getAppList({page_size: 9999, page: 1}).then((r: any) => {
+    getAppList({page_size: 999, page: 1}).then((r: any) => {
       if (r.code != 200) {
         message.error(r.message || "请求失败").then()
       } else {
@@ -44,12 +45,37 @@ export default (): React.ReactNode => {
       title: '确定要执行挂机吗?',
       icon: <ExclamationCircleOutlined/>,
       content: '提交挂机后将会立即执行',
-      okType: 'danger',
+      okType: 'primary',
       onOk() {
         const key = "uinPlayer";
         message.loading({content: '正在提交挂机指令', key, duration: 60}).then();
         uinRun({uin: uin}).then((r) => {
           if (r.code == 200) {
+            message.success({content: r.message, key, duration: 2}).then();
+          } else {
+            message.error({content: r.message, key, duration: 2}).then();
+          }
+        });
+      },
+    });
+  };
+  /**
+   * 删除挂机
+   * @param uin 账号
+   */
+  const uinDelete = (uin: string) => {
+    Modal.confirm({
+      title: '确定要删除挂机吗?',
+      icon: <ExclamationCircleOutlined/>,
+      content: '删除挂机后将不可恢复',
+      okType: 'danger',
+      onOk() {
+        const key = "uinPlayer";
+        message.loading({content: '正在提交挂机指令', key, duration: 60}).then();
+        deleteUin({uin: uin}).then((r) => {
+          if (r.code == 200) {
+            // @ts-ignore
+            actionRef?.current.reload();
             message.success({content: r.message, key, duration: 2}).then();
           } else {
             message.error({content: r.message, key, duration: 2}).then();
@@ -233,19 +259,19 @@ export default (): React.ReactNode => {
           </Menu.Item>
           <Menu.Item key={"edit"} hidden={hide}>
             <a style={{fontSize: "small"}} onClick={() => {
-
+              showUinInfoModal(record?.uin);
             }}>
               编辑功能
             </a>
           </Menu.Item>
           <Menu.Item key={"delete"}>
             <a style={{fontSize: "small"}} onClick={() => {
-
+              uinDelete(record?.uin);
             }}>
               删除挂机
             </a>
           </Menu.Item>
-          <Menu.Item key={"run"} hidden={hide}>
+          <Menu.Item key={"run"} hidden={hide || record?.uin_status != 0}>
             <a style={{fontSize: "small"}} onClick={() => {
               uinPlayer(record?.uin);
             }}>
@@ -263,6 +289,7 @@ export default (): React.ReactNode => {
    * 挂机账号添加更新
    */
   const [uinVisible, setUinVisible] = useState(false);
+  const [uinInfoVisible, setUinInfoVisible] = useState(false);
   const [uin, setUin] = useState("");
   const showUinModal = (uin: string = "", server: string = "", pwd: string = "") => {
     setUin(uin);
@@ -272,15 +299,26 @@ export default (): React.ReactNode => {
     setUin("");
     setUinVisible(false);
   }
+  const showUinInfoModal = (uin: string = "") => {
+    setUin(uin);
+    setUinInfoVisible(true);
+  }
+  const hideUinInfoModal = () => {
+    setUin("");
+    setUinInfoVisible(false);
+  }
 
   return (
     <PageContainer title={false}>
       <UpdateUin visible={uinVisible} uin={uin} onOk={() => {
-        hideUinModal()
+        hideUinModal();
       }} onCancel={() => {
-        hideUinModal()
+        hideUinModal();
       }} onRender={(s) => {
         setServers(s);
+      }}/>
+      <EditUin visible={uinInfoVisible} uin={uin} onCancel={() => {
+        hideUinInfoModal();
       }}/>
       <ProTable
         defaultSize={"small"}

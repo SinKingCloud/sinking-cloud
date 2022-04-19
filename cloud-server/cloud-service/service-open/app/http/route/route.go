@@ -61,6 +61,7 @@ func loadUserRoute(s *sinking_web.Engine) {
 
 	//QQ操作
 	uinSetGroup := uinGroup.Group("/operate")
+	uinSetGroup.POST("/info", sinking_server.HandleFunc(handleUin.Info))               //挂机QQ详情
 	uinSetGroup.POST("/login", sinking_server.HandleFunc(handleUin.Login))             //登陆挂机QQ
 	uinSetGroup.POST("/delete", sinking_server.HandleFunc(handleUin.Delete))           //删除挂机QQ
 	uinSetGroup.POST("/run", sinking_server.HandleFunc(handleUin.Job))                 //执行挂机任务

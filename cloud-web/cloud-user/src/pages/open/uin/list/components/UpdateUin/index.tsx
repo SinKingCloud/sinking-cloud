@@ -4,6 +4,7 @@ import {getServerList} from "@/services/open/uin/uin";
 
 export type UpdateUinProps = {
   uin?: string;
+  server?: string;
   visible?: boolean;
   onOk?: (e: React.MouseEvent<HTMLElement>) => void;
   onCancel?: (e: React.MouseEvent<HTMLElement>) => void;
@@ -32,8 +33,8 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
     });
   }, []);
   return (
-    <Modal title={uin ? "更新挂机" : "添加挂机"} key={"UpdateUin"} footer={null} destroyOnClose={true} forceRender={true}
-           visible={visible} onOk={onOk}
+    <Modal title={uin ? "更新挂机" : "添加挂机"} key={"UpdateUin"} destroyOnClose={true} forceRender={true} maskClosable={false}
+           visible={visible} onOk={onOk} okText={"登陆"}
            onCancel={onCancel}>
       <Form name="control-hooks" onFinish={async (values: any) => {
 

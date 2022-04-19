@@ -73,6 +73,13 @@ func (s *speed) Status(uin string) (*SpeedStatus, error) {
 		code, _, _ := s.login(uin, "")
 		if code == Success {
 			status, e = s.getSpeedStatus(uin)
+			if e != nil || status == nil {
+				s.MobileOffline(uin)
+				code, _, _ = s.login(uin, "")
+				if code == Success {
+					status, e = s.getSpeedStatus(uin)
+				}
+			}
 		}
 	}
 	return status, e

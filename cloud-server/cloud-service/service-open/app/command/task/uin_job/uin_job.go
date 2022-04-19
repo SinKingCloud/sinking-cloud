@@ -106,7 +106,7 @@ func check(t time.Time) {
 	end := t.Add(time.Second * 59).Format("2006-01-02 15:04:05")
 	sinking_web.Try(func() {
 		lock := constant.LockUinCheckJob + start
-		//查询当前时间需要代挂的QQ
+		//查询当前时间需要补挂的QQ
 		for {
 			if util.Cache.Lock(lock, constant.LockTimeUinCheckJob) {
 				list, err := uin2.GetIns().SelectUinCheckJob(100, start, end)
@@ -116,6 +116,12 @@ func check(t time.Time) {
 						//发布到消息队列执行
 						producer.NewUinJobProducer().Build(v).Send()
 						ids = append(ids, v.Id)
+					}
+					//更改代挂状态
+					if len(ids) > 0 {
+						_ = uin2.GetIns().UpdateByIds(ids, map[string]interface{}{
+							"check_time": str.DateTime(str.NewTimeTool().GetZeroTime(time.Now())),
+						})
 					}
 					util.Cache.UnLock(lock)
 				} else {

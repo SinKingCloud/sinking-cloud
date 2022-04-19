@@ -158,7 +158,7 @@ func (ControllerUin) ChangePassword(c *sinking_server.Context) {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
-	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
+	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
@@ -190,7 +190,7 @@ func (ControllerUin) ChangeServer(c *sinking_server.Context) {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
-	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
+	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
@@ -226,7 +226,7 @@ func (ControllerUin) ChangeTiming(c *sinking_server.Context) {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
-	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
+	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
@@ -260,7 +260,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
-	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
+	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
@@ -381,11 +381,7 @@ func (ControllerUin) Setting(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
-	if uinInfo.Status != 0 {
-		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
-		return
-	}
-	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
+	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
@@ -416,7 +412,11 @@ func (ControllerUin) Job(c *sinking_server.Context) {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
-	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
+	if uinInfo.UinStatus != 0 {
+		c.Error("该QQ状态异常,请更新状态后重新执行")
+		return
+	}
+	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
@@ -454,14 +454,6 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
 	if err != nil || uinInfo == nil {
 		c.Error("未查询到QQ信息,请先添加QQ")
-		return
-	}
-	if uinInfo.Status != 0 {
-		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
-		return
-	}
-	if uinInfo.PlayerDay <= 0 || uinInfo.SignDay <= 0 {
-		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
 	tempInfo := &uin.AppUin{
