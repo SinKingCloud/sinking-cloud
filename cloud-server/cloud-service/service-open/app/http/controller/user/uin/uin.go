@@ -277,13 +277,13 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	switch form.Step {
 	case "normal":
 		code, e, data = q.Login(uinInfo.Uin, uinInfo.Password)
-		if err != nil || code != uin_tool.Success {
+		if e != nil || code != uin_tool.Success {
 			if code == uin_tool.NeedCaptcha {
 				c.Return(400, e.Error(), data)
 			} else if code == uin_tool.NeedCode {
-				c.Return(401, err.Error(), nil)
+				c.Return(401, e.Error(), nil)
 			} else {
-				c.Error(err.Error())
+				c.Error(e.Error())
 			}
 			return
 		}
@@ -305,20 +305,20 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	}
 	if form.Step != "normal" {
 		code, e, data = q.VerifyLogin(uinInfo.Uin, verify)
-		if err != nil || code != uin_tool.Success {
+		if e != nil || code != uin_tool.Success {
 			if code == uin_tool.NeedCode {
-				c.Return(401, err.Error(), nil)
+				c.Return(401, e.Error(), nil)
 			} else if code == uin_tool.NeedCaptcha {
 				c.Return(400, e.Error(), data)
 			} else {
-				c.Error(err.Error())
+				c.Error(e.Error())
 			}
 			return
 		}
 	}
-	go func(uinInfo *model.AppUin) {
+	go func(uinInfo *model.AppUin, status int) {
 		//更改QQ状态
-		_ = uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{"uin_status": 0})
+		_ = uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{"uin_status": status})
 		//写入记录
 		_ = log.GetIns().Create(&model.AppUinLog{
 			UserId:  uinInfo.UserId,
@@ -329,7 +329,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			Title:   "登陆账号",
 			Content: "更新账号状态",
 		})
-	}(uinInfo)
+	}(uinInfo, 0)
 	c.Success("登陆成功")
 }
 

@@ -157,7 +157,7 @@ func check(addr string, key string, uin *model.AppUin, jobs []int) (bool, map[in
 	s := uin_tool.NewUinTool(addr, key)
 	jobStatus, err := s.Status(uin.Uin)
 	if err != nil || jobStatus == nil {
-		return false, nil
+		return true, nil
 	}
 	var newJobs []int
 	//判断项目并加速
