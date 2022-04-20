@@ -101,6 +101,8 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) (bool, map[int]bool) {
 				if s.add(uin, pwd) {
 					c, _, _ = s.login(uin, "")
 				}
+			} else if c == EnvError {
+				c, _, _ = s.login(uin, "")
 			}
 			mobileLogin = c == Success
 		}
