@@ -128,7 +128,7 @@ export default (): React.ReactNode => {
           </Row>
           <Row>
             <Col xs={{span: 24}} lg={{span: 24}}>
-              <ProCard bordered title="账户充值" headerBordered>
+              <ProCard bordered title="账户充值" loading={loading} headerBordered>
                 <Form
                   form={form}
                   labelCol={{span: 12}}

@@ -30,6 +30,7 @@ func (s *speed) sendRequest(url string, data interface{}) (*response, error) {
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
 	resp, err := getClient().Do(req)
 	if err != nil {
+		fmt.Println("错误：请求地址", url, "请求参数", s.toJson(data))
 		return nil, err
 	}
 	if resp != nil && resp.Body != nil {
@@ -42,6 +43,7 @@ func (s *speed) sendRequest(url string, data interface{}) (*response, error) {
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		fmt.Println("错误：请求地址", url, "请求参数", s.toJson(data), "结果", string(body))
 		return nil, err
 	}
 	var res *response

@@ -19,9 +19,8 @@ func (s *speed) Create(uin string, pwd string) bool {
 func (s *speed) Login(uin string, pwd string) (int, error, string) {
 	a, b, c := s.login(uin, "")
 	if a == NotCreate {
-		if s.add(uin, pwd) {
-			a, b, c = s.login(uin, "")
-		}
+		s.add(uin, pwd)
+		return s.login(uin, "")
 	}
 	return a, b, c
 }
@@ -63,11 +62,11 @@ const (
 	Friend             //13.加好友加速
 )
 
-// Status 获取挂机状态
-func (s *speed) Status(uin string) (*SpeedStatus, error) {
+// Status 获取挂机状态 状态,错误,是否异常
+func (s *speed) Status(uin string) (*SpeedStatus, error, bool) {
 	status, e := s.getSpeedStatus(uin)
 	if e != nil {
-		return nil, e
+		return nil, e, false
 	}
 	if status == nil {
 		code, _, _ := s.login(uin, "")
@@ -78,11 +77,15 @@ func (s *speed) Status(uin string) (*SpeedStatus, error) {
 				code, _, _ = s.login(uin, "")
 				if code == Success {
 					status, e = s.getSpeedStatus(uin)
+				} else {
+					return status, e, true
 				}
 			}
+		} else {
+			return status, e, true
 		}
 	}
-	return status, e
+	return status, e, false
 }
 
 // Speed QQ项目加速

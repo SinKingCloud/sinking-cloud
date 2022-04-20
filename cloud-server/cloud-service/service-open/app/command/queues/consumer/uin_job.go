@@ -155,8 +155,11 @@ func speed(uin *model.AppUin) {
 // check 检测挂机失败的项目
 func check(addr string, key string, uin *model.AppUin, jobs []int) (bool, map[int]bool) {
 	s := uin_tool.NewUinTool(addr, key)
-	jobStatus, err := s.Status(uin.Uin)
+	jobStatus, err, isFail := s.Status(uin.Uin)
 	if err != nil || jobStatus == nil {
+		return false, nil
+	}
+	if isFail {
 		return true, nil
 	}
 	var newJobs []int
