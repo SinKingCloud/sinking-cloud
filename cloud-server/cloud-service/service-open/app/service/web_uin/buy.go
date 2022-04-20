@@ -90,7 +90,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 	} else {
 		data := make(map[string]interface{})
 		//应用ID变动
-		if appId != uinInfo.AppId {
+		if appId != 0 && appId != uinInfo.AppId {
 			data["app_id"] = appId
 		}
 		//判断是否首次下单,首次下单赠送天数

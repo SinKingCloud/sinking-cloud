@@ -93,6 +93,18 @@ export async function changeUinTiming(body: any, options?: { [key: string]: any 
   });
 }
 
+/** 修改挂机密码 POST /open/user/uin/operate/password */
+export async function changeUinPassword(body: any, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/operate/password', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 删除挂机 POST /open/user/uin/operate/delete */
 export async function deleteUin(body: any, options?: { [key: string]: any }) {
   return request<API.Response>('/open/user/uin/operate/delete', {
@@ -108,6 +120,30 @@ export async function deleteUin(body: any, options?: { [key: string]: any }) {
 /** 提交挂机 POST /open/user/uin/operate/run */
 export async function uinRun(body: any, options?: { [key: string]: any }) {
   return request<API.Response>('/open/user/uin/operate/run', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 开通挂机 POST /open/user/uin/buy */
+export async function uinBuy(body: any, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/buy', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 登陆账号 POST /open/user/uin/operate/login */
+export async function uinLogin(body: any, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/operate/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

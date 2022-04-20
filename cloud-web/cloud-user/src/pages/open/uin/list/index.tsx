@@ -3,11 +3,14 @@ import {PageContainer} from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import {getParams} from "@/util/page";
 import {Avatar, Button, Dropdown, Menu, message, Modal, Select, Tag} from "antd";
-import {deleteUin, getUinList, uinRun} from "@/services/open/uin/uin";
+import {deleteUin, getServerList, getUinList, uinRun} from "@/services/open/uin/uin";
 import {DownOutlined, ExclamationCircleOutlined} from "@ant-design/icons";
 import UpdateUin from "@/pages/open/uin/list/components/UpdateUin";
 import {getAppList} from "@/services/app/app";
 import EditUin from "@/pages/open/uin/list/components/EditUin";
+// @ts-ignore
+import CryptoJS from 'crypto-js';
+import Buy from "@/pages/open/uin/list/components/Buy";
 
 export default (): React.ReactNode => {
   /**
@@ -33,6 +36,17 @@ export default (): React.ReactNode => {
           map[item?.id] = item;
         });
         setApps(map);
+      }
+    });
+    getServerList({r: new Date().getTime()}).then((r) => {
+      if (r.code != 200) {
+        message.error(r.message || "请求失败").then();
+      } else {
+        const map = {};
+        r.data.list.forEach((item: any) => {
+          map[item?.key] = item;
+        });
+        setServers(map);
       }
     });
   }, []);
@@ -71,7 +85,7 @@ export default (): React.ReactNode => {
       okType: 'danger',
       onOk() {
         const key = "uinPlayer";
-        message.loading({content: '正在提交挂机指令', key, duration: 60}).then();
+        message.loading({content: '正在删除挂机', key, duration: 60}).then();
         deleteUin({uin: uin}).then((r) => {
           if (r.code == 200) {
             // @ts-ignore
@@ -246,14 +260,14 @@ export default (): React.ReactNode => {
         return <Dropdown overlay={<Menu>
           <Menu.Item key={"password"} hidden={hide}>
             <a style={{fontSize: "small"}} onClick={() => {
-              showUinModal(record?.uin, record?.sever_key);
+              showUinModal(record?.uin);
             }}>
               更新挂机
             </a>
           </Menu.Item>
           <Menu.Item key={"buy"}>
             <a style={{fontSize: "small"}} onClick={() => {
-
+              showBuyModal(record?.uin);
             }}>
               挂机续期
             </a>
@@ -290,9 +304,8 @@ export default (): React.ReactNode => {
    * 挂机账号添加更新
    */
   const [uinVisible, setUinVisible] = useState(false);
-  const [uinInfoVisible, setUinInfoVisible] = useState(false);
   const [uin, setUin] = useState("");
-  const showUinModal = (uin: string = "", server: string = "", pwd: string = "") => {
+  const showUinModal = (uin: string = "") => {
     setUin(uin);
     setUinVisible(true);
   }
@@ -300,27 +313,54 @@ export default (): React.ReactNode => {
     setUin("");
     setUinVisible(false);
   }
+  /**
+   * 挂机信息
+   */
+  const [uinInfoVisible, setUinInfoVisible] = useState(false);
+  const [uin1, setUin1] = useState("");
   const showUinInfoModal = (uin: string = "") => {
-    setUin(uin);
+    setUin1(uin);
     setUinInfoVisible(true);
   }
   const hideUinInfoModal = () => {
     setUin("");
     setUinInfoVisible(false);
   }
-
+  /**
+   * 续费挂机
+   * @param uin
+   */
+  const [buyVisible, seBuyVisible] = useState(false);
+  const [uin2, setUin2] = useState("");
+  const showBuyModal = (uin: string = "") => {
+    setUin2(uin);
+    seBuyVisible(true);
+  }
+  const hideBuyModal = () => {
+    setUin("");
+    seBuyVisible(false);
+  }
   return (
     <PageContainer title={false}>
       <UpdateUin visible={uinVisible} uin={uin} onOk={() => {
         hideUinModal();
+        // @ts-ignore
+        actionRef?.current?.reload?.();
       }} onCancel={() => {
         hideUinModal();
-      }} onRender={(s) => {
-        setServers(s);
       }}/>
-      <EditUin visible={uinInfoVisible} uin={uin} onCancel={() => {
+      <EditUin visible={uinInfoVisible} uin={uin1} onCancel={() => {
         hideUinInfoModal();
       }}/>
+      <Buy visible={buyVisible} uin={uin2} onCancel={hideBuyModal}
+           onSuccess={(uin: string, type: number, month: number, isNewUin: boolean) => {
+             // @ts-ignore
+             actionRef?.current?.reload?.();
+             //新添加账号需更新状态
+             if (isNewUin) {
+               showUinModal(uin);
+             }
+           }}/>
       <ProTable
         defaultSize={"small"}
         form={{layout: "vertical"}}
@@ -352,9 +392,9 @@ export default (): React.ReactNode => {
         }}
         toolBarRender={() => [
           <Button key="primary" type="primary" onClick={() => {
-            showUinModal();
+            showBuyModal("-1");
           }}>
-            添加
+            开通
           </Button>,
         ]}
       />

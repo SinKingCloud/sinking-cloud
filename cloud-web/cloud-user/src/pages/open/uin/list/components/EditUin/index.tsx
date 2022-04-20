@@ -20,7 +20,7 @@ export type EditUinProps = {
 const EditUin: React.FC<EditUinProps> = (props) => {
   const {uin, visible, onCancel} = props;
   const [u, setU] = useState(uin);
-  const [serverKey, setServerKey] = useState("ah");
+  const [serverKey, setServerKey] = useState("");
   const [timing, setTiming] = useState("00:00");
   const [info, setInfo] = useState(null);
   const [speedArr, setSpeedArr] = useState([]);
@@ -61,7 +61,7 @@ const EditUin: React.FC<EditUinProps> = (props) => {
         setSpeedArr(getArr(Object.assign(r.data?.speed, r.data?.sign)));
       }
     });
-    getServerList().then((r) => {
+    getServerList({r: new Date().getTime()}).then((r) => {
       if (r.code != 200) {
         message.error(r.message || "请求失败").then();
       } else {

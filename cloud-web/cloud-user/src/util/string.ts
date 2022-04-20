@@ -13,3 +13,25 @@ export function getRandStr(length = 16) {
   }
   return _str
 }
+
+/**
+ * 获取字符串get参数
+ * @param url
+ */
+export function getUrlQuery(url: string) {
+  const noMatchData = {};
+  if (!url || false) return noMatchData;
+  const reg = /(?:\?|&)(?:(?:([^=&]+?)=([^&#]+))|([^&#]+))/gi;
+  const obj = {};
+  // @ts-ignore
+  const fun = (match, $1, $2 = '', $3) => {
+    if ($3) {
+      obj[$3] = '';
+    } else {
+      obj[$1] = encodeURIComponent($2);
+    }
+  }
+  // @ts-ignore
+  url.replace(reg, fun);
+  return obj
+}

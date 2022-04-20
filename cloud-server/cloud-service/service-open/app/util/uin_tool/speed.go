@@ -179,7 +179,8 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) (bool, map[int]bool) {
 				break
 			case MicroShow:
 				res[MicroShow] = speedA(func() bool {
-					return s.microShowSpeed(uin)
+					s.microShowSpeed(uin)
+					return true
 				})
 				break
 			case Safe:
