@@ -53,15 +53,15 @@ func GetUserLevel(userId int) (data *model.AppUinLevel) {
 		if err != nil {
 			data = nil
 		}
-		//写入用户配置
-		if data != nil {
-			app_config.GetIns().SetUserConfigs(userId, map[string]string{
-				constant.UserUinLevel:       strconv.Itoa(data.Id),
-				constant.UserUinLevelExpire: str.NewTimeTool().GetFirstDateOfMonth(time.Now().AddDate(0, +1, 0)).Format("2006-01-02 15:04:05"),
-			})
-			//刷新用户
-			app_config.GetIns().ClearUserConfig(userId)
-		}
+	}
+	//写入用户配置
+	if data != nil {
+		app_config.GetIns().SetUserConfigs(userId, map[string]string{
+			constant.UserUinLevel:       strconv.Itoa(data.Id),
+			constant.UserUinLevelExpire: str.NewTimeTool().GetFirstDateOfMonth(time.Now().AddDate(0, +1, 0)).Format("2006-01-02 15:04:05"),
+		})
+		//刷新用户
+		app_config.GetIns().ClearUserConfig(userId)
 	}
 	if data == nil {
 		err = util.Database.Db.Order("id asc").First(&data).Error

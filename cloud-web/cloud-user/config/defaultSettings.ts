@@ -26,7 +26,7 @@ Settings = Object.assign(Settings, {
   pwa: false,
   footer: '沉沦云科技开发',
   loadingTitle: '沉沦云开放平台',
-  api: isDev ? 'http://127.0.0.1:10000' : 'https://gateway.open-api.cn',
+  api: isDev ? 'http://127.0.0.1:1000' : 'https://gateway.open-api.cn',
   base: '/',
 });
 

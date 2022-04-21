@@ -149,7 +149,8 @@ const Login: React.FC = () => {
                     <Input prefix={<UserOutlined className='site-form-item-icon'/>} size={'large'} placeholder='请输入账户'/>
                   </Form.Item>
                   <Form.Item name='password'>
-                    <Input prefix={<LockOutlined className='site-form-item-icon'/>} size={'large'} placeholder='请输入密码'/>
+                    <Input type={"password"} prefix={<LockOutlined className='site-form-item-icon'/>} size={'large'}
+                           placeholder='请输入密码'/>
                   </Form.Item></>
               )}
               {type === 'mobile' && (

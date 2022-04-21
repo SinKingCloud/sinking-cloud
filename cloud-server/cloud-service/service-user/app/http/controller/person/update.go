@@ -7,6 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/user"
+	"regexp"
 	"strconv"
 )
 
@@ -14,7 +15,7 @@ import (
 func (ControllerPerson) Update(c *sinking_server.Context) {
 	type Form struct {
 		Account  string `json:"account" default:"" validate:"omitempty,min=5,max=25" label:"账号"`
-		Email    string `json:"email" default:"" validate:"omitempty,email" label:"邮箱"`
+		Email    string `json:"email" default:"" validate:"omitempty,email,max=30" label:"邮箱"`
 		NickName string `json:"nick_name" default:"" validate:"omitempty,min=1,max=15" label:"用户昵称"`
 		Avatar   string `json:"avatar" default:"" validate:"omitempty,uri" label:"用户头像"`
 	}
@@ -27,6 +28,10 @@ func (ControllerPerson) Update(c *sinking_server.Context) {
 	if form.Account != "" {
 		webUser := user.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, true)
 		if webUser.Account == "" {
+			if ok, _ := regexp.MatchString("^[a-zA-Z0-9]{5,25}$", form.Account); !ok {
+				c.Error("该账户名不合法")
+				return
+			}
 			if num, err := user.GetIns().CountByAccount(form.Account); err != nil || num > 0 {
 				c.Error("该账户名已被占用")
 				return

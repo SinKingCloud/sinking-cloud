@@ -45,8 +45,11 @@ func GetWebUserInfoByPhone(phone string, code string) (u *model.WebUser, e error
 func GetWebUserInfoByPwd(account string, pwd string) (u *model.WebUser, e error) {
 	e = util.Database.Db.Where("`account` = ?", account).First(&u).Error
 	if e != nil || u == nil {
-		e = errors.New("用户不存在")
-		return
+		e = util.Database.Db.Where("`phone` = ?", account).First(&u).Error
+		if e != nil || u == nil {
+			e = errors.New("用户不存在")
+			return
+		}
 	}
 	if u.Status != 0 {
 		e = errors.New("您的账户已被禁止登陆")

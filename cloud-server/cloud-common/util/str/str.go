@@ -174,8 +174,14 @@ func (stringTool StringTool) RandInt64(min, max int64) int64 {
 
 // Show 显示首尾数据字符个数
 func (stringTool StringTool) Show(left int, right int, str string) string {
+	if stringTool.string == "" {
+		return ""
+	}
 	nameRune := []rune(stringTool.string)
 	lens := len(nameRune)
+	if lens-right < 0 || left > lens {
+		return ""
+	}
 	leftStr := nameRune[0:left]
 	rightStr := nameRune[lens-right : lens]
 	if len(leftStr)+len(rightStr) >= lens {

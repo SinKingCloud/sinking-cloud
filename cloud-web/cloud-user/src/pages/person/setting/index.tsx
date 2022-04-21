@@ -55,8 +55,8 @@ export default (): React.ReactNode => {
         passwordForm.resetFields();
       }}>
         <SmsVerify form={passwordForm} onFinish={async (values) => {
-          if (values.password.length > 15 || values.password.length < 8) {
-            message.error("密码长度必须为8-15之间");
+          if (values.password.length > 20 || values.password.length < 8) {
+            message.error("密码长度必须为8-20位之间");
             return;
           }
           setIsPasswordModalLoading(true);
@@ -178,7 +178,10 @@ export default (): React.ReactNode => {
                   })
                 }}>
                   <ProFormText width="md" label="账号" name="account" tooltip="未设置用户可修改一次"
-                               rules={[{required: true, message: '请输入登陆账号',},]} initialValue={currentUser?.account}>
+                               rules={[{required: true, message: '请输入登陆账号',}, /*{
+                                 pattern: /^[a-zA-Z0-9]{5,25}$/,
+                                 message: '请输入登陆账号',
+                               },*/]} initialValue={currentUser?.account}>
                     <Row gutter={6} wrap={false}>
                       <Col flex={5}>
                         <Input type="text" placeholder="请输入您的登陆账号" defaultValue={currentUser?.account}
