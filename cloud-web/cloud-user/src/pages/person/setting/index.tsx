@@ -55,6 +55,10 @@ export default (): React.ReactNode => {
         passwordForm.resetFields();
       }}>
         <SmsVerify form={passwordForm} onFinish={async (values) => {
+          if (values.password.length > 15 || values.password.length < 8) {
+            message.error("密码长度必须为8-15之间");
+            return;
+          }
           setIsPasswordModalLoading(true);
           updatePassword(values).then((r) => {
             setIsPasswordModalLoading(false);
@@ -66,10 +70,7 @@ export default (): React.ReactNode => {
             }
           })
         }} bottomNodes={
-          <Form.Item name={"password"} label="账户新密码" rules={[{required: true, message: '请输入新密码',}, {
-            pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
-            message: '长度必须至少8位且包含字母数字',
-          }]}>
+          <Form.Item name={"password"} label="账户新密码" rules={[{required: true, message: '请输入新密码',}]}>
             <Input placeholder="请输入新密码"/>
           </Form.Item>
         }/>
