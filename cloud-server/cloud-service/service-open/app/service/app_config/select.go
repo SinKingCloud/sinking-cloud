@@ -9,7 +9,7 @@ import (
 func (*service) SelectWithMap(identId string, key string) map[string]string {
 	var configs []*model.AppConfig
 	temp := make(map[string]string)
-	query := util.Database.Db
+	query := util.Database.Db.Model(&model.AppConfig{})
 	if identId != "" {
 		query.Where("`ident_id` = ?", identId)
 	}
