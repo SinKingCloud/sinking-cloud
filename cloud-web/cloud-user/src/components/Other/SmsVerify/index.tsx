@@ -96,12 +96,13 @@ const SmsVerify: React.FC<SmsVerifyProps> = (props) => {
         </Form.Item>
         <Form.Item name={"captcha"} label="图形验证码" hidden={isCaptchaHidden}>
           <Row gutter={6} wrap={false}>
-            <Col>
+            <Col flex={20}>
               <Input placeholder="请输入图形验证码"/>
             </Col>
-            <Col>
+            <Col flex={4}>
               <Image
                 height={30}
+                width={70}
                 preview={false}
                 src={captchaUrl}
                 onClick={() => {

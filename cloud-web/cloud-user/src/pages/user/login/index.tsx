@@ -8,7 +8,7 @@ import {getCaptchaUrl} from "@/services/common/captcha";
 import defaultSettings from "../../../../config/defaultSettings";
 import {login} from "@/services/user/login";
 import {setLoginToken} from "@/util/auth";
-import {sendSms} from "@/services/common/sms";
+import {sendLoginSms} from "@/services/common/sms";
 
 const Login: React.FC = () => {
   /**
@@ -181,7 +181,7 @@ const Login: React.FC = () => {
                                     return;
                                   }
                                   setIsSmsSendLoading(true);
-                                  sendSms({phone: phone, token: token, captcha: captcha}).then((r) => {
+                                  sendLoginSms({phone: phone, token: token, captcha: captcha}).then((r) => {
                                     setIsSmsSendLoading(false);
                                     changeCaptcha();
                                     if (r.code != 200) {

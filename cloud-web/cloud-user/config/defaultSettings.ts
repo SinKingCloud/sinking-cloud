@@ -15,7 +15,10 @@ let Settings = {
   api: '',
   base: '/',
 };
-
+/**
+ * 开发环境
+ */
+const isDev = process.env.NODE_ENV === 'development';
 //配置合并
 Settings = Object.assign(Settings, {
   title: '云开放平台',
@@ -23,7 +26,7 @@ Settings = Object.assign(Settings, {
   pwa: false,
   footer: '沉沦云科技开发',
   loadingTitle: '沉沦云开放平台',
-  api: 'http://127.0.0.1:1000',
+  api: isDev ? 'http://127.0.0.1:10000' : 'https://gateway.open-api.cn',
   base: '/',
 });
 

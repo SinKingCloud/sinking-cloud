@@ -159,16 +159,6 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) (bool, map[int]bool) {
 					return pcLogin
 				})
 				break
-			case Online:
-				res[Online] = speedP(func() bool {
-					return pcLogin
-				})
-				break
-			case Medal:
-				res[Medal] = speedA(func() bool {
-					return pcLogin
-				})
-				break
 			case Zone:
 				res[Zone] = s.zoneSpeed(uin)
 				break
@@ -206,11 +196,6 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) (bool, map[int]bool) {
 			case ZoneClock:
 				res[ZoneClock] = speedA(func() bool {
 					return s.zoneClockSpeed(uin)
-				})
-				break
-			case Login:
-				res[Login] = speedA(func() bool {
-					return mobileLogin
 				})
 				break
 			case Friend:
