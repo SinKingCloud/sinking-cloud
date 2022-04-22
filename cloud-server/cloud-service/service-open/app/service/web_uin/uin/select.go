@@ -67,3 +67,11 @@ func (s *service) SelectUinCheckJob(limit int, startTime string, endTime string)
 	err = query.Limit(limit).Find(&list).Error
 	return
 }
+
+// SelectUins 查询QQ列表
+func (s *service) SelectUins(uin string) (list []*model.AppUin, err error) {
+	err = util.Database.Db.Model(&model.AppUin{}).
+		Where("`uin`=?", uin).
+		Find(&list).Error
+	return
+}

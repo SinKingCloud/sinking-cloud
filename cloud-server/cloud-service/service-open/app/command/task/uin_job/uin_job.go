@@ -5,6 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
 	uin2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/uin"
 	sinking_web "github.com/SinKingCloud/sinking-go/sinking-web"
 	"gorm.io/gorm"
@@ -48,22 +49,43 @@ func send(minute int64) {
 			if util.Cache.Lock(lock, constant.LockTimeUinJob) {
 				list, err := uin2.GetIns().SelectAllUinJob(200, minute, str.NewTimeTool().GetZeroTime(time.Now()).Format("2006-01-02 15:04:05"))
 				if err == nil && len(list) > 0 {
+					//需更改状态id
 					var ids []int
+					//需扣费id
 					var idsPlayer []int
 					var idsSign []int
+					//避免重复挂机
+					seeded := make(map[string]bool)
+					//避免重复计费
+					costed := make(map[string]bool)
 					for _, v := range list {
-						stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", v.RunTime.String(), time.Local)
-						if stamp.Unix() < str.NewTimeTool().GetZeroTime(time.Now()).Unix() {
-							if v.PlayerDay > 0 {
-								idsPlayer = append(idsPlayer, v.Id)
-							}
-							if v.SignDay > 0 {
-								idsSign = append(idsSign, v.Id)
+						var speedUin *model.AppUin
+						//查询重复QQ计费
+						uinList, err1 := uin2.GetIns().SelectUins(v.Uin)
+						if err1 == nil && costed[v.Uin] == false && len(uinList) > 0 {
+							costed[v.Uin] = true
+							for _, v1 := range uinList {
+								stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", v1.RunTime.String(), time.Local)
+								if stamp.Unix() < str.NewTimeTool().GetZeroTime(time.Now()).Unix() {
+									if v1.PlayerDay > 0 {
+										idsPlayer = append(idsPlayer, v1.Id)
+									}
+									if v1.SignDay > 0 {
+										idsSign = append(idsSign, v1.Id)
+									}
+								}
+								ids = append(ids, v1.Id)
+								//取出一个正常qq
+								if v1.Status == 0 && v1.UinStatus == 0 && speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
+									speedUin = v1
+								}
 							}
 						}
-						ids = append(ids, v.Id)
 						//发布到消息队列执行
-						if v.Status == 0 && v.UinStatus == 0 && (v.PlayerDay > 0 || v.SignDay > 0) {
+						if speedUin != nil && seeded[speedUin.Uin] == false {
+							//避免同一查询有重复
+							seeded[speedUin.Uin] = true
+							//发布至消息队列
 							producer.NewUinJobProducer().Build(v).Send()
 						}
 					}

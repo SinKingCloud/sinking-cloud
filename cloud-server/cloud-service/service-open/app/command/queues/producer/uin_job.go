@@ -22,12 +22,12 @@ func NewUinJobProducer() *uinJob {
 
 // uinJob 结构
 type uinJob struct {
-	log *model.AppUin
+	uin *model.AppUin
 }
 
 // Build 构建消息
 func (l *uinJob) Build(d *model.AppUin) *uinJob {
-	l.log = d
+	l.uin = d
 	return l
 }
 
@@ -54,5 +54,5 @@ func (l *uinJob) Send() {
 		uinJobProducerTask = make(chan *model.AppUin)
 		l.run()
 	}
-	uinJobProducerTask <- l.log
+	uinJobProducerTask <- l.uin
 }
