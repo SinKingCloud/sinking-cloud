@@ -52,6 +52,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
       //需要短信验证码
       setStep("sms");
     } else {
+      setStep("normal");
       setConfirmLoading(false);
       message.error(r.message || "更新状态失败");
       return

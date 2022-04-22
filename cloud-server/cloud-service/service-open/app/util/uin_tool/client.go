@@ -17,7 +17,7 @@ var httpClient *http.Client
 func getClient() *http.Client {
 	if httpClient == nil {
 		httpClient = &http.Client{
-			Timeout: 20 * time.Second,
+			Timeout: 60 * time.Second,
 		}
 	}
 	return httpClient

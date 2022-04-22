@@ -75,7 +75,7 @@ func (l *uinJob) run(uin *model.AppUin) {
 					util.Log.Println(param, i)
 				})
 			}
-		}, Thread: 40}).Run()
+		}, Thread: 100}).Run()
 		g.Wait()
 		serverLock.Unlock()
 	}
@@ -104,12 +104,18 @@ func speed(uin *model.AppUin) {
 		if value, ok := web_uin.JobMap["speed"][k]; ok {
 			if uin.PlayerDay > 0 {
 				isCost = true
-				num = value
+				//判断是否开启项目
+				if userJob[k] == "1" {
+					num = value
+				}
 			}
 		} else if value, ok := web_uin.JobMap["sign"][k]; ok {
 			if uin.SignDay > 0 {
 				isCost = true
-				num = value
+				//判断是否开启项目
+				if userJob[k] == "1" {
+					num = value
+				}
 			}
 		}
 		if num >= 0 {
