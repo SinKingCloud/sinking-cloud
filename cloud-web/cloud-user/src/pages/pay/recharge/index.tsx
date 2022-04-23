@@ -9,6 +9,7 @@ import {getPayOrder} from "@/services/pay/order";
 import {paySubmit} from "@/services/common/pay";
 import {AlipayCircleOutlined, ExclamationCircleOutlined, SyncOutlined} from "@ant-design/icons";
 import {recharge} from "@/services/pay/pay";
+import {checkMobile} from "@/util/device";
 
 export default (): React.ReactNode => {
   const {initialState, setInitialState} = useModel('@@initialState');
@@ -150,7 +151,11 @@ export default (): React.ReactNode => {
                           } else {
                             // @ts-ignore
                             ref.current?.reload();
-                            window.open(r.data);
+                            if (checkMobile()) {
+                              window.location.href = r.data;
+                            } else {
+                              window.open(r.data);
+                            }
                             Modal.confirm({
                               title: '订单是否已支付成功?',
                               icon: <ExclamationCircleOutlined/>,

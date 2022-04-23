@@ -121,6 +121,7 @@ services:
       - 1000:1000
     environment:
       - TZ=Asia/Shanghai
+      - ROCKETMQ_GO_LOG_LEVEL=error
       - APP_ADDR=service-gateway
       - APP_PORT=1000
       - APP_REGISTER_SERVER=203.135.100.55:1817
@@ -137,6 +138,7 @@ services:
       - 1003:1003
     environment:
       - TZ=Asia/Shanghai
+      - ROCKETMQ_GO_LOG_LEVEL=error
       - APP_ADDR=service-auth
       - APP_PORT=1003
       - APP_REGISTER_SERVER=203.135.100.55:1817
@@ -153,6 +155,7 @@ services:
       - 1005:1005
     environment:
       - TZ=Asia/Shanghai
+      - ROCKETMQ_GO_LOG_LEVEL=error
       - APP_ADDR=service-websocket
       - APP_PORT=1005
       - APP_REGISTER_SERVER=203.135.100.55:1817
@@ -169,6 +172,7 @@ services:
       - 1002:1002
     environment:
       - TZ=Asia/Shanghai
+      - ROCKETMQ_GO_LOG_LEVEL=error
       - APP_ADDR=service-user
       - APP_PORT=1002
       - APP_REGISTER_SERVER=203.135.100.55:1817
@@ -185,6 +189,7 @@ services:
       - 1001:1001
     environment:
       - TZ=Asia/Shanghai
+      - ROCKETMQ_GO_LOG_LEVEL=error
       - APP_ADDR=service-admin
       - APP_PORT=1001
       - APP_REGISTER_SERVER=203.135.100.55:1817
@@ -201,6 +206,7 @@ services:
       - 1004:1004
     environment:
       - TZ=Asia/Shanghai
+      - ROCKETMQ_GO_LOG_LEVEL=error
       - APP_ADDR=service-open
       - APP_PORT=1004
       - APP_REGISTER_SERVER=203.135.100.55:1817

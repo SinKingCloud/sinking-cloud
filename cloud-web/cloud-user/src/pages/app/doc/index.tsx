@@ -7,7 +7,7 @@ export default (): React.ReactNode => {
     <PageContainer title={false}>
       <Card>
         <Typography.Text strong>
-          页面正在建设中
+          请移步至<a href={"https://doc.open-api.cn"} target={"_blank"}>https://doc.open-api.cn</a>查看开发文档
         </Typography.Text>
       </Card>
     </PageContainer>
