@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type ControllerProxy struct {
@@ -75,7 +76,7 @@ func (ControllerProxy) Extract(c *sinking_server.Context) {
 			for _, v := range data {
 				txt += v.Ip + ":" + strconv.Itoa(v.Port) + " " + v.Auth + "\n"
 			}
-			c.String(200, txt)
+			c.String(200, strings.Trim(txt, "\n"))
 		} else {
 			c.SuccessWithData(message, data)
 		}
