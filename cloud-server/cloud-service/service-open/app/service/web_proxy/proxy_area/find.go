@@ -11,8 +11,14 @@ func (s *service) Find(where map[string]interface{}) (data *model.AppProxyArea, 
 	if where["province"] != nil {
 		query.Where("province", where["province"])
 	}
+	if where["province_key"] != nil {
+		query.Where("province_key", where["province_key"])
+	}
 	if where["city"] != nil {
 		query.Where("city", where["city"])
+	}
+	if where["city_key"] != nil {
+		query.Where("city_key", where["city_key"])
 	}
 	err = query.First(&data).Error
 	return

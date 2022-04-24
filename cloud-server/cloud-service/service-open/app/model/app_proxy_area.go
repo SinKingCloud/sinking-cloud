@@ -8,13 +8,15 @@ import (
 
 // AppProxyArea 代理池地区列表
 type AppProxyArea struct {
-	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
-	Province   string       `gorm:"column:province" json:"province"`
-	City       string       `gorm:"column:city" json:"city"`
-	Status     int          `gorm:"column:status" json:"status"`
-	CheckTime  str.DateTime `gorm:"column:check_time" json:"check_time"`
-	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
-	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
+	Id          int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
+	Province    string       `gorm:"column:province" json:"province"`
+	ProvinceKey string       `gorm:"column:province_key" json:"province_key"`
+	City        string       `gorm:"column:city" json:"city"`
+	CityKey     string       `gorm:"column:city_key" json:"city_key"`
+	Status      int          `gorm:"column:status" json:"status"`
+	CheckTime   str.DateTime `gorm:"column:check_time" json:"check_time"`
+	CreateTime  str.DateTime `gorm:"column:create_time" json:"create_time"`
+	UpdateTime  str.DateTime `gorm:"column:update_time" json:"update_time"`
 }
 
 // TableName 获取表名
