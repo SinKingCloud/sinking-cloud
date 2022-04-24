@@ -7,6 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_proxy/proxy"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_proxy/proxy_area"
 	"gorm.io/gorm"
+	"net/http"
 	"strconv"
 )
 
@@ -19,10 +20,10 @@ func (ControllerProxy) Extract(c *sinking_server.Context) {
 	type Form struct {
 		OrderByField string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id extract_num" label:"排序字段"`
 		OrderByType  string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		Province     string `json:"province" validate:"omitempty,max=50" label:"归属省"`
-		City         string `json:"city" validate:"omitempty,max=50" label:"归属市"`
-		Type         string `json:"type" default:"socks5" validate:"omitempty,max=30" label:"代理类型"`
-		Echo         string `json:"echo" default:"json" validate:"oneof=txt json" label:"输出类型"`
+		Province     string `form:"province" validate:"omitempty,max=50" label:"归属省"`
+		City         string `form:"city" validate:"omitempty,max=50" label:"归属市"`
+		Type         string `form:"type" default:"socks5" validate:"omitempty,max=30" label:"代理类型"`
+		Echo         string `form:"echo" default:"json" validate:"oneof=txt json" label:"输出类型"`
 	}
 	var message string
 	var data []*model.AppProxy
@@ -72,7 +73,7 @@ func (ControllerProxy) Extract(c *sinking_server.Context) {
 		}
 	} else {
 		if form.Echo == "txt" {
-			c.String(500, message)
+			c.String(http.StatusOK, "")
 		} else {
 			c.Error(message)
 		}
