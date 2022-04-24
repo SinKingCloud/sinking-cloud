@@ -49,7 +49,6 @@ func (ControllerUin) List(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	producer.NewUinJobProducer().Build(&model.AppUin{Uin: "1178710004"}).Send()
 	where := make(map[string]string)
 	where["user_id"] = strconv.Itoa(c.GetWebUserInfo().Id)
 	if form.AppId != "" {

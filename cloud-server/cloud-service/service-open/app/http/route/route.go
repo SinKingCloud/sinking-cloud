@@ -4,6 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/app"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/proxy"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/uin"
 	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/middleware"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -20,6 +21,7 @@ func loadRoute(s *sinking_web.Engine) {
 func loadApiRoute(s *sinking_web.Engine) {
 	g := s.Group("/api")
 	g.Use(middleware2.ApiCheck())
+
 	//云端挂机API
 	uinGroup := g.Group("/uin")
 	handleUin := &uin.ControllerUin{}
@@ -36,6 +38,11 @@ func loadApiRoute(s *sinking_web.Engine) {
 	uinSetGroup.POST("/password", sinking_server.HandleFunc(handleUin.ChangePassword)) //修改挂机密码
 	uinSetGroup.POST("/server", sinking_server.HandleFunc(handleUin.ChangeServer))     //修改挂机地区
 	uinSetGroup.POST("/timing", sinking_server.HandleFunc(handleUin.ChangeTiming))     //修改挂机时间
+
+	//服务代理API
+	proxyGroup := g.Group("/proxy")
+	handleProxy := &proxy.ControllerProxy{}
+	proxyGroup.GET("/extract", sinking_server.HandleFunc(handleProxy.Extract)) //提取代理
 }
 
 // 用户系统路由
@@ -58,7 +65,6 @@ func loadUserRoute(s *sinking_web.Engine) {
 	uinGroup.GET("/count", sinking_server.HandleFunc(handleUin.Count))     //统计信息
 	uinGroup.GET("/project", sinking_server.HandleFunc(handleUin.Project)) //功能列表
 	uinGroup.POST("/buy", sinking_server.HandleFunc(handleUin.Buy))        //业务下单
-
 	//QQ操作
 	uinSetGroup := uinGroup.Group("/operate")
 	uinSetGroup.POST("/info", sinking_server.HandleFunc(handleUin.Info))               //挂机QQ详情
@@ -69,7 +75,6 @@ func loadUserRoute(s *sinking_web.Engine) {
 	uinSetGroup.POST("/password", sinking_server.HandleFunc(handleUin.ChangePassword)) //修改挂机密码
 	uinSetGroup.POST("/server", sinking_server.HandleFunc(handleUin.ChangeServer))     //修改挂机地区
 	uinSetGroup.POST("/timing", sinking_server.HandleFunc(handleUin.ChangeTiming))     //修改挂机时间
-
 	//挂机节点
 	handleServer := &uin.ControllerServer{}
 	uinGroup.GET("/servers", sinking_server.HandleFunc(handleServer.List)) //地区列表
@@ -80,6 +85,7 @@ func loadUserRoute(s *sinking_web.Engine) {
 	uinGroup.GET("/orders", sinking_server.HandleFunc(handleOrder.List)) //订单列表
 	handleLog := &uin.ControllerLog{}
 	uinGroup.GET("/logs", sinking_server.HandleFunc(handleLog.List)) //日志列表
+
 }
 
 // 后台系统路由
