@@ -47,7 +47,13 @@ func (ControllerProxy) Extract(c *sinking_server.Context) {
 		if form.CityKey != "" {
 			where["city_key"] = form.CityKey
 		}
-		area, err := proxy_area.GetIns().Find(where)
+		var area *model.AppProxyArea
+		var err error
+		if len(where) == 0 {
+			area, err = proxy_area.GetIns().FindByRand()
+		} else {
+			area, err = proxy_area.GetIns().Find(where)
+		}
 		if err != nil || area == nil {
 			message = "获取地区信息失败"
 		} else {

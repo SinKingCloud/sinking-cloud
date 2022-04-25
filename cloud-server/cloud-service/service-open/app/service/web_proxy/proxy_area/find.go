@@ -24,6 +24,12 @@ func (s *service) Find(where map[string]interface{}) (data *model.AppProxyArea, 
 	return
 }
 
+// FindByRand 随机查询
+func (s *service) FindByRand() (data *model.AppProxyArea, err error) {
+	err = util.Database.Db.Order("rand()").First(&data).Error
+	return
+}
+
 // FindById 通过ID查询
 func (s *service) FindById(id int) (data *model.AppProxyArea, err error) {
 	err = util.Database.Db.Where("`id` = ? ", id).First(&data).Error
