@@ -11,7 +11,7 @@ func (s *speed) add(uin string, pwd string) bool {
 	data := map[string]string{
 		"Uin":      uin,
 		"Pass":     pwd,
-		"Place":    s.area,
+		"place":    s.area,
 		"brand":    "",
 		"model":    "",
 		"Protocol": "0",
