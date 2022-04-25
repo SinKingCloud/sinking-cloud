@@ -57,7 +57,7 @@ func (ControllerProxy) Extract(c *sinking_server.Context) {
 		if err != nil || area == nil {
 			message = "获取地区信息失败"
 		} else {
-			list, _, e := proxy.GetIns().Select(map[string]string{"area_id": strconv.Itoa(area.Id)}, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+			list, _, e := proxy.GetIns().Select(map[string]string{"area_id": strconv.Itoa(area.Id), "status": "0"}, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 			if e != nil {
 				message = "提取代理列表失败"
 			} else {

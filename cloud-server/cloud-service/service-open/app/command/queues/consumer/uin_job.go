@@ -49,8 +49,8 @@ func (l *uinJob) Listen() {
 }
 
 var (
-	servers    = make(map[int]chan interface{}) //服务器列表
-	serverLock = &sync.Mutex{}                  //并发锁
+	servers    = make(map[string]chan interface{}) //服务器列表
+	serverLock = &sync.Mutex{}                     //并发锁
 )
 
 // run 执行任务
@@ -58,19 +58,24 @@ func (l *uinJob) run(uin *model.AppUin) {
 	if uin == nil {
 		return
 	}
-	if servers[uin.ServerId] == nil {
+	//获取挂机服务器信息
+	server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
+	if err != nil || server == nil {
+		return
+	}
+	if servers[server.Addr] == nil {
 		//构建消费协程
 		serverLock.Lock()
 		g := &sync.WaitGroup{}
 		g.Add(1)
 		go (&job.Task{Producer: func(channel chan interface{}) {
-			servers[uin.ServerId] = channel
+			servers[server.Addr] = channel
 			g.Add(-1)
 		}, Consumer: func(param interface{}) {
 			if param != nil {
 				//执行挂机任务
 				sinking_web.Try(func() {
-					speed(param.(*model.AppUin))
+					speed(server, param.(*model.AppUin))
 				}, func(i interface{}) {
 					util.Log.Println(param, i)
 				})
@@ -80,20 +85,15 @@ func (l *uinJob) run(uin *model.AppUin) {
 		serverLock.Unlock()
 	}
 	//按照服务分发至不同协程执行
-	servers[uin.ServerId] <- uin
+	servers[server.Addr] <- uin
 }
 
 // speed 执行挂机任务
-func speed(uin *model.AppUin) {
-	//获取挂机服务器信息
-	server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
-	if err != nil || server == nil {
-		return
-	}
+func speed(server *model.AppUinServer, uin *model.AppUin) {
 	//构建加速项目
 	var jobs []int
 	var userJob map[string]string
-	err = json.Unmarshal([]byte(uin.Setting), &userJob)
+	err := json.Unmarshal([]byte(uin.Setting), &userJob)
 	if err != nil || userJob == nil {
 		jobs = []int{}
 	}
