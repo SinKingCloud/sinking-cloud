@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211125053718-b26199caff3f
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211125053718-b26199caff3f
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20220427143833-b9862a01a5e3
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1520
 	github.com/aliyun/aliyun-oss-go-sdk v2.2.1+incompatible

@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
 )
 
@@ -19,5 +20,13 @@ func (s *service) Select(where map[string]string, orderByField string, orderByTy
 		query.Where("`status` = ?", where["status"])
 	}
 	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(orderByField + " " + orderByType).Find(&list).Error
+	return
+}
+
+// SelectCheckJob 查询代理检测任务
+func (s *service) SelectCheckJob(limit int, time str.DateTime) (list []*model.AppProxy, err error) {
+	query := util.Database.Db.Model(&model.AppProxy{})
+	query.Where("`check_time` < ? ", time)
+	err = query.Limit(limit).Find(&list).Error
 	return
 }

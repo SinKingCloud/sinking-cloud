@@ -149,60 +149,60 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) (bool, map[int]bool) {
 				continue
 			}
 			switch v {
-			case Mobile:
-				res[Mobile] = speedA(func() bool {
-					return mobileLogin
-				})
-				break
+			//case Mobile:
+			//	res[Mobile] = speedA(func() bool {
+			//		return mobileLogin
+			//	})
+			//	break
 			case Pc:
 				res[Pc] = speedP(func() bool {
 					return pcLogin
 				})
 				break
-			case Zone:
-				res[Zone] = s.zoneSpeed(uin)
-				break
-			case Ws:
-				res[Ws] = speedA(func() bool {
-					return s.wsSpeed(uin)
-				})
-				break
-			case MicroShow:
-				res[MicroShow] = speedA(func() bool {
-					s.microShowSpeed(uin)
-					return true
-				})
-				break
-			case Safe:
-				res[Safe] = speedA(func() bool {
-					return s.safeSpeed(uin)
-				})
-				break
-			case Game:
-				res[Game] = speedA(func() bool {
-					return s.gameSpeed(uin)
-				})
-				break
-			case Sport:
-				res[Sport] = speedA(func() bool {
-					return s.sportSpeed(uin)
-				})
-				break
-			case MobileClock:
-				res[MobileClock] = speedA(func() bool {
-					return s.mobileClockSpeed(uin)
-				})
-				break
-			case ZoneClock:
-				res[ZoneClock] = speedA(func() bool {
-					return s.zoneClockSpeed(uin)
-				})
-				break
-			case Friend:
-				res[Friend] = speedA(func() bool {
-					return s.friendSpeed(uin)
-				})
-				break
+			//case Zone:
+			//	res[Zone] = s.zoneSpeed(uin)
+			//	break
+			//case Ws:
+			//	res[Ws] = speedA(func() bool {
+			//		return s.wsSpeed(uin)
+			//	})
+			//	break
+			//case MicroShow:
+			//	res[MicroShow] = speedA(func() bool {
+			//		s.microShowSpeed(uin)
+			//		return true
+			//	})
+			//	break
+			//case Safe:
+			//	res[Safe] = speedA(func() bool {
+			//		return s.safeSpeed(uin)
+			//	})
+			//	break
+			//case Game:
+			//	res[Game] = speedA(func() bool {
+			//		return s.gameSpeed(uin)
+			//	})
+			//	break
+			//case Sport:
+			//	res[Sport] = speedA(func() bool {
+			//		return s.sportSpeed(uin)
+			//	})
+			//	break
+			//case MobileClock:
+			//	res[MobileClock] = speedA(func() bool {
+			//		return s.mobileClockSpeed(uin)
+			//	})
+			//	break
+			//case ZoneClock:
+			//	res[ZoneClock] = speedA(func() bool {
+			//		return s.zoneClockSpeed(uin)
+			//	})
+			//	break
+			//case Friend:
+			//	res[Friend] = speedA(func() bool {
+			//		return s.friendSpeed(uin)
+			//	})
+			//	break
 			default:
 				res[v] = true
 				break

@@ -49,6 +49,8 @@ github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211125053
 github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20211125053718-b26199caff3f/go.mod h1:yKxs0d0LCaraNwGjJaouWN5XIfmzMypgkb8S2ICemjc=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211125053718-b26199caff3f h1:Cz8maLlSL4z4YPBe5/sgpcP/OKRDXym5rtPVsmSR7nw=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211125053718-b26199caff3f/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20220427143833-b9862a01a5e3 h1:6216hqsT6VNxtgGOEhs4HeqXR0eermN8NGULoKcylZY=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20220427143833-b9862a01a5e3/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868/go.mod h1:srphKZ1i+yGXxl/LpBS7ZIECTjCTPzZzAMtJWoG3sLo=
 github.com/aliyun/alibaba-cloud-sdk-go v1.61.1520/go.mod h1:RcDobYh8k5VP6TNybz9m++gL3ijVI5wueVr0EM10VsU=
 github.com/aliyun/aliyun-oss-go-sdk v2.2.1+incompatible/go.mod h1:T/Aws4fEfogEE9v+HPhhw+CntffsBHJ8nXQCwKr0/g8=

@@ -26,7 +26,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 	}
 	if appId != 0 {
 		app, err := web_app.GetIns().FindByIdWithCache(appId, false)
-		if err != nil || app == nil || app.UserId != appId {
+		if err != nil || app == nil || app.UserId != user.Id {
 			return errors.New("未获取到应用信息")
 		}
 	}
