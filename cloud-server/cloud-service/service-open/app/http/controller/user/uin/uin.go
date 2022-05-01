@@ -169,6 +169,38 @@ func (ControllerUin) ChangePassword(c *sinking_server.Context) {
 	}
 }
 
+// ChangePhone 更改挂机手机号
+func (ControllerUin) ChangePhone(c *sinking_server.Context) {
+	type Form struct {
+		Uin   string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Phone string `json:"phone" validate:"required,len=11" label:"绑定手机"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	if uinInfo.Status != 0 {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
+	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
+	err = web_uin.ChangePhone(uinInfo.Id, form.Phone)
+	if err == nil {
+		c.Success("更改挂机手机成功,请重新登录上线")
+	} else {
+		c.Error("更改挂机手机失败")
+	}
+}
+
 // ChangeServer 更改挂机地区
 func (ControllerUin) ChangeServer(c *sinking_server.Context) {
 	type Form struct {
@@ -240,10 +272,12 @@ func (ControllerUin) ChangeTiming(c *sinking_server.Context) {
 // Login 登陆QQ
 func (ControllerUin) Login(c *sinking_server.Context) {
 	type Form struct {
-		Uin    string `json:"uin" validate:"required,numeric" label:"QQ账号"`
-		Step   string `json:"step" validate:"oneof=normal captcha sms" label:"登陆步骤"`
-		Ticket string `json:"ticket" validate:"omitempty,max=500" label:"登陆ticket"`
-		Code   string `json:"code" validate:"omitempty,numeric,len=6" label:"短信验证码"`
+		Uin       string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		LoginType string `json:"login_type" validate:"oneof=pwd phone" label:"登陆方式"`
+		Step      string `json:"step" validate:"oneof=normal captcha sms" label:"登陆步骤"`
+		Rand      string `json:"rand" validate:"omitempty,max=500" label:"登陆rand"`
+		Ticket    string `json:"ticket" validate:"omitempty,max=500" label:"登陆ticket"`
+		Code      string `json:"code" validate:"omitempty,numeric,len=6" label:"短信验证码"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorJson(form); !ok {
@@ -275,7 +309,46 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	var verify string
 	switch form.Step {
 	case "normal":
-		code, e, data = q.Login(uinInfo.Uin, uinInfo.Password)
+		captcha := ""
+		if form.LoginType == "phone" {
+			//手机登录
+			if uinInfo.LoginType != 1 {
+				if uinInfo.Phone == "" {
+					c.Error("登陆错误")
+					return
+				}
+				err := web_uin.ChangePhone(uinInfo.Id, uinInfo.Phone)
+				if err != nil {
+					c.Error("登陆错误")
+					return
+				} else {
+					uinInfo.LoginType = 1
+				}
+			}
+		} else {
+			//密码登陆
+			if uinInfo.LoginType != 0 {
+				err := web_uin.ChangePassword(uinInfo.Id, uinInfo.Password)
+				if err != nil {
+					c.Error("登陆错误")
+					return
+				} else {
+					uinInfo.LoginType = 0
+				}
+			}
+		}
+		if uinInfo.LoginType == 1 {
+			if form.Ticket == "" {
+				c.Error("ticket不能为空")
+				return
+			}
+			if form.Rand == "" {
+				c.Error("rand不能为空")
+				return
+			}
+			captcha = form.Rand + "/" + form.Ticket
+		}
+		code, e, data = q.Login(uinInfo.Uin, uinInfo.Password, uinInfo.Phone, uinInfo.LoginType, captcha)
 		if e != nil || code != uin_tool.Success {
 			if code == uin_tool.NeedCaptcha {
 				c.Return(400, e.Error(), data)

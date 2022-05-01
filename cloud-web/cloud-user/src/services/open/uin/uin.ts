@@ -105,6 +105,18 @@ export async function changeUinPassword(body: any, options?: { [key: string]: an
   });
 }
 
+/** 修改挂机手机 POST /open/user/uin/operate/phone */
+export async function changeUinPhone(body: any, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/operate/phone', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 删除挂机 POST /open/user/uin/operate/delete */
 export async function deleteUin(body: any, options?: { [key: string]: any }) {
   return request<API.Response>('/open/user/uin/operate/delete', {

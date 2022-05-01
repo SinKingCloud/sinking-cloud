@@ -14,7 +14,9 @@ type AppUin struct {
 	ServerId   int          `gorm:"column:server_id" json:"server_id"`
 	ServerKey  string       `gorm:"column:server_key" json:"server_key"`
 	Uin        string       `gorm:"column:uin" json:"uin"`
+	Phone      string       `gorm:"column:phone" json:"phone"`
 	Password   string       `gorm:"column:password" json:"password"`
+	LoginType  int          `gorm:"column:login_type" json:"login_type"`
 	UinStatus  int          `gorm:"column:uin_status" json:"uin_status"`
 	SignDay    int          `gorm:"column:sign_day" json:"sign_day"`
 	PlayerDay  int          `gorm:"column:player_day" json:"player_day"`

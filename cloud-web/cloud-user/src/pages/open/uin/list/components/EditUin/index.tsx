@@ -61,7 +61,7 @@ const EditUin: React.FC<EditUinProps> = (props) => {
         setSpeedArr(getArr(Object.assign(r.data?.speed, r.data?.sign)));
       }
     });
-    getServerList({r: new Date().getTime()}).then((r) => {
+    getServerList({page_size: 999}).then((r) => {
       if (r.code != 200) {
         message.error(r.message || "请求失败").then();
       } else {

@@ -6,7 +6,11 @@ import (
 )
 
 // add 添加账号
-func (s *speed) add(uin string, pwd string) bool {
+func (s *speed) add(uin string, pwd string, phone string, proto int) bool {
+	p := "0"
+	if proto == 1 {
+		p = "1"
+	}
 	url := "/?&type=Android/&pe=into/"
 	data := map[string]string{
 		"Uin":      uin,
@@ -14,9 +18,10 @@ func (s *speed) add(uin string, pwd string) bool {
 		"place":    s.area,
 		"brand":    "",
 		"model":    "",
-		"Protocol": "0",
+		"protocol": p,
+		"phone":    phone,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}
@@ -44,9 +49,9 @@ func (s *speed) login(uin string, code string) (int, error, string) {
 	url := "/?&type=Android/&pe=login/"
 	data := map[string]string{
 		"Uin":  uin,
-		"Code": code,
+		"code": code,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return Error, err, ""
 	}
@@ -73,7 +78,7 @@ func (s *speed) login(uin string, code string) (int, error, string) {
 	if state.Stype == "9" {
 		return PassError, errors.New("账号密码错误"), ""
 	}
-	if state.Stype == "12" {
+	if state.Stype == "12" || state.Stype == "13" {
 		return NeedCode, errors.New("请提交设备锁验证码"), ""
 	}
 	if state.Stype == "11" {

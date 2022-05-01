@@ -25,7 +25,7 @@ const Buy: React.FC<BuyProps> = (props) => {
         setSelfInfo(r.data);
       }
     });
-    getServerList().then((r) => {
+    getServerList({page_size: 999}).then((r) => {
       if (r.code != 200) {
         message.error(r.message || "请求失败").then();
       } else {

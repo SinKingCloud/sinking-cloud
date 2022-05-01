@@ -21,3 +21,14 @@ export async function outLogin(options?: { [key: string]: any }) {
   });
 }
 
+/** 授权登录 POST /auth/web/oauth */
+export async function ticketAuth(body: any, options?: { [key: string]: any }) {
+  return request<API.Response>('/auth/web/oauth', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}

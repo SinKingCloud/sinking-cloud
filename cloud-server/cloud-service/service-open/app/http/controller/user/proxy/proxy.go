@@ -4,8 +4,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_proxy/proxy"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_proxy/proxy_area"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/proxy"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/proxy_area"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
@@ -29,7 +29,7 @@ func (ControllerProxy) Extract(c *sinking_server.Context) {
 		Echo         string `form:"echo" default:"json" validate:"oneof=txt json" label:"输出类型"`
 	}
 	var message string
-	var data []*model.AppProxy
+	var data []*model.AppUinProxy
 	form := &Form{}
 	if ok, msg := c.ValidatorGet(form); !ok {
 		message = msg
@@ -47,7 +47,7 @@ func (ControllerProxy) Extract(c *sinking_server.Context) {
 		if form.CityKey != "" {
 			where["city_key"] = form.CityKey
 		}
-		var area *model.AppProxyArea
+		var area *model.AppUinProxyArea
 		var err error
 		if len(where) == 0 {
 			area, err = proxy_area.GetIns().FindByRand()

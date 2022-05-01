@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
-import {Form, Input, message, Modal} from "antd";
-import {changeUinPassword, uinLogin} from "@/services/open/uin/uin";
+import {Form, Input, message, Modal, Select} from "antd";
+import {changeUinPassword, changeUinPhone, uinLogin} from "@/services/open/uin/uin";
 // @ts-ignore
 import CryptoJS from 'crypto-js';
 // @ts-ignore
@@ -17,6 +17,7 @@ export type UpdateUinProps = {
 const UpdateUin: React.FC<UpdateUinProps> = (props) => {
   const {uin, visible, onOk, onCancel} = props;
   const [step, setStep] = useState("normal");
+  const [loginType, setLoginType] = useState("pwd");
   /**
    * 表单处理
    */
@@ -33,7 +34,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
     // @ts-ignore
     sinking.setAid(16).setData(initUin, sid, cap_cd).init(function (t: any) {
       //验证成功
-      uinLogin({uin: initUin, step: "captcha", ticket: t?.ticket || "ticket"}).then((r) => {
+      uinLogin({uin: initUin, step: "captcha", ticket: t?.ticket || "ticket", login_type: "pwd"}).then((r) => {
         loginHandle(r);
       }).catch(() => {
         setConfirmLoading(false);
@@ -61,20 +62,43 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
   const onFinish = async (values: any) => {
     if (step == "normal") {
       setConfirmLoading(true);
-      if ((values.pwd?.length || 0) > 5) {
-        await changeUinPassword({uin: initUin, pwd: CryptoJS.MD5(values.pwd).toString()})
+      if (loginType == "pwd") {
+        if ((values.pwd?.length || 0) > 5) {
+          await changeUinPassword({uin: initUin, pwd: CryptoJS.MD5(values.pwd).toString()})
+        }
+      } else if (loginType == "phone") {
+        if ((values.phone?.length || 0) == 11) {
+          await changeUinPhone({uin: initUin, phone: values.phone})
+        }
       }
       //发起登陆请求
-      uinLogin({uin: initUin, step: "normal"}).then((r) => {
-        loginHandle(r)
-      });
+      if (loginType == "phone") {
+        // @ts-ignore
+        sinking.setAid(2081081773).init(function (t: any) {
+          //验证成功
+          uinLogin({
+            uin: initUin,
+            step: "normal",
+            ticket: t?.ticket || "ticket",
+            rand: t?.randstr || "rand", login_type: "phone"
+          }).then((r) => {
+            loginHandle(r);
+          }).catch(() => {
+            setConfirmLoading(false);
+          });
+        });
+      } else {
+        uinLogin({uin: initUin, step: "normal", login_type: "pwd"}).then((r) => {
+          loginHandle(r)
+        });
+      }
     } else {
       if ((values.sms?.length || 0) != 6) {
         message.error("请输入正确的验证码")
         return;
       }
       setConfirmLoading(true);
-      uinLogin({uin: initUin, step: "sms", code: values.sms}).then((r) => {
+      uinLogin({uin: initUin, step: "sms", code: values.sms, login_type: "pwd"}).then((r) => {
         loginHandle(r);
       }).catch(() => {
         setConfirmLoading(false);
@@ -97,8 +121,17 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
       <Script url={"https://cdn.open-api.cn/app/uin/captcha/captcha.js"}/>
       <Form name="control-hooks" form={form} onFinish={onFinish} labelAlign="right"
             labelCol={{span: 6}}>
-        <Form.Item name={"pwd"} hidden={step != "normal"} label="挂机密码">
-          <Input placeholder="不更新则留空"/>
+        <Form.Item label="登陆方式">
+          <Select placeholder="请选择登陆方式" defaultValue={loginType} onChange={setLoginType}>
+            <Select.Option value={"pwd"}>密码登陆</Select.Option>
+            <Select.Option value={"phone"}>手机号登陆</Select.Option>
+          </Select>
+        </Form.Item>
+        <Form.Item name={"phone"} hidden={step != "normal" || loginType != "phone"} label="登陆手机">
+          <Input placeholder="留空则使用上次登陆的手机"/>
+        </Form.Item>
+        <Form.Item name={"pwd"} hidden={step != "normal" || loginType != "pwd"} label="挂机密码">
+          <Input placeholder="留空则使用上次更新的密码"/>
         </Form.Item>
         <Form.Item name={"sms"} hidden={step != "sms"} label="短信验证码">
           <Input placeholder="请输入短信验证码" type={"number"}/>

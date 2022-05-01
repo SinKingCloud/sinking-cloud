@@ -22,4 +22,5 @@ const (
 	Login           //登陆账号
 	Run             //执行补挂
 	Timing          //修改时间
+	Phone           //修改手机
 )

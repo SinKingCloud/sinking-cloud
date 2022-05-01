@@ -1,5 +1,7 @@
 package uin_tool
 
+import "time"
+
 type speed struct {
 	addr string //服务器地址
 	area string //区域
@@ -11,16 +13,16 @@ func NewUinTool(addr string, area string) *speed {
 }
 
 // Create 创建账号
-func (s *speed) Create(uin string, pwd string) bool {
-	return s.add(uin, pwd)
+func (s *speed) Create(uin string, pwd string, phone string, proto int) bool {
+	return s.add(uin, pwd, phone, proto)
 }
 
 // Login 登陆账号
-func (s *speed) Login(uin string, pwd string) (int, error, string) {
-	a, b, c := s.login(uin, "")
+func (s *speed) Login(uin string, pwd string, phone string, proto int, code string) (int, error, string) {
+	a, b, c := s.login(uin, code)
 	if a == NotCreate {
-		s.add(uin, pwd)
-		return s.login(uin, "")
+		s.add(uin, pwd, phone, proto)
+		return s.login(uin, code)
 	}
 	return a, b, c
 }
@@ -32,7 +34,7 @@ func (s *speed) VerifyLogin(uin string, code string) (int, error, string) {
 
 // Delete 删除QQ
 func (s *speed) Delete(uin string) bool {
-	return s.add(uin, "123456")
+	return s.add(uin, "123456", "18888888888", 0)
 }
 
 // MobileOffline 下线手机
@@ -89,7 +91,7 @@ func (s *speed) Status(uin string) (*SpeedStatus, error, bool) {
 }
 
 // Speed QQ项目加速
-func (s *speed) Speed(uin string, pwd string, jobs []int) (bool, map[int]bool) {
+func (s *speed) Speed(uin string, pwd string, phone string, proto int, jobs []int, isFirst bool) (bool, map[int]bool) {
 	res := make(map[int]bool)
 	mobileLogin := false //是否登录手机
 	pcLogin := false     //是否登录pc
@@ -98,7 +100,7 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) (bool, map[int]bool) {
 		if !mobileLogin {
 			c, _, _ := s.login(uin, "")
 			if c == NotCreate {
-				if s.add(uin, pwd) {
+				if s.add(uin, pwd, phone, proto) {
 					c, _, _ = s.login(uin, "")
 				}
 			} else if c == EnvError {
@@ -158,6 +160,26 @@ func (s *speed) Speed(uin string, pwd string, jobs []int) (bool, map[int]bool) {
 				res[Pc] = speedP(func() bool {
 					return pcLogin
 				})
+				break
+			case Medal:
+				res[Medal] = speedP(func() bool {
+					time.Sleep(1 * time.Second)
+					return s.medalSpeed(uin)
+				})
+				break
+			case Online:
+				if !isFirst {
+					res[Online] = speedP(func() bool {
+						return pcLogin
+					})
+				}
+				break
+			case Login:
+				if !isFirst {
+					res[Login] = speedA(func() bool {
+						return mobileLogin
+					})
+				}
 				break
 			case Zone:
 				res[Zone] = s.zoneSpeed(uin)

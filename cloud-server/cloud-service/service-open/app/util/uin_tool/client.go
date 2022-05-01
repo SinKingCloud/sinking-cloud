@@ -23,12 +23,25 @@ func getClient() *http.Client {
 	return httpClient
 }
 
+// getClient 获取http client(自定义超时)
+func getClientWithTimout(timeout int) *http.Client {
+	return &http.Client{
+		Timeout: time.Duration(timeout) * time.Second,
+	}
+}
+
 // sendRequest 发送请求
-func (s *speed) sendRequest(url string, data interface{}) (*response, error) {
+func (s *speed) sendRequest(url string, data interface{}, timeout int) (*response, error) {
 	url = "http://" + s.addr + url
 	req, _ := http.NewRequest("POST", url, strings.NewReader(s.toJson(data)))
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
-	resp, err := getClient().Do(req)
+	var client *http.Client
+	if timeout < 0 {
+		client = getClient()
+	} else {
+		client = getClientWithTimout(timeout)
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("错误：请求地址", url, "请求参数", s.toJson(data))
 		return nil, err

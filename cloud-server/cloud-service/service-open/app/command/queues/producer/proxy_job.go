@@ -13,7 +13,7 @@ import (
 var proxyJobProducerIns queue.MqProducer
 
 // proxyJobProducerTask 异步发送
-var proxyJobProducerTask chan *model.AppProxy
+var proxyJobProducerTask chan *model.AppUinProxy
 
 // NewProxyJobProducer 实例化
 func NewProxyJobProducer() *proxyJob {
@@ -22,18 +22,18 @@ func NewProxyJobProducer() *proxyJob {
 
 // proxyJob 结构
 type proxyJob struct {
-	data *model.AppProxy
+	data *model.AppUinProxy
 }
 
 // Build 构建消息
-func (l *proxyJob) Build(d *model.AppProxy) *proxyJob {
+func (l *proxyJob) Build(d *model.AppUinProxy) *proxyJob {
 	l.data = d
 	return l
 }
 
 // run 异步执行
 func (l *proxyJob) run() {
-	go func(tasks chan *model.AppProxy) {
+	go func(tasks chan *model.AppUinProxy) {
 		for task := range tasks {
 			bytes, err := json.Marshal(task)
 			if err != nil {
@@ -51,7 +51,7 @@ func (l *proxyJob) run() {
 func (l *proxyJob) Send() {
 	if proxyJobProducerIns == nil {
 		proxyJobProducerIns = sinking.GetRocketProducerServer(constant.ProxyJobGroup, 1)
-		proxyJobProducerTask = make(chan *model.AppProxy)
+		proxyJobProducerTask = make(chan *model.AppUinProxy)
 		l.run()
 	}
 	proxyJobProducerTask <- l.data

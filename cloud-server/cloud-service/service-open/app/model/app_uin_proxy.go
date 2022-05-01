@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-// AppProxy 代理池列表
-type AppProxy struct {
+// AppUinProxy 代理池列表
+type AppUinProxy struct {
 	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	AreaId     int          `gorm:"column:area_id" json:"area_id"`
 	Type       string       `gorm:"column:type" json:"type"`
@@ -22,18 +22,18 @@ type AppProxy struct {
 }
 
 // TableName 获取表名
-func (AppProxy) TableName() string {
-	return "app_proxys"
+func (AppUinProxy) TableName() string {
+	return "app_uin_proxys"
 }
 
 // BeforeCreate 创建前
-func (t *AppProxy) BeforeCreate(tx *gorm.DB) error {
+func (t *AppUinProxy) BeforeCreate(tx *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *AppProxy) BeforeUpdate(tx *gorm.DB) error {
+func (t *AppUinProxy) BeforeUpdate(tx *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

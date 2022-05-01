@@ -3,6 +3,7 @@ package web_uin
 import (
 	"errors"
 	"fmt"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
@@ -20,6 +21,12 @@ import (
 
 // Buy 业务下单
 func Buy(userId int, appId int, serverKey string, uin string, pwd string, types int, month int, cost bool) error {
+	key := constant.LockUinBuy + strconv.Itoa(userId) + "_" + uin
+	//上锁，避免同时下单太多
+	if !util.Cache.Lock(key, constant.LockTimeUinBuy) {
+		return errors.New("系统繁忙,请稍后下单")
+	}
+	defer util.Cache.UnLock(key) //释放并发锁
 	user := web_user.GetIns().GetCurrentUserInfo(userId, true)
 	if user == nil {
 		return errors.New("获取用户信息失败")
@@ -60,6 +67,8 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 				ServerKey: server.Key,
 				Uin:       uin,
 				Password:  pwd,
+				Phone:     "",
+				LoginType: 0,
 				UinStatus: 1,
 				SignDay:   0,
 				PlayerDay: 0,
@@ -74,7 +83,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 					_ = server2.GetIns().UpdateById(server.Id, map[string]interface{}{
 						"uin_num": gorm.Expr("`uin_num`+1"),
 					})
-					_ = ServerUinCreate(server.Id, uin, pwd)
+					_ = ServerUinCreate(server.Id, uin, pwd, "", 0)
 				}()
 				uinInfo, err = uin2.GetIns().FindByUserIdWithUin(user.Id, uin)
 			}
@@ -131,7 +140,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 	}
 	//写入消费及QQ下单记录
 	go func() {
-		typeName := "全套代挂"
+		typeName := "全套套装"
 		if types == 1 {
 			typeName = "加速套装"
 		} else if types == 2 {

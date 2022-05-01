@@ -38,7 +38,7 @@ export default (): React.ReactNode => {
         setApps(map);
       }
     });
-    getServerList({r: new Date().getTime()}).then((r) => {
+    getServerList({page_size: 999}).then((r) => {
       if (r.code != 200) {
         message.error(r.message || "请求失败").then();
       } else {

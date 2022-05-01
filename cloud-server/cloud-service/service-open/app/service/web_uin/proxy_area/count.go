@@ -7,7 +7,7 @@ import (
 
 // Count 查询
 func (s *service) Count(where map[string]interface{}) (total int64, err error) {
-	query := util.Database.Db.Model(&model.AppProxyArea{})
+	query := util.Database.Db.Model(&model.AppUinProxyArea{})
 	if where["province"] != nil {
 		query.Where("province", where["province"])
 	}

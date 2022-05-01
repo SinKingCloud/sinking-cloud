@@ -12,4 +12,7 @@ const (
 
 	LockUserUinJob     = "LockUserUinJob_" //用户挂机任务锁
 	LockTimeUserUinJob = 5 * 60 * 1000     //用户挂机任务锁等待时间
+
+	LockUinBuy     = "LockUinBuy_" //下单并发锁
+	LockTimeUinBuy = 1 * 60 * 1000 //下单并发锁最大时间
 )

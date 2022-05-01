@@ -80,7 +80,7 @@ func (l *uinJob) run(uin *model.AppUin) {
 					util.Log.Println(param, i)
 				})
 			}
-		}, Thread: 100}).Run()
+		}, Thread: 30}).Run()
 		g.Wait()
 		serverLock.Unlock()
 	}
@@ -145,7 +145,7 @@ func speed(server *model.AppUinServer, uin *model.AppUin) {
 			fail, _ = check(server.Addr, server.Key, uin, jobs, lower)
 		} else {
 			//正常挂机
-			fail, _ = uin_tool.NewUinTool(server.Addr, server.Key).Speed(uin.Uin, uin.Password, jobs)
+			fail, _ = uin_tool.NewUinTool(server.Addr, server.Key).Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, jobs, true)
 			//只允许9点前执行第二次挂机
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 {
 				data["check_time"] = str.DateTime(time.Now().Add(2.5 * 3600 * time.Second))
@@ -228,7 +228,7 @@ func check(addr string, key string, uin *model.AppUin, jobs []int, lower bool) (
 		}
 	}
 	if len(newJobs) > 0 {
-		return s.Speed(uin.Uin, uin.Password, newJobs)
+		return s.Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, newJobs, false)
 	}
 	return false, nil
 }

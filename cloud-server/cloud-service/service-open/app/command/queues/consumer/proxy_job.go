@@ -26,7 +26,7 @@ func (l *proxyJob) Listen() {
 		proxyJobIns = sinking.GetRocketConsumerServer(constant.ProxyJobGroup, false)
 	}
 	err := proxyJobIns.ListenReceiveMsgDo(constant.ProxyJobTopic, "", func(mqMsg queue.MqMsg) {
-		s := &model.AppProxy{}
+		s := &model.AppUinProxy{}
 		err := json.Unmarshal(mqMsg.Body, s)
 		if err == nil {
 			//判断代理

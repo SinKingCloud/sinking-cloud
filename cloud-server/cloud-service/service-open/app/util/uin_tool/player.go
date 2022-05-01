@@ -10,7 +10,7 @@ func (s *speed) sportSpeed(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}
@@ -23,7 +23,7 @@ func (s *speed) microShowSpeed(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, 5)
 	if err != nil {
 		return false
 	}
@@ -36,7 +36,7 @@ func (s *speed) gameSpeed(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}
@@ -49,7 +49,7 @@ func (s *speed) wsSpeed(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}
@@ -62,7 +62,7 @@ func (s *speed) safeSpeed(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}
@@ -75,7 +75,20 @@ func (s *speed) zoneSpeed(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
+	if err != nil {
+		return false
+	}
+	return res.State == "0"
+}
+
+// medalSpeed 勋章加速
+func (s *speed) medalSpeed(uin string) bool {
+	url := "/?&type=Pc/&pe=medal/"
+	data := map[string]string{
+		"Uin": uin,
+	}
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}
@@ -88,7 +101,7 @@ func (s *speed) zoneClockSpeed(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}
@@ -101,7 +114,7 @@ func (s *speed) mobileClockSpeed(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}
@@ -114,7 +127,7 @@ func (s *speed) pcOffline(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}
@@ -127,7 +140,7 @@ func (s *speed) pcSpeed(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}
@@ -140,7 +153,7 @@ func (s *speed) friendSpeed(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}
@@ -153,7 +166,7 @@ func (s *speed) mobileLower(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}
@@ -166,7 +179,7 @@ func (s *speed) pcLower(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}
@@ -180,7 +193,7 @@ func (s *speed) getSpeedStatus(uin string) (d *SpeedStatus, e error) {
 		"Uin":  uin,
 		"code": 0,
 	}
-	res, e := s.sendRequest(url, data)
+	res, e := s.sendRequest(url, data, -1)
 	if e != nil {
 		return
 	}
