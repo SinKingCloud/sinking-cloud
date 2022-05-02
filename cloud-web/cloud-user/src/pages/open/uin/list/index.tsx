@@ -3,7 +3,7 @@ import {PageContainer} from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import {getParams} from "@/util/page";
 import {Avatar, Button, Dropdown, Menu, message, Modal, Select, Tag} from "antd";
-import {deleteUin, getServerList, getUinList, uinRun} from "@/services/open/uin/uin";
+import {deleteUin, getServerList, getUinList, uinRun, uinStatus} from "@/services/open/uin/uin";
 import {DownOutlined, ExclamationCircleOutlined} from "@ant-design/icons";
 import UpdateUin from "@/pages/open/uin/list/components/UpdateUin";
 import {getAppList} from "@/services/app/app";
@@ -84,9 +84,35 @@ export default (): React.ReactNode => {
       content: '删除挂机后将不可恢复',
       okType: 'danger',
       onOk() {
-        const key = "uinPlayer";
+        const key = "uinDelete";
         message.loading({content: '正在删除挂机', key, duration: 60}).then();
         deleteUin({uin: uin}).then((r) => {
+          if (r.code == 200) {
+            // @ts-ignore
+            actionRef?.current.reload();
+            message.success({content: r.message, key, duration: 2}).then();
+          } else {
+            message.error({content: r.message, key, duration: 2}).then();
+          }
+        });
+      },
+    });
+  };
+  /**
+   * 修改挂机状态
+   * @param uin 挂机账号
+   * @param status 状态
+   */
+  const changeUinStatus = (uin: string, status: number) => {
+    Modal.confirm({
+      title: '确定要' + (status == 0 ? "恢复" : "暂停") + '挂机吗?',
+      icon: <ExclamationCircleOutlined/>,
+      content: '您的设置将会立即生效',
+      okType: 'primary',
+      onOk() {
+        const key = "uinStatus";
+        message.loading({content: '正在更改挂机状态', key, duration: 60}).then();
+        uinStatus({uin: uin, status: status}).then((r) => {
           if (r.code == 200) {
             // @ts-ignore
             actionRef?.current.reload();
@@ -126,6 +152,19 @@ export default (): React.ReactNode => {
       dataIndex: 'uin',
       tip: '挂机账号',
       copyable: true,
+    },
+    {
+      title: '登陆方式',
+      dataIndex: 'login_type',
+      tip: 'QQ的挂机登陆方式',
+      valueEnum: {
+        0: {
+          text: '密码登录',
+        },
+        1: {
+          text: '手机登陆',
+        },
+      },
     },
     {
       title: 'QQ状态',
@@ -209,13 +248,17 @@ export default (): React.ReactNode => {
     {
       title: '功能状态',
       dataIndex: 'status',
-      tip: 'QQ的功能状态',
+      tip: 'QQ的功能状态(正常挂机/暂停挂机/禁止使用)',
       valueEnum: {
         0: {
           text: '正常',
           status: 'success',
         },
         1: {
+          text: '暂停',
+          status: 'warning',
+        },
+        2: {
           text: '封禁',
           status: 'error',
         },
@@ -260,7 +303,7 @@ export default (): React.ReactNode => {
         return <Dropdown overlay={<Menu>
           <Menu.Item key={"password"} hidden={hide}>
             <a style={{fontSize: "small"}} onClick={() => {
-              showUinModal(record?.uin);
+              showUinModal(record?.uin, record?.login_type);
             }}>
               更新挂机
             </a>
@@ -277,6 +320,13 @@ export default (): React.ReactNode => {
               showUinInfoModal(record?.uin);
             }}>
               编辑功能
+            </a>
+          </Menu.Item>
+          <Menu.Item key={"status"} hidden={hide || record?.status == 2}>
+            <a style={{fontSize: "small"}} onClick={() => {
+              changeUinStatus(record?.uin, record?.status == 0 ? 1 : 0);
+            }}>
+              {record?.status == 0 ? "暂停挂机" : "恢复挂机"}
             </a>
           </Menu.Item>
           <Menu.Item key={"delete"}>
@@ -305,8 +355,11 @@ export default (): React.ReactNode => {
    */
   const [uinVisible, setUinVisible] = useState(false);
   const [uin, setUin] = useState("");
-  const showUinModal = (uin: string = "") => {
+  const updateRef = useRef();
+  const showUinModal = (uin: string = "", type: number = 0) => {
     setUin(uin);
+    // @ts-ignore
+    updateRef?.current?.setFieldsValue({login_type: type == 0 ? "pwd" : "phone"});
     setUinVisible(true);
   }
   const hideUinModal = () => {
@@ -342,7 +395,7 @@ export default (): React.ReactNode => {
   }
   return (
     <PageContainer title={false}>
-      <UpdateUin visible={uinVisible} uin={uin} onOk={() => {
+      <UpdateUin visible={uinVisible} uin={uin} formRef={updateRef} onOk={() => {
         hideUinModal();
         // @ts-ignore
         actionRef?.current?.reload?.();
@@ -358,7 +411,7 @@ export default (): React.ReactNode => {
              actionRef?.current?.reload?.();
              //新添加账号需更新状态
              if (isNewUin) {
-               showUinModal(uin);
+               showUinModal(uin, 0);
              }
            }}/>
       <ProTable

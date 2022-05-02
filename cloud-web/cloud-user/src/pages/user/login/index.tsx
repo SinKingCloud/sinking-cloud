@@ -3,10 +3,11 @@ import {Alert, Avatar, Button, Checkbox, Col, Form, Image, Input, message, Row, 
 import React, {useEffect, useState} from 'react';
 import Footer from '@/components/Footer';
 import styles from './index.less';
+// @ts-ignore
 import {history, useModel} from "umi";
 import {getCaptchaUrl} from "@/services/common/captcha";
 import defaultSettings from "../../../../config/defaultSettings";
-import {login, ticketAuth} from "@/services/user/login";
+import {login, outLogin, ticketAuth} from "@/services/user/login";
 import {setLoginToken} from "@/util/auth";
 import {sendLoginSms} from "@/services/common/sms";
 
@@ -43,11 +44,18 @@ const Login: React.FC = () => {
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
     if (userInfo) {
-      await setInitialState((s) => ({
+      await setInitialState((s:any) => ({
         ...s,
         currentUser: userInfo,
       }));
     }
+  };
+
+  /**
+   * 退出登录，并且将当前的 url 保存
+   */
+  const loginOut = async () => {
+    await outLogin();
   };
 
   const [sendCodeDisabled, setSendCodeDisabled] = useState(false);
@@ -292,10 +300,25 @@ const Login: React.FC = () => {
                     <Alert message={initialState?.currentUser?.nick_name}
                            className={styles.nick} type="info"/>
                   </div>
-                  <Button type='primary' size={'large'} block>
-                    授权登陆
+                  <Button type='primary' size={'large'} block onClick={async () => {
+                    /** 判断是否授权登陆 */
+                    if (redirectUrl?.substring(0, 4) == "http") {
+                      await ticketLogin();
+                      setIsLoading(false);
+                    } else {
+                      setIsLoading(false);
+                      history.push(redirectUrl || '/');
+                    }
+                  }}>
+                    快捷登陆
                   </Button>
-                  <Button type='default' size={'large'} block>
+                  <Button type='default' size={'large'} block onClick={() => {
+                    setInitialState((s: any) => ({...s, currentUser: undefined})).then(() => {
+                      loginOut().then(() => {
+                        message.success("您已注销登录");
+                      });
+                    });
+                  }}>
                     注销登录
                   </Button>
                 </Space>

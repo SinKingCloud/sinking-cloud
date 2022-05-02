@@ -76,7 +76,7 @@ func send(minute int64) {
 								}
 								ids = append(ids, v1.Id)
 								//取出一个正常qq
-								if v1.Status == 0 && v1.UinStatus == 0 && speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
+								if v1.Status == uin2.Normal && v1.UinStatus == 0 && speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
 									speedUin = v1
 								}
 							}

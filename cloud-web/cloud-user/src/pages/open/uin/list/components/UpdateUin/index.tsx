@@ -8,6 +8,7 @@ import Script from 'react-load-script';
 import {getUrlQuery} from "@/util/string";
 
 export type UpdateUinProps = {
+  formRef?: any;
   uin?: string;
   visible?: boolean;
   onOk?: () => void;
@@ -15,9 +16,8 @@ export type UpdateUinProps = {
 };
 
 const UpdateUin: React.FC<UpdateUinProps> = (props) => {
-  const {uin, visible, onOk, onCancel} = props;
+  const {uin, formRef, visible, onOk, onCancel} = props;
   const [step, setStep] = useState("normal");
-  const [loginType, setLoginType] = useState("pwd");
   /**
    * 表单处理
    */
@@ -62,17 +62,17 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
   const onFinish = async (values: any) => {
     if (step == "normal") {
       setConfirmLoading(true);
-      if (loginType == "pwd") {
+      if (values.login_type == "pwd") {
         if ((values.pwd?.length || 0) > 5) {
           await changeUinPassword({uin: initUin, pwd: CryptoJS.MD5(values.pwd).toString()})
         }
-      } else if (loginType == "phone") {
+      } else if (values.login_type == "phone") {
         if ((values.phone?.length || 0) == 11) {
           await changeUinPhone({uin: initUin, phone: values.phone})
         }
       }
       //发起登陆请求
-      if (loginType == "phone") {
+      if (values.login_type == "phone") {
         // @ts-ignore
         sinking.setAid(2081081773).init(function (t: any) {
           //验证成功
@@ -80,7 +80,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
             uin: initUin,
             step: "normal",
             ticket: t?.ticket || "ticket",
-            rand: t?.randstr || "rand", login_type: "phone"
+            rand: t?.randstr || "rand", login_type: values.login_type
           }).then((r) => {
             loginHandle(r);
           }).catch(() => {
@@ -88,7 +88,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
           });
         });
       } else {
-        uinLogin({uin: initUin, step: "normal", login_type: "pwd"}).then((r) => {
+        uinLogin({uin: initUin, step: "normal", login_type: values.login_type}).then((r) => {
           loginHandle(r)
         });
       }
@@ -98,7 +98,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
         return;
       }
       setConfirmLoading(true);
-      uinLogin({uin: initUin, step: "sms", code: values.sms, login_type: "pwd"}).then((r) => {
+      uinLogin({uin: initUin, step: "sms", code: values.sms, login_type: values.login_type}).then((r) => {
         loginHandle(r);
       }).catch(() => {
         setConfirmLoading(false);
@@ -119,18 +119,18 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
            visible={visible} onOk={form.submit} okText={"登陆"}
            onCancel={onCancel} confirmLoading={confirmLoading}>
       <Script url={"https://cdn.open-api.cn/app/uin/captcha/captcha.js"}/>
-      <Form name="control-hooks" form={form} onFinish={onFinish} labelAlign="right"
+      <Form name="control-hooks" form={form} ref={formRef} onFinish={onFinish} labelAlign="right"
             labelCol={{span: 6}}>
-        <Form.Item label="登陆方式">
-          <Select placeholder="请选择登陆方式" defaultValue={loginType} onChange={setLoginType}>
+        <Form.Item name={"login_type"} label="登陆方式" rules={[{required: true}]}>
+          <Select placeholder="请选择登陆方式">
             <Select.Option value={"pwd"}>密码登陆</Select.Option>
             <Select.Option value={"phone"}>手机号登陆</Select.Option>
           </Select>
         </Form.Item>
-        <Form.Item name={"phone"} hidden={step != "normal" || loginType != "phone"} label="登陆手机">
+        <Form.Item name={"phone"} hidden={step != "normal" || form.getFieldValue("login_type") != "phone"} label="登陆手机">
           <Input placeholder="留空则使用上次登陆的手机"/>
         </Form.Item>
-        <Form.Item name={"pwd"} hidden={step != "normal" || loginType != "pwd"} label="挂机密码">
+        <Form.Item name={"pwd"} hidden={step != "normal" || form.getFieldValue("login_type") != "pwd"} label="挂机密码">
           <Input placeholder="留空则使用上次更新的密码"/>
         </Form.Item>
         <Form.Item name={"sms"} hidden={step != "sms"} label="短信验证码">

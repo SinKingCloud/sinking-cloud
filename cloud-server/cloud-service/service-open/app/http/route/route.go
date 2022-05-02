@@ -39,6 +39,7 @@ func loadApiRoute(s *sinking_web.Engine) {
 	uinSetGroup.POST("/phone", sinking_server.HandleFunc(handleUin.ChangePhone))       //修改挂机手机
 	uinSetGroup.POST("/server", sinking_server.HandleFunc(handleUin.ChangeServer))     //修改挂机地区
 	uinSetGroup.POST("/timing", sinking_server.HandleFunc(handleUin.ChangeTiming))     //修改挂机时间
+	uinSetGroup.POST("/status", sinking_server.HandleFunc(handleUin.ChangeStatus))     //修改挂机状态
 
 	//服务代理API
 	proxyGroup := g.Group("/proxy")
@@ -77,6 +78,7 @@ func loadUserRoute(s *sinking_web.Engine) {
 	uinSetGroup.POST("/phone", sinking_server.HandleFunc(handleUin.ChangePhone))       //修改挂机手机
 	uinSetGroup.POST("/server", sinking_server.HandleFunc(handleUin.ChangeServer))     //修改挂机地区
 	uinSetGroup.POST("/timing", sinking_server.HandleFunc(handleUin.ChangeTiming))     //修改挂机时间
+	uinSetGroup.POST("/status", sinking_server.HandleFunc(handleUin.ChangeStatus))     //修改挂机状态
 	//挂机节点
 	handleServer := &uin.ControllerServer{}
 	uinGroup.GET("/servers", sinking_server.HandleFunc(handleServer.List)) //地区列表

@@ -23,4 +23,5 @@ const (
 	Run             //执行补挂
 	Timing          //修改时间
 	Phone           //修改手机
+	Status          //修改状态
 )

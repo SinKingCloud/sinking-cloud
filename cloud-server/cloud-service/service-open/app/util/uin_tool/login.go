@@ -3,6 +3,7 @@ package uin_tool
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 )
 
 // add 添加账号
@@ -45,7 +46,7 @@ type captcha struct {
 }
 
 // login 登陆账号
-func (s *speed) login(uin string, code string) (int, error, string) {
+func (s *speed) login(uin string, code string) (int, error, string, string) {
 	url := "/?&type=Android/&pe=login/"
 	data := map[string]string{
 		"Uin":  uin,
@@ -53,36 +54,36 @@ func (s *speed) login(uin string, code string) (int, error, string) {
 	}
 	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
-		return Error, err, ""
+		return Error, err, "", ""
 	}
 	var state *captcha
 	err = json.Unmarshal([]byte(res.State), &state)
 	if err != nil || state == nil {
-		return Error, errors.New("解析服务器结果错误"), ""
+		return Error, errors.New("解析服务器结果错误"), "", ""
 	}
 	if state.Stype == "-2" {
-		return NotCreate, errors.New("系统不存在此QQ"), ""
+		return NotCreate, errors.New("系统不存在此QQ"), "", ""
 	}
 	if state.Stype == "0" || state.Stype == "-1" || res.State == "0" {
-		return Success, nil, ""
+		return Success, nil, "", strconv.FormatInt(res.Uin, 10)
 	}
 	if state.Stype == "6" || state.Stype == "10" {
-		return Error, errors.New("登陆失败"), ""
+		return Error, errors.New("登陆失败"), "", ""
 	}
 	if state.Stype == "7" {
-		return EnvError, errors.New("登陆环境异常"), ""
+		return EnvError, errors.New("登陆环境异常"), "", ""
 	}
 	if state.Stype == "8" {
-		return UinLock, errors.New("账号已被冻结"), ""
+		return UinLock, errors.New("账号已被冻结"), "", ""
 	}
 	if state.Stype == "9" {
-		return PassError, errors.New("账号密码错误"), ""
+		return PassError, errors.New("账号密码错误"), "", ""
 	}
 	if state.Stype == "12" || state.Stype == "13" {
-		return NeedCode, errors.New("请提交设备锁验证码"), ""
+		return NeedCode, errors.New("请提交设备锁验证码"), "", ""
 	}
 	if state.Stype == "11" {
-		return NeedCaptcha, errors.New("请验证滑动验证码"), state.HkUrl
+		return NeedCaptcha, errors.New("请验证滑动验证码"), state.HkUrl, ""
 	}
-	return Error, errors.New("未知状态"), ""
+	return Error, errors.New("未知状态"), "", ""
 }

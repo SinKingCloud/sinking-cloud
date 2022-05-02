@@ -138,7 +138,7 @@ func speed(server *model.AppUinServer, uin *model.AppUin) {
 			lower := true
 			//只允许9点前执行第三次挂机
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 && time.Now().Unix()-stamp.Unix() > 2*3600 {
-				data["check_time"] = str.DateTime(time.Now().Add(6.5 * 3600 * time.Second))
+				data["check_time"] = str.DateTime(time.Now().Add(4.5 * 3600 * time.Second))
 				lower = false
 			}
 			//检测挂机
@@ -152,9 +152,9 @@ func speed(server *model.AppUinServer, uin *model.AppUin) {
 			}
 		}
 		if fail {
-			data["uin_status"] = 1
+			data["uin_status"] = 1 //设置异常状态
 		} else {
-			data["uin_status"] = 0
+			data["uin_status"] = 0 //设置正常状态
 		}
 	}
 	_ = uin2.GetIns().UpdateByUin(uin.Uin, data)

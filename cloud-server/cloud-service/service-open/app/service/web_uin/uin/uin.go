@@ -24,6 +24,7 @@ type AppUin struct {
 	AppId      int          `gorm:"column:app_id" json:"app_id"`
 	ServerKey  string       `gorm:"column:server_key" json:"server_key"`
 	Uin        string       `gorm:"column:uin" json:"uin"`
+	LoginType  int          `gorm:"column:login_type" json:"login_type"`
 	UinStatus  int          `gorm:"column:uin_status" json:"uin_status"`
 	SignDay    int          `gorm:"column:sign_day" json:"sign_day"`
 	PlayerDay  int          `gorm:"column:player_day" json:"player_day"`
@@ -34,3 +35,9 @@ type AppUin struct {
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }
+
+const (
+	Normal = iota //正常
+	Stop          //暂停挂机
+	Error         //禁止挂机
+)

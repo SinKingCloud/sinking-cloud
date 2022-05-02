@@ -91,3 +91,37 @@ func ChangeTiming(uinId int, timing int) error {
 	}(timing)
 	return nil
 }
+
+// ChangeStatus 修改挂机状态
+func ChangeStatus(uinId int, status int) error {
+	uinInfo, err := uin.GetIns().FindById(uinId)
+	if err != nil || uinInfo == nil {
+		return errors.New("未查询到QQ信息")
+	}
+	//修改挂机时间
+	err = uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{
+		"status": status,
+	})
+	if err != nil {
+		return errors.New("更改挂机状态失败")
+	}
+	go func(status int) {
+		//写入QQ操作记录
+		s := "正常"
+		if status == uin.Stop {
+			s = "暂停"
+		} else if status == uin.Error {
+			s = "禁止"
+		}
+		_ = log.GetIns().Create(&model.AppUinLog{
+			UserId:  uinInfo.UserId,
+			AppId:   uinInfo.AppId,
+			UinId:   uinInfo.Id,
+			Uin:     uinInfo.Uin,
+			Type:    log.Status,
+			Title:   "状态变动",
+			Content: "挂机状态变动为" + s,
+		})
+	}(status)
+	return nil
+}

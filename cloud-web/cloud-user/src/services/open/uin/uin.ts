@@ -141,6 +141,18 @@ export async function uinRun(body: any, options?: { [key: string]: any }) {
   });
 }
 
+/** 修改挂机状态 POST /open/user/uin/operate/status */
+export async function uinStatus(body: any, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/operate/status', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 开通挂机 POST /open/user/uin/buy */
 export async function uinBuy(body: any, options?: { [key: string]: any }) {
   return request<API.Response>('/open/user/uin/buy', {

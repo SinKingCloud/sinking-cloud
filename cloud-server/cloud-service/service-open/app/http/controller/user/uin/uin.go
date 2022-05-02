@@ -153,7 +153,7 @@ func (ControllerUin) ChangePassword(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
-	if uinInfo.Status != 0 {
+	if uinInfo.Status == uin.Error {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
@@ -185,7 +185,7 @@ func (ControllerUin) ChangePhone(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
-	if uinInfo.Status != 0 {
+	if uinInfo.Status == uin.Error {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
@@ -217,7 +217,7 @@ func (ControllerUin) ChangeServer(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
-	if uinInfo.Status != 0 {
+	if uinInfo.Status == uin.Error {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
@@ -253,7 +253,7 @@ func (ControllerUin) ChangeTiming(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
-	if uinInfo.Status != 0 {
+	if uinInfo.Status == uin.Error {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
@@ -264,6 +264,38 @@ func (ControllerUin) ChangeTiming(c *sinking_server.Context) {
 	err = web_uin.ChangeTiming(uinInfo.Id, form.Timing)
 	if err == nil {
 		c.Success("更改挂机时间成功")
+	} else {
+		c.Error(err.Error())
+	}
+}
+
+// ChangeStatus 修改挂机状态
+func (ControllerUin) ChangeStatus(c *sinking_server.Context) {
+	type Form struct {
+		Uin    string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Status int    `json:"status" validate:"oneof=0 1" label:"挂机状态"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	if uinInfo.Status == uin.Error {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
+	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
+	err = web_uin.ChangeStatus(uinInfo.Id, form.Status)
+	if err == nil {
+		c.Success("更改挂机状态成功")
 	} else {
 		c.Error(err.Error())
 	}
@@ -289,7 +321,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
-	if uinInfo.Status != 0 {
+	if uinInfo.Status == uin.Error {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
@@ -307,6 +339,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	var e error
 	var data string
 	var verify string
+	var loginUin string
 	switch form.Step {
 	case "normal":
 		captcha := ""
@@ -348,7 +381,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			}
 			captcha = form.Rand + "/" + form.Ticket
 		}
-		code, e, data = q.Login(uinInfo.Uin, uinInfo.Password, uinInfo.Phone, uinInfo.LoginType, captcha)
+		code, e, data, loginUin = q.Login(uinInfo.Uin, uinInfo.Password, uinInfo.Phone, uinInfo.LoginType, captcha)
 		if e != nil || code != uin_tool.Success {
 			if code == uin_tool.NeedCaptcha {
 				c.Return(400, e.Error(), data)
@@ -376,7 +409,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		break
 	}
 	if form.Step != "normal" {
-		code, e, data = q.VerifyLogin(uinInfo.Uin, verify)
+		code, e, data, loginUin = q.VerifyLogin(uinInfo.Uin, verify)
 		if e != nil || code != uin_tool.Success {
 			if code == uin_tool.NeedCode {
 				c.Return(401, e.Error(), nil)
@@ -387,6 +420,10 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			}
 			return
 		}
+	}
+	if loginUin != uinInfo.Uin {
+		c.Error("该手机号绑定的QQ与当前挂机账号不一致。")
+		return
 	}
 	go func(uinInfo *model.AppUin, status int) {
 		//更改QQ状态
@@ -420,7 +457,7 @@ func (ControllerUin) Delete(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
-	if uinInfo.Status != 0 {
+	if uinInfo.Status == uin.Error {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
@@ -480,11 +517,11 @@ func (ControllerUin) Job(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
-	if uinInfo.Status != 0 {
+	if uinInfo.Status == uin.Error {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
-	if uinInfo.UinStatus != 0 {
+	if uinInfo.UinStatus != uin.Normal {
 		c.Error("该QQ状态异常,请更新状态后重新执行")
 		return
 	}

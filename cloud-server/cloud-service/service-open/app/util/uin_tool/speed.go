@@ -18,17 +18,17 @@ func (s *speed) Create(uin string, pwd string, phone string, proto int) bool {
 }
 
 // Login 登陆账号
-func (s *speed) Login(uin string, pwd string, phone string, proto int, code string) (int, error, string) {
-	a, b, c := s.login(uin, code)
+func (s *speed) Login(uin string, pwd string, phone string, proto int, code string) (int, error, string, string) {
+	a, b, c, d := s.login(uin, code)
 	if a == NotCreate {
 		s.add(uin, pwd, phone, proto)
 		return s.login(uin, code)
 	}
-	return a, b, c
+	return a, b, c, d
 }
 
 // VerifyLogin 验证码登陆
-func (s *speed) VerifyLogin(uin string, code string) (int, error, string) {
+func (s *speed) VerifyLogin(uin string, code string) (int, error, string, string) {
 	return s.login(uin, code)
 }
 
@@ -71,12 +71,12 @@ func (s *speed) Status(uin string) (*SpeedStatus, error, bool) {
 		return nil, e, false
 	}
 	if status == nil {
-		code, _, _ := s.login(uin, "")
+		code, _, _, _ := s.login(uin, "")
 		if code == Success {
 			status, e = s.getSpeedStatus(uin)
 			if e != nil || status == nil {
 				s.MobileOffline(uin)
-				code, _, _ = s.login(uin, "")
+				code, _, _, _ = s.login(uin, "")
 				if code == Success {
 					status, e = s.getSpeedStatus(uin)
 				} else {
@@ -98,13 +98,13 @@ func (s *speed) Speed(uin string, pwd string, phone string, proto int, jobs []in
 	isBreak := false     //是否有必要继续执行
 	speedA := func(f func() bool) bool {
 		if !mobileLogin {
-			c, _, _ := s.login(uin, "")
+			c, _, _, _ := s.login(uin, "")
 			if c == NotCreate {
 				if s.add(uin, pwd, phone, proto) {
-					c, _, _ = s.login(uin, "")
+					c, _, _, _ = s.login(uin, "")
 				}
 			} else if c == EnvError {
-				c, _, _ = s.login(uin, "")
+				c, _, _, _ = s.login(uin, "")
 			}
 			mobileLogin = c == Success
 		}
@@ -131,7 +131,6 @@ func (s *speed) Speed(uin string, pwd string, phone string, proto int, jobs []in
 			if s.pcSpeed(uin) {
 				pcLogin = true
 			}
-			return pcLogin
 		}
 		if pcLogin {
 			r := f()
@@ -163,7 +162,7 @@ func (s *speed) Speed(uin string, pwd string, phone string, proto int, jobs []in
 				break
 			case Medal:
 				res[Medal] = speedP(func() bool {
-					time.Sleep(1 * time.Second)
+					time.Sleep(5 * time.Second)
 					return s.medalSpeed(uin)
 				})
 				break
