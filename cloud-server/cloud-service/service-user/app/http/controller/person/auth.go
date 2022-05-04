@@ -4,6 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/aliyun"
 	user2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/user"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -15,8 +16,8 @@ func (ControllerPerson) AuthInfo(c *sinking_server.Context) {
 	configs := service.GetWebUserConfSrvIns().GetConfigs(user.Id)
 	c.SuccessWithData("获取实名信息成功", sinking_web.H{
 		"real_auth": user.RealAuth,
-		"card_no":   str.NewStringTool(configs["person.card_no"]).Show(4, 2, "*"),
-		"card_name": str.NewStringTool(configs["person.card_name"]).Show(1, 0, "*"),
+		"card_no":   str.NewStringTool(configs[constant.UserConfigPersonCardNo]).Show(4, 2, "*"),
+		"card_name": str.NewStringTool(configs[constant.UserConfigPersonCardName]).Show(1, 0, "*"),
 	})
 }
 

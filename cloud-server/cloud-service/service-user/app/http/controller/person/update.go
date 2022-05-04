@@ -1,7 +1,6 @@
 package person
 
 import (
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/log"
@@ -49,7 +48,6 @@ func (ControllerPerson) Update(c *sinking_server.Context) {
 		data["avatar"] = form.Avatar
 	}
 	if err := user.GetIns().UpdateById(c.GetWebUserInfo().Id, data); err == nil {
-		service.GetWebUserServiceIns().ClearCache(c.GetWebUserInfo().Id)
 		log.GetIns().CreateByQueue(c, log.EventEdit, "修改资料", "修改账户资料")
 		c.Success("更新资料成功")
 	} else {
@@ -75,7 +73,6 @@ func (ControllerPerson) Password(c *sinking_server.Context) {
 	}
 	if err := user.GetIns().UpdateById(c.GetWebUserInfo().Id,
 		map[string]interface{}{"password": str.NewStringTool(form.Password).GetPassword()}); err == nil {
-		service.GetWebUserServiceIns().ClearCache(c.GetWebUserInfo().Id)
 		log.GetIns().CreateByQueue(c, log.EventEdit, "修改密码", "修改账户密码")
 		c.Success("修改密码成功")
 	} else {
@@ -106,7 +103,6 @@ func (ControllerPerson) Phone(c *sinking_server.Context) {
 	}
 	if err := user.GetIns().UpdateById(c.GetWebUserInfo().Id,
 		map[string]interface{}{"phone": form.Phone}); err == nil {
-		service.GetWebUserServiceIns().ClearCache(u.Id)
 		log.GetIns().CreateByQueue(c, log.EventEdit, "修改手机", "修改绑定手机")
 		c.Success("修改绑定手机号成功")
 	} else {

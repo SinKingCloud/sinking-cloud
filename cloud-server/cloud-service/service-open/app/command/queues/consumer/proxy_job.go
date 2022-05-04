@@ -7,7 +7,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
-	"log"
 )
 
 // uinJobIns 消费者单例
@@ -30,7 +29,7 @@ func (l *proxyJob) Listen() {
 		err := json.Unmarshal(mqMsg.Body, s)
 		if err == nil {
 			//判断代理
-			log.Println("判断代理", s)
+			//log.Println("判断代理", s)
 		}
 	})
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/aliyun"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/user"
 	"strconv"
 )
@@ -68,16 +69,13 @@ func FaceCheck(id string) bool {
 			if err == nil {
 				//写入信息
 				service.GetWebUserConfSrvIns().SetConfigs(form.UserId, map[string]string{
-					"person.card_no":   form.CardNo,
-					"person.card_name": form.CardName,
+					constant.UserConfigPersonCardNo:   form.CardNo,
+					constant.UserConfigPersonCardName: form.CardName,
 				})
 				//更新用户信息
-				err = user.GetIns().UpdateById(form.UserId, map[string]interface{}{
+				_ = user.GetIns().UpdateById(form.UserId, map[string]interface{}{
 					"real_auth": "1",
 				})
-				if err == nil {
-					service.GetWebUserServiceIns().ClearCache(form.UserId)
-				}
 			}
 		}
 	}

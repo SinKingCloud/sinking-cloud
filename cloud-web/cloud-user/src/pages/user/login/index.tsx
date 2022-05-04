@@ -1,5 +1,5 @@
-import {LockOutlined, SafetyCertificateOutlined, UserOutlined} from '@ant-design/icons';
-import {Alert, Avatar, Button, Checkbox, Col, Form, Image, Input, message, Row, Space, Spin, Tabs} from 'antd';
+import {ExclamationCircleOutlined, LockOutlined, SafetyCertificateOutlined, UserOutlined} from '@ant-design/icons';
+import {Alert, Avatar, Button, Checkbox, Col, Form, Image, Input, message, Modal, Row, Space, Spin, Tabs} from 'antd';
 import React, {useEffect, useState} from 'react';
 import Footer from '@/components/Footer';
 import styles from './index.less';
@@ -8,7 +8,7 @@ import {history, useModel} from "umi";
 import {getCaptchaUrl} from "@/services/common/captcha";
 import defaultSettings from "../../../../config/defaultSettings";
 import {login, outLogin, ticketAuth} from "@/services/user/login";
-import {setLoginToken} from "@/util/auth";
+import {deleteHeader, setLoginToken} from "@/util/auth";
 import {sendLoginSms} from "@/services/common/sms";
 
 const Login: React.FC = () => {
@@ -44,7 +44,7 @@ const Login: React.FC = () => {
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
     if (userInfo) {
-      await setInitialState((s:any) => ({
+      await setInitialState((s: any) => ({
         ...s,
         currentUser: userInfo,
       }));
@@ -96,13 +96,17 @@ const Login: React.FC = () => {
   /**
    * 授权登录
    */
-  const ticketLogin = async () => {
+  const ticketLogin = async (): Promise<any> => {
+    setIsLoading(true);
     //授权ticket在跳转
     await ticketAuth({ticket: ticket, redirect_url: redirectUrl}).then((r) => {
+      setIsLoading(false);
       if (r.code == 200) {
         window.location.href = redirectUrl || "/";
+        return true;
       } else {
-        message.error(r.message);
+        message.error(r.message || "授权登录失败");
+        return false;
       }
     });
   }
@@ -300,7 +304,7 @@ const Login: React.FC = () => {
                     <Alert message={initialState?.currentUser?.nick_name}
                            className={styles.nick} type="info"/>
                   </div>
-                  <Button type='primary' size={'large'} block onClick={async () => {
+                  <Button type='primary' size={'large'} block loading={isLoading} onClick={async () => {
                     /** 判断是否授权登陆 */
                     if (redirectUrl?.substring(0, 4) == "http") {
                       await ticketLogin();
@@ -313,10 +317,20 @@ const Login: React.FC = () => {
                     快捷登陆
                   </Button>
                   <Button type='default' size={'large'} block onClick={() => {
-                    setInitialState((s: any) => ({...s, currentUser: undefined})).then(() => {
-                      loginOut().then(() => {
-                        message.success("您已注销登录");
-                      });
+                    Modal.confirm({
+                      title: '确定要退出登录吗?',
+                      icon: <ExclamationCircleOutlined/>,
+                      okType: 'primary',
+                      onOk() {
+                        const key = "outLogin";
+                        message.loading({content: '正在退出登陆', key, duration: 60}).then();
+                        setInitialState((s: any) => ({...s, currentUser: undefined})).then(() => {
+                          loginOut().then(() => {
+                            deleteHeader();//清除登陆信息
+                            message.success({content: "您已注销登录", key, duration: 2}).then();
+                          });
+                        });
+                      },
                     });
                   }}>
                     注销登录

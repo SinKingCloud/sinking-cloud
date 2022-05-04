@@ -7,7 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_app"
 )
 
-// Update 添加信息
+// Update 更新信息
 func (ControllerApp) Update(c *sinking_server.Context) {
 	type Form struct {
 		Id       int    `json:"id" default:"" validate:"min=1" label:"ID"`
@@ -26,7 +26,7 @@ func (ControllerApp) Update(c *sinking_server.Context) {
 		c.Error("应用不存在")
 		return
 	}
-	if info.Status == 1 {
+	if info.Status == web_app.Error {
 		c.Error("该应用已被封禁，无法操作")
 		return
 	}
@@ -46,7 +46,6 @@ func (ControllerApp) Update(c *sinking_server.Context) {
 	err = web_app.GetIns().UpdateById(form.Id, data)
 	if err == nil {
 		rpc.WebUserLog.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), web_user_log.EventEdit, "修改应用", "修改应用"+info.Name)
-		web_app.GetIns().Clear(form.Id)
 		c.Success("修改应用信息成功")
 	} else {
 		c.Error("修改应用信息失败")

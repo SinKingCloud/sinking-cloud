@@ -18,6 +18,7 @@ export type UpdateUinProps = {
 const UpdateUin: React.FC<UpdateUinProps> = (props) => {
   const {uin, formRef, visible, onOk, onCancel} = props;
   const [step, setStep] = useState("normal");
+
   /**
    * 表单处理
    */
@@ -73,6 +74,9 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
       }
       //发起登陆请求
       if (values.login_type == "phone") {
+        //需要滑块验证码
+        let top = document.body.scrollTop || document.documentElement.scrollTop
+        scrollBy(0, -top);
         // @ts-ignore
         sinking.setAid(2081081773).init(function (t: any) {
           //验证成功
@@ -114,23 +118,34 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
     setInitUin(uin);
     setConfirmLoading(false);
   }
+  const [initLoginType, setInitLoginType] = useState(formRef?.current?.getFieldValue("login_type"));
   return (
     <Modal title={"更新挂机"} key={"UpdateUin"} width={370} destroyOnClose={true} forceRender={true} maskClosable={false}
            visible={visible} onOk={form.submit} okText={"登陆"}
-           onCancel={onCancel} confirmLoading={confirmLoading}>
+           onCancel={() => {
+             formRef?.current?.resetFields();
+             setInitLoginType(formRef?.current?.getFieldValue("login_type"))
+             onCancel?.();
+           }} confirmLoading={confirmLoading}>
       <Script url={"https://cdn.open-api.cn/app/uin/captcha/captcha.js"}/>
       <Form name="control-hooks" form={form} ref={formRef} onFinish={onFinish} labelAlign="right"
             labelCol={{span: 6}}>
         <Form.Item name={"login_type"} label="登陆方式" rules={[{required: true}]}>
-          <Select placeholder="请选择登陆方式">
+          <Select placeholder="请选择登陆方式" onChange={(e) => {
+            setInitLoginType(e);
+          }}>
             <Select.Option value={"pwd"}>密码登陆</Select.Option>
             <Select.Option value={"phone"}>手机号登陆</Select.Option>
           </Select>
         </Form.Item>
-        <Form.Item name={"phone"} hidden={step != "normal" || form.getFieldValue("login_type") != "phone"} label="登陆手机">
+        <Form.Item name={"phone"}
+                   hidden={step != "normal" || (initLoginType != "phone" && form.getFieldValue("login_type") != "phone")}
+                   label="登陆手机">
           <Input placeholder="留空则使用上次登陆的手机"/>
         </Form.Item>
-        <Form.Item name={"pwd"} hidden={step != "normal" || form.getFieldValue("login_type") != "pwd"} label="挂机密码">
+        <Form.Item name={"pwd"}
+                   hidden={step != "normal" || (initLoginType != "pwd" && form.getFieldValue("login_type") != "pwd")}
+                   label="挂机密码">
           <Input placeholder="留空则使用上次更新的密码"/>
         </Form.Item>
         <Form.Item name={"sms"} hidden={step != "sms"} label="短信验证码">

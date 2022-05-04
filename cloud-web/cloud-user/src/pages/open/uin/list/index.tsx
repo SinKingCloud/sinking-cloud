@@ -156,6 +156,7 @@ export default (): React.ReactNode => {
     {
       title: '登陆方式',
       dataIndex: 'login_type',
+      hideInSearch: true,
       tip: 'QQ的挂机登陆方式',
       valueEnum: {
         0: {

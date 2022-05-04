@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const checkTime = 86400 //检测周期(秒)
+const checkTime = 600 //检测周期(秒)
 
 // Run 定时检测任务投递
 func Run() {

@@ -8,6 +8,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/jwt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/constant"
 	"strconv"
 	"time"
 )
@@ -20,19 +21,26 @@ func GetWebUserInfoByPhone(phone string, code string) (u *model.WebUser, e error
 	}
 	e = util.Database.Db.Where("`phone` = ?", phone).First(&u).Error
 	if e != nil || u == nil {
-		//创建用户
-		tempPhone, _ := strconv.ParseInt(phone, 10, 64)
-		e = util.Database.Db.Create(&model.WebUser{
-			NickName: str.NewNickTool().GetRand(),
-			Phone:    tempPhone,
-			Money:    0,
-			Status:   0,
-		}).Error
-		if e != nil {
-			e = errors.New("注册账号失败")
-			return
+		//防止并发创建用户
+		key := constant.LockWebUserReg + phone
+		if !util.Cache.Lock(key, constant.LockTimeWebUserReg) {
+			e = errors.New("系统繁忙,请稍后重试")
+		} else {
+			//创建用户
+			tempPhone, _ := strconv.ParseInt(phone, 10, 64)
+			e = util.Database.Db.Create(&model.WebUser{
+				NickName: str.NewNickTool().GetRand(),
+				Phone:    tempPhone,
+				Money:    0,
+				Status:   0,
+			}).Error
+			util.Cache.UnLock(key) //解锁
+			if e != nil {
+				e = errors.New("注册账号失败")
+				return
+			}
+			util.Database.Db.Where("`phone` = ?", phone).First(&u)
 		}
-		util.Database.Db.Where("`phone` = ?", phone).First(&u)
 	}
 	if u.Status != 0 {
 		e = errors.New("您的账户已被禁止登陆")

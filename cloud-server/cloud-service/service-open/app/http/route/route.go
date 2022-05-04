@@ -4,6 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/app"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/oauth"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/proxy"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/uin"
 	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/middleware"
@@ -45,6 +46,12 @@ func loadApiRoute(s *sinking_web.Engine) {
 	proxyGroup := g.Group("/proxy")
 	handleProxy := &proxy.ControllerProxy{}
 	proxyGroup.GET("/extract", sinking_server.HandleFunc(handleProxy.Extract)) //提取代理
+
+	//全站登陆API
+	oauthGroup := g.Group("/oauth")
+	oauthProxy := &oauth.ControllerOauth{}
+	oauthGroup.POST("/gen_ticket", sinking_server.HandleFunc(oauthProxy.GenTicket))      //生成ticket
+	oauthGroup.POST("/get_user_info", sinking_server.HandleFunc(oauthProxy.GetUserInfo)) //获取授权用户信息
 }
 
 // 用户系统路由
@@ -54,10 +61,10 @@ func loadUserRoute(s *sinking_web.Engine) {
 	//用户应用
 	handle := &app.ControllerApp{}
 	appGroup := g.Group("/app")
-	appGroup.GET("/list", sinking_server.HandleFunc(handle.List))
-	appGroup.POST("/create", sinking_server.HandleFunc(handle.Create))
-	appGroup.POST("/update", sinking_server.HandleFunc(handle.Update))
-	appGroup.POST("/delete", sinking_server.HandleFunc(handle.Delete))
+	appGroup.GET("/list", sinking_server.HandleFunc(handle.List))      //应用列表
+	appGroup.POST("/create", sinking_server.HandleFunc(handle.Create)) //应用创建
+	appGroup.POST("/update", sinking_server.HandleFunc(handle.Update)) //应用更新
+	appGroup.POST("/delete", sinking_server.HandleFunc(handle.Delete)) //应用删除
 
 	//挂机应用
 	uinGroup := g.Group("/uin")
@@ -67,7 +74,6 @@ func loadUserRoute(s *sinking_web.Engine) {
 	uinGroup.GET("/count", sinking_server.HandleFunc(handleUin.Count))     //统计信息
 	uinGroup.GET("/project", sinking_server.HandleFunc(handleUin.Project)) //功能列表
 	uinGroup.POST("/buy", sinking_server.HandleFunc(handleUin.Buy))        //业务下单
-	//QQ操作
 	uinSetGroup := uinGroup.Group("/operate")
 	uinSetGroup.POST("/info", sinking_server.HandleFunc(handleUin.Info))               //挂机QQ详情
 	uinSetGroup.POST("/login", sinking_server.HandleFunc(handleUin.Login))             //登陆挂机QQ
@@ -79,7 +85,6 @@ func loadUserRoute(s *sinking_web.Engine) {
 	uinSetGroup.POST("/server", sinking_server.HandleFunc(handleUin.ChangeServer))     //修改挂机地区
 	uinSetGroup.POST("/timing", sinking_server.HandleFunc(handleUin.ChangeTiming))     //修改挂机时间
 	uinSetGroup.POST("/status", sinking_server.HandleFunc(handleUin.ChangeStatus))     //修改挂机状态
-	//挂机节点
 	handleServer := &uin.ControllerServer{}
 	uinGroup.GET("/servers", sinking_server.HandleFunc(handleServer.List)) //地区列表
 	handleLevel := &uin.ControllerLevel{}
@@ -90,6 +95,13 @@ func loadUserRoute(s *sinking_web.Engine) {
 	handleLog := &uin.ControllerLog{}
 	uinGroup.GET("/logs", sinking_server.HandleFunc(handleLog.List)) //日志列表
 
+	//oauth应用
+	handleOauth := &oauth.ControllerOauth{}
+	oauthGroup := g.Group("/oauth")
+	oauthGroup.GET("/list", sinking_server.HandleFunc(handleOauth.List))      //接入列表
+	oauthGroup.POST("/delete", sinking_server.HandleFunc(handleOauth.Delete)) //删除接入
+	oauthGroup.POST("/update", sinking_server.HandleFunc(handleOauth.Update)) //更新接入
+	oauthGroup.POST("/create", sinking_server.HandleFunc(handleOauth.Create)) //新增接入
 }
 
 // 后台系统路由

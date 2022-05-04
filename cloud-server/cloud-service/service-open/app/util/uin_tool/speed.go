@@ -1,6 +1,12 @@
 package uin_tool
 
-import "time"
+import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/job"
+	"github.com/SinKingCloud/sinking-go/sinking-web"
+	"sync"
+	"time"
+)
 
 type speed struct {
 	addr string //服务器地址
@@ -90,6 +96,48 @@ func (s *speed) Status(uin string) (*SpeedStatus, error, bool) {
 	return status, e, false
 }
 
+var (
+	pcServers    = make(map[string]chan interface{}) //PC服务器列表
+	pcServerLock = &sync.Mutex{}                     //PC并发锁
+)
+
+type pcSpeed struct {
+	Uin     string
+	Pwd     string
+	Phone   string
+	Proto   int
+	Jobs    []int
+	IsFirst bool
+}
+
+func (s *speed) speedPc(uin *pcSpeed) {
+	if pcServers[s.addr] == nil {
+		//构建其他项目消费协程
+		pcServerLock.Lock()
+		g := &sync.WaitGroup{}
+		g.Add(1)
+		go (&job.Task{Producer: func(channel chan interface{}) {
+			pcServers[s.addr] = channel
+			g.Add(-1)
+		}, Consumer: func(param interface{}) {
+			if param != nil {
+				//执行挂机任务
+				sinking_web.Try(func() {
+					//执行
+					p := param.(*pcSpeed)
+					s.Speed(p.Uin, p.Pwd, p.Phone, p.Proto, p.Jobs, p.IsFirst)
+				}, func(i interface{}) {
+					util.Log.Println(param, i)
+				})
+			}
+		}, Thread: 30}).Run()
+		g.Wait()
+		pcServerLock.Unlock()
+	}
+	//按照服务分发至不同协程执行
+	pcServers[s.addr] <- uin
+}
+
 // Speed QQ项目加速
 func (s *speed) Speed(uin string, pwd string, phone string, proto int, jobs []int, isFirst bool) (bool, map[int]bool) {
 	res := make(map[int]bool)
@@ -168,8 +216,8 @@ func (s *speed) Speed(uin string, pwd string, phone string, proto int, jobs []in
 				break
 			case Online:
 				if !isFirst {
-					res[Online] = speedP(func() bool {
-						return pcLogin
+					res[Online] = speedA(func() bool {
+						return mobileLogin
 					})
 				}
 				break
@@ -190,8 +238,7 @@ func (s *speed) Speed(uin string, pwd string, phone string, proto int, jobs []in
 				break
 			case MicroShow:
 				res[MicroShow] = speedA(func() bool {
-					s.microShowSpeed(uin)
-					return true
+					return s.microShowSpeed(uin)
 				})
 				break
 			case Safe:

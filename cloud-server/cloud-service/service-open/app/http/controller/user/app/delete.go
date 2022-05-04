@@ -22,14 +22,13 @@ func (ControllerApp) Delete(c *sinking_server.Context) {
 		c.Error("应用不存在")
 		return
 	}
-	if info.Status == 1 {
+	if info.Status == web_app.Error {
 		c.Error("该应用已被封禁，无法操作")
 		return
 	}
 	err = web_app.GetIns().DeleteById(form.Id)
 	if err == nil {
 		rpc.WebUserLog.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), web_user_log.EventDelete, "删除应用", "删除应用"+info.Name)
-		web_app.GetIns().Clear(form.Id)
 		c.Success("删除应用成功")
 	} else {
 		c.Error("删除应用失败")

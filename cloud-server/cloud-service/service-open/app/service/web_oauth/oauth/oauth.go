@@ -14,3 +14,9 @@ func GetIns() *service {
 	}
 	return obj
 }
+
+const (
+	Normal = iota //正常
+	Stop          //停止
+	Error         //封禁
+)

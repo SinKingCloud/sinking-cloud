@@ -114,7 +114,7 @@ export const layout: RunTimeLayoutConfig = ({initialState}) => {
         return menu;
       },
     },
-    onPageChange: (location) => {
+    onPageChange: (location:any) => {
       // 如果没有登录，重定向到 login
       if (!initialState?.currentUser && allowPaths.indexOf(location?.pathname as string) < 0) {
         history.push(allowPaths[0]);

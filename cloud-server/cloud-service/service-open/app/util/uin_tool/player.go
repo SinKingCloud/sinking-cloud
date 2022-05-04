@@ -23,7 +23,7 @@ func (s *speed) microShowSpeed(uin string) bool {
 	data := map[string]string{
 		"Uin": uin,
 	}
-	res, err := s.sendRequest(url, data, 5)
+	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
 	}

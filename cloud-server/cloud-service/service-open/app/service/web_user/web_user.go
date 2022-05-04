@@ -70,3 +70,8 @@ func (s *service) GetCurrentUserInfo(id int, refresh bool) *model.WebUser {
 func (s *service) Clear(id int) bool {
 	return util.Cache.Delete(util2.CacheNameWithWebUser + strconv.Itoa(id))
 }
+
+const (
+	Normal = iota //正常
+	Error         //封禁
+)

@@ -14,3 +14,9 @@ func GetIns() *service {
 	}
 	return obj
 }
+
+const (
+	Normal  = iota //未授权
+	Success        //已授权
+	Expire         //已失效
+)

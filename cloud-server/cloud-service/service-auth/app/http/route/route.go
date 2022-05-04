@@ -27,6 +27,11 @@ func loadWebRoute(s *sinking_web.Engine) {
 	r := s.Group("/web")
 	handle := &web.ControllerWeb{}
 	r.POST("/login", sinking_server.HandleFunc(handle.Login))
+
+	oauthGroup := r.Group("/oauth")
+	oauthGroup.Use(middleware.AuthUser())
+	oauthGroup.POST("/", sinking_server.HandleFunc(handle.Oauth))
+
 	outGroup := r.Group("/out_login")
 	outGroup.Use(middleware.AuthUser())
 	outGroup.GET("/", sinking_server.HandleFunc(handle.OutLogin))
