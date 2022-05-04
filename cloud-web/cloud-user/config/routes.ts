@@ -58,6 +58,20 @@
         ],
       },
       {
+        name: "全站登陆",
+        path: 'oauth',
+        routes: [
+          {
+            name: "接入管理",
+            path: 'web',
+            component: './open/oauth/web',
+          },
+          {
+            redirect: '/open/oauth/web',
+          },
+        ],
+      },
+      {
         redirect: '/index/index',
       },
     ],

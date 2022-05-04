@@ -98,10 +98,11 @@ func loadUserRoute(s *sinking_web.Engine) {
 	//oauth应用
 	handleOauth := &oauth.ControllerOauth{}
 	oauthGroup := g.Group("/oauth")
-	oauthGroup.GET("/list", sinking_server.HandleFunc(handleOauth.List))      //接入列表
-	oauthGroup.POST("/delete", sinking_server.HandleFunc(handleOauth.Delete)) //删除接入
-	oauthGroup.POST("/update", sinking_server.HandleFunc(handleOauth.Update)) //更新接入
-	oauthGroup.POST("/create", sinking_server.HandleFunc(handleOauth.Create)) //新增接入
+	oauthWebGroup := oauthGroup.Group("/web")
+	oauthWebGroup.GET("/list", sinking_server.HandleFunc(handleOauth.List))      //接入列表
+	oauthWebGroup.POST("/delete", sinking_server.HandleFunc(handleOauth.Delete)) //删除接入
+	oauthWebGroup.POST("/update", sinking_server.HandleFunc(handleOauth.Update)) //更新接入
+	oauthWebGroup.POST("/create", sinking_server.HandleFunc(handleOauth.Create)) //新增接入
 }
 
 // 后台系统路由

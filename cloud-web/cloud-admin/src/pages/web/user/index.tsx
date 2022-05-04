@@ -55,7 +55,7 @@ export default (): React.ReactNode => {
       delete values.id;
     }
     // @ts-ignore
-    if (uploadFileList.length > 0) {
+    if (uploadFileList?.length > 0) {
       // @ts-ignore
       values.avatar = uploadFileList[0]?.url || ""
     } else {
@@ -367,7 +367,7 @@ export default (): React.ReactNode => {
               </div>
             </Upload>
           </Form.Item>
-          <Form.Item name={"account"} label="账号" rules={[{required: true}]}
+          <Form.Item name={"account"} label="账号" rules={[{required: form.getFieldValue("id") == undefined}]}
                      hidden={form.getFieldValue("account") != undefined}>
             <Input placeholder="请输入用户账号"/>
           </Form.Item>

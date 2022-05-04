@@ -33,7 +33,11 @@ func getClientWithTimout(timeout int) *http.Client {
 // sendRequest 发送请求
 func (s *speed) sendRequest(url string, data interface{}, timeout int) (*response, error) {
 	url = "http://" + s.addr + url
-	req, _ := http.NewRequest("POST", url, strings.NewReader(s.toJson(data)))
+	req, err := http.NewRequest("POST", url, strings.NewReader(s.toJson(data)))
+	if err != nil {
+		log.Println("错误：请求地址", url, "请求参数", s.toJson(data))
+		return nil, err
+	}
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
 	var client *http.Client
 	if timeout < 0 {

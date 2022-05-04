@@ -101,7 +101,7 @@ var (
 	pcServerLock = &sync.Mutex{}                     //PC并发锁
 )
 
-type pcSpeed struct {
+type speedJob struct {
 	Uin     string
 	Pwd     string
 	Phone   string
@@ -110,7 +110,7 @@ type pcSpeed struct {
 	IsFirst bool
 }
 
-func (s *speed) speedPc(uin *pcSpeed) {
+func (s *speed) speedByPc(uin *speedJob) {
 	if pcServers[s.addr] == nil {
 		//构建其他项目消费协程
 		pcServerLock.Lock()
@@ -124,13 +124,54 @@ func (s *speed) speedPc(uin *pcSpeed) {
 				//执行挂机任务
 				sinking_web.Try(func() {
 					//执行
-					p := param.(*pcSpeed)
-					s.Speed(p.Uin, p.Pwd, p.Phone, p.Proto, p.Jobs, p.IsFirst)
+					info := param.(*speedJob)
+					res := make(map[int]bool)
+					pcLogin := false //是否登录pc
+					speedP := func(f func() bool) bool {
+						if !pcLogin {
+							if s.pcSpeed(info.Uin) {
+								pcLogin = true
+							}
+						}
+						if pcLogin {
+							r := f()
+							if !r {
+								r = f()
+							}
+							return r
+						}
+						return false
+					}
+					speed := func(jobs []int) {
+						//加速项目
+						for _, v := range jobs {
+							switch v {
+							case Pc:
+								res[Pc] = speedP(func() bool {
+									return pcLogin
+								})
+								break
+							case Medal:
+								res[Medal] = speedP(func() bool {
+									time.Sleep(5 * time.Second)
+									return s.medalSpeed(info.Uin)
+								})
+								break
+							case Zone:
+								res[Zone] = s.zoneSpeed(info.Uin)
+								break
+							default:
+								res[v] = true
+								break
+							}
+						}
+					}
+					speed(info.Jobs)
 				}, func(i interface{}) {
 					util.Log.Println(param, i)
 				})
 			}
-		}, Thread: 30}).Run()
+		}, Thread: 10}).Run()
 		g.Wait()
 		pcServerLock.Unlock()
 	}
@@ -138,21 +179,147 @@ func (s *speed) speedPc(uin *pcSpeed) {
 	pcServers[s.addr] <- uin
 }
 
-// Speed QQ项目加速
-func (s *speed) Speed(uin string, pwd string, phone string, proto int, jobs []int, isFirst bool) (bool, map[int]bool) {
+func (s *speed) SpeedWithPcAsync(uin *speedJob) (bool, map[int]bool) {
+	res := make(map[int]bool)
+	mobileLogin := false //是否登录手机
+	isBreak := false     //是否有必要继续执行
+	speedA := func(f func() bool) bool {
+		if !mobileLogin {
+			c, _, _, _ := s.login(uin.Uin, "")
+			if c == NotCreate {
+				if s.add(uin.Uin, uin.Pwd, uin.Phone, uin.Proto) {
+					c, _, _, _ = s.login(uin.Uin, "")
+				}
+			} else if c == EnvError {
+				c, _, _, _ = s.login(uin.Uin, "")
+			}
+			mobileLogin = c == Success
+		}
+		isBreak = !mobileLogin
+		if mobileLogin {
+			r := f()
+			if !r {
+				r = f()
+			}
+			return r
+		}
+		return false
+	}
+	speed := func(jobs []int) (pcJobs []int) {
+		isBreak = false //初始化
+		//加速项目
+		for _, v := range jobs {
+			if isBreak {
+				res[v] = false
+				continue
+			}
+			switch v {
+			case Mobile:
+				res[Mobile] = speedA(func() bool {
+					return mobileLogin
+				})
+				break
+			case Pc:
+				res[Pc] = true
+				pcJobs = append(pcJobs, Pc)
+				break
+			case Medal:
+				res[Medal] = true
+				pcJobs = append(pcJobs, Medal)
+				break
+			case Zone:
+				res[Zone] = true
+				pcJobs = append(pcJobs, Zone)
+				break
+			case Online:
+				if !uin.IsFirst {
+					res[Online] = speedA(func() bool {
+						return mobileLogin
+					})
+				}
+				break
+			case Login:
+				if !uin.IsFirst {
+					res[Login] = speedA(func() bool {
+						return mobileLogin
+					})
+				}
+				break
+			case Ws:
+				res[Ws] = speedA(func() bool {
+					return s.wsSpeed(uin.Uin)
+				})
+				break
+			case MicroShow:
+				res[MicroShow] = speedA(func() bool {
+					return s.microShowSpeed(uin.Uin)
+				})
+				break
+			case Safe:
+				res[Safe] = speedA(func() bool {
+					return s.safeSpeed(uin.Uin)
+				})
+				break
+			case Game:
+				res[Game] = speedA(func() bool {
+					return s.gameSpeed(uin.Uin)
+				})
+				break
+			case Sport:
+				res[Sport] = speedA(func() bool {
+					return s.sportSpeed(uin.Uin)
+				})
+				break
+			case MobileClock:
+				res[MobileClock] = speedA(func() bool {
+					return s.mobileClockSpeed(uin.Uin)
+				})
+				break
+			case ZoneClock:
+				res[ZoneClock] = speedA(func() bool {
+					return s.zoneClockSpeed(uin.Uin)
+				})
+				break
+			case Friend:
+				res[Friend] = speedA(func() bool {
+					return s.friendSpeed(uin.Uin)
+				})
+				break
+			default:
+				res[v] = true
+				break
+			}
+		}
+		return
+	}
+	pcJobs := speed(uin.Jobs) //执行挂机
+	if len(pcJobs) > 0 {
+		s.speedByPc(&speedJob{
+			Uin:     uin.Uin,
+			Pwd:     uin.Pwd,
+			Phone:   uin.Phone,
+			Proto:   uin.Proto,
+			Jobs:    uin.Jobs,
+			IsFirst: uin.IsFirst,
+		})
+	}
+	return isBreak, res
+}
+
+func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 	res := make(map[int]bool)
 	mobileLogin := false //是否登录手机
 	pcLogin := false     //是否登录pc
 	isBreak := false     //是否有必要继续执行
 	speedA := func(f func() bool) bool {
 		if !mobileLogin {
-			c, _, _, _ := s.login(uin, "")
+			c, _, _, _ := s.login(uin.Uin, "")
 			if c == NotCreate {
-				if s.add(uin, pwd, phone, proto) {
-					c, _, _, _ = s.login(uin, "")
+				if s.add(uin.Uin, uin.Pwd, uin.Phone, uin.Proto) {
+					c, _, _, _ = s.login(uin.Uin, "")
 				}
 			} else if c == EnvError {
-				c, _, _, _ = s.login(uin, "")
+				c, _, _, _ = s.login(uin.Uin, "")
 			}
 			mobileLogin = c == Success
 		}
@@ -176,7 +343,7 @@ func (s *speed) Speed(uin string, pwd string, phone string, proto int, jobs []in
 			if !mobileLogin {
 				return false
 			}
-			if s.pcSpeed(uin) {
+			if s.pcSpeed(uin.Uin) {
 				pcLogin = true
 			}
 		}
@@ -211,64 +378,64 @@ func (s *speed) Speed(uin string, pwd string, phone string, proto int, jobs []in
 			case Medal:
 				res[Medal] = speedP(func() bool {
 					time.Sleep(5 * time.Second)
-					return s.medalSpeed(uin)
+					return s.medalSpeed(uin.Uin)
 				})
 				break
+			case Zone:
+				res[Zone] = s.zoneSpeed(uin.Uin)
+				break
 			case Online:
-				if !isFirst {
+				if !uin.IsFirst {
 					res[Online] = speedA(func() bool {
 						return mobileLogin
 					})
 				}
 				break
 			case Login:
-				if !isFirst {
+				if !uin.IsFirst {
 					res[Login] = speedA(func() bool {
 						return mobileLogin
 					})
 				}
 				break
-			case Zone:
-				res[Zone] = s.zoneSpeed(uin)
-				break
 			case Ws:
 				res[Ws] = speedA(func() bool {
-					return s.wsSpeed(uin)
+					return s.wsSpeed(uin.Uin)
 				})
 				break
 			case MicroShow:
 				res[MicroShow] = speedA(func() bool {
-					return s.microShowSpeed(uin)
+					return s.microShowSpeed(uin.Uin)
 				})
 				break
 			case Safe:
 				res[Safe] = speedA(func() bool {
-					return s.safeSpeed(uin)
+					return s.safeSpeed(uin.Uin)
 				})
 				break
 			case Game:
 				res[Game] = speedA(func() bool {
-					return s.gameSpeed(uin)
+					return s.gameSpeed(uin.Uin)
 				})
 				break
 			case Sport:
 				res[Sport] = speedA(func() bool {
-					return s.sportSpeed(uin)
+					return s.sportSpeed(uin.Uin)
 				})
 				break
 			case MobileClock:
 				res[MobileClock] = speedA(func() bool {
-					return s.mobileClockSpeed(uin)
+					return s.mobileClockSpeed(uin.Uin)
 				})
 				break
 			case ZoneClock:
 				res[ZoneClock] = speedA(func() bool {
-					return s.zoneClockSpeed(uin)
+					return s.zoneClockSpeed(uin.Uin)
 				})
 				break
 			case Friend:
 				res[Friend] = speedA(func() bool {
-					return s.friendSpeed(uin)
+					return s.friendSpeed(uin.Uin)
 				})
 				break
 			default:
@@ -277,6 +444,18 @@ func (s *speed) Speed(uin string, pwd string, phone string, proto int, jobs []in
 			}
 		}
 	}
-	speed(jobs) //执行挂机
+	speed(uin.Jobs) //执行挂机
 	return isBreak, res
+}
+
+// Speed QQ项目加速
+func (s *speed) Speed(uin string, pwd string, phone string, proto int, jobs []int, isFirst bool) (bool, map[int]bool) {
+	return s.SpeedAll(&speedJob{
+		Uin:     uin,
+		Pwd:     pwd,
+		Phone:   phone,
+		Proto:   proto,
+		Jobs:    jobs,
+		IsFirst: isFirst,
+	})
 }

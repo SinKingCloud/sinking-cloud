@@ -36,7 +36,7 @@ func (ControllerUin) List(c *sinking_server.Context) {
 		ServerKey       string `form:"server_key" default:"" validate:"omitempty,max=50" label:"地区标识"`
 		UinStatus       string `form:"uin_status" default:"" validate:"omitempty,numeric" label:"挂机状态"`
 		Uin             string `form:"uin" default:"" validate:"omitempty,numeric" label:"QQ账号"`
-		Status          string `form:"status" default:"" validate:"omitempty,oneof=0 1" label:"QQ状态"`
+		Status          string `form:"status" default:"" validate:"omitempty,oneof=0 1 2" label:"QQ状态"`
 		RunTimeStart    string `form:"run_time_start" default:"" validate:"-" label:"挂机起始时间"`
 		RunTimeEnd      string `form:"run_time_end" default:"" validate:"-" label:"挂机结束时间"`
 		CreateTimeStart string `form:"create_time_start" default:"" validate:"-" label:"创建起始时间"`
