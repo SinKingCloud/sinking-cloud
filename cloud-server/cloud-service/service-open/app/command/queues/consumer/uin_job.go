@@ -80,7 +80,7 @@ func (l *uinJob) run(uin *model.AppUin) {
 					util.Log.Println(param, i)
 				})
 			}
-		}, Thread: 30}).Run()
+		}, Thread: 50}).Run()
 		g.Wait()
 		serverLock.Unlock()
 	}
@@ -135,11 +135,13 @@ func speed(server *model.AppUinServer, uin *model.AppUin) {
 	if len(jobs) > 0 {
 		var fail bool
 		if isCheck {
-			lower := true
+			lower := false
+			if uin.PlayerDay < 1 && uin.SignDay < 1 {
+				lower = true
+			}
 			//只允许9点前执行第三次挂机
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 && time.Now().Unix()-stamp.Unix() > 2*3600 {
 				data["check_time"] = str.DateTime(time.Now().Add(4.5 * 3600 * time.Second))
-				lower = false
 			}
 			//检测挂机
 			fail, _ = check(server.Addr, server.Key, uin, jobs, lower)
@@ -163,10 +165,11 @@ func speed(server *model.AppUinServer, uin *model.AppUin) {
 // check 检测挂机失败的项目
 func check(addr string, key string, uin *model.AppUin, jobs []int, lower bool) (bool, map[int]bool) {
 	s := uin_tool.NewUinTool(addr, key)
-	jobStatus, err, isFail := s.Status(uin.Uin)
-	if err != nil || jobStatus == nil {
+	status, err, isFail := s.Status(uin.Uin)
+	if err != nil || status == nil {
 		return false, nil
 	}
+	jobStatus := status.CommonInfoGetQQLevelInfo
 	if isFail {
 		return true, nil
 	}

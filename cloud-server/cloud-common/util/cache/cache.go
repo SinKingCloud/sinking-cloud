@@ -8,5 +8,6 @@ type Cache interface {
 	Remember(key string, value string, ttl int64) string
 	Delete(key string) bool
 	Lock(key string, ttl int64) bool
+	IsLock(key string) bool
 	UnLock(key string) bool
 }
