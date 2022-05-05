@@ -2,17 +2,16 @@ package consumer
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
+	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/server"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 )
 
@@ -28,6 +27,7 @@ type proxyJob struct {
 }
 
 func (l *proxyJob) Listen() {
+
 	if proxyJobIns == nil {
 		proxyJobIns = sinking.GetRocketConsumerServer(constant.ProxyJobGroup, false)
 	}
@@ -36,7 +36,15 @@ func (l *proxyJob) Listen() {
 		err := json.Unmarshal(mqMsg.Body, s)
 		if err == nil {
 			//判断代理
-			log.Println("判断代理", s)
+			_, e := l.test(s.Proxy, 10)
+			status := 0
+			if e != nil {
+				status = 1
+			}
+			_ = server2.GetIns().UpdateById(s.Id, map[string]interface{}{
+				"check_time": str.DateTime(time.Now()),
+				"status":     status,
+			})
 		}
 	})
 	if err != nil {
@@ -45,15 +53,10 @@ func (l *proxyJob) Listen() {
 	}
 }
 
-// Http 判断Http代理是否可用
-func (l *proxyJob) Http(types string, ip string, port int, timeOut int) (int, error) {
-	proxyAddr := types + "://" + ip + ":" + strconv.Itoa(port)
-	var testUrl string
-	if types == "https" {
-		testUrl = "https://icanhazip.com"
-	} else {
-		testUrl = "http://icanhazip.com"
-	}
+// test 测试代理是否可用
+func (l *proxyJob) test(addr string, timeOut int) (int, error) {
+	proxyAddr := "http://" + addr
+	testUrl := "http://icanhazip.com"
 	proxy, err := url.Parse(proxyAddr)
 	netTransport := &http.Transport{
 		Proxy:                 http.ProxyURL(proxy),
@@ -75,9 +78,5 @@ func (l *proxyJob) Http(types string, ip string, port int, timeOut int) (int, er
 			return
 		}
 	}(res.Body)
-	speed := int(time.Now().Sub(begin).Nanoseconds() / 1000 / 1000) //ms
-	if res.StatusCode != http.StatusOK {
-		return 0, errors.New("http status code error")
-	}
-	return speed, nil
+	return int(time.Now().Sub(begin).Nanoseconds() / 1000 / 1000), nil
 }
