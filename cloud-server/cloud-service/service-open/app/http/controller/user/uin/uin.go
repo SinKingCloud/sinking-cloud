@@ -334,7 +334,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("未查询到挂机地区信息,请更换挂机地区")
 		return
 	}
-	q := uin_tool.NewUinTool(srv.Addr, srv.Key)
+	q := uin_tool.NewUinTool(srv.Addr, srv.Proxy)
 	var code int
 	var e error
 	var data string

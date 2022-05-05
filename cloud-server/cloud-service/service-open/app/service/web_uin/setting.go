@@ -16,7 +16,7 @@ func ServerUinCreate(serverId int, uin string, pwd string, phone string, loginTy
 	if err != nil || serverInfo == nil {
 		return errors.New("未查询到挂机服务器信息,请更换挂机服务器")
 	}
-	s := uin_tool.NewUinTool(serverInfo.Addr, serverInfo.Key)
+	s := uin_tool.NewUinTool(serverInfo.Addr, serverInfo.Proxy)
 	if !s.Create(uin, pwd, phone, loginType) {
 		return errors.New("更新挂机信息失败,请重试")
 	}

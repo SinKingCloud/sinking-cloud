@@ -3,11 +3,15 @@ package uin_tool
 import (
 	"encoding/json"
 	"errors"
+	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/server"
 	"strconv"
 )
 
 // add 添加账号
 func (s *speed) add(uin string, pwd string, phone string, proto int) bool {
+	//上锁
+	server2.GetIns().ServerLock(s.addr)
+	defer server2.GetIns().ServerUnLock(s.addr)
 	p := "0"
 	if proto == 1 {
 		p = "1"
@@ -16,7 +20,7 @@ func (s *speed) add(uin string, pwd string, phone string, proto int) bool {
 	data := map[string]string{
 		"Uin":      uin,
 		"Pass":     pwd,
-		"place":    s.area,
+		"place":    s.proxy,
 		"brand":    "",
 		"model":    "",
 		"protocol": p,
@@ -47,6 +51,8 @@ type captcha struct {
 
 // login 登陆账号
 func (s *speed) login(uin string, code string) (int, error, string, string) {
+	//阻塞锁
+	server2.GetIns().ServerWaitLock(s.addr)
 	url := "/?&type=Android/&pe=login/"
 	data := map[string]string{
 		"Uin":  uin,

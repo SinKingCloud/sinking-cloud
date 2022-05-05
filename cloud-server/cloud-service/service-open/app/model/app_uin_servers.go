@@ -12,8 +12,10 @@ type AppUinServer struct {
 	Key        string       `gorm:"column:key" json:"key"`
 	Name       string       `gorm:"column:name" json:"name"`
 	Addr       string       `gorm:"column:addr" json:"addr"`
+	Proxy      string       `gorm:"column:proxy" json:"proxy"`
 	UinNum     int          `gorm:"column:uin_num" json:"uin_num"`
 	Status     int          `gorm:"column:status" json:"status"`
+	CheckTime  str.DateTime `gorm:"column:check_time" json:"check_time"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }

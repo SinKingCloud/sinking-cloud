@@ -9,13 +9,13 @@ import (
 )
 
 type speed struct {
-	addr string //服务器地址
-	area string //区域
+	addr  string //服务器地址
+	proxy string //使用代理
 }
 
 // NewUinTool 实例化
-func NewUinTool(addr string, area string) *speed {
-	return &speed{addr: addr, area: area}
+func NewUinTool(addr string, proxy string) *speed {
+	return &speed{addr: addr, proxy: proxy}
 }
 
 // Create 创建账号
@@ -325,11 +325,7 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 		}
 		isBreak = !mobileLogin
 		if mobileLogin {
-			r := f()
-			if !r {
-				r = f()
-			}
-			return r
+			return f()
 		}
 		return false
 	}
@@ -348,11 +344,7 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 			}
 		}
 		if pcLogin {
-			r := f()
-			if !r {
-				r = f()
-			}
-			return r
+			return f()
 		}
 		return false
 	}

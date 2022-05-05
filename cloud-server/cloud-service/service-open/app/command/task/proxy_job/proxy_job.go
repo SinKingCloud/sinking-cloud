@@ -5,13 +5,13 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/proxy"
+	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"log"
 	"time"
 )
 
-const checkTime = 600 //检测周期(秒)
+const checkTime = 3600 //检测周期(秒)
 
 // Run 定时检测任务投递
 func Run() {
@@ -39,10 +39,10 @@ func Run() {
 // Check 代理检测
 func Check(now time.Time) {
 	sinking_web.Try(func() {
-		lock := constant.LockProxySocks5Check
+		lock := constant.LockUinServerCheck
 		for {
-			if util.Cache.Lock(lock, constant.LockTimeProxySocks5Check) {
-				list, err := proxy.GetIns().SelectCheckJob(200, str.DateTime(now))
+			if util.Cache.Lock(lock, constant.LockTimeUinServerCheck) {
+				list, err := server2.GetIns().SelectCheckJob(200, str.DateTime(now))
 				if err == nil && len(list) > 0 {
 					var ids []int
 					for _, v := range list {
@@ -51,7 +51,7 @@ func Check(now time.Time) {
 						ids = append(ids, v.Id)
 					}
 					//更改检测时间
-					_ = proxy.GetIns().UpdateByIds(ids, map[string]interface{}{
+					_ = server2.GetIns().UpdateByIds(ids, map[string]interface{}{
 						"check_time": now,
 					})
 					util.Cache.UnLock(lock)

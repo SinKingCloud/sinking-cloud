@@ -1,8 +1,11 @@
 package constant
 
 const (
-	LockProxySocks5Check     = "LockUinJob_"  //socks5代理检测锁
-	LockTimeProxySocks5Check = 10 * 60 * 1000 //socks5代理检测任务锁最大时间
+	LockUinServer     = "LockUinServer_" //QQ添加锁
+	LockTimeUinServer = 10 * 60 * 1000   //QQ添加锁
+
+	LockUinServerCheck     = "LockUinServerCheck_" //挂机服务器socks5代理检测锁
+	LockTimeUinServerCheck = 10 * 60 * 1000        //挂机服务器socks5代理检测任务锁最大时间
 
 	LockUinJob     = "LockUinJob_"  //挂机任务锁
 	LockTimeUinJob = 10 * 60 * 1000 //挂机任务锁最大时间

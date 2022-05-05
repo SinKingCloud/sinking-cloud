@@ -5,7 +5,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/app"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/oauth"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/proxy"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/uin"
 	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/middleware"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -41,11 +40,6 @@ func loadApiRoute(s *sinking_web.Engine) {
 	uinSetGroup.POST("/server", sinking_server.HandleFunc(handleUin.ChangeServer))     //修改挂机地区
 	uinSetGroup.POST("/timing", sinking_server.HandleFunc(handleUin.ChangeTiming))     //修改挂机时间
 	uinSetGroup.POST("/status", sinking_server.HandleFunc(handleUin.ChangeStatus))     //修改挂机状态
-
-	//服务代理API
-	proxyGroup := g.Group("/proxy")
-	handleProxy := &proxy.ControllerProxy{}
-	proxyGroup.GET("/extract", sinking_server.HandleFunc(handleProxy.Extract)) //提取代理
 
 	//全站登陆API
 	oauthGroup := g.Group("/oauth")
