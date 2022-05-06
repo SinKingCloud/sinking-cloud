@@ -2,6 +2,10 @@ package uin_tool
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"time"
 )
 
 // sportSpeed 运动加速
@@ -69,8 +73,33 @@ func (s *speed) safeSpeed(uin string) bool {
 	return res.State != "-1"
 }
 
+// checkZoneStatus  判断空间状态
+func (s *speed) checkZoneStatus(uin string) bool {
+	client := &http.Client{
+		Timeout: 2 * time.Second,
+	}
+	req, err := http.NewRequest("GET", "https://h5.qzone.qq.com/proxy/domain/r.qzone.qq.com/cgi-bin/qzone_dynamic_v7.cgi?param=848&uin="+uin, nil)
+	if err != nil {
+		return false
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	resp, err := client.Do(req)
+	if err != nil {
+		return false
+	}
+	bodyText, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false
+	}
+	return !strings.Contains(string(bodyText), "-5008")
+}
+
 // zoneSpeed 空间加速
 func (s *speed) zoneSpeed(uin string) bool {
+	//判断空间权限
+	if !s.checkZoneStatus(uin) {
+		return false
+	}
 	url := "/?&type=Pc/&pe=fangke/"
 	data := map[string]string{
 		"Uin": uin,

@@ -51,6 +51,9 @@ func (l *uinJob) Listen() {
 var (
 	servers    = make(map[string]chan interface{}) //服务器列表
 	serverLock = &sync.Mutex{}                     //并发锁
+
+	serverIds    = make(map[int]*model.AppUinServer) //服务器列表
+	serverIdLock = &sync.Mutex{}                     //并发锁
 )
 
 // run 执行任务
@@ -62,6 +65,11 @@ func (l *uinJob) run(uin *model.AppUin) {
 	server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
 	if err != nil || server == nil {
 		return
+	}
+	if serverIds[uin.ServerId] == nil {
+		serverIdLock.Lock()
+		serverIds[uin.ServerId] = server
+		serverIdLock.Unlock()
 	}
 	if servers[server.Addr] == nil {
 		//构建消费协程
@@ -75,7 +83,7 @@ func (l *uinJob) run(uin *model.AppUin) {
 			if param != nil {
 				//执行挂机任务
 				sinking_web.Try(func() {
-					speed(server, param.(*model.AppUin))
+					speed(param.(*model.AppUin))
 				}, func(i interface{}) {
 					util.Log.Println(param, i)
 				})
@@ -89,7 +97,11 @@ func (l *uinJob) run(uin *model.AppUin) {
 }
 
 // speed 执行挂机任务
-func speed(server *model.AppUinServer, uin *model.AppUin) {
+func speed(uin *model.AppUin) {
+	server := serverIds[uin.ServerId]
+	if server == nil {
+		return
+	}
 	//构建加速项目
 	var jobs []int
 	var userJob map[string]string
