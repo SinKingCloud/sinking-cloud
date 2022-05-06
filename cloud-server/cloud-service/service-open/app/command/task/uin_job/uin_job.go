@@ -61,7 +61,7 @@ func send(minute int64) {
 					for _, v := range list {
 						var speedUin *model.AppUin
 						//查询重复QQ计费
-						uinList, err1 := uin2.GetIns().SelectUins(v.Uin)
+						uinList, err1 := uin2.GetIns().SelectByUin(v.Uin)
 						if err1 == nil && costed[v.Uin] == false && len(uinList) > 0 {
 							costed[v.Uin] = true
 							for _, v1 := range uinList {

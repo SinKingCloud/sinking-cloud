@@ -51,9 +51,11 @@ func Check(now time.Time) {
 						ids = append(ids, v.Id)
 					}
 					//更改检测时间
-					_ = server2.GetIns().UpdateByIds(ids, map[string]interface{}{
-						"check_time": now,
-					})
+					if len(ids) > 0 {
+						_ = server2.GetIns().UpdateByIds(ids, map[string]interface{}{
+							"check_time": now,
+						})
+					}
 					util.Cache.UnLock(lock)
 				} else {
 					util.Cache.UnLock(lock)

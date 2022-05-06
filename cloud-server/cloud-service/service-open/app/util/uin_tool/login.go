@@ -20,7 +20,6 @@ func (s *speed) add(uin string, pwd string, phone string, proto int) bool {
 	data := map[string]string{
 		"Uin":      uin,
 		"Pass":     pwd,
-		"place":    s.proxy,
 		"brand":    "",
 		"model":    "",
 		"protocol": p,
@@ -55,8 +54,9 @@ func (s *speed) login(uin string, code string) (int, error, string, string) {
 	server2.GetIns().ServerWaitLock(s.addr)
 	url := "/?&type=Android/&pe=login/"
 	data := map[string]string{
-		"Uin":  uin,
-		"code": code,
+		"Uin":   uin,
+		"code":  code,
+		"place": s.proxy,
 	}
 	res, err := s.sendRequest(url, data, -1)
 	if err != nil {

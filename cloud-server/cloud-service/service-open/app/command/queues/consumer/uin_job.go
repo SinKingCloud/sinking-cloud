@@ -215,6 +215,9 @@ func check(addr string, proxy string, uin *model.AppUin, jobs []int, lower bool)
 			break
 		case uin_tool.Sport:
 			isCheck = false //jobStatus.IQQSportStep != "1"
+			if time.Now().Day() <= 8 {
+				isCheck = jobStatus.IQQSportStep != "1"
+			}
 			break
 		case uin_tool.MobileClock:
 			isCheck = jobStatus.IDailySign != "1"

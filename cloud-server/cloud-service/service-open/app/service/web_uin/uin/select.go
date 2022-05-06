@@ -68,10 +68,19 @@ func (s *service) SelectUinCheckJob(limit int, startTime string, endTime string)
 	return
 }
 
-// SelectUins 查询QQ列表
-func (s *service) SelectUins(uin string) (list []*model.AppUin, err error) {
+// SelectByUin 查询QQ列表
+func (s *service) SelectByUin(uin string) (list []*model.AppUin, err error) {
 	err = util.Database.Db.Model(&model.AppUin{}).
 		Where("`uin`=?", uin).
+		Find(&list).Error
+	return
+}
+
+// SelectByServerId 查询QQ列表
+func (s *service) SelectByServerId(limit int, serverId int) (list []*model.AppUin, err error) {
+	err = util.Database.Db.Model(&model.AppUin{}).
+		Where("`server_id`=?", serverId).
+		Limit(limit).
 		Find(&list).Error
 	return
 }
