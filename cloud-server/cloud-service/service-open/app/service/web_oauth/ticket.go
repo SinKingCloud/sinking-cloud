@@ -12,6 +12,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_user"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -30,7 +31,7 @@ func AuthTicket(userId int, ticket string, redirectUrl string) error {
 	}
 	//查询ticket
 	info, err := oauth_log.GetIns().FindByTicket(ticket)
-	if err != nil || info.Status != oauth_log.Success {
+	if err != nil || info.Status != oauth_log.Normal {
 		return errors.New("授权码已失效,请返回来源地重新发起请求")
 	}
 	//查询网站
@@ -39,12 +40,11 @@ func AuthTicket(userId int, ticket string, redirectUrl string) error {
 		return errors.New("此网站已暂停登陆注册功能")
 	}
 	r, rErr := url.Parse(redirectUrl)
-	r2, r2Err := url.Parse(oauth.Domain)
-	if rErr != nil || r2Err != nil || r.Hostname() != r2.Hostname() {
+	if rErr != nil || !strings.Contains(oauth.Domain, r.Hostname()) {
 		return errors.New("来源地验证失败,请联系管理员")
 	}
 	//查询是否已授权此网站
-	oauthUser, err := oauth_user.GetIns().FindByOauthIdAndUserId(info.OauthId, info.UserId)
+	oauthUser, err := oauth_user.GetIns().FindByOauthIdAndUserId(info.OauthId, user.Id)
 	if err != nil || oauthUser == nil {
 		//写入用户信息
 		e := oauth_user.GetIns().Create(&model.AppOauthUser{
@@ -55,11 +55,12 @@ func AuthTicket(userId int, ticket string, redirectUrl string) error {
 		if e != nil {
 			return errors.New("创建授权用户失败")
 		}
-		oauthUser, err = oauth_user.GetIns().FindByOauthIdAndUserId(info.OauthId, info.UserId)
+		oauthUser, err = oauth_user.GetIns().FindByOauthIdAndUserId(info.OauthId, user.Id)
 	}
 	//更新ticket状态
 	err = oauth_log.GetIns().UpdateById(info.Id, map[string]interface{}{
-		"status": oauth_log.Success,
+		"user_id": user.Id,
+		"status":  oauth_log.Success,
 	})
 	if err != nil {
 		return errors.New("授权登陆失败")
