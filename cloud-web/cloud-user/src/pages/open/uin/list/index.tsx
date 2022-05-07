@@ -28,22 +28,22 @@ export default (): React.ReactNode => {
   const [apps, setApps] = useState({});
   useEffect(() => {
     getAppList({page_size: 999, page: 1}).then((r: any) => {
-      if (r.code != 200) {
-        message.error(r.message || "请求失败").then()
+      if (r?.code != 200) {
+        message.error(r?.message || "请求失败").then()
       } else {
         const map = {};
-        r.data.list.forEach((item: any) => {
+        r?.data?.list?.forEach((item: any) => {
           map[item?.id] = item;
         });
         setApps(map);
       }
     });
     getServerList({page_size: 999}).then((r) => {
-      if (r.code != 200) {
-        message.error(r.message || "请求失败").then();
+      if (r?.code != 200) {
+        message.error(r?.message || "请求失败").then();
       } else {
         const map = {};
-        r.data.list.forEach((item: any) => {
+        r?.data?.list?.forEach((item: any) => {
           map[item?.key] = item;
         });
         setServers(map);
@@ -64,10 +64,10 @@ export default (): React.ReactNode => {
         const key = "uinPlayer";
         message.loading({content: '正在提交挂机指令', key, duration: 60}).then();
         uinRun({uin: uin}).then((r) => {
-          if (r.code == 200) {
-            message.success({content: r.message, key, duration: 2}).then();
+          if (r?.code == 200) {
+            message.success({content: r?.message, key, duration: 2}).then();
           } else {
-            message.error({content: r.message, key, duration: 2}).then();
+            message.error({content: r?.message, key, duration: 2}).then();
           }
         });
       },
@@ -87,12 +87,12 @@ export default (): React.ReactNode => {
         const key = "uinDelete";
         message.loading({content: '正在删除挂机', key, duration: 60}).then();
         deleteUin({uin: uin}).then((r) => {
-          if (r.code == 200) {
+          if (r?.code == 200) {
             // @ts-ignore
             actionRef?.current.reload();
-            message.success({content: r.message, key, duration: 2}).then();
+            message.success({content: r?.message, key, duration: 2}).then();
           } else {
-            message.error({content: r.message, key, duration: 2}).then();
+            message.error({content: r?.message, key, duration: 2}).then();
           }
         });
       },
@@ -113,12 +113,12 @@ export default (): React.ReactNode => {
         const key = "uinStatus";
         message.loading({content: '正在更改挂机状态', key, duration: 60}).then();
         uinStatus({uin: uin, status: status}).then((r) => {
-          if (r.code == 200) {
+          if (r?.code == 200) {
             // @ts-ignore
             actionRef?.current.reload();
-            message.success({content: r.message, key, duration: 2}).then();
+            message.success({content: r?.message, key, duration: 2}).then();
           } else {
-            message.error({content: r.message, key, duration: 2}).then();
+            message.error({content: r?.message, key, duration: 2}).then();
           }
         });
       },

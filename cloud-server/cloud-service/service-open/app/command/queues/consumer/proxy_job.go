@@ -44,7 +44,6 @@ func (l *proxyJob) Listen() {
 				_, e = l.test(s.Proxy, 30)
 				if e != nil {
 					status = 1
-					go l.change(s) //故障迁移
 				}
 			}
 			_ = server2.GetIns().UpdateById(s.Id, map[string]interface{}{
