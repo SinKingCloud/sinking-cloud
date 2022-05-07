@@ -13,7 +13,7 @@ import (
 // ServerUinCreate 挂机服务器创建账号
 func ServerUinCreate(serverId int, uin string, pwd string, phone string, loginType int) error {
 	serverInfo, err := server2.GetIns().FindById(serverId)
-	if err != nil || serverInfo == nil {
+	if err != nil || serverInfo == nil || serverInfo.Status != server2.Normal {
 		return errors.New("未查询到挂机服务器信息,请更换挂机服务器")
 	}
 	s := uin_tool.NewUinTool(serverInfo.Addr, serverInfo.Proxy)

@@ -46,7 +46,7 @@ func (s *service) SelectServers(where map[string]string, page int, pageSize int)
 // SelectCheckJob 查询代理检测任务
 func (s *service) SelectCheckJob(limit int, time str.DateTime) (list []*model.AppUinServer, err error) {
 	query := util.Database.Db.Model(&model.AppUinServer{})
-	query.Where("`check_time` < ? and `pid`>0", time)
+	query.Where("`check_time` < ? and `status`=0 and `pid`>0", time)
 	err = query.Limit(limit).Find(&list).Error
 	return
 }

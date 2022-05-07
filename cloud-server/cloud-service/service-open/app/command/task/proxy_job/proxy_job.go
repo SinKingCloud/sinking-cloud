@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const checkTime = 180 //检测周期(秒)
+const checkTime = 300 //检测周期(秒)
 
 // Run 定时检测任务投递
 func Run() {
@@ -62,7 +62,7 @@ func Check(now time.Time) {
 					break
 				}
 			} else {
-				time.Sleep(1 * time.Second)
+				time.Sleep(5 * time.Second)
 			}
 		}
 	}, func(i interface{}) {

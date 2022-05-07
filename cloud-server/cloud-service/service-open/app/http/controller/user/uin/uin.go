@@ -330,7 +330,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		return
 	}
 	srv, err := server2.GetIns().FindById(uinInfo.ServerId)
-	if err != nil || srv == nil {
+	if err != nil || srv == nil || srv.Status != server2.Normal {
 		c.Error("未查询到挂机地区信息,请更换挂机地区")
 		return
 	}

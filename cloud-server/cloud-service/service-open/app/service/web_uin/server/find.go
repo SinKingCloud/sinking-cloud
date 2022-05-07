@@ -43,3 +43,9 @@ func (s *service) FindByIdWithCache(id int, refresh bool) (data *model.AppUinSer
 	}
 	return
 }
+
+// Clear 清除缓存
+func (s *service) Clear(id int) bool {
+	key := constant.CacheNameWithUinServer + strconv.Itoa(id)
+	return util.Cache.Delete(key)
+}

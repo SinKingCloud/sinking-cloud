@@ -66,9 +66,14 @@ func (l *uinJob) run(uin *model.AppUin) {
 	if err != nil || server == nil {
 		return
 	}
-	if serverIds[uin.ServerId] == nil {
+	if serverIds[uin.ServerId] == nil || serverIds[uin.ServerId].Status != server.Status || serverIds[uin.ServerId].Proxy != server.Proxy {
 		serverIdLock.Lock()
 		serverIds[uin.ServerId] = server
+		serverIdLock.Unlock()
+	}
+	if serverIds[uin.ServerId].Status != server2.Normal {
+		serverIdLock.Lock()
+		serverIds[uin.ServerId].Proxy = ""
 		serverIdLock.Unlock()
 	}
 	if servers[server.Addr] == nil {

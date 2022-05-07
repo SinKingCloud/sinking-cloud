@@ -38,11 +38,14 @@ func (l *proxyJob) Listen() {
 		err := json.Unmarshal(mqMsg.Body, s)
 		if err == nil {
 			//判断代理
-			_, e := l.test(s.Proxy, 10)
+			_, e := l.test(s.Proxy, 30)
 			status := 0
 			if e != nil {
-				status = 1
-				go l.change(s) //故障迁移
+				_, e = l.test(s.Proxy, 30)
+				if e != nil {
+					status = 1
+					go l.change(s) //故障迁移
+				}
 			}
 			_ = server2.GetIns().UpdateById(s.Id, map[string]interface{}{
 				"check_time": str.DateTime(time.Now()),
@@ -62,32 +65,24 @@ func (l *proxyJob) change(server *model.AppUinServer) {
 	for true {
 		//迁移锁
 		if util.Cache.Lock(key, constant.LockTimeUinServerChange) {
-			//判断是否有空闲挂机服务器
-			testServer, err := web_uin.GetServer(server.Key)
-			if err == nil && testServer != nil {
-				//判断挂机服务器账号数量
-				for true {
-					list, er := uin2.GetIns().SelectByServerId(200, server.Id)
-					if er == nil && len(list) > 0 {
-						//更改账号挂机节点
-						for _, v := range list {
-							//挂机节点负载均衡
-							newServer, e := web_uin.GetServer(v.ServerKey)
-							if e == nil && newServer != nil {
-								_ = uin2.GetIns().UpdateById(v.Id, map[string]interface{}{
-									"server_id": newServer.Id,
-								})
-							}
+			for true {
+				list, er := uin2.GetIns().SelectByServerId(200, server.Id)
+				if er == nil && len(list) > 0 {
+					//更改账号挂机节点
+					for _, v := range list {
+						//挂机节点负载均衡
+						newServer, e := web_uin.GetServer(v.ServerKey)
+						if e == nil && newServer != nil {
+							_ = uin2.GetIns().UpdateById(v.Id, map[string]interface{}{
+								"server_id": newServer.Id,
+							})
+						} else {
+							break
 						}
-					} else {
-						break
 					}
+				} else {
+					break
 				}
-			} else {
-				//无可用节点替换时，更改QQ为异常状态
-				_ = uin2.GetIns().UpdateByServerId(server.Id, map[string]interface{}{
-					"status": uin2.Error,
-				})
 			}
 			util.Cache.UnLock(key)
 			break

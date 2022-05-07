@@ -47,3 +47,8 @@ func (s *service) ServerWaitLock(addr string) {
 		}
 	}
 }
+
+const (
+	Normal = iota //正常
+	Error         //禁用
+)
