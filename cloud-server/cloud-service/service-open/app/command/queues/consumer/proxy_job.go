@@ -12,6 +12,7 @@ import (
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/server"
 	uin2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/uin"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -46,9 +47,11 @@ func (l *proxyJob) Listen() {
 					status = 1
 				}
 			}
+			if status == 1 {
+				log.Println("代理服务器异常：id:", s.Id, "addr:", s.Proxy)
+			}
 			_ = server2.GetIns().UpdateById(s.Id, map[string]interface{}{
 				"check_time": str.DateTime(time.Now()),
-				"status":     status,
 			})
 		}
 	})

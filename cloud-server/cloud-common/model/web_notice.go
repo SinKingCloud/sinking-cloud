@@ -21,7 +21,7 @@ type WebNotice struct {
 
 // TableName 获取表名
 func (WebNotice) TableName() string {
-	return "web_user_logs"
+	return "web_notices"
 }
 
 // BeforeCreate 创建前

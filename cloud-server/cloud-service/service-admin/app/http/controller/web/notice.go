@@ -14,6 +14,7 @@ func (ControllerNotice) List(c *sinking_server.Context) {
 	type Form struct {
 		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"sort" validate:"oneof=id sort create_time update_time" label:"排序字段"`
 		OrderByType     string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
+		Title           string `form:"title" default:"" validate:"omitempty" label:"标题"`
 		Status          string `form:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`
 		Place           string `form:"place" default:"" validate:"omitempty" label:"公告类型"`
 		CreateTimeStart string `form:"create_time_start" default:"" validate:"-" label:"创建起始时间"`
@@ -45,6 +46,9 @@ func (ControllerNotice) List(c *sinking_server.Context) {
 	if form.UpdateTimeEnd != "" {
 		where["update_time_end"] = form.UpdateTimeEnd
 	}
+	if form.Title != "" {
+		where["title"] = form.Title
+	}
 	data, total, err := web_notice.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
 		c.Error("获取公告列表失败")
@@ -57,7 +61,7 @@ func (ControllerNotice) List(c *sinking_server.Context) {
 // Info 获取详情
 func (ControllerNotice) Info(c *sinking_server.Context) {
 	type Form struct {
-		Id int `form:"id" default:"" validate:"omitempty,max=36" label:"记录ID"`
+		Id int `form:"id" default:"" validate:"numeric,min=1" label:"记录ID"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorGet(form); !ok {

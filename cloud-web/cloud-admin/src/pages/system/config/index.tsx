@@ -17,9 +17,7 @@ export default (): React.ReactNode => {
     setIsCardLoading(true);
     return await getConfigList({page_size: 1000}).then((r): any => {
       if (r.code != 200) {
-        message.error(r.message || "请求失败").then(() => {
-          return [];
-        })
+        return [];
       } else {
         return r.data.list;
       }

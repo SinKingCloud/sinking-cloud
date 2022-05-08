@@ -353,9 +353,6 @@ export default (): React.ReactNode => {
         }}
         request={async (params, sort) => {
           const data = await getAccessList(getParams(params, sort));
-          if (data.code != 200) {
-            message.error(data.message);
-          }
           return {
             data: data.data.list === undefined || data.data.list === null || data.data.list.length <= 0 ? [] : data.data.list,
             success: data.code === 200,

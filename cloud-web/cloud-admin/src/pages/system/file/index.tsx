@@ -104,6 +104,10 @@ export default (): React.ReactNode => {
           text: '临时文件',
           color: "yellow",
         },
+        2: {
+          text: '系统资源',
+          color: "black",
+        },
       },
     },
     {
@@ -277,7 +281,8 @@ export default (): React.ReactNode => {
         setIsModalUploadVisible(false);
       }} okText={"上传"} onCancel={() => {
         setIsModalUploadVisible(false);
-      }} footer={[<Upload key={"upload"} name="file" data={{"type": uploadType}} showUploadList={false} action={getUploadUrl()}
+      }} footer={[<Upload key={"upload"} name="file" data={{"type": uploadType}} showUploadList={false}
+                          action={getUploadUrl()}
                           beforeUpload={(file: any) => {
                             return true;
                           }}
@@ -312,6 +317,7 @@ export default (): React.ReactNode => {
               setUploadType(e);
             }}>
               <Select.Option value={1}>临时文件</Select.Option>
+              <Select.Option value={2}>系统资源</Select.Option>
               <Select.Option value={0}>用户头像</Select.Option>
             </Select>
           </Form.Item>
@@ -340,9 +346,6 @@ export default (): React.ReactNode => {
         }}
         request={async (params, sort) => {
           const data = await getFileList(getParams(params, sort));
-          if (data.code != 200) {
-            message.error(data.message);
-          }
           return {
             data: data.data.list === undefined || data.data.list === null || data.data.list.length <= 0 ? [] : data.data.list,
             success: data.code === 200,

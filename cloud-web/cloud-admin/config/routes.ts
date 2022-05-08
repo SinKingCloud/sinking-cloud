@@ -82,6 +82,10 @@
         component: './web/user_order',
       },
       {
+        path: 'notice',
+        component: './web/notice',
+      },
+      {
         redirect: '/web/user',
       },
     ],
