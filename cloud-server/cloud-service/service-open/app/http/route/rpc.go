@@ -3,7 +3,7 @@ package route
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/rpc"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/service/pay_log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/pay_log"
 )
 
 func (s *service) CallBack(tradeNo string, outTradeNo string) bool {

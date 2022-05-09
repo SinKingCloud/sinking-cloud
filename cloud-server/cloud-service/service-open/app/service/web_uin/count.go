@@ -2,8 +2,8 @@ package web_uin
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/order"
-	uin2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/uin"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/order"
+	uin2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
 	"strconv"
 	"time"
 )

@@ -4,8 +4,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/web_notice"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/web_notice"
 )
 
 // List 获取数据

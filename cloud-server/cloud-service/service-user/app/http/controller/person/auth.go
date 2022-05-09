@@ -4,9 +4,9 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/aliyun"
-	user2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/user"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/constant"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/aliyun"
+	user2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/user"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 

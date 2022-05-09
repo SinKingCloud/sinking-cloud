@@ -3,7 +3,7 @@ package user
 import (
 	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	user2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/user"
+	user2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/user"
 )
 
 type ControllerUser struct {

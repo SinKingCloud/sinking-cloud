@@ -2,9 +2,9 @@ package page
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_menu"
-	role2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_role"
-	user2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_user"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_menu"
+	role2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_role"
+	user2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_user"
 )
 
 func (ControllerPage) Control(c *sinking_server.Context) {

@@ -3,9 +3,9 @@ package middleware
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/jwt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
-	app2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_app"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_user"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
+	app2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_app"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_user"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"strconv"
 )

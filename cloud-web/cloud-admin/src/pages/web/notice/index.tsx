@@ -307,7 +307,7 @@ export default (): React.ReactNode => {
               <Form.Item name={"sort"} label="排序" rules={[{required: true}]}>
                 <InputNumber placeholder="请输入排序数值" style={{maxWidth: "500px", minWidth: "150px"}}/>
               </Form.Item>
-              <Form.Item name={"status"} label="状态">
+              <Form.Item name={"status"} label="状态" rules={[{required: true}]}>
                 <Select placeholder="请选择公告状态" style={{maxWidth: "500px"}}>
                   <Select.Option value={0}>显示</Select.Option>
                   <Select.Option value={1}>隐藏</Select.Option>

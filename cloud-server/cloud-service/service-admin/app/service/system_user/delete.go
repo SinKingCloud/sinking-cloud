@@ -3,7 +3,7 @@ package system_user
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/constant"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/constant"
 )
 
 // DeleteByIds 通过ID列表删除

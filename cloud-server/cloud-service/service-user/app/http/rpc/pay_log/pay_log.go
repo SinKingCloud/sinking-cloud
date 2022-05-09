@@ -3,7 +3,7 @@ package pay_log
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/pay_log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/pay_log"
 )
 
 type ControllerPayLog struct {

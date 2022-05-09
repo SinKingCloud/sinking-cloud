@@ -3,10 +3,10 @@ package route
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/app"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/oauth"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/controller/user/uin"
-	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/middleware"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/controller/user/app"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/controller/user/oauth"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/controller/user/uin"
+	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/middleware"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 

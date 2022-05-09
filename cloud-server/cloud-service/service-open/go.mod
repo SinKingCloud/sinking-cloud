@@ -1,4 +1,4 @@
-module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open
+module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open
 
 go 1.17
 

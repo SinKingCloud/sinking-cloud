@@ -3,12 +3,12 @@ package route
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/callback"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/pay"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/system"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/upload"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/verify"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/http/controller/web"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/http/controller/callback"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/http/controller/pay"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/http/controller/system"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/http/controller/upload"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/http/controller/verify"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/http/controller/web"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 

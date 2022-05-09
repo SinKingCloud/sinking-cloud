@@ -3,11 +3,11 @@ package web_oauth
 import (
 	"errors"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_oauth/oauth"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_oauth/oauth_log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_oauth/oauth_user"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_user"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_oauth/oauth"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_oauth/oauth_log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_oauth/oauth_user"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_user"
 	"strconv"
 )
 

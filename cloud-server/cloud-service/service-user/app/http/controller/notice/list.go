@@ -3,8 +3,8 @@ package notice
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/notice"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/notice"
 	"strconv"
 )
 

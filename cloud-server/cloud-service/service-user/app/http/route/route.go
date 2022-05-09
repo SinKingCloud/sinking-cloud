@@ -2,10 +2,10 @@ package route
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/http/controller/notice"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/http/controller/pay"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/http/controller/person"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/http/controller/verify"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/http/controller/notice"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/http/controller/pay"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/http/controller/person"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/http/controller/verify"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 

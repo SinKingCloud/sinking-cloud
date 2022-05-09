@@ -2,7 +2,7 @@ package pay
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/service/order"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/order"
 )
 
 // Status 支付状态查询

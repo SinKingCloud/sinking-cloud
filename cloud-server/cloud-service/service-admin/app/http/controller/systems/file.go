@@ -3,8 +3,8 @@ package systems
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	system_file "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_flie"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_log"
+	system_file "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_flie"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_log"
 )
 
 // List 获取数据

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/constant"
-	access2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_access"
-	role2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/service/system_role"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/constant"
+	access2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_access"
+	role2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_role"
 	"strconv"
 	"strings"
 )

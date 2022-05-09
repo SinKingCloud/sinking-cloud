@@ -117,10 +117,10 @@ export const layout: RunTimeLayoutConfig = ({initialState}) => {
 const errorHandler = (error: { response: RequestConfig; }) => {
   const {response} = error;
   if (response && response.code) {
-    return message.error(`请求错误`);
+    return message.error({content: `请求错误`, key: "errorHandler", duration: 3});
   }
   if (!response) {
-    return message.error('您的网络发生异常');
+    return message.error({content: `您的网络发生异常`, key: "errorHandler", duration: 3});
   }
   return response;
 };
@@ -138,13 +138,13 @@ const requestMiddleware = async (ctx: any, next: () => void) => {
     let token = auth.getLoginToken();
     auth.deleteHeader();
     if (token != null && token != "") {
-      return message.warning(ctx.res.message || "登陆超时");
+      return message.error({content: ctx.res.message || "登陆超时", key: "requestMiddleware", duration: 3});
     } else {
       return false;
     }
   }
   if (ctx.res.code == 401) {
-    return message.warning(ctx.res.message || "权限不足");
+    return message.error({content: ctx.res.message || "权限不足", key: "requestMiddleware", duration: 3});
   }
 };
 export const request: RequestConfig = {

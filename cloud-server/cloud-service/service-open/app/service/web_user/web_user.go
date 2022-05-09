@@ -5,7 +5,7 @@ import (
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/rpc"
 	"strconv"
 )
 

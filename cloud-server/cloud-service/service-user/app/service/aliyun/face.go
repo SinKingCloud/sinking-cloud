@@ -7,8 +7,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/aliyun"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/service/user"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/constant"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/user"
 	"strconv"
 )
 

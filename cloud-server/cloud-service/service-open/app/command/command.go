@@ -1,8 +1,8 @@
 package command
 
 import (
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/command/queues"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/command/task"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/command/queues"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/command/task"
 )
 
 func Init() {

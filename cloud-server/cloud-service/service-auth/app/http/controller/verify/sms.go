@@ -2,8 +2,8 @@ package verify
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/service/auth"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/service/captcha"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/auth"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/captcha"
 )
 
 func (ControllerVerify) Sms(c *sinking_server.Context) {

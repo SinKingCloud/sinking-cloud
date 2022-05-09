@@ -2,7 +2,7 @@ package callback
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth/app/service/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/rpc"
 )
 
 // Face 实人验证回调

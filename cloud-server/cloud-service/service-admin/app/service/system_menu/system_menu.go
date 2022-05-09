@@ -3,7 +3,7 @@ package system_menu
 import (
 	"encoding/json"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/constant"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/constant"
 	"strconv"
 )
 

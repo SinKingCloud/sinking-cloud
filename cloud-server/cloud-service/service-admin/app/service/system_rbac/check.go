@@ -1,7 +1,7 @@
 package system_rbac
 
 import (
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/constant"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/constant"
 )
 
 func (s *service) Check(userId int, roleId int, path string, method string) bool {

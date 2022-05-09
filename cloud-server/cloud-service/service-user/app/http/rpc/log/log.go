@@ -3,7 +3,7 @@ package log
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/command/queues/producer"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/command/queues/producer"
 )
 
 type ControllerLog struct {

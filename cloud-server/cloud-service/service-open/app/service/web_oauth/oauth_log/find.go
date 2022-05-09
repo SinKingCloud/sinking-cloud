@@ -2,7 +2,7 @@ package oauth_log
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/model"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
 )
 
 // FindById 通过ID查询

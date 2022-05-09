@@ -1,4 +1,4 @@
-module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-auth
+module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth
 
 go 1.17
 

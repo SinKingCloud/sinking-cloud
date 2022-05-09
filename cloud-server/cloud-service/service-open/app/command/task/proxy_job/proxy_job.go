@@ -3,9 +3,9 @@ package proxy_job
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/command/queues/producer"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/constant"
-	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/command/queues/producer"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
+	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"log"
 	"time"

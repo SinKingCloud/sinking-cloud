@@ -1,10 +1,10 @@
 package rpc
 
 import (
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/http/rpc/face"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/http/rpc/log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/http/rpc/pay_log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-user/app/http/rpc/user"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/http/rpc/face"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/http/rpc/log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/http/rpc/pay_log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/http/rpc/user"
 )
 
 var (

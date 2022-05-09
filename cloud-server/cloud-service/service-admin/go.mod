@@ -1,4 +1,4 @@
-module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin
+module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin
 
 go 1.17
 

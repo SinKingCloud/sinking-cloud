@@ -5,7 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/command/queues/producer"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/command/queues/producer"
 )
 
 // Create 插入数据

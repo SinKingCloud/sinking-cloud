@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/command"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/http/route"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/command"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/route"
 )
 
 func Run() {

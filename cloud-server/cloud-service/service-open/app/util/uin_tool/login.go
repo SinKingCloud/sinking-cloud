@@ -3,7 +3,7 @@ package uin_tool
 import (
 	"encoding/json"
 	"errors"
-	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-open/app/service/web_uin/server"
+	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"strconv"
 )
 

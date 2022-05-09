@@ -4,7 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
-	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud/service/service-admin/app/http/middleware"
+	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/http/middleware"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"time"
 )
