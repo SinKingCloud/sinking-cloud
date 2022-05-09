@@ -35,6 +35,10 @@ RUN go build
 WORKDIR /data/sinking/cloud-service/service-open
 RUN go mod tidy
 RUN go build
+#################构建爬虫服务####################
+WORKDIR /data/sinking/cloud-service/service-spider
+RUN go mod tidy
+RUN go build
 
 #################网关服务镜像####################
 FROM alpine as cloud-gateway
@@ -89,4 +93,13 @@ COPY --from=sinking-builder /data/sinking/cloud-service/service-open/service-ope
 COPY --from=sinking-builder /data/sinking/cloud-service/service-open/config/ ./config/
 EXPOSE 1004
 ENTRYPOINT  ["./service-open"]
+
+#################爬虫服务镜像####################
+FROM alpine as service-open
+RUN echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/main' > /etc/apk/repositories && echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/community' >>/etc/apk/repositories && apk update && apk add tzdata && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
+WORKDIR /data/sinking
+COPY --from=sinking-builder /data/sinking/cloud-service/service-spider/service-open .
+COPY --from=sinking-builder /data/sinking/cloud-service/service-spider/config/ ./config/
+EXPOSE 1004
+ENTRYPOINT  ["./service-spider"]
 
