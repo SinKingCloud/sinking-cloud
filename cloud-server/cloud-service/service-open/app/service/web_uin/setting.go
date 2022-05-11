@@ -10,6 +10,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin_info"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/uin_tool"
 	"strconv"
+	"time"
 )
 
 // ServerUinCreate 挂机服务器创建账号
@@ -160,6 +161,14 @@ func GetUinSpeedStatus(addr string, proxy string, uin string) (*uin_tool.SpeedSt
 				"zone_clock":   levelInfo.IQzoneState,
 				"login":        levelInfo.IContinueLogin,
 				"friend":       levelInfo.IAddFriend,
+			}
+			if time.Now().Day() > 8 {
+				speedInfo["sport"] = "1"
+			}
+			for k, _ := range Setting {
+				if speedInfo[k] == "" {
+					speedInfo[k] = "1"
+				}
 			}
 			_ = uin_info.GetIns().Save(info, speedInfo)
 		}(status)

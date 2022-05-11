@@ -5,6 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
@@ -15,12 +16,14 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/log"
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin_info"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_user"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/uin_tool"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"gorm.io/gorm"
 	"strconv"
+	"time"
 )
 
 type ControllerUin struct {
@@ -565,20 +568,48 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
-	tempInfo := &uin.AppUin{
-		AppId:      uinInfo.AppId,
-		ServerKey:  uinInfo.ServerKey,
-		Uin:        uinInfo.Uin,
-		UinStatus:  uinInfo.UinStatus,
-		SignDay:    uinInfo.SignDay,
-		PlayerDay:  uinInfo.PlayerDay,
-		RunDay:     uinInfo.RunDay,
-		Timing:     uinInfo.Timing,
-		Status:     uinInfo.Status,
-		RunTime:    uinInfo.RunTime,
-		CreateTime: uinInfo.CreateTime,
-		UpdateTime: uinInfo.UpdateTime,
+	//QQ信息
+	tempUinInfo := map[string]interface{}{
+		"app_id":      uinInfo.AppId,
+		"server_key":  uinInfo.ServerKey,
+		"uin":         uinInfo.Uin,
+		"uin_status":  uinInfo.UinStatus,
+		"sign_day":    uinInfo.SignDay,
+		"player_day":  uinInfo.PlayerDay,
+		"run_day":     uinInfo.RunDay,
+		"timing":      uinInfo.Timing,
+		"status":      uinInfo.Status,
+		"run_time":    uinInfo.RunTime,
+		"create_time": uinInfo.CreateTime,
+		"update_time": uinInfo.UpdateTime,
 	}
+	uinLevelInfo, e := uin_info.GetIns().FindByUin(uinInfo.Uin)
+	if e != nil {
+		tempUinInfo["nick_name"] = uinInfo.Uin
+		tempUinInfo["level"] = 0
+		tempUinInfo["activate_day"] = "0"
+		tempUinInfo["today_day"] = "0"
+	} else {
+		tempUinInfo["nick_name"] = uinLevelInfo.NickName
+		tempUinInfo["level"] = uinLevelInfo.Level
+		tempUinInfo["activate_day"] = uinLevelInfo.ActivateDay
+		tempUinInfo["today_day"] = uinLevelInfo.TodayDay
+	}
+	//任务状态
+	jobStatus := map[string]string{}
+	_ = json.Unmarshal([]byte(uinLevelInfo.SpeedInfo), &jobStatus)
+	stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", uinLevelInfo.UpdateTime.String(), time.Local)
+	todayUnix := str.NewTimeTool().GetZeroTime(time.Now()).Unix()
+	for k, _ := range web_uin.Setting {
+		if todayUnix > stamp.Unix() {
+			jobStatus[k] = "0"
+			continue
+		}
+		if jobStatus[k] == "" {
+			jobStatus[k] = "0"
+		}
+	}
+	//设置信息
 	var tempSetting map[string]string
 	err = json.Unmarshal([]byte(uinInfo.Setting), &tempSetting)
 	if err != nil {
@@ -591,8 +622,9 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 		}
 	}
 	c.SuccessWithData("获取成功", sinking_web.H{
-		"uin":     tempInfo,
-		"setting": tempSetting,
+		"uin":        tempUinInfo,
+		"setting":    tempSetting,
+		"job_status": jobStatus,
 	})
 }
 

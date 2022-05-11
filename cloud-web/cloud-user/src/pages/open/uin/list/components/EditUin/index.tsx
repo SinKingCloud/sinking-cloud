@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Avatar, Drawer, List, message, Modal, Select, Spin, Switch, Tag, TimePicker, Tooltip} from "antd";
+import {Avatar, Badge, Drawer, List, message, Modal, Select, Spin, Switch, Tag, TimePicker, Tooltip} from "antd";
 import {
   changeUinArea,
   changeUinSetting,
@@ -195,7 +195,6 @@ const EditUin: React.FC<EditUinProps> = (props) => {
                                   // @ts-ignore
                                   form["setting"][item?.key] = checked ? "1" : "0";
                                   changeUinSetting(form).then((r) => {
-                                    console.log(serverKey, timing)
                                     if (r.code != 200) {
                                       message.error(r.message)
                                     }
@@ -207,7 +206,11 @@ const EditUin: React.FC<EditUinProps> = (props) => {
                   ]}>
                     <List.Item.Meta
                       // @ts-ignore
-                      avatar={<Avatar src={item?.logo} style={{borderRadius: "0px"}}/>}
+                      avatar={<Badge color={info?.job_status[item?.key] == "1" ? "green" : "red"} dot>
+                        <Avatar src={
+                          // @ts-ignore
+                          item?.logo} style={{borderRadius: "0px"}}/>
+                      </Badge>}
                       // @ts-ignore
                       title={<><a>{item?.name}</a>&nbsp;{days <= 0 &&
                         <Tag color={"red"}>天数不足</Tag>}
