@@ -68,6 +68,10 @@ const (
 	ZoneClock          //11.空间打卡
 	Login              //12.连续登陆加速
 	Friend             //13.加好友加速
+
+	Vip    //14.会员签到
+	BigVip //15.大会员签到
+	Hz     //16.黄钻签到
 )
 
 // Status 获取挂机状态 状态,错误,是否异常
@@ -102,12 +106,12 @@ var (
 )
 
 type speedJob struct {
-	Uin     string
-	Pwd     string
-	Phone   string
-	Proto   int
-	Jobs    []int
-	IsFirst bool
+	Uin       string
+	Pwd       string
+	Phone     string
+	Proto     int
+	SpeedJobs []int
+	IsFirst   bool
 }
 
 func (s *speed) speedByPc(uin *speedJob) {
@@ -166,7 +170,7 @@ func (s *speed) speedByPc(uin *speedJob) {
 							}
 						}
 					}
-					speed(info.Jobs)
+					speed(info.SpeedJobs)
 				}, func(i interface{}) {
 					util.Log.Println(param, i)
 				})
@@ -292,15 +296,15 @@ func (s *speed) SpeedWithPcAsync(uin *speedJob) (bool, map[int]bool) {
 		}
 		return
 	}
-	pcJobs := speed(uin.Jobs) //执行挂机
+	pcJobs := speed(uin.SpeedJobs) //执行挂机
 	if len(pcJobs) > 0 {
 		s.speedByPc(&speedJob{
-			Uin:     uin.Uin,
-			Pwd:     uin.Pwd,
-			Phone:   uin.Phone,
-			Proto:   uin.Proto,
-			Jobs:    uin.Jobs,
-			IsFirst: uin.IsFirst,
+			Uin:       uin.Uin,
+			Pwd:       uin.Pwd,
+			Phone:     uin.Phone,
+			Proto:     uin.Proto,
+			SpeedJobs: uin.SpeedJobs,
+			IsFirst:   uin.IsFirst,
 		})
 	}
 	return isBreak, res
@@ -310,7 +314,7 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 	res := make(map[int]bool)
 	mobileLogin := false //是否登录手机
 	pcLogin := false     //是否登录pc
-	isBreak := false     //是否有必要继续执行
+	isBreak := false     //是否异常
 	speedA := func(f func() bool) bool {
 		if !mobileLogin {
 			c, _, _, _ := s.login(uin.Uin, "")
@@ -436,18 +440,18 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 			}
 		}
 	}
-	speed(uin.Jobs) //执行挂机
+	speed(uin.SpeedJobs) //执行加速任务
 	return isBreak, res
 }
 
 // Speed QQ项目加速
-func (s *speed) Speed(uin string, pwd string, phone string, proto int, jobs []int, isFirst bool) (bool, map[int]bool) {
+func (s *speed) Speed(uin string, pwd string, phone string, proto int, speedJobs []int, isFirst bool) (bool, map[int]bool) {
 	return s.SpeedAll(&speedJob{
-		Uin:     uin,
-		Pwd:     pwd,
-		Phone:   phone,
-		Proto:   proto,
-		Jobs:    jobs,
-		IsFirst: isFirst,
+		Uin:       uin,
+		Pwd:       pwd,
+		Phone:     phone,
+		Proto:     proto,
+		SpeedJobs: speedJobs,
+		IsFirst:   isFirst,
 	})
 }

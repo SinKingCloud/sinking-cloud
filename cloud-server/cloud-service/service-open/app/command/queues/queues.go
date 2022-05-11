@@ -5,4 +5,5 @@ import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service
 func Run() {
 	consumer.NewUinJob().Listen()
 	consumer.NewProxyJob().Listen()
+	consumer.NewSignJob().Listen()
 }

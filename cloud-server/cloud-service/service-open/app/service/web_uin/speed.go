@@ -18,6 +18,9 @@ var Setting = map[string]string{
 	"zone_clock":   "1",
 	"login":        "1",
 	"friend":       "1",
+	"vip":          "1",
+	"big_vip":      "1",
+	"hz":           "1",
 }
 
 // JobMap 映射表
@@ -38,7 +41,11 @@ var JobMap = map[string]map[string]int{
 		"login":        uin_tool.Login,
 		"friend":       uin_tool.Friend,
 	},
-	"sign": {},
+	"sign": {
+		"vip":     uin_tool.Vip,
+		"big_vip": uin_tool.BigVip,
+		"hz":      uin_tool.Hz,
+	},
 }
 
 // Project 项目列表
@@ -157,5 +164,30 @@ var Project = map[string]map[string]map[string]string{
 			"edit":     "true",
 		},
 	},
-	"sign": {},
+	"sign": {
+		"vip": {
+			"sort":     "15",
+			"type":     "sign",
+			"name":     "会员成长",
+			"describe": "SVIP6级年费以上用户，每月SVIP成长值840点左右",
+			"logo":     "https://cdn.open-api.cn/app/uin/img/vip.png",
+			"edit":     "true",
+		},
+		"big_vip": {
+			"sort":     "16",
+			"type":     "sign",
+			"name":     "大会员成长",
+			"describe": "大会员签到/访客/点赞/师徒/分享，每日25点成长值",
+			"logo":     "https://cdn.open-api.cn/app/uin/img/big_vip.png",
+			"edit":     "true",
+		},
+		"hz": {
+			"sort":     "17",
+			"type":     "sign",
+			"name":     "黄钻成长",
+			"describe": "黄钻每日完成三次打卡任务，每日获得15点成长值",
+			"logo":     "https://cdn.open-api.cn/app/uin/img/hz.png",
+			"edit":     "true",
+		},
+	},
 }

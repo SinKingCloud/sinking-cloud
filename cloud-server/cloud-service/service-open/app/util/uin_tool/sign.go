@@ -26,8 +26,8 @@ type sign struct {
 	httpClient *http.Client
 }
 
-// NewSign 实例化sign
-func NewSign(uin string, sKey string, psKey string) *sign {
+// NewSignTool 实例化sign
+func NewSignTool(uin string, sKey string, psKey string) *sign {
 	s := &sign{
 		uin:   uin,
 		sKey:  sKey,

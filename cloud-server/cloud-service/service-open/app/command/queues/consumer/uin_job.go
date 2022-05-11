@@ -7,6 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin"
@@ -108,21 +109,23 @@ func speed(uin *model.AppUin) {
 		return
 	}
 	//构建加速项目
-	var jobs []int
+	var speedJobs []int
+	var signJobs []int
 	var userJob map[string]string
 	err := json.Unmarshal([]byte(uin.Setting), &userJob)
 	if err != nil || userJob == nil {
-		jobs = []int{}
+		speedJobs = []int{}
 	}
 	isCost := false
 	for k := range web_uin.Setting {
 		//类型判断
 		num := -1
+		num2 := -1
 		if value, ok := web_uin.JobMap["speed"][k]; ok {
 			if uin.PlayerDay > 0 {
 				isCost = true
 				//判断是否开启项目
-				if userJob[k] == "1" {
+				if userJob[k] != "0" {
 					num = value
 				}
 			}
@@ -130,16 +133,20 @@ func speed(uin *model.AppUin) {
 			if uin.SignDay > 0 {
 				isCost = true
 				//判断是否开启项目
-				if userJob[k] == "1" {
-					num = value
+				if userJob[k] != "0" {
+					num2 = value
 				}
 			}
 		}
 		if num >= 0 {
-			jobs = append(jobs, num)
+			speedJobs = append(speedJobs, num)
+		}
+		if num2 >= 0 {
+			signJobs = append(signJobs, num2)
 		}
 	}
-	sort.Sort(sort.Reverse(sort.IntSlice(jobs))) //项目降序执行
+	sort.Sort(sort.Reverse(sort.IntSlice(speedJobs))) //项目降序执行
+	sort.Sort(sort.Reverse(sort.IntSlice(signJobs)))  //项目降序执行
 	data := map[string]interface{}{
 		"run_time": str.DateTime(time.Now()),
 	}
@@ -149,7 +156,7 @@ func speed(uin *model.AppUin) {
 		data["run_day"] = gorm.Expr("`run_day`+1")
 		isCheck = false
 	}
-	if len(jobs) > 0 {
+	if len(speedJobs) > 0 || len(signJobs) > 0 {
 		var fail bool
 		if isCheck {
 			lower := false
@@ -161,12 +168,12 @@ func speed(uin *model.AppUin) {
 				data["check_time"] = str.DateTime(time.Now().Add(4.2 * 3600 * time.Second))
 			}
 			//检测挂机
-			fail, _ = check(server.Addr, server.Proxy, uin, jobs, lower, false)
+			fail, _ = check(server.Addr, server.Proxy, uin, speedJobs, signJobs, lower, false)
 		} else {
 			//正常挂机
-			fail, _ = uin_tool.NewUinTool(server.Addr, server.Proxy).Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, jobs, true)
+			fail, _ = uin_tool.NewUinTool(server.Addr, server.Proxy).Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, speedJobs, true)
 			if !fail {
-				fail, _ = check(server.Addr, server.Proxy, uin, jobs, false, true) //判断未执行的秒加速项目并补挂一次
+				fail, _ = check(server.Addr, server.Proxy, uin, speedJobs, signJobs, false, true) //判断未执行的秒加速项目并补挂一次
 			}
 			//只允许9点前执行第二次挂机
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 {
@@ -183,7 +190,7 @@ func speed(uin *model.AppUin) {
 }
 
 // check 检测挂机失败的项目
-func check(addr string, proxy string, uin *model.AppUin, jobs []int, lower bool, isFirst bool) (bool, map[int]bool) {
+func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, signCheckJobs []int, lower bool, isFirst bool) (bool, map[int]bool) {
 	status, err, isFail := web_uin.GetUinSpeedStatus(addr, proxy, uin.Uin)
 	if isFail {
 		return true, nil
@@ -193,9 +200,20 @@ func check(addr string, proxy string, uin *model.AppUin, jobs []int, lower bool,
 	}
 	s := uin_tool.NewUinTool(addr, proxy)
 	jobStatus := status.CommonInfoGetQQLevelInfo
-	var newJobs []int
-	//判断项目并加速
-	for _, v := range jobs {
+	//执行签到任务
+	if len(signCheckJobs) > 0 {
+		producer.NewSignJobProducer().Build(&producer.SignJob{
+			Uin:   uin.Uin,
+			Addr:  addr,
+			Proxy: proxy,
+			Skey:  status.Skey,
+			PSkey: status.Pskey,
+			Jobs:  signCheckJobs,
+		}).Send()
+	}
+	//判断加速项目并加速
+	var speedJobs []int
+	for _, v := range speedCheckJobs {
 		isCheck := false
 		switch v {
 		case uin_tool.Mobile:
@@ -265,11 +283,11 @@ func check(addr string, proxy string, uin *model.AppUin, jobs []int, lower bool,
 			break
 		}
 		if isCheck {
-			newJobs = append(newJobs, v)
+			speedJobs = append(speedJobs, v)
 		}
 	}
-	if len(newJobs) > 0 {
-		return s.Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, newJobs, isFirst)
+	if len(speedJobs) > 0 {
+		return s.Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, speedJobs, isFirst)
 	}
 	return false, nil
 }
