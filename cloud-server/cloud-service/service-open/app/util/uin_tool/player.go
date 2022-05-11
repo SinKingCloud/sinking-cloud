@@ -230,5 +230,8 @@ func (s *speed) getSpeedStatus(uin string) (d *SpeedStatus, e error) {
 		return nil, nil
 	}
 	e = json.Unmarshal([]byte(res.State), &d)
+	d.Skey = res.Skey
+	d.Pskey = res.Pskey
+	d.Superkey = res.Superkey
 	return
 }

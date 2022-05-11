@@ -24,4 +24,7 @@ const (
 
 	LockOauthAuthTicket     = "LockOauthAuthTicket_" //授权登录并发锁
 	LockTimeOauthAuthTicket = 1 * 60 * 1000          //授权登录并发锁最大时间
+
+	LockUinInfo     = "LockUinInfo_" //QQ更新详情并发锁
+	LockTimeUinInfo = 1 * 60 * 1000  //QQ更新详情并发锁最大时间
 )

@@ -1,5 +1,7 @@
 package web_uin
 
+import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/uin_tool"
+
 // Setting 功能设置
 var Setting = map[string]string{
 	"mobile":       "1",
@@ -21,20 +23,20 @@ var Setting = map[string]string{
 // JobMap 映射表
 var JobMap = map[string]map[string]int{
 	"speed": {
-		"mobile":       0,
-		"pc":           1,
-		"online":       2,
-		"zone":         3,
-		"medal":        4,
-		"ws":           5,
-		"micro_show":   6,
-		"safe":         7,
-		"game":         8,
-		"sport":        9,
-		"mobile_clock": 10,
-		"zone_clock":   11,
-		"login":        12,
-		"friend":       13,
+		"mobile":       uin_tool.Mobile,
+		"pc":           uin_tool.Pc,
+		"online":       uin_tool.Online,
+		"zone":         uin_tool.Zone,
+		"medal":        uin_tool.Medal,
+		"ws":           uin_tool.Ws,
+		"micro_show":   uin_tool.MicroShow,
+		"safe":         uin_tool.Safe,
+		"game":         uin_tool.Game,
+		"sport":        uin_tool.Sport,
+		"mobile_clock": uin_tool.MobileClock,
+		"zone_clock":   uin_tool.ZoneClock,
+		"login":        uin_tool.Login,
+		"friend":       uin_tool.Friend,
 	},
 	"sign": {},
 }

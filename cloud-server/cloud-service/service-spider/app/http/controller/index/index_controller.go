@@ -5,5 +5,5 @@ import (
 )
 
 func (ControllerIndex) Index(c *sinking_server.Context) {
-	c.Success("服务正常")
+
 }

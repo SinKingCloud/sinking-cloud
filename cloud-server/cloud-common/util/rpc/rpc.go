@@ -41,7 +41,7 @@ func (r *rpc) Call(url string, param *Param) *rpc {
 		util2.RequestId: r.requestId,
 		util.Conf.GetString(config.ConfRegisterTokenKey): util.Conf.GetString(config.ConfRegisterTokenValue),
 		util2.RpcHeaderTokenName:                         util.Conf.GetString(config.ConfRegisterTokenValue),
-	}).Timeout(5).ReTry(5).Call(url, &sinking_sdk_go.Param{
+	}).Timeout(60).ReTry(5).Call(url, &sinking_sdk_go.Param{
 		"data":  param,
 		"group": util.Conf.GetString(config.ConfApplicationGroup),
 		"name":  util.Conf.GetString(config.ConfApplicationName),

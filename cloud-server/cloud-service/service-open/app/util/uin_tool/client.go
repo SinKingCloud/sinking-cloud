@@ -2,6 +2,7 @@ package uin_tool
 
 import (
 	"encoding/json"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"io"
 	"io/ioutil"
 	"log"
@@ -58,13 +59,14 @@ func (s *speed) sendRequest(url string, data interface{}, timeout int) (*respons
 			}
 		}(resp.Body)
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("错误：请求地址", url, "请求参数", s.toJson(data), "结果", string(body))
+		log.Println("错误：请求地址", url, "请求参数", s.toJson(data), "结果", string(bytes))
 		return nil, err
 	}
+	body := str.NewStringTool(string(bytes)).ConvertToString("gbk", "utf-8")
 	var res *response
-	err = json.Unmarshal(body, &res)
+	err = json.Unmarshal([]byte(body), &res)
 	log.Println("请求地址", url, "请求参数", s.toJson(data), "结果", string(body))
 	if err != nil {
 		return nil, err
@@ -74,75 +76,78 @@ func (s *speed) sendRequest(url string, data interface{}, timeout int) (*respons
 
 // response 响应结构
 type response struct {
-	Type  string `json:"Type"`
-	State string `json:"State"`
-	Uin   int64  `json:"Uin"`
+	Type     string `json:"Type"`
+	State    string `json:"State"`
+	Uin      int64  `json:"Uin"`
+	Pskey    string `json:"pskey"`
+	Skey     string `json:"skey"`
+	Superkey string `json:"Superkey"`
 }
 
 // SpeedStatus 任务状态
 type SpeedStatus struct {
 	CommonInfoGetQQLevelInfo struct {
 		Lxby                string `json:"Lxby"`
-		QzoneVisitor        string `json:"QzoneVisitor"`
+		QzoneVisitor        string `json:"QzoneVisitor"` //访客加速
 		SVIPStar            string `json:"SVIPStar"`
-		WeishiVideoview     string `json:"WeishiVideoview"`
-		IAddFriend          string `json:"iAddFriend"`
-		IBaseDays           string `json:"iBaseDays"`
+		WeishiVideoview     string `json:"WeishiVideoview"` //微视加速
+		IAddFriend          string `json:"iAddFriend"`      //加好友加速
+		IBaseDays           string `json:"iBaseDays"`       //基础服务加速
 		IBigClubGrowth      string `json:"iBigClubGrowth"`
 		IBigClubLevel       string `json:"iBigClubLevel"`
 		IBigClubSpeed       string `json:"iBigClubSpeed"`
 		IBigClubVipFlag     string `json:"iBigClubVipFlag"`
-		ICmshowActive       string `json:"iCmshowActive"`
-		IContinueLogin      string `json:"iContinueLogin"`
-		ICostMs             string `json:"iCostMs"`
-		IDailySign          string `json:"iDailySign"`
-		IMaxLvlRealDays     string `json:"iMaxLvlRealDays"`
-		IMaxLvlTotalDays    string `json:"iMaxLvlTotalDays"`
-		IMedal              string `json:"iMedal"`
-		IMobileGameOnline   string `json:"iMobileGameOnline"`
-		IMobileQQOnline     string `json:"iMobileQQOnline"`
-		IMobileQQOnlineTime string `json:"iMobileQQOnlineTime"`
+		ICmshowActive       string `json:"iCmshowActive"`       //厘米秀加速
+		IContinueLogin      string `json:"iContinueLogin"`      //连续登陆加速
+		ICostMs             string `json:"iCostMs"`             //本次请求毫秒数
+		IDailySign          string `json:"iDailySign"`          //打卡加速
+		IMaxLvlRealDays     string `json:"iMaxLvlRealDays"`     //开通会员基础服务加速活跃天数
+		IMaxLvlTotalDays    string `json:"iMaxLvlTotalDays"`    //开通会员最高加速活跃天数
+		IMedal              string `json:"iMedal"`              //勋章加速
+		IMobileGameOnline   string `json:"iMobileGameOnline"`   //游戏加速
+		IMobileQQOnline     string `json:"iMobileQQOnline"`     //手机加速
+		IMobileQQOnlineTime string `json:"iMobileQQOnlineTime"` //手机在线时长
 		IMqing              string `json:"iMqing"`
-		INextLevelDay       string `json:"iNextLevelDay"`
-		INoHideOnline       string `json:"iNoHideOnline"`
-		INoHideOnlineTime   string `json:"iNoHideOnlineTime"`
-		IPCQQOnline         string `json:"iPCQQOnline"`
-		IPCQQOnlineTime     string `json:"iPCQQOnlineTime"`
-		IPCSafeOnline       string `json:"iPCSafeOnline"`
-		IQQLevel            string `json:"iQQLevel"`
-		IQQSportStep        string `json:"iQQSportStep"`
-		IQzoneState         string `json:"iQzoneState"`
-		IRealDays           string `json:"iRealDays"`
-		ISVip               string `json:"iSVip"`
+		INextLevelDay       string `json:"iNextLevelDay"`     //距离下次升级活跃天数
+		INoHideOnline       string `json:"iNoHideOnline"`     //非隐身在线加速
+		INoHideOnlineTime   string `json:"iNoHideOnlineTime"` //非隐身在线时长
+		IPCQQOnline         string `json:"iPCQQOnline"`       //电脑加速
+		IPCQQOnlineTime     string `json:"iPCQQOnlineTime"`   //电脑在线时长
+		IPCSafeOnline       string `json:"iPCSafeOnline"`     //电脑管家加速
+		IQQLevel            string `json:"iQQLevel"`          //QQ等级
+		IQQSportStep        string `json:"iQQSportStep"`      //运动加速
+		IQzoneState         string `json:"iQzoneState"`       //空间说说加速
+		IRealDays           string `json:"iRealDays"`         //今日加速天数
+		ISVip               string `json:"iSVip"`             //是否为超级会员
 		ISpeedType          string `json:"iSpeedType"`
 		ISqq                string `json:"iSqq"`
 		ISqqLevel           string `json:"iSqqLevel"`
 		ISqqSpeedRate       string `json:"iSqqSpeedRate"`
-		ISvrDays            string `json:"iSvrDays"`
-		ITotalActiveDay     string `json:"iTotalActiveDay"`
-		ITotalDays          string `json:"iTotalDays"`
-		IVip                string `json:"iVip"`
-		IVipLevel           string `json:"iVipLevel"`
-		IVipSpeedRate       string `json:"iVipSpeedRate"`
+		ISvrDays            string `json:"iSvrDays"`        //服务加速
+		ITotalActiveDay     string `json:"iTotalActiveDay"` //QQ活跃天数
+		ITotalDays          string `json:"iTotalDays"`      //QQ最大活跃天数
+		IVip                string `json:"iVip"`            //是否为会员
+		IVipLevel           string `json:"iVipLevel"`       //会员等级
+		IVipSpeedRate       string `json:"iVipSpeedRate"`   //会员成长值速度
 		IYearBigClubFlag    string `json:"iYearBigClubFlag"`
-		IYearVip            string `json:"iYearVip"`
-		SFaceUrl            string `json:"sFaceUrl"`
-		SNickName           string `json:"sNickName"`
-		SpeedStar           string `json:"speedStar"`
+		IYearVip            string `json:"iYearVip"`  //是否为年费会员
+		SFaceUrl            string `json:"sFaceUrl"`  //头像地址
+		SNickName           string `json:"sNickName"` //昵称
+		SpeedStar           string `json:"speedStar"` //是否开通加速星
 	} `json:"commonInfo.getQQLevelInfo"`
 	CommonInfoGetQQInfo struct {
 		Oidb0X99Ret           string      `json:"Oidb0x99Ret"`
 		VipCareInfoRet        string      `json:"VipCareInfoRet"`
-		IGrowthRet            string      `json:"iGrowthRet"`
-		IGrowthSpeed          string      `json:"iGrowthSpeed"`
-		IGrowthValue          string      `json:"iGrowthValue"`
-		IOpenSVip             string      `json:"iOpenSVip"`
-		IOpenVip              string      `json:"iOpenVip"`
-		IQQLevel              string      `json:"iQQLevel"`
+		IGrowthRet            string      `json:"iGrowthRet"`   //是否为会员
+		IGrowthSpeed          string      `json:"iGrowthSpeed"` //会员成长值速度
+		IGrowthValue          string      `json:"iGrowthValue"` //会员成长值
+		IOpenSVip             string      `json:"iOpenSVip"`    //是否开通svip
+		IOpenVip              string      `json:"iOpenVip"`     //是否开通vip
+		IQQLevel              string      `json:"iQQLevel"`     //QQ等级
 		IQQLevelRet           string      `json:"iQQLevelRet"`
 		ISVipCareFlag         string      `json:"iSVipCareFlag"`
 		IVipCareFlag          string      `json:"iVipCareFlag"`
-		IVipLevel             string      `json:"iVipLevel"`
+		IVipLevel             string      `json:"iVipLevel"` //会员等级
 		IVipType              string      `json:"iVipType"`
 		SMiddlePicUrl         string      `json:"sMiddlePicUrl"`
 		SNickName             string      `json:"sNickName"`
@@ -158,4 +163,7 @@ type SpeedStatus struct {
 		SuperclubYearPeriod   interface{} `json:"superclub_year_period"`
 		ClubStatus            int         `json:"clubStatus"`
 	} `json:"commonInfo.getQQInfo"`
+	Pskey    string `json:"pskey"`
+	Skey     string `json:"skey"`
+	Superkey string `json:"Superkey"`
 }

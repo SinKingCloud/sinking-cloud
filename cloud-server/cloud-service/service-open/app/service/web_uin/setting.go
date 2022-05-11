@@ -7,7 +7,9 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/log"
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin_info"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/uin_tool"
+	"strconv"
 )
 
 // ServerUinCreate 挂机服务器创建账号
@@ -116,4 +118,51 @@ func ChangePhone(uinId int, phone string) error {
 		}
 	}
 	return nil
+}
+
+// GetUinSpeedStatus 获取加速任务状态
+func GetUinSpeedStatus(addr string, proxy string, uin string) (*uin_tool.SpeedStatus, error, bool) {
+	s := uin_tool.NewUinTool(addr, proxy)
+	status, err, isFail := s.Status(uin)
+	if err == nil && status != nil && !isFail {
+		//更新QQ信息
+		go func(status *uin_tool.SpeedStatus) {
+			levelInfo := status.CommonInfoGetQQLevelInfo
+			uinInfo := status.CommonInfoGetQQInfo
+			//qq信息
+			level, e := strconv.Atoi(uinInfo.IQQLevel)
+			if e != nil {
+				level = 0
+			}
+			info := &model.AppUinInfo{
+				Uin:         uinInfo.Uin,
+				NickName:    uinInfo.SNickName,
+				Level:       level,
+				ActivateDay: levelInfo.ITotalActiveDay,
+				TodayDay:    levelInfo.IRealDays,
+				Skey:        status.Skey,
+				PSkey:       status.Pskey,
+				SuperToken:  status.Superkey,
+			}
+			//加速状态
+			speedInfo := map[string]string{
+				"mobile":       levelInfo.IMobileQQOnline,
+				"pc":           levelInfo.IPCQQOnline,
+				"online":       levelInfo.INoHideOnline,
+				"zone":         levelInfo.QzoneVisitor,
+				"medal":        levelInfo.IMedal,
+				"ws":           levelInfo.WeishiVideoview,
+				"micro_show":   levelInfo.ICmshowActive,
+				"safe":         levelInfo.IPCSafeOnline,
+				"game":         levelInfo.IMobileGameOnline,
+				"sport":        levelInfo.IQQSportStep,
+				"mobile_clock": levelInfo.IDailySign,
+				"zone_clock":   levelInfo.IQzoneState,
+				"login":        levelInfo.IContinueLogin,
+				"friend":       levelInfo.IAddFriend,
+			}
+			_ = uin_info.GetIns().Save(info, speedInfo)
+		}(status)
+	}
+	return status, err, isFail
 }

@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"github.com/axgle/mahonia"
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	rand2 "math/rand"
@@ -192,4 +193,14 @@ func (stringTool StringTool) Show(left int, right int, str string) string {
 		temp += str
 	}
 	return string(leftStr) + temp + string(rightStr)
+}
+
+// ConvertToString 编码转换
+func (stringTool StringTool) ConvertToString(srcCode string, tagCode string) string {
+	srcCoder := mahonia.NewDecoder(srcCode)
+	srcResult := srcCoder.ConvertString(stringTool.string)
+	tagCoder := mahonia.NewDecoder(tagCode)
+	_, cdata, _ := tagCoder.Translate([]byte(srcResult), true)
+	result := string(cdata)
+	return result
 }

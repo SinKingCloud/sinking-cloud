@@ -161,10 +161,13 @@ func speed(uin *model.AppUin) {
 				data["check_time"] = str.DateTime(time.Now().Add(4.2 * 3600 * time.Second))
 			}
 			//检测挂机
-			fail, _ = check(server.Addr, server.Proxy, uin, jobs, lower)
+			fail, _ = check(server.Addr, server.Proxy, uin, jobs, lower, false)
 		} else {
 			//正常挂机
 			fail, _ = uin_tool.NewUinTool(server.Addr, server.Proxy).Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, jobs, true)
+			if !fail {
+				fail, _ = check(server.Addr, server.Proxy, uin, jobs, false, true) //判断未执行的秒加速项目并补挂一次
+			}
 			//只允许9点前执行第二次挂机
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 {
 				data["check_time"] = str.DateTime(time.Now().Add(2.1 * 3600 * time.Second))
@@ -180,22 +183,25 @@ func speed(uin *model.AppUin) {
 }
 
 // check 检测挂机失败的项目
-func check(addr string, proxy string, uin *model.AppUin, jobs []int, lower bool) (bool, map[int]bool) {
-	s := uin_tool.NewUinTool(addr, proxy)
-	status, err, isFail := s.Status(uin.Uin)
-	if err != nil || status == nil {
-		return false, nil
-	}
-	jobStatus := status.CommonInfoGetQQLevelInfo
+func check(addr string, proxy string, uin *model.AppUin, jobs []int, lower bool, isFirst bool) (bool, map[int]bool) {
+	status, err, isFail := web_uin.GetUinSpeedStatus(addr, proxy, uin.Uin)
 	if isFail {
 		return true, nil
 	}
+	if err != nil || status == nil {
+		return false, nil
+	}
+	s := uin_tool.NewUinTool(addr, proxy)
+	jobStatus := status.CommonInfoGetQQLevelInfo
 	var newJobs []int
 	//判断项目并加速
 	for _, v := range jobs {
 		isCheck := false
 		switch v {
 		case uin_tool.Mobile:
+			if isFirst {
+				continue
+			}
 			isCheck = jobStatus.IMobileQQOnline != "1"
 			if !isCheck && lower {
 				//下线手机
@@ -203,6 +209,9 @@ func check(addr string, proxy string, uin *model.AppUin, jobs []int, lower bool)
 			}
 			break
 		case uin_tool.Pc:
+			if isFirst {
+				continue
+			}
 			isCheck = jobStatus.IPCQQOnline != "1"
 			if !isCheck && lower {
 				//下线PC
@@ -210,12 +219,18 @@ func check(addr string, proxy string, uin *model.AppUin, jobs []int, lower bool)
 			}
 			break
 		case uin_tool.Online:
+			if isFirst {
+				continue
+			}
 			isCheck = jobStatus.INoHideOnline != "1"
 			break
 		case uin_tool.Medal:
 			isCheck = jobStatus.IMedal != "1"
 			break
 		case uin_tool.Zone:
+			if isFirst {
+				continue
+			}
 			isCheck = jobStatus.QzoneVisitor != "1"
 			break
 		case uin_tool.Ws:
@@ -225,13 +240,16 @@ func check(addr string, proxy string, uin *model.AppUin, jobs []int, lower bool)
 			isCheck = jobStatus.ICmshowActive != "1"
 			break
 		case uin_tool.Safe:
+			if isFirst {
+				continue
+			}
 			isCheck = jobStatus.IPCSafeOnline != "1"
 			break
 		case uin_tool.Game:
 			isCheck = jobStatus.IMobileGameOnline != "1"
 			break
 		case uin_tool.Sport:
-			isCheck = false //jobStatus.IQQSportStep != "1"
+			isCheck = false
 			if time.Now().Day() <= 8 {
 				isCheck = jobStatus.IQQSportStep != "1"
 			}
@@ -251,7 +269,7 @@ func check(addr string, proxy string, uin *model.AppUin, jobs []int, lower bool)
 		}
 	}
 	if len(newJobs) > 0 {
-		return s.Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, newJobs, false)
+		return s.Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, newJobs, isFirst)
 	}
 	return false, nil
 }
