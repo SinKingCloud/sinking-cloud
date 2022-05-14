@@ -352,6 +352,50 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 		}
 		return false
 	}
+	getTryJobs := func(jobs []int) (bool, []int) {
+		status, err, isFail := s.Status(uin.Uin)
+		if isFail {
+			return true, []int{}
+		}
+		if err != nil || status == nil {
+			return false, []int{}
+		}
+		jobStatus := status.CommonInfoGetQQLevelInfo
+		var speedJobs []int
+		for _, v := range jobs {
+			isCheck := false
+			switch v {
+			case Medal:
+				isCheck = jobStatus.IMedal != "1"
+				break
+			case Ws:
+				isCheck = jobStatus.WeishiVideoview != "1"
+				break
+			case MicroShow:
+				isCheck = jobStatus.ICmshowActive != "1"
+				break
+			case Sport:
+				isCheck = false
+				if time.Now().Day() <= 8 {
+					isCheck = jobStatus.IQQSportStep != "1"
+				}
+				break
+			case MobileClock:
+				isCheck = jobStatus.IDailySign != "1"
+				break
+			case ZoneClock:
+				isCheck = jobStatus.IQzoneState != "1"
+				break
+			case Friend:
+				isCheck = jobStatus.IAddFriend != "1"
+				break
+			}
+			if isCheck {
+				speedJobs = append(speedJobs, v)
+			}
+		}
+		return false, speedJobs
+	}
 	speed := func(jobs []int) {
 		isBreak = false //初始化
 		//加速项目
@@ -416,7 +460,14 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 				break
 			case Sport:
 				res[Sport] = speedA(func() bool {
-					return s.sportSpeed(uin.Uin)
+					r := s.sportSpeed(uin.Uin)
+					if !r {
+						r = s.sportSpeed(uin.Uin)
+						if !r {
+							r = s.sportSpeed(uin.Uin)
+						}
+					}
+					return r
 				})
 				break
 			case MobileClock:
@@ -441,6 +492,16 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 		}
 	}
 	speed(uin.SpeedJobs) //执行加速任务
+	if uin.IsFirst {
+		isFail, retryJobs := getTryJobs(uin.SpeedJobs)
+		if !isFail && len(retryJobs) > 0 {
+			speed(retryJobs) //重新执行秒加速项目
+			isFail, retryJobs = getTryJobs(uin.SpeedJobs)
+			if !isFail && len(retryJobs) > 0 {
+				speed(retryJobs) //重新执行秒加速项目
+			}
+		}
+	}
 	return isBreak, res
 }
 

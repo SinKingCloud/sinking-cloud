@@ -36,9 +36,9 @@ WORKDIR /data/sinking/cloud-service/service-open
 RUN go mod tidy
 RUN go build
 #################构建爬虫服务####################
-WORKDIR /data/sinking/cloud-service/service-spider
-RUN go mod tidy
-RUN go build
+#WORKDIR /data/sinking/cloud-service/service-spider
+#RUN go mod tidy
+#RUN go build
 
 #################网关服务镜像####################
 FROM alpine as cloud-gateway
@@ -95,11 +95,11 @@ EXPOSE 1004
 ENTRYPOINT  ["./service-open"]
 
 #################爬虫服务镜像####################
-FROM centos:centos7.9.2009 as service-open
-ENV TIME_ZONE Asia/Shanghai
-WORKDIR /data/sinking
-COPY --from=sinking-builder /data/sinking/cloud-service/service-spider/service-spider .
-COPY --from=sinking-builder /data/sinking/cloud-service/service-spider/config/ ./config/
-EXPOSE 1006
-ENTRYPOINT  ["./service-spider"]
+#FROM centos:centos7.9.2009 as service-open
+#ENV TIME_ZONE Asia/Shanghai
+#WORKDIR /data/sinking
+#COPY --from=sinking-builder /data/sinking/cloud-service/service-spider/service-spider .
+#COPY --from=sinking-builder /data/sinking/cloud-service/service-spider/config/ ./config/
+#EXPOSE 1006
+#ENTRYPOINT  ["./service-spider"]
 

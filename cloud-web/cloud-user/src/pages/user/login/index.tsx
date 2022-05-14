@@ -72,9 +72,6 @@ const Login: React.FC = () => {
       }
     }, 1000);
   };
-
-  const [redirectUrl, setRedirectUrl] = useState("/");
-  const [ticket, setTicket] = useState("");
   const [loading, setLoading] = useState(true);
   /**
    * 初始化数据
@@ -82,10 +79,13 @@ const Login: React.FC = () => {
   useEffect(() => {
     setLoading(true);
     changeCaptcha();
-    const {query} = history.location;
-    const {redirect, ticket} = query as { redirect: string, ticket: string };
-    setRedirectUrl(redirect);
-    setTicket(ticket);
+    const {redirect, ticket} = history.location.query as { redirect: string, ticket: string };
+    if (redirect) {
+      localStorage.setItem("redirect", redirect || "");
+    }
+    if (ticket) {
+      localStorage.setItem("ticket", ticket || "");
+    }
     fetchUserInfo().then(() => {
       setLoading(false);
     });
@@ -96,11 +96,17 @@ const Login: React.FC = () => {
    */
   const ticketLogin = async (): Promise<any> => {
     setIsLoading(true);
+    const ticket = localStorage.getItem("ticket");
+    const redirect = localStorage.getItem("redirect");
     //授权ticket在跳转
-    await ticketAuth({ticket: ticket, redirect_url: redirectUrl}).then((r) => {
+    await ticketAuth({
+      ticket: ticket,
+      redirect_url: redirect
+    }).then((r) => {
+      localStorage.removeItem("ticket");
       setIsLoading(false);
       if (r.code == 200) {
-        window.location.href = redirectUrl || "/";
+        window.location.href = redirect || "/";
         return true;
       } else {
         message.error(r.message || "授权登录失败");
@@ -174,12 +180,13 @@ const Login: React.FC = () => {
                     await fetchUserInfo();
                     message.success(r.message);
                     /** 判断是否授权登陆 */
-                    if (redirectUrl?.substring(0, 4) == "http") {
+                    if (localStorage.getItem("ticket")) {
                       await ticketLogin();
                       setIsLoading(false);
                     } else {
                       setIsLoading(false);
-                      history.push(redirectUrl || '/');
+                      history.push(localStorage.getItem("redirect") || '/');
+                      localStorage.removeItem("redirect");
                     }
                   }
                 });
@@ -304,12 +311,13 @@ const Login: React.FC = () => {
                   </div>
                   <Button type='primary' size={'large'} block loading={isLoading} onClick={async () => {
                     /** 判断是否授权登陆 */
-                    if (redirectUrl?.substring(0, 4) == "http") {
+                    if (localStorage.getItem("ticket")) {
                       await ticketLogin();
                       setIsLoading(false);
                     } else {
                       setIsLoading(false);
-                      history.push(redirectUrl || '/');
+                      history.push(localStorage.getItem("redirect") || '/');
+                      localStorage.removeItem("redirect");
                     }
                   }}>
                     快捷登陆

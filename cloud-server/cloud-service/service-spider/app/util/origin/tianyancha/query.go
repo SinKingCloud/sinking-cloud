@@ -2,7 +2,6 @@ package tianyancha
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-spider/app/util/origin"
 	"io"
 	"io/ioutil"
@@ -41,7 +40,6 @@ func Search(keyWord string, proxy string) (*Data, int) {
 	if err != nil {
 		return nil, origin.Fail
 	}
-	fmt.Println(proxy, string(body))
 	var response Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {

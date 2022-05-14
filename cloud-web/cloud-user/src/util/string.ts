@@ -35,3 +35,18 @@ export function getUrlQuery(url: string) {
   url.replace(reg, fun);
   return obj
 }
+
+/**
+ * 获取访问字符
+ * @param url
+ */
+export function getQueryString(url: string = ""): string {
+  if (url == "") {
+    url = window.location.href;
+  }
+  let firstIndex = decodeURI(url).indexOf("?");
+  if (firstIndex < 0) {
+    return ""
+  }
+  return url.substring(firstIndex + 1);
+}

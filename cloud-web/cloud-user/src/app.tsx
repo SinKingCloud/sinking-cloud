@@ -13,6 +13,7 @@ import * as allIcons from '@ant-design/icons';
 import {message} from 'antd';
 import defaultSettings from '../config/defaultSettings';
 import * as auth from './util/auth';
+import {getQueryString} from "@/util/string";
 
 /**
  * 开发环境
@@ -41,6 +42,14 @@ export async function getInitialState(): Promise<{
   fetchUserInfo?: () => Promise<API.UserInfo | undefined>;
 }> {
   const fetchUserInfo = async () => {
+    const {redirect, ticket} = history.location.query as { redirect: string, ticket: string };
+    if (redirect) {
+      localStorage.setItem("redirect", redirect || "");
+    }
+    if (ticket) {
+      localStorage.setItem("ticket", ticket || "");
+    }
+    const redirectUrl = allowPaths[0] + getQueryString()
     try {
       const response = await queryCurrentUser();
       // @ts-ignore
@@ -50,12 +59,12 @@ export async function getInitialState(): Promise<{
           message.warning(response.message)
         }
         auth.deleteHeader()
-        history.push(allowPaths[0]);
+        history.push(redirectUrl);
         return undefined;
       }
       return response.data;
     } catch (error) {
-      history.push(allowPaths[0]);
+      history.push(redirectUrl);
       auth.deleteHeader()
     }
     return undefined;

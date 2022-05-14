@@ -9,7 +9,7 @@ import {
   getUinInfo
 } from "@/services/open/uin/uin";
 import moment from "moment";
-import {ExclamationCircleOutlined} from "@ant-design/icons";
+import {ExclamationCircleOutlined, InfoCircleOutlined} from "@ant-design/icons";
 
 export type EditUinProps = {
   uin?: string;
@@ -216,7 +216,7 @@ const EditUin: React.FC<EditUinProps> = (props) => {
                         <Tag color={"red"}>天数不足</Tag>}
                         {days > 0 && <Tag color={"success"}>剩余:{days}天</Tag>}</>}
                       // @ts-ignore
-                      description={<span style={{fontSize: "7px"}}>{item?.describe}</span>}
+                      description={<><InfoCircleOutlined style={{fontSize:"12px"}}/>&nbsp;<span style={{fontSize: "10px"}}>{item?.describe}</span></>}
                     />
                   </List.Item>
                 </>

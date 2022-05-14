@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
+	"time"
 )
 
 // service 单例对象
@@ -51,9 +53,9 @@ func (s *service) Save(data *model.AppUinInfo, speedInfo map[string]string) (err
 			d["level"] = data.Level
 		}
 		if speedInfo != nil {
-			str, e := json.Marshal(speedInfo)
+			bytes, e := json.Marshal(speedInfo)
 			if e == nil {
-				t := string(str)
+				t := string(bytes)
 				d["speed_info"] = t
 				data.SpeedInfo = t
 			}
@@ -61,6 +63,7 @@ func (s *service) Save(data *model.AppUinInfo, speedInfo map[string]string) (err
 		if s.CountByUin(data.Uin) > 0 {
 			err = s.UpdateByUin(data.Uin, d)
 		} else {
+			data.UpdateTime = str.DateTime(time.Now())
 			err = s.Create(data)
 		}
 	} else {
