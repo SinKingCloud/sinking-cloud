@@ -55,7 +55,7 @@ func GetUserInfo(oauthId int, ticket string) (*UserInfo, error) {
 		"status": oauth_log.Expire,
 	})
 	data := &UserInfo{
-		Id:        oauthUser.Id,
+		Id:        user.Id,
 		Account:   user.Account,
 		RealAuth:  user.RealAuth,
 		NickName:  user.NickName,

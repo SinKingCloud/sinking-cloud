@@ -11,6 +11,11 @@
             path: '/user/login',
             component: './user/login',
           },
+          {
+            name: '修改资料',
+            path: '/user/profile',
+            component: './user/profile',
+          },
         ],
       },
       {
