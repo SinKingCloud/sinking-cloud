@@ -417,8 +417,7 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 				break
 			case Medal:
 				res[Medal] = speedP(func() bool {
-					time.Sleep(5 * time.Second)
-					return s.medalSpeed(uin.Uin)
+					return pcLogin
 				})
 				break
 			case Zone:
@@ -426,8 +425,8 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 				break
 			case Online:
 				if !uin.IsFirst {
-					res[Online] = speedA(func() bool {
-						return mobileLogin
+					res[Online] = speedP(func() bool {
+						return pcLogin
 					})
 				}
 				break
