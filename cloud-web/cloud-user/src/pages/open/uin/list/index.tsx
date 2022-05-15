@@ -168,9 +168,9 @@ export default (): React.ReactNode => {
       },
     },
     {
-      title: 'QQ状态',
+      title: '账号状态',
       dataIndex: 'uin_status',
-      tip: 'QQ挂机状态,异常状态需要重新登陆才能恢复',
+      tip: '账号挂机状态,异常状态需要重新登陆才能恢复',
       valueEnum: {
         0: {
           text: '正常',

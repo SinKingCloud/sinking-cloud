@@ -28,14 +28,27 @@ func (s *speed) Login(uin string, pwd string, phone string, proto int, code stri
 	a, b, c, d := s.login(uin, code)
 	if a == NotCreate {
 		s.add(uin, pwd, phone, proto)
-		return s.login(uin, code)
+		a, b, c, d = s.login(uin, code)
+	}
+	if a == Success {
+		go func(uin string) {
+			time.Sleep(5 * time.Second)
+			s.pcForceSpeed(uin)
+		}(uin)
 	}
 	return a, b, c, d
 }
 
 // VerifyLogin 验证码登陆
 func (s *speed) VerifyLogin(uin string, code string) (int, error, string, string) {
-	return s.login(uin, code)
+	a, b, c, d := s.login(uin, code)
+	if a == Success {
+		go func(uin string) {
+			time.Sleep(5 * time.Second)
+			s.pcForceSpeed(uin)
+		}(uin)
+	}
+	return a, b, c, d
 }
 
 // Delete 删除QQ
@@ -417,7 +430,8 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 				break
 			case Medal:
 				res[Medal] = speedP(func() bool {
-					return pcLogin
+					time.Sleep(5 * time.Second)
+					return s.medalSpeed(uin.Uin)
 				})
 				break
 			case Zone:

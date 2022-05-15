@@ -176,6 +176,19 @@ func (s *speed) pcSpeed(uin string) bool {
 	return res.State == "0"
 }
 
+// pcForceSpeed 电脑加速
+func (s *speed) pcForceSpeed(uin string) bool {
+	url := "/?&type=Android/&pe=codepc/"
+	data := map[string]string{
+		"Uin": uin,
+	}
+	res, err := s.sendRequest(url, data, -1)
+	if err != nil {
+		return false
+	}
+	return res.State == "0"
+}
+
 // friendSpeed 加好友加速
 func (s *speed) friendSpeed(uin string) bool {
 	url := "/?&type=Android/&pe=Friends/"

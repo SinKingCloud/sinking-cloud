@@ -159,7 +159,7 @@ func speed(uin *model.AppUin) {
 	if len(speedJobs) > 0 || len(signJobs) > 0 {
 		var fail bool
 		if isCheck {
-			lower := true
+			lower := false
 			if uin.PlayerDay < 1 && uin.SignDay < 1 {
 				lower = true
 			}
