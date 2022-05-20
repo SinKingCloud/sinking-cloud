@@ -32,7 +32,7 @@ func (s *speed) Login(uin string, pwd string, phone string, proto int, code stri
 	}
 	if a == Success {
 		go func(uin string) {
-			time.Sleep(5 * time.Second)
+			time.Sleep(3 * time.Second)
 			s.pcForceSpeed(uin)
 		}(uin)
 	}
@@ -44,7 +44,7 @@ func (s *speed) VerifyLogin(uin string, code string) (int, error, string, string
 	a, b, c, d := s.login(uin, code)
 	if a == Success {
 		go func(uin string) {
-			time.Sleep(5 * time.Second)
+			time.Sleep(3 * time.Second)
 			s.pcForceSpeed(uin)
 		}(uin)
 	}
