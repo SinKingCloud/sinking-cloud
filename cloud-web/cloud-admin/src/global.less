@@ -25,11 +25,14 @@
 @number-input-radius: 5px; //数字输入框圆角
 @tag-radius: 5px; //tag圆角
 @alert-radius: 5px; //alert圆角
-
+@dropdown-overlay-radius: 5px; //下拉框圆角
+@dropdown-overlay-shadow: 0px 0px 10px 10px rgba(241, 241, 241, 0.54); //下拉框阴影
 html,
 body,
-#root {
-  height: 100%;
+#root
+{
+  height: 100%
+;
 }
 
 
@@ -462,4 +465,12 @@ textarea {
 .ant-pro-card {
   border-radius: @card-radius !important;
   box-shadow: @card-shadow !important;
+}
+
+/**
+ * 查询下拉框
+ */
+.ant-pro-core-field-dropdown-overlay {
+  box-shadow: @dropdown-overlay-shadow !important;
+  border-radius: @dropdown-overlay-radius !important;
 }

@@ -138,7 +138,7 @@ export default (): React.ReactNode => {
     },
     {
       title: '头像',
-      tip: 'QQ头像',
+      tip: '头像',
       hideInSearch: true,
       render: (text: string, record: any) => {
         return <>

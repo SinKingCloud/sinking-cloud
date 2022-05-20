@@ -2,7 +2,7 @@ package constant
 
 const (
 	LockUinServer     = "LockUinServer_" //QQ添加锁
-	LockTimeUinServer = 10 * 60 * 1000   //QQ添加锁
+	LockTimeUinServer = 1 * 60 * 1000    //QQ添加锁
 
 	LockUinServerChange     = "LockUinServerChange_" //挂机服务器故障迁移锁
 	LockTimeUinServerChange = 10 * 60 * 1000         //挂机服务器故障迁移锁最大时间

@@ -127,7 +127,7 @@ func GetUinSpeedStatus(addr string, proxy string, uin string) (*uin_tool.SpeedSt
 	status, err, isFail := s.Status(uin)
 	if err == nil && status != nil && !isFail {
 		//更新QQ信息
-		go func(status *uin_tool.SpeedStatus) {
+		go func(status *uin_tool.SpeedStatus, uin string) {
 			levelInfo := status.CommonInfoGetQQLevelInfo
 			uinInfo := status.CommonInfoGetQQInfo
 			//qq信息
@@ -136,7 +136,7 @@ func GetUinSpeedStatus(addr string, proxy string, uin string) (*uin_tool.SpeedSt
 				level = 0
 			}
 			info := &model.AppUinInfo{
-				Uin:         uinInfo.Uin,
+				Uin:         uin,
 				NickName:    uinInfo.SNickName,
 				Level:       level,
 				ActivateDay: levelInfo.ITotalActiveDay,
@@ -171,7 +171,7 @@ func GetUinSpeedStatus(addr string, proxy string, uin string) (*uin_tool.SpeedSt
 				}
 			}
 			_ = uin_info.GetIns().Save(info, speedInfo)
-		}(status)
+		}(status, uin)
 	}
 	return status, err, isFail
 }

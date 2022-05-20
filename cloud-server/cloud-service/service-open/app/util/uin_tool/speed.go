@@ -476,9 +476,6 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 					r := s.sportSpeed(uin.Uin)
 					if !r {
 						r = s.sportSpeed(uin.Uin)
-						if !r {
-							r = s.sportSpeed(uin.Uin)
-						}
 					}
 					return r
 				})

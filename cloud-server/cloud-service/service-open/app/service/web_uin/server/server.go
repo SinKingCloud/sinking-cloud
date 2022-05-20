@@ -37,12 +37,17 @@ func (s *service) ServerUnLock(addr string) bool {
 	return util.Cache.UnLock(constant.LockUinServer + addr)
 }
 
-// ServerWaitLock 判断服务器是否上锁,上锁的话阻塞执行
+// ServerWaitLock 判断服务器是否上锁,上锁的话阻塞任务执行,5s一个判断周期
 func (s *service) ServerWaitLock(addr string) {
+	i := 0
 	for true {
 		if util.Cache.IsLock(constant.LockUinServer + addr) {
+			i++
 			time.Sleep(5 * time.Second)
 		} else {
+			if i > 0 {
+				time.Sleep(2 * time.Second)
+			}
 			break
 		}
 	}
