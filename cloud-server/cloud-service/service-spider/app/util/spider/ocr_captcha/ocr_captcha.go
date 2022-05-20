@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
+	"math/rand"
 	"time"
 )
 
@@ -32,13 +33,14 @@ func Captcha(securityUrl string) (string, error) {
 		}
 		//等待页面加载完毕
 		page.MustWaitLoad()
+		page.MustElement("#nc_1_n1z")
 		//获取拖动对象
 		button := page.MustElement("#nc_1_n1z").MustShape().OnePointInside()
 		//鼠标拖动
 		mouse := page.Mouse
 		mouse.MustMove(button.X+10, button.Y)
 		mouse.MustDown(proto.InputMouseButtonLeft)
-		err := mouse.Move(button.X+330, button.Y+30, 200)
+		err := mouse.Move(button.X+340, button.Y+30, 180+rand.Intn(3))
 		if err == nil {
 			mouse.MustUp("left")
 			net, e1 := page.Cookies([]string{"https://duguang.aliyun.com"})

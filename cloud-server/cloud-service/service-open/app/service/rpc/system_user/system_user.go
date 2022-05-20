@@ -1,7 +1,6 @@
 package system_user
 
 import (
-	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/group"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/name"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
@@ -35,7 +34,6 @@ func (*service) FindById(userId int) *model.SystemUser {
 	_, err := rpc.New(group.CloudService, name.ServiceAdmin).Call("/rpc/user/findById", &rpc.Param{
 		"user_id": userId,
 	}).Unmarshal(&response)
-	fmt.Println(response)
 	if err != nil || response.Code != 200 || response.Data == nil {
 		return nil
 	}

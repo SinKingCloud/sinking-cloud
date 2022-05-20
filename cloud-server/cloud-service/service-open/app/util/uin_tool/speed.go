@@ -356,8 +356,14 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 			if !mobileLogin {
 				return false
 			}
-			if s.pcSpeed(uin.Uin) {
-				pcLogin = true
+			if !uin.IsFirst {
+				if s.pcSpeed(uin.Uin) {
+					pcLogin = true
+				}
+			} else {
+				if s.pcForceSpeed(uin.Uin) {
+					pcLogin = true
+				}
 			}
 		}
 		if pcLogin {
@@ -430,7 +436,7 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 				break
 			case Medal:
 				res[Medal] = speedP(func() bool {
-					time.Sleep(5 * time.Second)
+					time.Sleep(3 * time.Second)
 					return s.medalSpeed(uin.Uin)
 				})
 				break

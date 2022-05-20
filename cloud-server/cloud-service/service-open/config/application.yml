@@ -16,6 +16,7 @@ application:
     cloud-service:
       - service-user #引用用户服务
       - service-admin #引用后台服务
+      - service-spider #引用爬虫服务
 
 #注册中心
 register:

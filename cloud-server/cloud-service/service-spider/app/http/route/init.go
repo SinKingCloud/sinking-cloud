@@ -2,6 +2,7 @@ package route
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"time"
@@ -9,7 +10,7 @@ import (
 
 // loadCommonMiddleware 加载全局中间件
 func loadCommonMiddleware(s *sinking_web.Engine) {
-	//s.Use(middleware.ServiceCheck())
+	s.Use(middleware.ServiceCheck())
 }
 
 // loadErrorHandle 设置错误回调
@@ -44,6 +45,8 @@ func Init() {
 	loadCommonMiddleware(r)
 	//加载路由
 	loadRoute(r)
+	//加载rpc
+	loadRpc(r)
 	//启动http server
 	err := r.Run("0.0.0.0:" + util.Conf.GetString(config.ConfApplicationPort))
 	if err != nil {

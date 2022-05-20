@@ -5,6 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/controller/user/app"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/controller/user/oauth"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/controller/user/ocr"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/controller/user/uin"
 	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/middleware"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -97,6 +98,11 @@ func loadUserRoute(s *sinking_web.Engine) {
 	oauthWebGroup.POST("/delete", sinking_server.HandleFunc(handleOauth.Delete)) //删除接入
 	oauthWebGroup.POST("/update", sinking_server.HandleFunc(handleOauth.Update)) //更新接入
 	oauthWebGroup.POST("/create", sinking_server.HandleFunc(handleOauth.Create)) //新增接入
+
+	//oauth应用
+	handleOcr := &ocr.ControllerOcr{}
+	ocrGroup := g.Group("/ocr")
+	ocrGroup.POST("/test", sinking_server.HandleFunc(handleOcr.Test)) //测试接口
 }
 
 // 后台系统路由

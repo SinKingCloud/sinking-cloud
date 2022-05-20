@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/rpc/spider"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/rpc/system_log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/rpc/system_rbac"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/rpc/system_user"
@@ -16,4 +17,5 @@ var (
 	SystemRbac    = system_rbac.GetIns()
 	SystemUser    = system_user.GetIns()
 	SystemLog     = system_log.GetIns()
+	Spider        = spider.GetIns()
 )
