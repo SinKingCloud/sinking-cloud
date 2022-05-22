@@ -159,16 +159,12 @@ func speed(uin *model.AppUin) {
 	if len(speedJobs) > 0 || len(signJobs) > 0 {
 		var fail bool
 		if isCheck {
-			lower := false
-			if uin.PlayerDay < 1 && uin.SignDay < 1 {
-				lower = true
-			}
 			//只允许9点前执行第三次挂机
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 && time.Now().Unix()-stamp.Unix() > 2*3600 {
 				data["check_time"] = str.DateTime(time.Now().Add(4.2 * 3600 * time.Second))
 			}
 			//检测挂机
-			fail, _ = check(server.Addr, server.Proxy, uin, speedJobs, signJobs, lower, false)
+			fail, _ = check(server.Addr, server.Proxy, uin, speedJobs, signJobs, true, false)
 		} else {
 			//正常挂机
 			fail, _ = uin_tool.NewUinTool(server.Addr, server.Proxy).Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, speedJobs, true)
@@ -203,12 +199,13 @@ func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, s
 	//执行签到任务
 	if len(signCheckJobs) > 0 {
 		producer.NewSignJobProducer().Build(&producer.SignJob{
-			Uin:   uin.Uin,
-			Addr:  addr,
-			Proxy: proxy,
-			Skey:  status.Skey,
-			PSkey: status.Pskey,
-			Jobs:  signCheckJobs,
+			Uin:      uin.Uin,
+			Addr:     addr,
+			Proxy:    proxy,
+			Skey:     status.Skey,
+			PSkey:    status.Pskey,
+			SuperKey: status.Superkey,
+			Jobs:     signCheckJobs,
 		}).Send()
 	}
 	//判断加速项目并加速

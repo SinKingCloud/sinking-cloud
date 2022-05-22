@@ -26,6 +26,21 @@ func ServerUinCreate(serverId int, uin string, pwd string, phone string, loginTy
 	return nil
 }
 
+// ServerUinDelete 挂机服务器删除账号
+func ServerUinDelete(serverId int, uin string) error {
+	serverInfo, err := server2.GetIns().FindById(serverId)
+	if err != nil || serverInfo == nil || serverInfo.Status != server2.Normal {
+		return errors.New("未查询到挂机服务器信息")
+	}
+	s := uin_tool.NewUinTool(serverInfo.Addr, serverInfo.Proxy)
+	s.MobileOffline(uin)
+	s.PcOffline(uin)
+	if !s.Delete(uin) {
+		return errors.New("删除挂机失败")
+	}
+	return nil
+}
+
 // ChangeSetting 更改设置
 func ChangeSetting(uinId int, newSetting map[string]string) error {
 	uinInfo, err := uin.GetIns().FindById(uinId)

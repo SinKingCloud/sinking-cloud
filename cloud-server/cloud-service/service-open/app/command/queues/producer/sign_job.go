@@ -26,12 +26,13 @@ type signJob struct {
 
 // SignJob 数据结构
 type SignJob struct {
-	Uin   string
-	Addr  string
-	Proxy string
-	Skey  string
-	PSkey string
-	Jobs  []int
+	Uin      string
+	Addr     string
+	Proxy    string
+	Skey     string
+	PSkey    string
+	SuperKey string
+	Jobs     []int
 }
 
 // Build 构建消息

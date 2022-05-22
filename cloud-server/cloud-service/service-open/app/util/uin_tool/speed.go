@@ -82,9 +82,12 @@ const (
 	Login              //12.连续登陆加速
 	Friend             //13.加好友加速
 
-	Vip    //14.会员签到
-	BigVip //15.大会员签到
-	Hz     //16.黄钻签到
+	Vip        //14.会员签到
+	BigVip     //15.大会员签到
+	Hz         //16.黄钻签到
+	Lz         //17.蓝钻签到
+	Ld         //18.大乐斗签到
+	GameCenter //19.游戏中心签到
 )
 
 // Status 获取挂机状态 状态,错误,是否异常
@@ -387,9 +390,9 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 			case Medal:
 				isCheck = jobStatus.IMedal != "1"
 				break
-			case Ws:
-				isCheck = jobStatus.WeishiVideoview != "1"
-				break
+			//case Ws:
+			//	isCheck = jobStatus.WeishiVideoview != "1"
+			//	break
 			case MicroShow:
 				isCheck = jobStatus.ICmshowActive != "1"
 				break

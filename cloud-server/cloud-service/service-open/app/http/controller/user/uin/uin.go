@@ -470,6 +470,7 @@ func (ControllerUin) Delete(c *sinking_server.Context) {
 		return
 	}
 	go func(uinInfo *model.AppUin) {
+		_ = web_uin.ServerUinDelete(uinInfo.ServerId, uinInfo.Uin)
 		_ = server2.GetIns().UpdateById(uinInfo.ServerId, map[string]interface{}{
 			"uin_num": gorm.Expr("`uin_num`-1"),
 		})

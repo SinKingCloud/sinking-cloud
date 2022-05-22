@@ -40,7 +40,7 @@ func (l *signJob) Listen() {
 
 func (l *signJob) sign(info *producer.SignJob) {
 	//执行签到任务
-	sign := uin_tool.NewSignTool(info.Uin, info.Skey, info.PSkey)
+	sign := uin_tool.NewSignTool(info.Uin, info.Skey, info.PSkey, info.SuperKey)
 	for _, v := range info.Jobs {
 		switch v {
 		case uin_tool.Vip:
@@ -51,6 +51,15 @@ func (l *signJob) sign(info *producer.SignJob) {
 			break
 		case uin_tool.Hz:
 			sign.YellowDiaSin() //黄钻签到
+			break
+		case uin_tool.Lz:
+			sign.BlueDiaSin() //蓝钻签到
+			break
+		case uin_tool.Ld:
+			sign.DaleDouSign() //乐斗签到
+			break
+		case uin_tool.GameCenter:
+			sign.GameCenterSign() //游戏中心签到
 			break
 		}
 	}

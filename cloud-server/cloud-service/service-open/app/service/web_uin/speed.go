@@ -21,6 +21,9 @@ var Setting = map[string]string{
 	"vip":          "1",
 	"big_vip":      "1",
 	"hz":           "1",
+	"lz":           "1",
+	"ld":           "1",
+	"game_center":  "1",
 }
 
 // JobMap 映射表
@@ -42,9 +45,12 @@ var JobMap = map[string]map[string]int{
 		"friend":       uin_tool.Friend,
 	},
 	"sign": {
-		"vip":     uin_tool.Vip,
-		"big_vip": uin_tool.BigVip,
-		"hz":      uin_tool.Hz,
+		"vip":         uin_tool.Vip,
+		"big_vip":     uin_tool.BigVip,
+		"hz":          uin_tool.Hz,
+		"lz":          uin_tool.Lz,
+		"ld":          uin_tool.Ld,
+		"game_center": uin_tool.GameCenter,
 	},
 }
 
@@ -187,6 +193,30 @@ var Project = map[string]map[string]map[string]string{
 			"name":     "黄钻成长",
 			"describe": "黄钻每日完成三次打卡任务，每日获得15点成长值",
 			"logo":     "https://cdn.open-api.cn/app/uin/img/hz.png",
+			"edit":     "true",
+		},
+		"lz": {
+			"sort":     "18",
+			"type":     "sign",
+			"name":     "蓝钻成长",
+			"describe": "蓝钻每日领取两次成长值4+4，每日获得8点成长值",
+			"logo":     "https://cdn.open-api.cn/app/uin/img/lz.png",
+			"edit":     "true",
+		},
+		"ld": {
+			"sort":     "19",
+			"type":     "sign",
+			"name":     "乐斗签到",
+			"describe": "自动完成QQ空间Q宠大乐斗每日签到、领取礼包等",
+			"logo":     "https://cdn.open-api.cn/app/uin/img/ld.png",
+			"edit":     "true",
+		},
+		"game_center": {
+			"sort":     "20",
+			"type":     "sign",
+			"name":     "游戏中心",
+			"describe": "每日完成手Q游戏中心日常任务获得游戏币和活跃值",
+			"logo":     "https://cdn.open-api.cn/app/uin/img/game_center.png",
 			"edit":     "true",
 		},
 	},
