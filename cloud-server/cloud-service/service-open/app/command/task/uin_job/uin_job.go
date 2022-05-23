@@ -19,6 +19,35 @@ func Run() {
 	go player() //轮询执行
 }
 
+func test() {
+	time.Sleep(5 * time.Second)
+	list, err := uin2.GetIns().SelectUinJob(1000)
+	if err == nil {
+		//避免重复挂机
+		seeded := make(map[string]bool)
+		for _, v := range list {
+			var speedUin *model.AppUin
+			uinList, err1 := uin2.GetIns().SelectByUin(v.Uin)
+			if err1 == nil && len(uinList) > 0 {
+				for _, v1 := range uinList {
+					//取出一个正常qq
+					if v1.Status == uin2.Normal && v1.UinStatus == 0 && speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
+						speedUin = v1
+					}
+				}
+				//发布到消息队列执行
+				if speedUin != nil && seeded[speedUin.Uin] == false {
+					//避免同一查询有重复
+					seeded[speedUin.Uin] = true
+					//发布至消息队列
+					v.RunTime = str.DateTime(time.Now().Add(-30))
+					producer.NewUinJobProducer().Build(v).Send()
+				}
+			}
+		}
+	}
+}
+
 // player 轮询挂机
 func player() {
 	oldMinute := (time.Now().Unix() - str.NewTimeTool().GetZeroTime(time.Now()).Unix()) / 60

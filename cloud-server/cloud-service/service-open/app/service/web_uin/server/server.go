@@ -28,20 +28,25 @@ type AppUinServer struct {
 }
 
 // ServerLock 服务器上锁。阻塞挂机执行
-func (s *service) ServerLock(addr string) bool {
-	return util.Cache.Lock(constant.LockUinServer+addr, constant.LockTimeUinServer)
+func (s *service) ServerLock(key string) bool {
+	return util.Cache.Lock(constant.LockUinServer+key, constant.LockTimeUinServer)
 }
 
-// ServerUnLock 服务器服务器解锁
-func (s *service) ServerUnLock(addr string) bool {
-	return util.Cache.UnLock(constant.LockUinServer + addr)
+// ServerUnLock 服务器解锁
+func (s *service) ServerUnLock(key string) bool {
+	return util.Cache.UnLock(constant.LockUinServer + key)
+}
+
+// ServerIsLock 是否上锁
+func (s *service) ServerIsLock(key string) bool {
+	return util.Cache.IsLock(constant.LockUinServer + key)
 }
 
 // ServerWaitLock 判断服务器是否上锁,上锁的话阻塞任务执行,5s一个判断周期
-func (s *service) ServerWaitLock(addr string) {
+func (s *service) ServerWaitLock(key string) {
 	i := 0
 	for true {
-		if util.Cache.IsLock(constant.LockUinServer + addr) {
+		if util.Cache.IsLock(constant.LockUinServer + key) {
 			i++
 			time.Sleep(5 * time.Second)
 		} else {

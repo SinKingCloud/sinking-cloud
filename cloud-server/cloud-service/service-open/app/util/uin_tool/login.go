@@ -52,6 +52,12 @@ type captcha struct {
 func (s *speed) login(uin string, code string) (int, error, string, string) {
 	//阻塞锁
 	server2.GetIns().ServerWaitLock(s.addr)
+	//判断qq是否并发登陆
+	if server2.GetIns().ServerIsLock(uin) {
+		return Error, errors.New("操作频繁,请稍后重试"), "", ""
+	}
+	//解除并发锁
+	defer server2.GetIns().ServerUnLock(uin)
 	url := "/?&type=Android/&pe=login/"
 	data := map[string]string{
 		"Uin":   uin,

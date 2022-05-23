@@ -40,7 +40,7 @@ func (l *signJob) Listen() {
 
 func (l *signJob) sign(info *producer.SignJob) {
 	//执行签到任务
-	sign := uin_tool.NewSignTool(info.Uin, info.Skey, info.PSkey, info.SuperKey)
+	sign := uin_tool.NewSignTool(info.Uin, info.Proxy, info.Skey, info.PSkey, info.SuperKey)
 	for _, v := range info.Jobs {
 		switch v {
 		case uin_tool.Vip:
