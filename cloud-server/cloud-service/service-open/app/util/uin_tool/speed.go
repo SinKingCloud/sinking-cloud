@@ -390,9 +390,6 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 			case Medal:
 				isCheck = jobStatus.IMedal != "1"
 				break
-			//case Ws:
-			//	isCheck = jobStatus.WeishiVideoview != "1"
-			//	break
 			case MicroShow:
 				isCheck = jobStatus.ICmshowActive != "1"
 				break
@@ -429,16 +426,11 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 			switch v {
 			case Mobile:
 				res[Mobile] = speedA(func() bool {
-					return mobileLogin
+					return s.mobileOnline(uin.Uin)
 				})
 				break
 			case Pc:
 				res[Pc] = speedP(func() bool {
-					return pcLogin
-				})
-				break
-			case Medal:
-				res[Medal] = speedP(func() bool {
 					time.Sleep(3 * time.Second)
 					return s.medalSpeed(uin.Uin)
 				})

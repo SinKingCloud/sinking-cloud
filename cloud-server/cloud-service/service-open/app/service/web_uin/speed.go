@@ -95,7 +95,7 @@ var Project = map[string]map[string]map[string]string{
 			"name":     "勋章墙",
 			"describe": "点亮勋章墙图标，加速0.2天",
 			"logo":     "https://cdn.open-api.cn/app/uin/img/xz.png",
-			"edit":     "true",
+			"edit":     "false",
 		},
 		"ws": {
 			"sort":     "6",

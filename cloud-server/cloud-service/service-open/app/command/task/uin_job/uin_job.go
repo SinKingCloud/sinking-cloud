@@ -31,9 +31,10 @@ func test() {
 			if err1 == nil && len(uinList) > 0 {
 				for _, v1 := range uinList {
 					//取出一个正常qq
-					if v1.Status == uin2.Normal && v1.UinStatus == 0 && speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
-						speedUin = v1
-					}
+					//if v1.Status == uin2.Normal && v1.UinStatus == 0 && speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
+					//	speedUin = v1
+					//}
+					speedUin = v1
 				}
 				//发布到消息队列执行
 				if speedUin != nil && seeded[speedUin.Uin] == false {

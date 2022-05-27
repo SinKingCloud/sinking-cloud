@@ -241,6 +241,9 @@ func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, s
 			break
 		case uin_tool.Medal:
 			isCheck = jobStatus.IMedal != "1"
+			if isCheck {
+				v = uin_tool.Pc
+			}
 			break
 		case uin_tool.Zone:
 			if isFirst {

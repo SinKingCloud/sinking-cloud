@@ -215,6 +215,19 @@ func (s *speed) mobileLower(uin string) bool {
 	return res.State == "0"
 }
 
+// mobileOnline 安卓上线
+func (s *speed) mobileOnline(uin string) bool {
+	url := "/?&type=Android/&pe=online/"
+	data := map[string]string{
+		"Uin": uin,
+	}
+	res, err := s.sendRequest(url, data, -1)
+	if err != nil {
+		return false
+	}
+	return res.State == "0"
+}
+
 // pcLower pc下线
 func (s *speed) pcLower(uin string) bool {
 	url := "/?&type=Pc/&pe=lower/"
