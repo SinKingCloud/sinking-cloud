@@ -370,6 +370,4 @@ func (s *sign) GameCenterSign() {
 	_, _ = s.request(u, "GET", h, "", true)
 	u = "https://info.gamecenter.qq.com/cgi-bin/gc_my_tab_async_fcgi?merge=1&ver=0&st=" + strconv.FormatInt(time.Now().Unix(), 10) + "746&sid=&uin=" + s.uin + "&number=0&path=489&plat=qq&gamecenter=1&_wv=1031&_proxy=1&gc_version=2&ADTAG=gamecenter&notShowPub=1&param=%7B%220%22%3A%7B%22param%22%3A%7B%22platform%22%3A1%2C%22tt%22%3A1%7D%2C%22module%22%3A%22gc_my_tab%22%2C%22method%22%3A%22sign_in%22%7D%7D&g_tk=" + s.gtk
 	_, _ = s.request(u, "GET", h, "", true)
-	u = "http://tool.clwl.online/cgi-bin/gc_my_tab_async_fcgi?merge=1&ver=0&st=" + strconv.FormatInt(time.Now().Unix(), 10) + "746&sid=&uin=" + s.uin + "&number=0&path=489&plat=qq&gamecenter=1&_wv=1031&_proxy=1&gc_version=2&ADTAG=gamecenter&notShowPub=1&param=%7B%220%22%3A%7B%22param%22%3A%7B%22platform%22%3A1%2C%22tt%22%3A1%7D%2C%22module%22%3A%22gc_my_tab%22%2C%22method%22%3A%22sign_in%22%7D%7D&g_tk=" + s.gtk
-	_, _ = s.request(u, "GET", h, "", true)
 }
