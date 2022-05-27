@@ -14,6 +14,9 @@ export default defineConfig({
   outputPath: './dist' + defaultSettings.base,//资源输出路径
   hash: true,
   antd: {},
+  history: {
+    type: 'browser'
+  },
   dva: {
     hmr: true,
   },

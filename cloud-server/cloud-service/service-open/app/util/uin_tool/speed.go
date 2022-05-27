@@ -32,7 +32,9 @@ func (s *speed) Login(uin string, pwd string, phone string, proto int, code stri
 	}
 	if a == Success {
 		go func(uin string) {
-			time.Sleep(3 * time.Second)
+			time.Sleep(1 * time.Second)
+			s.mobileOnline(uin)
+			time.Sleep(2 * time.Second)
 			s.pcForceSpeed(uin)
 		}(uin)
 	}
@@ -442,13 +444,6 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 				if !uin.IsFirst {
 					res[Online] = speedP(func() bool {
 						return pcLogin
-					})
-				}
-				break
-			case Login:
-				if !uin.IsFirst {
-					res[Login] = speedA(func() bool {
-						return mobileLogin
 					})
 				}
 				break
