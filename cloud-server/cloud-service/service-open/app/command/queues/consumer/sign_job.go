@@ -53,7 +53,7 @@ func (l *signJob) sign(info *producer.SignJob) {
 			sign.YellowDiaSin() //黄钻签到
 			break
 		case uin_tool.Lz:
-			//sign.BlueDiaSin() //蓝钻签到
+			sign.BlueDiaSin() //蓝钻签到
 			break
 		case uin_tool.Ld:
 			sign.DaleDouSign() //乐斗签到

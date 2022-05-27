@@ -19,6 +19,7 @@ func GetUserLevel(userId int) (data *model.AppUinLevel) {
 	userConfigs := app_config.GetIns().GetUserConfigs(userId, true)
 	var levelId int
 	var err error
+	isExpire := true //是否到期
 	if userConfigs[constant.UserUinLevel] != "" {
 		//已设定等级
 		levelId, err = strconv.Atoi(userConfigs["uin.level"])
@@ -34,6 +35,8 @@ func GetUserLevel(userId int) (data *model.AppUinLevel) {
 					if time.Now().Unix() > stamp.Unix() {
 						//已过期
 						levelId = 0
+					} else {
+						isExpire = false
 					}
 				}
 			} else {
@@ -56,10 +59,13 @@ func GetUserLevel(userId int) (data *model.AppUinLevel) {
 	}
 	//写入用户配置
 	if data != nil {
-		app_config.GetIns().SetUserConfigs(userId, map[string]string{
-			constant.UserUinLevel:       strconv.Itoa(data.Id),
-			constant.UserUinLevelExpire: str.NewTimeTool().GetFirstDateOfMonth(time.Now().AddDate(0, +1, 0)).Format("2006-01-02 15:04:05"),
-		})
+		d := map[string]string{
+			constant.UserUinLevel: strconv.Itoa(data.Id),
+		}
+		if isExpire {
+			d[constant.UserUinLevelExpire] = str.NewTimeTool().GetFirstDateOfMonth(time.Now().AddDate(0, +1, 0)).Format("2006-01-02 15:04:05")
+		}
+		app_config.GetIns().SetUserConfigs(userId, d)
 		//刷新用户
 		app_config.GetIns().ClearUserConfig(userId)
 	}
