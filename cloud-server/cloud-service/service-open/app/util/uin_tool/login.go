@@ -66,7 +66,7 @@ func (s *speed) login(uin string, code string) (int, error, string, string) {
 	}
 	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
-		return Error, err, "", ""
+		return Error, errors.New("服务器连接失败,请稍后重试"), "", ""
 	}
 	var state *captcha
 	err = json.Unmarshal([]byte(res.State), &state)

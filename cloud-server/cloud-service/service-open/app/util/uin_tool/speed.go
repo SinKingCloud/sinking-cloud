@@ -407,9 +407,6 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 			case ZoneClock:
 				isCheck = jobStatus.IQzoneState != "1"
 				break
-			case Friend:
-				isCheck = jobStatus.IAddFriend != "1"
-				break
 			}
 			if isCheck {
 				speedJobs = append(speedJobs, v)
