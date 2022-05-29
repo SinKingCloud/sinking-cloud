@@ -99,7 +99,7 @@ func (ControllerUin) List(c *sinking_server.Context) {
 // Buy 下单
 func (ControllerUin) Buy(c *sinking_server.Context) {
 	type Form struct {
-		Uin       string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Uin       string `json:"uin" validate:"required,numeric,min=5,max=10" label:"QQ账号"`
 		ServerKey string `json:"server_key" validate:"omitempty,max=10" label:"挂机地区"`
 		AppId     int    `json:"app_id" validate:"omitempty,numeric,gte=0" label:"应用ID"`
 		Pwd       string `json:"pwd" validate:"omitempty,len=32" label:"QQ密码"`
