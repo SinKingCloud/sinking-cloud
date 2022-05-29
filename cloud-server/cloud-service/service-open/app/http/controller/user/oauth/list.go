@@ -13,7 +13,7 @@ import (
 func (ControllerOauth) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id create_time" label:"排序字段"`
+		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id status create_time" label:"排序字段"`
 		OrderByType     string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
 		AppId           string `form:"app_id" default:"" validate:"omitempty,numeric" label:"应用ID"`
 		Status          string `form:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`

@@ -116,22 +116,11 @@ func (client *Redis) IsLock(key string) bool {
 }
 
 // Remember 获取缓存,不存在则设置
-func (client *Redis) Remember(key string, value string, ttl int64) string {
-	c1 := client.Pool.Get()
-	num, err := redis.Int(c1.Do("setnx", key, value))
-	defer client.closeRedisClient(c1)
-	if err != nil {
-		return ""
-	}
-	if err == nil && num == 0 {
-		value2, exists := client.Get(key)
-		if exists {
-			return value2
-		}
-	} else {
-		if ttl > 0 {
-			client.SetExpire(key, ttl)
-		}
+func (client *Redis) Remember(key string, fun func() string, ttl int64) string {
+	value, exists := client.Get(key)
+	if !exists {
+		value = fun()
+		client.SetWithExpire(key, value, ttl)
 	}
 	return value
 }
