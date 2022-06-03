@@ -24,12 +24,12 @@ func (ControllerUser) List(c *sinking_server.Context) {
 		Email           string `form:"email" default:"" validate:"omitempty" label:"用户邮箱"`
 		Phone           string `form:"phone" default:"" validate:"omitempty,numeric" label:"用户手机"`
 		LoginIp         string `form:"login_ip" default:"" validate:"omitempty,max=20" label:"登陆IP"`
-		LoginTimeStart  string `form:"login_time_start" default:"" validate:"-" label:"登陆起始时间"`
-		LoginTimeEnd    string `form:"login_time_end" default:"" validate:"-" label:"登陆结束时间"`
-		CreateTimeStart string `form:"create_time_start" default:"" validate:"-" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"-" label:"创建结束时间"`
-		UpdateTimeStart string `form:"update_time_start" default:"" validate:"-" label:"更新起始时间"`
-		UpdateTimeEnd   string `form:"update_time_end" default:"" validate:"-" label:"更新结束时间"`
+		LoginTimeStart  string `form:"login_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"登陆起始时间"`
+		LoginTimeEnd    string `form:"login_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"登陆结束时间"`
+		CreateTimeStart string `form:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		UpdateTimeStart string `form:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
+		UpdateTimeEnd   string `form:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorGet(form); !ok {

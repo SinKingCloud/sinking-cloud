@@ -21,8 +21,8 @@ func (ControllerLog) List(c *sinking_server.Context) {
 		Type            string `form:"type" default:"" validate:"omitempty,numeric" label:"类型"`
 		Title           string `form:"title" default:"" validate:"omitempty,max=50" label:"标题"`
 		Content         string `form:"content" default:"" validate:"omitempty,max=100" label:"内容"`
-		CreateTimeStart string `form:"create_time_start" default:"" validate:"-" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"-" label:"创建结束时间"`
+		CreateTimeStart string `form:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorGet(form); !ok {

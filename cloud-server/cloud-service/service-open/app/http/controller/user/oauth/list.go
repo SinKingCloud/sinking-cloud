@@ -19,10 +19,10 @@ func (ControllerOauth) List(c *sinking_server.Context) {
 		Status          string `form:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`
 		Name            string `form:"name" default:"" validate:"omitempty,max=50" label:"名称"`
 		Domain          string `form:"domain" default:"" validate:"omitempty,max=50" label:"域名"`
-		CreateTimeStart string `form:"create_time_start" default:"" validate:"-" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"-" label:"创建结束时间"`
-		UpdateTimeStart string `form:"update_time_start" default:"" validate:"-" label:"修改起始时间"`
-		UpdateTimeEnd   string `form:"update_time_end" default:"" validate:"-" label:"修改结束时间"`
+		CreateTimeStart string `form:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		UpdateTimeStart string `form:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"修改起始时间"`
+		UpdateTimeEnd   string `form:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"修改结束时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorGet(form); !ok {

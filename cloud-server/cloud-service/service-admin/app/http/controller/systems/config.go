@@ -20,10 +20,10 @@ func (ControllerConfig) List(c *sinking_server.Context) {
 		Describe        string `form:"describe" default:"" validate:"max=100" label:"描述"`
 		Key             string `form:"key" default:"" validate:"max=50" label:"配置标识"`
 		Value           string `form:"value" default:"" validate:"max=500" label:"配置内容"`
-		CreateTimeStart string `form:"create_time_start" default:"" validate:"-" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"-" label:"创建结束时间"`
-		UpdateTimeStart string `form:"update_time_start" default:"" validate:"-" label:"更新起始时间"`
-		UpdateTimeEnd   string `form:"update_time_end" default:"" validate:"-" label:"更新结束时间"`
+		CreateTimeStart string `form:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		UpdateTimeStart string `form:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
+		UpdateTimeEnd   string `form:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorGet(form); !ok {

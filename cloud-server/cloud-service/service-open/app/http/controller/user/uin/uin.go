@@ -40,12 +40,12 @@ func (ControllerUin) List(c *sinking_server.Context) {
 		UinStatus       string `form:"uin_status" default:"" validate:"omitempty,numeric" label:"挂机状态"`
 		Uin             string `form:"uin" default:"" validate:"omitempty,numeric" label:"QQ账号"`
 		Status          string `form:"status" default:"" validate:"omitempty,oneof=0 1 2" label:"QQ状态"`
-		RunTimeStart    string `form:"run_time_start" default:"" validate:"-" label:"挂机起始时间"`
-		RunTimeEnd      string `form:"run_time_end" default:"" validate:"-" label:"挂机结束时间"`
-		CreateTimeStart string `form:"create_time_start" default:"" validate:"-" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"-" label:"创建结束时间"`
-		UpdateTimeStart string `form:"update_time_start" default:"" validate:"-" label:"更新起始时间"`
-		UpdateTimeEnd   string `form:"update_time_end" default:"" validate:"-" label:"更新结束时间"`
+		RunTimeStart    string `form:"run_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"挂机起始时间"`
+		RunTimeEnd      string `form:"run_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"挂机结束时间"`
+		CreateTimeStart string `form:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		UpdateTimeStart string `form:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
+		UpdateTimeEnd   string `form:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorGet(form); !ok {

@@ -33,6 +33,12 @@ func (s *service) Select(where map[string]string, orderByField string, orderByTy
 	if where["create_time_end"] != "" {
 		query.Where("`create_time` <= ?", where["create_time_end"])
 	}
+	if where["update_time_start"] != "" {
+		query.Where("`update_time` >= ?", where["update_time_start"])
+	}
+	if where["update_time_end"] != "" {
+		query.Where("`update_time` <= ?", where["update_time_end"])
+	}
 	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(orderByField + " " + orderByType).Find(&list).Error
 	return
 }

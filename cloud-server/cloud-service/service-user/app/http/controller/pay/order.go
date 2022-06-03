@@ -19,8 +19,10 @@ func (ControllerPay) OrderList(c *sinking_server.Context) {
 		TradeNo         string `form:"trade_no" default:"" validate:"omitempty,max=100" label:"系统订单号"`
 		OutTradeNo      string `form:"out_trade_no" default:"" validate:"omitempty,max=100" label:"外部订单号"`
 		Status          string `form:"status" default:"" validate:"omitempty,oneof=0 1 2" label:"订单状态"`
-		CreateTimeStart string `form:"create_time_start" default:"" validate:"-" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"-" label:"创建结束时间"`
+		CreateTimeStart string `form:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		UpdateTimeStart string `form:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
+		UpdateTimeEnd   string `form:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorGet(form); !ok {
@@ -49,6 +51,12 @@ func (ControllerPay) OrderList(c *sinking_server.Context) {
 	}
 	if form.CreateTimeEnd != "" {
 		where["create_time_end"] = form.CreateTimeEnd
+	}
+	if form.UpdateTimeStart != "" {
+		where["update_time_start"] = form.UpdateTimeStart
+	}
+	if form.UpdateTimeEnd != "" {
+		where["update_time_end"] = form.UpdateTimeEnd
 	}
 	data, total, err := order.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
