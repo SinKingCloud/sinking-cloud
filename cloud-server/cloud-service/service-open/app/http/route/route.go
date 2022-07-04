@@ -23,6 +23,11 @@ func loadApiRoute(s *sinking_web.Engine) {
 	g := s.Group("/api")
 	g.Use(middleware2.ApiCheck())
 
+	//应用API
+	appGroup := g.Group("/app")
+	handleApp := &app.ControllerApp{}
+	appGroup.GET("/info", sinking_server.HandleFunc(handleApp.Info))
+
 	//云端挂机API
 	uinGroup := g.Group("/uin")
 	handleUin := &uin.ControllerUin{}

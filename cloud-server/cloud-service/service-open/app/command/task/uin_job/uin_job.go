@@ -2,12 +2,13 @@ package uin_job
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/job"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
 	uin2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
-	sinking_web "github.com/SinKingCloud/sinking-go/sinking-web"
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"gorm.io/gorm"
 	"log"
 	"strconv"
@@ -22,7 +23,26 @@ func Run() {
 
 func test() {
 	time.Sleep(5 * time.Second)
-	list, err := uin2.GetIns().SelectUinJob(2000)
+	ch1 := make(chan interface{})
+	go (&job.Task{Producer: func(channel chan interface{}) {
+		ch1 = channel
+	}, Consumer: func(param interface{}) {
+		if param != nil {
+			//执行挂机任务
+			uin := param.(*model.AppUin)
+			if uin != nil {
+				producer.NewUinJobProducer().Build(uin).Send()
+				//server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
+				//if err == nil && server != nil {
+				//	s := uin_tool.NewUinTool(server.Addr, server.Proxy)
+				//	s.Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, []int{uin_tool.Zone, uin_tool.Ws, uin_tool.Safe}, false)
+				//}
+			}
+		}
+	}, Thread: 30}).Run()
+
+	time.Sleep(1 * time.Second)
+	list, err := uin2.GetIns().SelectUinJob(3000)
 	if err == nil {
 		//避免重复挂机
 		seeded := make(map[string]bool)
@@ -31,8 +51,8 @@ func test() {
 			uinList, err1 := uin2.GetIns().SelectByUin(v.Uin)
 			if err1 == nil && len(uinList) > 0 {
 				for _, v1 := range uinList {
-					//取出一个正常qq
-					if v1.Status == uin2.Normal && v1.UinStatus == 0 && speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
+					//取出一个qq
+					if speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
 						speedUin = v1
 					}
 				}
@@ -42,7 +62,8 @@ func test() {
 					seeded[speedUin.Uin] = true
 					//发布至消息队列
 					//v.RunTime = str.DateTime(time.Now().Add(-30))
-					producer.NewUinJobProducer().Build(v).Send()
+					//producer.NewUinJobProducer().Build(v).Send()
+					ch1 <- v
 				}
 			}
 		}

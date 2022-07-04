@@ -27,12 +27,11 @@
 @alert-radius: 5px; //alert圆角
 @dropdown-overlay-radius: 5px; //下拉框圆角
 @dropdown-overlay-shadow: 0px 0px 10px 10px rgba(241, 241, 241, 0.54); //下拉框阴影
+@ant-pagination-radius: 5px; //分页圆角
 html,
 body,
-#root
-{
-  height: 100%
-;
+#root {
+  height: 100%;
 }
 
 
@@ -41,7 +40,7 @@ body,
  */
 ::-webkit-scrollbar {
   width: 0; /* 纵向滚动条 */
-  height: 0; /* 横向滚动条 */
+  height: 7px; /* 横向滚动条 */
   background-color: transparent;
 }
 
@@ -247,6 +246,15 @@ ol {
   box-shadow: @card-shadow !important;
 }
 
+.ant-card .ant-card {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+.ant-pro-card .ant-card{
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
 .ant-pro-card-title {
   padding-left: 10px !important;
   border-left: 5px solid @primary-color !important;
@@ -370,6 +378,10 @@ ol {
   border-radius: @input-radius !important;
 }
 
+.ant-input-group .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  border-radius: 0 @input-radius @input-radius 0 !important;
+}
+
 .ant-picker {
   border-radius: @input-radius !important;
 }
@@ -467,10 +479,27 @@ textarea {
   box-shadow: @card-shadow !important;
 }
 
+.ant-pro-card .ant-pro-card {
+  box-shadow: none !important;
+}
+
 /**
  * 查询下拉框
  */
 .ant-pro-core-field-dropdown-overlay {
   box-shadow: @dropdown-overlay-shadow !important;
   border-radius: @dropdown-overlay-radius !important;
+}
+
+/**
+ * 分页框圆角
+ */
+.ant-pagination-item {
+  border-radius: @ant-pagination-radius !important;
+}
+
+.ant-pro-checkcard-checked::after {
+  top: 0 !important;
+  right: -1px !important;
+  border-top-right-radius: 6px !important;
 }

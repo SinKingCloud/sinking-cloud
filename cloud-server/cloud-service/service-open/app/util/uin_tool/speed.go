@@ -361,14 +361,8 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 			if !mobileLogin {
 				return false
 			}
-			if uin.IsFirst {
-				if s.pcSpeed(uin.Uin) {
-					pcLogin = true
-				}
-			} else {
-				if s.pcForceSpeed(uin.Uin) {
-					pcLogin = true
-				}
+			if s.pcSpeed(uin.Uin) {
+				pcLogin = true
 			}
 		}
 		if pcLogin {

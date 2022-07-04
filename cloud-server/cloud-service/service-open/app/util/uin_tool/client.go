@@ -67,7 +67,7 @@ func (s *speed) sendRequest(url string, data interface{}, timeout int) (*respons
 	body := str.NewStringTool(string(bytes)).ConvertToString("gbk", "utf-8")
 	var res *response
 	err = json.Unmarshal([]byte(body), &res)
-	log.Println("请求地址", url, "请求参数", s.toJson(data), "结果", string(body))
+	log.Println("请求地址", url, "请求参数", s.toJson(data), "结果", body)
 	if err != nil {
 		return nil, err
 	}

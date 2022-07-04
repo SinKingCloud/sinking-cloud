@@ -131,6 +131,7 @@ func GetPrice(data *model.AppUinLevel, types int, month int) (price float64) {
 		Quarter float64
 		Half    float64
 		Year    float64
+		Forever float64
 	}
 	f := func(data *model.AppUinLevel, types int) *Price {
 		var price *Price
@@ -142,6 +143,7 @@ func GetPrice(data *model.AppUinLevel, types int, month int) (price float64) {
 				Quarter: data.QuarterPrice,
 				Half:    data.HalfPrice,
 				Year:    data.YearPrice,
+				Forever: data.ForeverPrice,
 			}
 			break
 		case 1:
@@ -151,6 +153,7 @@ func GetPrice(data *model.AppUinLevel, types int, month int) (price float64) {
 				Quarter: data.PlayerQuarterPrice,
 				Half:    data.PlayerHalfPrice,
 				Year:    data.PlayerYearPrice,
+				Forever: data.PlayerForeverPrice,
 			}
 			break
 		default:
@@ -160,6 +163,7 @@ func GetPrice(data *model.AppUinLevel, types int, month int) (price float64) {
 				Quarter: data.SignQuarterPrice,
 				Half:    data.SignHalfPrice,
 				Year:    data.SignYearPrice,
+				Forever: data.SignForeverPrice,
 			}
 			break
 		}
@@ -177,6 +181,9 @@ func GetPrice(data *model.AppUinLevel, types int, month int) (price float64) {
 		break
 	case 12:
 		price = f(data, types).Year
+		break
+	case 999:
+		price = f(data, types).Forever
 		break
 	}
 	return

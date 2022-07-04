@@ -105,7 +105,7 @@ export default (): React.ReactNode => {
     {
       title: 'ID',
       dataIndex: 'id',
-      tip: '记录ID',
+      tip: '用户ID',
       hideInSearch: true,
       sorter: true,
     },

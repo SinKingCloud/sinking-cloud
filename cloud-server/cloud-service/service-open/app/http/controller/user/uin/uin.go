@@ -104,7 +104,7 @@ func (ControllerUin) Buy(c *sinking_server.Context) {
 		AppId     int    `json:"app_id" validate:"omitempty,numeric,gte=0" label:"应用ID"`
 		Pwd       string `json:"pwd" validate:"omitempty,len=32" label:"QQ密码"`
 		Type      int    `json:"type" validate:"oneof=0 1 2" label:"下单类型"`
-		Month     int    `json:"month" validate:"oneof=1 3 6 12" label:"下单月数"`
+		Month     int    `json:"month" validate:"oneof=1 3 6 12 999" label:"下单月数"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorJson(form); !ok {
@@ -309,7 +309,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	type Form struct {
 		Uin       string `json:"uin" validate:"required,numeric" label:"QQ账号"`
 		LoginType string `json:"login_type" validate:"oneof=pwd phone" label:"登陆方式"`
-		Step      string `json:"step" validate:"oneof=normal captcha sms" label:"登陆步骤"`
+		Step      string `json:"step" validate:"oneof=normal captcha sms qrcode" label:"登陆步骤"`
 		Rand      string `json:"rand" validate:"omitempty,max=500" label:"登陆rand"`
 		Ticket    string `json:"ticket" validate:"omitempty,max=500" label:"登陆ticket"`
 		Code      string `json:"code" validate:"omitempty,numeric,len=6" label:"短信验证码"`
@@ -389,7 +389,9 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			if code == uin_tool.NeedCaptcha {
 				c.Return(400, e.Error(), data)
 			} else if code == uin_tool.NeedCode {
-				c.Return(401, e.Error(), nil)
+				c.Return(401, e.Error(), data)
+			} else if code == uin_tool.NeedQrCode {
+				c.Return(402, e.Error(), data)
 			} else {
 				c.Error(e.Error())
 			}
@@ -403,6 +405,9 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		}
 		verify = form.Ticket
 		break
+	case "qrcode":
+		verify = "123456"
+		break
 	case "sms":
 		if form.Code == "" {
 			c.Error("验证码不能为空")
@@ -415,9 +420,11 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		code, e, data, loginUin = q.VerifyLogin(uinInfo.Uin, verify)
 		if e != nil || code != uin_tool.Success {
 			if code == uin_tool.NeedCode {
-				c.Return(401, e.Error(), nil)
+				c.Return(401, e.Error(), data)
 			} else if code == uin_tool.NeedCaptcha {
 				c.Return(400, e.Error(), data)
+			} else if code == uin_tool.NeedQrCode {
+				c.Return(402, e.Error(), data)
 			} else {
 				c.Error(e.Error())
 			}

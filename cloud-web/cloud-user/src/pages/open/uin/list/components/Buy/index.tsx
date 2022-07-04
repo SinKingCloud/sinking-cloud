@@ -102,7 +102,9 @@ const Buy: React.FC<BuyProps> = (props) => {
       <Select.Option
         value={6}>半年度(6个月){obj.hasOwnProperty(type + "half_price") && ",价格" + (obj[type + "half_price"].toFixed("2") || "0.00") + "元"}</Select.Option>
       <Select.Option
-        value={12}>年度(12个月){obj.hasOwnProperty(type + "year_price") && ",价格" + (obj[type + "year_price"].toFixed("2") || "0.00") + "元"}</Select.Option></>);
+        value={12}>年度(12个月){obj.hasOwnProperty(type + "year_price") && ",价格" + (obj[type + "year_price"].toFixed("2") || "0.00") + "元"}</Select.Option>
+      <Select.Option
+        value={999}>永久{obj.hasOwnProperty(type + "forever_price") && ",价格" + (obj[type + "forever_price"].toFixed("2") || "0.00") + "元"}</Select.Option></>);
     setOption(ele);
   }
   /**

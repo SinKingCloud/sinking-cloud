@@ -88,11 +88,13 @@ export default (): React.ReactNode => {
       dataIndex: 'price',
       tip: '挂机全套套餐下单价格',
       render: (text: string, record: any) => {
-        return <div style={{maxWidth: "350px"}}>
+        return <div style={{maxWidth: "250px"}}>
           <Tag color="green">月:{record?.month_price.toFixed(2) || "0.00"}￥</Tag>
           <Tag color="yellow">季:{record?.quarter_price.toFixed(2) || "0.00"}￥</Tag>
           <Tag color="blue">半年:{record?.half_price.toFixed(2) || "0.00"}￥</Tag>
+          <br/>
           <Tag color="red">年:{record?.year_price.toFixed(2) || "0.00"}￥</Tag>
+          <Tag color="purple">永久:{record?.forever_price.toFixed(2) || "0.00"}￥</Tag>
         </div>;
       }
     },
@@ -101,18 +103,20 @@ export default (): React.ReactNode => {
       dataIndex: 'price',
       tip: '挂机单套套餐下单价格',
       render: (text: string, record: any) => {
-        return <div style={{maxWidth: "370px"}}>
+        return <div style={{maxWidth: "450px"}}>
           挂机：
           <Tag color="green">月:{record?.player_month_price.toFixed(2) || "0.00"}￥</Tag>
           <Tag color="yellow">季:{record?.player_quarter_price.toFixed(2) || "0.00"}￥</Tag>
           <Tag color="blue">半年:{record?.player_half_price.toFixed(2) || "0.00"}￥</Tag>
           <Tag color="red">年:{record?.player_year_price.toFixed(2) || "0.00"}￥</Tag>
+          <Tag color="purple">永久:{record?.player_forever_price.toFixed(2) || "0.00"}￥</Tag>
           <br/>
           扩展：
           <Tag color="green">月:{record?.sign_month_price.toFixed(2) || "0.00"}￥</Tag>
           <Tag color="yellow">季:{record?.sign_quarter_price.toFixed(2) || "0.00"}￥</Tag>
           <Tag color="blue">半年:{record?.sign_half_price.toFixed(2) || "0.00"}￥</Tag>
           <Tag color="red">年:{record?.sign_year_price.toFixed(2) || "0.00"}￥</Tag>
+          <Tag color="purple">永久:{record?.sign_forever_price.toFixed(2) || "0.00"}￥</Tag>
         </div>;
       }
     },
