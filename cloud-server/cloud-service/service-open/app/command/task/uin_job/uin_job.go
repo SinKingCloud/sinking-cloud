@@ -35,11 +35,12 @@ func test() {
 				//server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
 				//if err == nil && server != nil {
 				//	s := uin_tool.NewUinTool(server.Addr, server.Proxy)
-				//	s.Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, []int{uin_tool.Zone, uin_tool.Ws, uin_tool.Safe}, false)
+				//	jobs := []int{uin_tool.Pc, uin_tool.Medal}
+				//	s.Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, jobs, false)
 				//}
 			}
 		}
-	}, Thread: 30}).Run()
+	}, Thread: 50}).Run()
 
 	time.Sleep(1 * time.Second)
 	list, err := uin2.GetIns().SelectUinJob(3000)

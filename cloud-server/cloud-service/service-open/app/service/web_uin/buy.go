@@ -93,6 +93,8 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 	var orderErr error
 	//是否首次下单(1:否/2:是)
 	firstBuy := 1
+	//赠送天数
+	giftDays := 0
 	//写入qq记录失败,退回余额
 	if err != nil || uinInfo == nil {
 		orderErr = err
@@ -107,17 +109,22 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 			appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
 			if appConfig[constant.AppUinFirstBuyGift] != "" {
 				n, e := strconv.Atoi(appConfig[constant.AppUinFirstBuyGift])
-				if e == nil {
+				if e == nil && n > 0 {
 					firstBuy = n
 				}
 			}
+		} else {
+			//赠送天数
+			giftDays = GetGiftDays(month)
 		}
+		//实际到账天数
+		days := month*30*firstBuy + giftDays
 		//更改到期时间
 		if types == 0 || types == 1 {
-			data["player_day"] = gorm.Expr("`player_day`+" + strconv.Itoa(month*30*firstBuy))
+			data["player_day"] = gorm.Expr("`player_day`+" + strconv.Itoa(days))
 		}
 		if types == 0 || types == 2 {
-			data["sign_day"] = gorm.Expr("`sign_day`+" + strconv.Itoa(month*30*firstBuy))
+			data["sign_day"] = gorm.Expr("`sign_day`+" + strconv.Itoa(days))
 		}
 		//密码变动
 		if pwd != "" && pwd != uinInfo.Password {
@@ -152,7 +159,10 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 		}
 		content := t + "下单" + strconv.Itoa(month) + "月" + typeName + "。"
 		if firstBuy > 1 {
-			content += "首次下单" + strconv.Itoa(firstBuy) + "倍到账"
+			content += "首次下单" + strconv.Itoa(firstBuy) + "倍到账。"
+		}
+		if giftDays >= 1 {
+			content += "活动优惠赠送" + strconv.Itoa(giftDays) + "天时长。"
 		}
 		_ = log.GetIns().Create(&model.AppUinLog{
 			UserId:  user.Id,

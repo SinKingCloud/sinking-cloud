@@ -21,20 +21,28 @@ func loadRoute(s *sinking_web.Engine) {
 //加载api路由
 func loadApiRoute(s *sinking_web.Engine) {
 	g := s.Group("/api")
-	g.Use(middleware2.ApiCheck())
+
+	//授权API
+	authGroup := g.Group("/auth")
+	authGroup.GET("/check", sinking_server.HandleFunc(func(c *sinking_server.Context) {
+		c.Success("success")
+	}))
 
 	//应用API
 	appGroup := g.Group("/app")
+	appGroup.Use(middleware2.ApiCheck())
 	handleApp := &app.ControllerApp{}
-	appGroup.GET("/info", sinking_server.HandleFunc(handleApp.Info))
+	appGroup.GET("/info", sinking_server.HandleFunc(handleApp.Info)) //应用信息
 
 	//云端挂机API
 	uinGroup := g.Group("/uin")
+	uinGroup.Use(middleware2.ApiCheck())
 	handleUin := &uin.ControllerUin{}
 	uinGroup.GET("/self", sinking_server.HandleFunc(handleUin.Self))                    //账户信息
 	uinGroup.POST("/buy", sinking_server.HandleFunc(handleUin.Buy))                     //业务下单
 	uinGroup.GET("/servers", sinking_server.HandleFunc((&uin.ControllerServer{}).List)) //地区列表
 	uinGroup.GET("/project", sinking_server.HandleFunc(handleUin.Project))              //功能列表
+	uinGroup.GET("/activity", sinking_server.HandleFunc(handleUin.Activity))            //活动列表
 	uinSetGroup := uinGroup.Group("/operate")
 	uinSetGroup.POST("/info", sinking_server.HandleFunc(handleUin.Info))               //挂机QQ详情
 	uinSetGroup.POST("/login", sinking_server.HandleFunc(handleUin.Login))             //登陆挂机QQ
@@ -49,6 +57,7 @@ func loadApiRoute(s *sinking_web.Engine) {
 
 	//全站登陆API
 	oauthGroup := g.Group("/oauth")
+	oauthGroup.Use(middleware2.ApiCheck())
 	oauthProxy := &oauth.ControllerOauth{}
 	oauthGroup.POST("/gen_ticket", sinking_server.HandleFunc(oauthProxy.GenTicket))      //生成ticket
 	oauthGroup.POST("/get_user_info", sinking_server.HandleFunc(oauthProxy.GetUserInfo)) //获取授权用户信息
@@ -69,11 +78,12 @@ func loadUserRoute(s *sinking_web.Engine) {
 	//挂机应用
 	uinGroup := g.Group("/uin")
 	handleUin := &uin.ControllerUin{}
-	uinGroup.GET("/list", sinking_server.HandleFunc(handleUin.List))       //挂机列表
-	uinGroup.GET("/self", sinking_server.HandleFunc(handleUin.Self))       //账户信息
-	uinGroup.GET("/count", sinking_server.HandleFunc(handleUin.Count))     //统计信息
-	uinGroup.GET("/project", sinking_server.HandleFunc(handleUin.Project)) //功能列表
-	uinGroup.POST("/buy", sinking_server.HandleFunc(handleUin.Buy))        //业务下单
+	uinGroup.GET("/list", sinking_server.HandleFunc(handleUin.List))         //挂机列表
+	uinGroup.GET("/self", sinking_server.HandleFunc(handleUin.Self))         //账户信息
+	uinGroup.GET("/count", sinking_server.HandleFunc(handleUin.Count))       //统计信息
+	uinGroup.GET("/project", sinking_server.HandleFunc(handleUin.Project))   //功能列表
+	uinGroup.GET("/activity", sinking_server.HandleFunc(handleUin.Activity)) //活动列表
+	uinGroup.POST("/buy", sinking_server.HandleFunc(handleUin.Buy))          //业务下单
 	uinSetGroup := uinGroup.Group("/operate")
 	uinSetGroup.POST("/info", sinking_server.HandleFunc(handleUin.Info))               //挂机QQ详情
 	uinSetGroup.POST("/login", sinking_server.HandleFunc(handleUin.Login))             //登陆挂机QQ

@@ -3,6 +3,7 @@ package web_uin
 import (
 	"encoding/json"
 	"errors"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/log"
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
@@ -136,13 +137,46 @@ func ChangePhone(uinId int, phone string) error {
 	return nil
 }
 
+// GetUinLevelInfo 获取等级信息
+func GetUinLevelInfo(uinId int) (*model.AppUinInfo, error) {
+	uinInfo, err := uin.GetIns().FindById(uinId)
+	if err != nil || uinInfo == nil {
+		return nil, errors.New("未查询到QQ信息")
+	}
+	refresh := false
+	uinLevelInfo, e := uin_info.GetIns().FindByUin(uinInfo.Uin)
+	//失效时刷新
+	if (e != nil || uinLevelInfo == nil) && uinInfo.UinStatus == uin.Normal {
+		refresh = true
+	}
+	//每隔三小时或者上次刷新在昨天时刷新一次数据
+	if !refresh && e == nil && uinLevelInfo != nil {
+		stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", uinLevelInfo.UpdateTime.String(), time.Local)
+		todayUnix := str.NewTimeTool().GetZeroTime(time.Now()).Unix()
+		if stamp.Unix() < todayUnix || stamp.Unix()+60*60*3 < time.Now().Unix() {
+			refresh = true
+		}
+	}
+	//刷新QQ等级信息
+	if refresh {
+		server, e2 := server2.GetIns().FindById(uinInfo.ServerId)
+		if e2 == nil && server != nil {
+			_, err2, isFail := GetUinSpeedStatus(server.Addr, server.Proxy, uinInfo.Uin, false)
+			if !isFail && err2 == nil {
+				uinLevelInfo, e = uin_info.GetIns().FindByUin(uinInfo.Uin)
+			}
+		}
+	}
+	return uinLevelInfo, e
+}
+
 // GetUinSpeedStatus 获取加速任务状态
-func GetUinSpeedStatus(addr string, proxy string, uin string) (*uin_tool.SpeedStatus, error, bool) {
+func GetUinSpeedStatus(addr string, proxy string, uin string, isSync bool) (*uin_tool.SpeedStatus, error, bool) {
 	s := uin_tool.NewUinTool(addr, proxy)
 	status, err, isFail := s.Status(uin)
 	if err == nil && status != nil && !isFail {
 		//更新QQ信息
-		go func(status *uin_tool.SpeedStatus, uin string) {
+		fun := func(status *uin_tool.SpeedStatus, uin string) {
 			levelInfo := status.CommonInfoGetQQLevelInfo
 			uinInfo := status.CommonInfoGetQQInfo
 			//qq信息
@@ -186,7 +220,12 @@ func GetUinSpeedStatus(addr string, proxy string, uin string) (*uin_tool.SpeedSt
 				}
 			}
 			_ = uin_info.GetIns().Save(info, speedInfo)
-		}(status, uin)
+		}
+		if isSync {
+			go fun(status, uin)
+		} else {
+			fun(status, uin)
+		}
 	}
 	return status, err, isFail
 }

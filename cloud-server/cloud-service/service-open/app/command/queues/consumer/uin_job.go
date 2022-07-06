@@ -187,7 +187,7 @@ func speed(uin *model.AppUin) {
 
 // check 检测挂机失败的项目
 func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, signCheckJobs []int, lower bool, isFirst bool) (bool, map[int]bool) {
-	status, err, isFail := web_uin.GetUinSpeedStatus(addr, proxy, uin.Uin)
+	status, err, isFail := web_uin.GetUinSpeedStatus(addr, proxy, uin.Uin, true)
 	if isFail {
 		return true, nil
 	}

@@ -16,7 +16,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/log"
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin_info"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_user"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/uin_tool"
@@ -591,7 +590,7 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 		"create_time": uinInfo.CreateTime,
 		"update_time": uinInfo.UpdateTime,
 	}
-	uinLevelInfo, e := uin_info.GetIns().FindByUin(uinInfo.Uin)
+	uinLevelInfo, e := web_uin.GetUinLevelInfo(uinInfo.Id)
 	if e != nil {
 		tempUinInfo["nick_name"] = uinInfo.Uin
 		tempUinInfo["level"] = 0
@@ -633,6 +632,45 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 		"uin":        tempUinInfo,
 		"setting":    tempSetting,
 		"job_status": jobStatus,
+	})
+}
+
+// Activity 活动列表
+func (ControllerUin) Activity(c *sinking_server.Context) {
+	appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
+	//首次购买活动
+	firstBuy := 0
+	firstBuyOpen := 0
+	if appConfig[constant.AppUinFirstBuyGift] != "" {
+		n, e := strconv.Atoi(appConfig[constant.AppUinFirstBuyGift])
+		if e == nil && n > 0 {
+			firstBuy = n
+			firstBuyOpen = 1
+		}
+	}
+	//开通赠送活动
+	buyOpen := 0
+	if appConfig[constant.AppUinBuyActivityOpen] == "1" {
+		buyOpen = 1
+	}
+	fun := func(value string, d int) int {
+		if value == "" {
+			return d
+		}
+		n, e := strconv.Atoi(value)
+		if e == nil && n > 0 {
+			return n
+		}
+		return d
+	}
+	c.SuccessWithData("获取成功", sinking_web.H{
+		"first_buy_open":     firstBuyOpen,                                     //首次购买活动开关
+		"first_buy_multiple": firstBuy,                                         //首次购买到账倍数
+		"buy_open":           buyOpen,                                          //购买赠送活动开关
+		"buy_month_gift":     fun(appConfig[constant.AppUinBuyMonthGift], 0),   //购买1月赠送天数
+		"buy_quarter_gift":   fun(appConfig[constant.AppUinBuyQuarterGift], 0), //购买3月赠送天数
+		"buy_half_gift":      fun(appConfig[constant.AppUinBuyHalfGift], 0),    //购买6月赠送天数
+		"buy_year_gift":      fun(appConfig[constant.AppUinBuyYearGift], 0),    //购买12月赠送天数
 	})
 }
 
