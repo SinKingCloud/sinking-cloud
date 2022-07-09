@@ -283,7 +283,6 @@ func (*pkg) unZip(zipFile string, destDir string) error {
 }
 
 func (*pkg) download(u string) (string, error) {
-	u = "https://clywl.oss-cn-beijing.aliyuncs.com/temp/20220709/206ae6ba15a68f31b33cc6d43a1d37d4.zip"
 	uri, err := url.ParseRequestURI(u)
 	if err != nil {
 		return "", errors.New("网址格式错误")
