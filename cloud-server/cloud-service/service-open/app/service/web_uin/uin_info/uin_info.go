@@ -31,15 +31,6 @@ func (s *service) Save(data *model.AppUinInfo, speedInfo map[string]string) (err
 	if util.Cache.Lock(key, constant.LockTimeUinInfo) {
 		defer util.Cache.UnLock(key)
 		d := map[string]interface{}{}
-		if data.Skey != "" {
-			d["skey"] = data.Skey
-		}
-		if data.PSkey != "" {
-			d["p_skey"] = data.PSkey
-		}
-		if data.SuperToken != "" {
-			d["super_token"] = data.SuperToken
-		}
 		if data.NickName != "" {
 			d["nick_name"] = data.NickName
 		}

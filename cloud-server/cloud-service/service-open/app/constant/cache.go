@@ -13,6 +13,9 @@ const (
 	CacheNameWithAuthVersion = "AuthVersion_" //授权auth_version储存名称
 	CacheTimeWithAuthVersion = 600 * 1000     //授权auth_version储存时间
 
+	CacheNameWithUserAuth = "UserAuth_" //授权user_auth储存名称
+	CacheTimeWithUserAuth = 600 * 1000  //授权user_auth储存时间
+
 	CacheNameWithAppConfig = "AppConfig_" //应用配置
 	CacheTimeWithAppConfig = 600 * 1000   //应用配置储存时间
 

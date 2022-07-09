@@ -21,4 +21,7 @@ func registerService(g *sinking_web.RouterGroup) {
 
 	r2 := g.Group("/captcha")
 	r2.POST("/check", sinking_server.HandleFunc(rpc.Captcha.Check))
+
+	r3 := g.Group("/upload")
+	r3.POST("/temp", sinking_server.HandleFunc(rpc.Upload.Temp))
 }

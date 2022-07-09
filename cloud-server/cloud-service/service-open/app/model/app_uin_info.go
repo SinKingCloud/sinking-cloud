@@ -15,9 +15,6 @@ type AppUinInfo struct {
 	ActivateDay string       `gorm:"column:activate_day" json:"activate_day"`
 	TodayDay    string       `gorm:"column:today_day" json:"today_day"`
 	SpeedInfo   string       `gorm:"column:speed_info" json:"speed_info"`
-	Skey        string       `gorm:"column:skey" json:"skey"`
-	PSkey       string       `gorm:"column:p_skey" json:"p_skey"`
-	SuperToken  string       `gorm:"column:super_token" json:"super_token"`
 	CreateTime  str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime  str.DateTime `gorm:"column:update_time" json:"update_time"`
 }

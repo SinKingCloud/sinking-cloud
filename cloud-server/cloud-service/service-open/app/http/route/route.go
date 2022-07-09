@@ -4,6 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/controller/user/app"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/controller/user/auth"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/controller/user/oauth"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/controller/user/ocr"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/http/controller/user/uin"
@@ -23,10 +24,13 @@ func loadApiRoute(s *sinking_web.Engine) {
 	g := s.Group("/api")
 
 	//授权API
+	handleAuth := &auth.ControllerAuth{}
 	authGroup := g.Group("/auth")
-	authGroup.GET("/check", sinking_server.HandleFunc(func(c *sinking_server.Context) {
-		c.Success("success")
-	}))
+	authGroup.Use(middleware2.ApiCheck())
+	authGroup.GET("/check", sinking_server.HandleFunc(handleAuth.Check))     //授权检测
+	authGroup.POST("/log", sinking_server.HandleFunc(handleAuth.Log))        //授权记录
+	authGroup.GET("/upgrade", sinking_server.HandleFunc(handleAuth.Upgrade)) //升级信息
+	authGroup.GET("/package", sinking_server.HandleFunc(handleAuth.Package)) //获取程序
 
 	//应用API
 	appGroup := g.Group("/app")
@@ -118,6 +122,16 @@ func loadUserRoute(s *sinking_web.Engine) {
 	handleOcr := &ocr.ControllerOcr{}
 	ocrGroup := g.Group("/ocr")
 	ocrGroup.POST("/test", sinking_server.HandleFunc(handleOcr.Test)) //测试接口
+
+	//授权应用
+	handleAuth := &auth.ControllerAuth{}
+	authGroup := g.Group("/auth")
+	authGroup.GET("/list", sinking_server.HandleFunc(handleAuth.List))              //授权列表
+	authGroup.GET("/download", sinking_server.HandleFunc(handleAuth.Download))      //程序下载
+	authGroup.GET("/app/info", sinking_server.HandleFunc(handleAuth.AppInfo))       //程序详情
+	authGroup.GET("/app/version", sinking_server.HandleFunc(handleAuth.AppVersion)) //程序版本
+	authGroup.GET("/shop/list", sinking_server.HandleFunc(handleAuth.ShopList))     //程序列表
+	authGroup.POST("/shop/buy", sinking_server.HandleFunc(handleAuth.ShopBuy))      //购买程序
 }
 
 // 后台系统路由

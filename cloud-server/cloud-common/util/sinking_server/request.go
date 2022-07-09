@@ -24,5 +24,8 @@ func (c *Context) GetRequestIp() string {
 	if ip == "" {
 		ip = c.ClientIP(false)
 	}
+	if ip == "" {
+		return "localhost"
+	}
 	return ip
 }

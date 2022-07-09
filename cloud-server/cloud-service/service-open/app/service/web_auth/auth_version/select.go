@@ -6,7 +6,7 @@ import (
 )
 
 // Select 获取数据
-func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.AuthVersion, total int64, err error) {
+func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*AuthVersion, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.AuthVersion{})
 	if where["auth_id"] != "" {
@@ -46,5 +46,13 @@ func (s *service) Select(where map[string]string, orderByField string, orderByTy
 		query.Where("`update_time` <= ?", where["update_time_end"])
 	}
 	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(orderByField + " " + orderByType).Find(&list).Error
+	return
+}
+
+// SelectUpgrade 查询大于版本
+func (s *service) SelectUpgrade(authId int, versionNumber int) (list []*AuthVersion, err error) {
+	err = util.Database.Db.Model(&model.AuthVersion{}).
+		Where("`auth_id` = ? and `version_number` > ? and `status` = ?", authId, versionNumber, Normal).
+		Find(&list).Error
 	return
 }

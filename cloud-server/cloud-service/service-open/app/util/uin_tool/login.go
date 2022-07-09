@@ -34,6 +34,23 @@ func (s *speed) add(uin string, pwd string, phone string, proto int) bool {
 	if err != nil {
 		return false
 	}
+	if res.State == "0" {
+		s.pcAdd(uin)
+		return true
+	}
+	return false
+}
+
+func (s *speed) pcAdd(uin string) bool {
+	url := "/?&type=pc/&pe=intopc/"
+	data := map[string]string{
+		"Uin":  uin,
+		"Code": "0",
+	}
+	res, err := s.sendRequest(url, data, -1)
+	if err != nil {
+		return false
+	}
 	return res.State == "0"
 }
 
@@ -56,6 +73,9 @@ type captcha struct {
 }
 
 func (s *speed) getQrCode(verifyUrl string) string {
+	if !strings.Contains(verifyUrl, "uin=") || !strings.Contains(verifyUrl, "&sig=") {
+		return ""
+	}
 	//解析参数
 	uin := str.NewStringTool(verifyUrl).GetBetween("uin=", "&sig=")
 	sig := str.NewStringTool(verifyUrl).GetBetween("&sig=", "-1")

@@ -71,6 +71,7 @@ func (s *speed) sendRequest(url string, data interface{}, timeout int) (*respons
 	if err != nil {
 		return nil, err
 	}
+	res.Body = body
 	return res, nil
 }
 
@@ -82,6 +83,7 @@ type response struct {
 	Pskey    string `json:"pskey"`
 	Skey     string `json:"skey"`
 	Superkey string `json:"Superkey"`
+	Body     string `json:"-"`
 }
 
 // SpeedStatus 任务状态

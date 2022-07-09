@@ -190,9 +190,6 @@ func GetUinSpeedStatus(addr string, proxy string, uin string, isSync bool) (*uin
 				Level:       level,
 				ActivateDay: levelInfo.ITotalActiveDay,
 				TodayDay:    levelInfo.IRealDays,
-				Skey:        status.Skey,
-				PSkey:       status.Pskey,
-				SuperToken:  status.Superkey,
 			}
 			//加速状态
 			speedInfo := map[string]string{

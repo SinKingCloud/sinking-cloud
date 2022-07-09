@@ -20,6 +20,7 @@ type AuthVersion struct {
 	UpdateUrl      string       `gorm:"column:update_url" json:"update_url"`
 	UpdateHash     string       `gorm:"column:update_hash" json:"update_hash"`
 	UpdateDownNum  int          `gorm:"column:update_down_num" json:"update_down_num"`
+	BuildScript    string       `gorm:"column:build_script" json:"build_script"`
 	Status         int          `gorm:"column:status" json:"status"`
 	CreateTime     str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime     str.DateTime `gorm:"column:update_time" json:"update_time"`

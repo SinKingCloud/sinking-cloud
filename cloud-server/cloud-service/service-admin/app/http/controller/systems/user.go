@@ -142,10 +142,10 @@ func (ControllerUser) Update(c *sinking_server.Context) {
 // Create 添加信息
 func (ControllerUser) Create(c *sinking_server.Context) {
 	type Form struct {
-		RoleId   int    `json:"role_id" default:"" validate:"numeric" label:"角色ID"`
+		RoleId   int    `json:"role_id" default:"" validate:"numeric,min=1" label:"角色ID"`
 		Status   int    `json:"status" default:"" validate:"oneof=0 1" label:"状态"`
 		Account  string `json:"account" default:"" validate:"required,max=15" label:"用户账号"`
-		Password string `json:"password" default:"" validate:"omitempty,max=20" label:"用户密码"`
+		Password string `json:"password" default:"" validate:"required,max=20" label:"用户密码"`
 		Avatar   string `json:"avatar" default:"" validate:"omitempty,uri" label:"用户头像"`
 		NickName string `json:"nick_name" default:"" validate:"omitempty,max=20" label:"用户昵称"`
 		Email    string `json:"email" default:"" validate:"omitempty,email" label:"用户邮箱"`

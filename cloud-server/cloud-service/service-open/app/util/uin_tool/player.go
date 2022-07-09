@@ -2,6 +2,7 @@ package uin_tool
 
 import (
 	"encoding/json"
+	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -178,6 +179,8 @@ func (s *speed) pcSpeed(uin string) bool {
 
 // pcForceSpeed 电脑加速
 func (s *speed) pcForceSpeed(uin string) bool {
+	//阻塞锁
+	server2.GetIns().ServerWaitLock(s.addr)
 	url := "/?&type=Android/&pe=codepc/"
 	data := map[string]string{
 		"Uin": uin,
@@ -185,6 +188,16 @@ func (s *speed) pcForceSpeed(uin string) bool {
 	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
 		return false
+	}
+	if res.State == "-2" {
+		server2.GetIns().ServerLock(s.addr)
+		defer server2.GetIns().ServerUnLock(s.addr)
+		if s.pcAdd(uin) {
+			res, err = s.sendRequest(url, data, -1)
+			if err != nil {
+				return false
+			}
+		}
 	}
 	return res.State == "0"
 }
