@@ -20,7 +20,7 @@ func (ControllerPay) Recharge(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	configs := service.GetSystemConfigServiceIns().GetByCache(false)
+	configs := service.GetSystemConfigServiceIns().GetGroupByCache(config.PayGroup, false)
 	min, _ := strconv.Atoi(configs[config.PayMinMoney])
 	if form.Money < min {
 		c.Error("系统限制最低充值" + strconv.Itoa(min) + "元")

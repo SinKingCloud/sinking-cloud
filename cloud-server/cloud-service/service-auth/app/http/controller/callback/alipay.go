@@ -17,7 +17,7 @@ func (ControllerCallback) Alipay(c *sinking_server.Context) {
 		c.String(http.StatusOK, err.Error())
 		return
 	}
-	configs := service.GetSystemConfigServiceIns().GetByCache(false)
+	configs := service.GetSystemConfigServiceIns().GetGroupByCache(config.PayGroup, false)
 	ok, err := alipay.VerifySign(configs[config.PayAlipayPublicKey], notifyReq)
 	if err != nil {
 		c.String(http.StatusOK, err.Error())

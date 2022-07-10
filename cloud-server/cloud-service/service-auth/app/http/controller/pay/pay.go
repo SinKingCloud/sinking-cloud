@@ -14,15 +14,16 @@ type ControllerPay struct {
 
 // Alipay 支付宝支付
 func (ControllerPay) Alipay(tradeNo string, money string, name string) (url string, err error) {
-	configs := service.GetSystemConfigServiceIns().GetByCache(false)
+	configs := service.GetSystemConfigServiceIns().GetGroupByCache(config.PayGroup, false)
+	configs2 := service.GetSystemConfigServiceIns().GetGroupByCache(config.SystemGroup, false)
 	client, err := pay.NewAliPay(configs[config.PayAlipayAppid], configs[config.PayAlipayPrivateKey], true)
 	if err != nil {
 		err = errors.New("初始化支付请求失败")
 		return
 	}
 	ctx := context.Background()
-	client.SetReturnUrl(configs[config.SystemUrl] + "/pay/recharge").
-		SetNotifyUrl(configs[config.SystemGateway] + "/auth/callback/alipay")
+	client.SetReturnUrl(configs2[config.SystemUrl] + "/pay/recharge").
+		SetNotifyUrl(configs2[config.SystemGateway] + "/auth/callback/alipay")
 	bm := make(gopay.BodyMap)
 	bm.Set("subject", name).
 		Set("out_trade_no", tradeNo).

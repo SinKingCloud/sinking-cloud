@@ -1,6 +1,7 @@
 package config
 
 const (
+	AliyunGroup        = "aliyun"               //阿里云group
 	AliyunAccessKey    = "aliyun.access.key"    //阿里云AliyunAccessKeyId
 	AliyunAccessSecret = "aliyun.access.secret" //阿里云AliyunAccessKeySecret
 

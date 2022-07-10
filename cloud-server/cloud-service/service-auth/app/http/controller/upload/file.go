@@ -26,7 +26,7 @@ func (ControllerUpload) File(c *sinking_server.Context) {
 		return
 	}
 	ext := path.Ext(file.Filename)
-	configs := service.GetSystemConfigServiceIns().GetByCache(false)
+	configs := service.GetSystemConfigServiceIns().GetGroupByCache(config.AliyunGroup, false)
 	if !strings.Contains(configs[config.AliyunOssAllowExt], ext) {
 		c.Error("该文件类型不允许上传")
 		return

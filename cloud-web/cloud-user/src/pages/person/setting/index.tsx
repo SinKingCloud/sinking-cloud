@@ -47,7 +47,7 @@ export default (): React.ReactNode => {
   const [phone, setPhone] = useState("");
   const [phoneForm] = Form.useForm();
   return (
-    <PageContainer header={{title: false, breadcrumb: {},}}>
+    <PageContainer title={false}>
       <Modal key={"editPassword"} width={430} destroyOnClose={true} forceRender={true} title="修改密码"
              visible={isPasswordModalVisible} confirmLoading={isPasswordModalLoading}
              onOk={passwordForm.submit} okText={"确 认"} onCancel={() => {

@@ -22,7 +22,7 @@ func (s *service) DeleteById(id []int) (err error) {
 
 // DeleteFiles 删除文件
 func (s *service) DeleteFiles(filePaths []string) {
-	configs := service2.GetSystemConfigServiceIns().GetByCache(false)
+	configs := service2.GetSystemConfigServiceIns().GetGroupByCache(config.AliyunGroup, false)
 	for _, v := range filePaths {
 		aliyun.Oss.Delete(
 			configs[config.AliyunAccessKey],

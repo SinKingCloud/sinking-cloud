@@ -24,7 +24,8 @@ func FaceInit(userId int, cardType string, cardNo string, cardName string) (stri
 		CardNo:   cardNo,
 		CardName: cardName,
 	}
-	configs := service.GetSystemConfigServiceIns().GetByCache(false)
+	configs := service.GetSystemConfigServiceIns().GetGroupByCache(config.AliyunGroup, false)
+	configs2 := service.GetSystemConfigServiceIns().GetGroupByCache(config.SystemGroup, false)
 	id, url, err := aliyun.NewFace(configs[config.AliyunAccessKey], configs[config.AliyunAccessSecret]).
 		Init(strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10),
 			configs[config.AliyunAuthSceneId],
@@ -32,8 +33,8 @@ func FaceInit(userId int, cardType string, cardNo string, cardName string) (stri
 			cardType,
 			cardNo,
 			cardName,
-			configs[config.SystemUrl],
-			configs[config.SystemGateway]+"/auth/callback/face",
+			configs2[config.SystemUrl],
+			configs2[config.SystemGateway]+"/auth/callback/face",
 		)
 	if err != nil {
 		return "", "", err
@@ -50,7 +51,7 @@ func FaceInit(userId int, cardType string, cardNo string, cardName string) (stri
 
 // FaceCheck 判断人脸识别
 func FaceCheck(id string) bool {
-	configs := service.GetSystemConfigServiceIns().GetByCache(false)
+	configs := service.GetSystemConfigServiceIns().GetGroupByCache(config.AliyunGroup, false)
 	res, err := aliyun.NewFace(configs[config.AliyunAccessKey], configs[config.AliyunAccessSecret]).
 		Query(configs[config.AliyunAuthSceneId], id)
 	if err != nil {

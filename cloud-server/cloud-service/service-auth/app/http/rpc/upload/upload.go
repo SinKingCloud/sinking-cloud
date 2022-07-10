@@ -15,7 +15,7 @@ type ControllerUpload struct {
 // Temp 上传临时文件
 func (ControllerUpload) Temp(c *sinking_server.Context) {
 	data := c.GetRpcData()
-	configs := service.GetSystemConfigServiceIns().GetByCache(false)
+	configs := service.GetSystemConfigServiceIns().GetGroupByCache(config.AliyunGroup, false)
 	fileName := data["name"].(string)
 	fileData := data["data"].(string)
 	fileByte, err := base64.StdEncoding.DecodeString(fileData)
