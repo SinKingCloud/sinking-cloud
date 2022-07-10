@@ -1,15 +1,15 @@
 import {DefaultFooter} from '@ant-design/pro-layout';
-import Settings from '@/../config/defaultSettings';
+import {useModel} from "@@/plugin-model/useModel";
 
 
 export default () => {
-  const defaultMessage = Settings.footer;
+  const {initialState} = useModel('@@initialState');
 
   const currentYear = new Date().getFullYear();
 
   return (
     <DefaultFooter
-      copyright={`${currentYear} ${defaultMessage}`}
+      copyright={`${currentYear} All Right Revered ${initialState?.currentWeb?.name}`}
       links={[]}
     />
   );

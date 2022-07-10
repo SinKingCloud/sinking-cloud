@@ -76,8 +76,8 @@ const Login: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.content}>
         <LoginForm
-          logo={<img alt="logo" src="/logo.svg"/>}
-          title={defaultSettings.title}
+          logo={<img alt="logo" src={defaultSettings.publicPath + "logo.svg"}/>}
+          title={initialState?.currentWeb?.name || defaultSettings.title}
           subTitle="后台管理系统"
           onFinish={async (values) => {
             await handleSubmit(values as AdminAPI.LoginParams);

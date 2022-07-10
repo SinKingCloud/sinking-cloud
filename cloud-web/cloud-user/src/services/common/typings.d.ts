@@ -49,4 +49,11 @@ declare namespace API {
     login_ip?: string;
     login_time?: string;
   }
+  /**
+   * 站点信息
+   */
+  type WebInfo = {
+    name?: string;
+    contact?: string;
+  }
 }

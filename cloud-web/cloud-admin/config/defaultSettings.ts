@@ -11,9 +11,9 @@ let Settings = {
   pwa: false,
   iconfontUrl: '',
   footer: 'All Right Revered',
-  loadingTitle: '沉沦云平台',
   api: '',
   base: '/',
+  publicPath: '/',
 };
 /**
  * 开发环境
@@ -23,9 +23,6 @@ const isDev = process.env.NODE_ENV === 'development';
 Settings = Object.assign(Settings, {
   title: '沉沦云网络',
   logo: '/logo.svg',
-  pwa: false,
-  footer: '沉沦云科技开发',
-  loadingTitle: '沉沦云平台',
   api: isDev ? 'http://127.0.0.1:1000' : 'https://gateway.open-api.cn',
   base: '/',
 });

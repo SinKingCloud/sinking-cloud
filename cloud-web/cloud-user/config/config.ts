@@ -49,7 +49,7 @@ export default defineConfig({
   // esbuild is father build tools
   // https://umijs.org/plugins/plugin-esbuild
   esbuild: {},
-  title: defaultSettings.loadingTitle,
+  title: defaultSettings.title,
   ignoreMomentLocale: true,
   proxy: proxy[REACT_APP_ENV || 'dev'],
   manifest: {

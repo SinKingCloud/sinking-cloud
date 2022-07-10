@@ -1,11 +1,9 @@
-import {Space} from 'antd';
+import {QqOutlined, QuestionCircleOutlined} from '@ant-design/icons';
+import {Modal, Space, Typography} from 'antd';
 import React from 'react';
 import {useModel} from 'umi';
 import Avatar from './AvatarDropdown';
 import styles from './index.less';
-
-export type SiderTheme = 'light' | 'dark';
-
 const GlobalHeaderRight: React.FC = () => {
   const {initialState} = useModel('@@initialState');
 
@@ -21,6 +19,18 @@ const GlobalHeaderRight: React.FC = () => {
   }
   return (
     <Space className={className}>
+      <span
+        className={styles.action}
+        onClick={() => {
+          Modal.info({
+            title: '7*24小时客服为您解决问题',
+            content: (<><QqOutlined/><Typography.Text
+              copyable={{tooltips: ['复制', '复制成功']}}>{initialState?.currentWeb?.contact}</Typography.Text></>),
+          });
+        }}
+      >
+        <QuestionCircleOutlined/>
+      </span>
       <Avatar menu={true}/>
     </Space>
   );

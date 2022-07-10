@@ -25,15 +25,25 @@ func GetSystemConfigServiceIns() *systemConfigService {
 // ClearCache 清理缓存
 func (systemConfigService) ClearCache() {
 	util.Cache.Delete(util2.CacheNameWithSystemConfig)
+	//查询所有group
+	var configs []*model.SystemConfig
+	e := util.Database.Db.Model(&model.SystemConfig{}).Where("`pid` = 0").Find(&configs).Error
+	if e == nil {
+		for _, v := range configs {
+			util.Cache.Delete(util2.CacheNameWithSystemConfig + "_" + v.Key)
+		}
+	}
 }
 
 // SelectAllWithMap 获取map类型配置
 func (systemConfigService) SelectAllWithMap() map[string]string {
 	var configs []*model.SystemConfig
 	temp := make(map[string]string)
-	util.Database.Db.Find(&configs)
-	for _, v := range configs {
-		temp[v.Key] = v.Value
+	e := util.Database.Db.Find(&configs).Error
+	if e == nil {
+		for _, v := range configs {
+			temp[v.Key] = v.Value
+		}
 	}
 	return temp
 }
@@ -67,12 +77,14 @@ func (systemConfigService) SelectByGroupWithMap(group string) map[string]string 
 	var configs []*model.SystemConfig
 	table := &model.SystemConfig{}
 	temp := make(map[string]string)
-	util.Database.Db.Model(&table).Select("a.*").
+	e := util.Database.Db.Model(&table).Select("a.*").
 		Joins("AS a LEFT JOIN `"+table.TableName()+"` as b ON a.`pid`=b.`id`").
 		Where("b.`key` = ?", group).
-		Scan(&configs)
-	for _, v := range configs {
-		temp[v.Key] = v.Value
+		Scan(&configs).Error
+	if e == nil {
+		for _, v := range configs {
+			temp[v.Key] = v.Value
+		}
 	}
 	return temp
 }

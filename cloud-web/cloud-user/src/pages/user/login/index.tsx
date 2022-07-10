@@ -120,11 +120,14 @@ const Login: React.FC = () => {
         <div className={styles.content}>
           <div className={styles.top}>
             <div className={styles.header}>
-              <img alt='logo' className={styles.logo} src="/logo.svg"/>
-              <span style={{fontSize: "30px", fontWeight: "bolder"}}>{defaultSettings.title}</span>
+              <img alt='logo' className={styles.logo} src={defaultSettings.publicPath + "logo.svg"}/>
+              <span style={{
+                fontSize: "30px",
+                fontWeight: "bolder"
+              }}>{initialState?.currentWeb?.name || defaultSettings.title}</span>
             </div>
             <div className={styles.desc}>
-              {defaultSettings.loadingTitle}
+              {initialState?.currentWeb?.name || defaultSettings.title}欢迎您的使用
             </div>
           </div>
           <div className={styles.main}>

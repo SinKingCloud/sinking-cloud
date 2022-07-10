@@ -135,7 +135,7 @@ func (ControllerConfig) Create(c *sinking_server.Context) {
 		Sort:     form.Sort,
 	})
 	if err == nil {
-		service.GetSystemConfigServiceIns().ClearCache()
+		go service.GetSystemConfigServiceIns().ClearCache()
 		system_log.GetIns().CreateByQueue(c, system_log.EventCreate, "添加配置", "添加配置信息")
 		c.Success("添加数据成功")
 	} else {
@@ -155,7 +155,7 @@ func (ControllerConfig) Delete(c *sinking_server.Context) {
 	}
 	err := system_config.GetIns().DeleteByIds(form.Ids)
 	if err == nil {
-		service.GetSystemConfigServiceIns().ClearCache()
+		go service.GetSystemConfigServiceIns().ClearCache()
 		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "删除配置", "删除配置信息")
 		c.Success("删除数据成功")
 	} else {
@@ -201,6 +201,6 @@ func (ControllerConfig) Updates(c *sinking_server.Context) {
 		_ = system_config.GetIns().UpdateByKey(v.Key, data)
 	}
 	system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "修改配置", "修改配置信息")
-	service.GetSystemConfigServiceIns().ClearCache()
+	go service.GetSystemConfigServiceIns().ClearCache()
 	c.Success("修改数据成功")
 }

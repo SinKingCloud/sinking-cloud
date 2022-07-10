@@ -15,6 +15,7 @@ import * as auth from './util/auth';
 import {MenuDataItem} from "@umijs/route-utils";
 import {getMenus} from "@/services/page/menu";
 import {toTreeData} from "@/util/tree";
+import {queryCurrentWeb} from "@/services/common/info";
 
 /**
  * 开发环境
@@ -38,7 +39,9 @@ export const initialStateConfig = {
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
   currentUser?: API.UserInfo;
+  currentWeb?: API.WebInfo;
   fetchUserInfo?: () => Promise<API.UserInfo | undefined>;
+  fetchWebInfo?: () => Promise<API.WebInfo | undefined>;
 }> {
   const fetchUserInfo = async () => {
     try {
@@ -60,17 +63,30 @@ export async function getInitialState(): Promise<{
     }
     return undefined;
   };
+  const fetchWebInfo = async () => {
+    const response = await queryCurrentWeb();
+    // @ts-ignore
+    if (response.code != 200) {
+      return undefined;
+    }
+    return response.data;
+  };
+  const currentWeb = await fetchWebInfo();
   // 如果是登录页面，不执行
   if (allowPaths.indexOf(history.location.pathname) < 0) {
     const currentUser = await fetchUserInfo();
     return {
       fetchUserInfo,
       currentUser,
+      fetchWebInfo,
+      currentWeb,
       settings: {},
     };
   }
   return {
     fetchUserInfo,
+    fetchWebInfo,
+    currentWeb,
     settings: {},
   };
 }
@@ -96,6 +112,7 @@ const fixMenuItemIcon = (menus: MenuDataItem[], iconType = 'Outlined'): MenuData
 // @ts-ignore
 export const layout: RunTimeLayoutConfig = ({initialState}) => {
   return {
+    title: initialState?.currentWeb?.name || defaultSettings?.title,
     menu: {
       locale: false,
       params: {

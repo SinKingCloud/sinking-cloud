@@ -77,6 +77,11 @@
         ],
       },
       {
+        name: "开发文档",
+        path: 'doc',
+        component: './app/doc',
+      },
+      {
         redirect: '/index/index',
       },
     ],
@@ -87,17 +92,17 @@
     path: '/app',
     routes: [
       {
-        name: "应用列表",
-        path: 'list',
-        component: './app/list',
+        name: "开放应用",
+        path: 'open',
+        component: './app/open',
       },
       {
-        name: "开发文档",
-        path: 'doc',
-        component: './app/doc',
+        name: "授权应用",
+        path: 'auth',
+        component: './app/auth',
       },
       {
-        redirect: '/app/list',
+        redirect: '/app/open',
       },
     ],
   },

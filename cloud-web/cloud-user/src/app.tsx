@@ -14,6 +14,7 @@ import {message} from 'antd';
 import defaultSettings from '../config/defaultSettings';
 import * as auth from './util/auth';
 import {getQueryString} from "@/util/string";
+import {queryCurrentWeb} from "@/services/common/info";
 
 /**
  * 开发环境
@@ -39,7 +40,9 @@ export const initialStateConfig = {
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
   currentUser?: API.UserInfo;
+  currentWeb?: API.WebInfo;
   fetchUserInfo?: () => Promise<API.UserInfo | undefined>;
+  fetchWebInfo?: () => Promise<API.WebInfo | undefined>;
 }> {
   const fetchUserInfo = async () => {
     const {redirect, ticket} = history.location.query as { redirect: string, ticket: string };
@@ -69,17 +72,30 @@ export async function getInitialState(): Promise<{
     }
     return undefined;
   };
+  const fetchWebInfo = async () => {
+    const response = await queryCurrentWeb();
+    // @ts-ignore
+    if (response.code != 200) {
+      return undefined;
+    }
+    return response.data;
+  };
+  const currentWeb = await fetchWebInfo();
   // 如果是登录页面，不执行
   if (allowPaths.indexOf(history.location.pathname) < 0) {
     const currentUser = await fetchUserInfo();
     return {
       fetchUserInfo,
       currentUser,
+      fetchWebInfo,
+      currentWeb,
       settings: {},
     };
   }
   return {
     fetchUserInfo,
+    fetchWebInfo,
+    currentWeb,
     settings: {},
   };
 }
@@ -88,6 +104,7 @@ export async function getInitialState(): Promise<{
 // @ts-ignore
 export const layout: RunTimeLayoutConfig = ({initialState}) => {
   return {
+    title: initialState?.currentWeb?.name || defaultSettings?.title,
     onPageChange: (location: { pathname: string; }) => {
       // 如果没有登录，重定向到 login
       if (!initialState?.currentUser && allowPaths.indexOf(location?.pathname as string) < 0) {
