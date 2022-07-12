@@ -12,9 +12,7 @@
             component: './user/login',
           },
           {
-            name: '修改资料',
-            path: '/user/profile',
-            component: './user/profile',
+            redirect: '/user/login',
           },
         ],
       },
@@ -31,7 +29,7 @@
       {
         name: "控制台",
         path: 'index',
-        component: './index/index/welcome',
+        component: './index/index',
       },
       {
         redirect: '/index/index',
@@ -92,12 +90,12 @@
     path: '/app',
     routes: [
       {
-        name: "开放应用",
+        name: "接入管理",
         path: 'open',
         component: './app/open',
       },
       {
-        name: "授权应用",
+        name: "授权管理",
         path: 'auth',
         component: './app/auth',
       },

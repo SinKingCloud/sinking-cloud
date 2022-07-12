@@ -24,4 +24,7 @@ const (
 
 	CacheNameWithUinServer = "UinServer_" //挂机服务器信息
 	CacheTimeWithUinServer = 600 * 1000   //挂机服务器信息储存时间
+
+	CacheNameWithRbac = "Rbac_"    //rbac权限信息缓存
+	CacheTimeWithRbac = 600 * 1000 //默认rbac权限信息缓存时间
 )

@@ -16,10 +16,11 @@ func (ControllerConfig) List(c *sinking_server.Context) {
 		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"sort" validate:"oneof=id sort update_time create_time" label:"排序字段"`
 		OrderByType     string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
 		Pid             string `form:"pid" default:"" validate:"omitempty,numeric" label:"父级ID"`
-		Name            string `form:"name" default:"" validate:"max=20" label:"名称"`
-		Describe        string `form:"describe" default:"" validate:"max=100" label:"描述"`
-		Key             string `form:"key" default:"" validate:"max=50" label:"配置标识"`
-		Value           string `form:"value" default:"" validate:"max=500" label:"配置内容"`
+		Name            string `form:"name" default:"" validate:"omitempty,max=20" label:"名称"`
+		Describe        string `form:"describe" default:"" validate:"omitempty,max=100" label:"描述"`
+		Key             string `form:"key" default:"" validate:"omitempty,max=50" label:"配置标识"`
+		Value           string `form:"value" default:"" validate:"omitempty,max=500" label:"配置内容"`
+		Control         string `form:"control" default:"" validate:"omitempty,max=500" label:"控件类型"`
 		CreateTimeStart string `form:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
 		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
 		UpdateTimeStart string `form:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
@@ -45,6 +46,9 @@ func (ControllerConfig) List(c *sinking_server.Context) {
 	}
 	if form.Value != "" {
 		where["value"] = form.Value
+	}
+	if form.Control != "" {
+		where["control"] = form.Control
 	}
 	if form.CreateTimeStart != "" {
 		where["create_time_start"] = form.CreateTimeStart
@@ -75,6 +79,7 @@ func (ControllerConfig) Update(c *sinking_server.Context) {
 		Name     string `json:"name" default:"" validate:"omitempty,max=20" label:"名称"`
 		Describe string `json:"describe" default:"" validate:"omitempty,max=100" label:"描述"`
 		Value    string `json:"value" default:"" validate:"omitempty" label:"配置内容"`
+		Control  string `json:"control" default:"" validate:"omitempty,max=999" label:"控件类型"`
 		Sort     string `json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
 	}
 	form := &Form{}
@@ -91,6 +96,9 @@ func (ControllerConfig) Update(c *sinking_server.Context) {
 	}
 	if form.Value != "" {
 		data["value"] = form.Value
+	}
+	if form.Control != "" {
+		data["control"] = form.Control
 	}
 	if form.Sort != "" {
 		data["sort"] = form.Sort
@@ -115,6 +123,7 @@ func (ControllerConfig) Create(c *sinking_server.Context) {
 		Describe string `json:"describe" validate:"required,max=100" label:"描述"`
 		Key      string `json:"key" default:"" validate:"required,max=50" label:"配置标识"`
 		Value    string `json:"value" default:"" validate:"required,max=500" label:"配置内容"`
+		Control  string `json:"control" default:"" validate:"required,max=500" label:"控件类型"`
 		Sort     int    `json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
 	}
 	form := &Form{}
@@ -132,6 +141,7 @@ func (ControllerConfig) Create(c *sinking_server.Context) {
 		Describe: form.Describe,
 		Key:      form.Key,
 		Value:    form.Value,
+		Control:  form.Control,
 		Sort:     form.Sort,
 	})
 	if err == nil {
@@ -171,6 +181,7 @@ func (ControllerConfig) Updates(c *sinking_server.Context) {
 		Describe string `json:"describe" default:"" validate:"omitempty,max=100" label:"描述"`
 		Key      string `json:"key" default:"" validate:"required,max=50" label:"配置标识"`
 		Value    string `json:"value" default:"" validate:"omitempty,max=999" label:"配置内容"`
+		Control  string `json:"control" default:"" validate:"omitempty,max=999" label:"控件类型"`
 		Sort     string `json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
 	}
 	type Form struct {
@@ -191,6 +202,9 @@ func (ControllerConfig) Updates(c *sinking_server.Context) {
 		}
 		if v.Value != "" {
 			data["value"] = v.Value
+		}
+		if v.Control != "" {
+			data["control"] = v.Control
 		}
 		if v.Sort != "" {
 			data["sort"] = v.Sort

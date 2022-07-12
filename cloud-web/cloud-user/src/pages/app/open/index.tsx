@@ -43,15 +43,15 @@ export default (): React.ReactNode => {
         <a onClick={() => {
           setIsModalVisible(true);
         }}>
-          <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/MjEImQtenlyueSmVEfUD.svg"/>{' '}
+          <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/MjEImQtenlyueSmVEfUD.svg"/>
           创建应用
         </a>
         <a>
-          <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/NbuDUAuBlIApFuDvWiND.svg"/>{' '}
+          <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/NbuDUAuBlIApFuDvWiND.svg"/>
           获取密匙
         </a>
         <a>
-          <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/ohOEPSYdDTNnyMbGuyLb.svg"/>{' '}
+          <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/ohOEPSYdDTNnyMbGuyLb.svg"/>
           产品接入
         </a>
       </div>
@@ -234,7 +234,6 @@ export default (): React.ReactNode => {
             );
           }}
         />
-
       </div>
       <div hidden={page.total <= 11}>
         <Pagination style={{textAlign: "center", marginTop: "20px"}} responsive={true} pageSize={10}

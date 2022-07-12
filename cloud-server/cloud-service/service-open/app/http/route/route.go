@@ -127,7 +127,7 @@ func loadUserRoute(s *sinking_web.Engine) {
 	handleAuth := &auth.ControllerAuth{}
 	authGroup := g.Group("/auth")
 	authGroup.GET("/list", sinking_server.HandleFunc(handleAuth.List))              //授权列表
-	authGroup.GET("/download", sinking_server.HandleFunc(handleAuth.Download))      //程序下载
+	authGroup.POST("/download", sinking_server.HandleFunc(handleAuth.Download))     //程序下载
 	authGroup.GET("/app/info", sinking_server.HandleFunc(handleAuth.AppInfo))       //程序详情
 	authGroup.GET("/app/version", sinking_server.HandleFunc(handleAuth.AppVersion)) //程序版本
 	authGroup.GET("/shop/list", sinking_server.HandleFunc(handleAuth.ShopList))     //程序列表

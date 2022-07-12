@@ -7,15 +7,20 @@ import {DownOutlined, ExclamationCircleOutlined} from "@ant-design/icons";
 import {createNotice, deleteNotice, getNoticeInfo, getNoticeList, updateNotice} from "@/services/web/notice";
 import BraftEditor from "braft-editor";
 import 'braft-editor/dist/index.css';
+import {Enums, getEnums} from "@/util/enum";
 
 export default (): React.ReactNode => {
   /**
    * 控件权限
    */
   const [controls, setControls] = useState({});
+  const [enums, setEnums] = useState({});
   useEffect(() => {
     getPageControls().then((d) => {
       setControls(d)
+    });
+    getEnums([Enums.WebNotice]).then((d) => {
+      setEnums(d);
     });
   }, []);
 
@@ -148,6 +153,7 @@ export default (): React.ReactNode => {
       dataIndex: 'place',
       tip: '通知显示位置',
       copyable: true,
+      valueEnum: enums?.[Enums.WebNotice] || {},
     },
     {
       title: '浏览量',
@@ -237,7 +243,7 @@ export default (): React.ReactNode => {
           <Menu>
             <Menu.Item key={"edit"} hidden={controls["web.notice:edit"] == undefined}>
               <a style={{fontSize: "small"}} onClick={() => {
-                showNoticeInfo(record?.id)
+                showNoticeInfo(record?.id);
               }}>
                 编 辑
               </a>
@@ -245,7 +251,7 @@ export default (): React.ReactNode => {
             <Menu.Item key={"delete"} hidden={controls["web.notice:delete"] == undefined}>
               <a style={{fontSize: "small"}} onClick={() => {
                 // @ts-ignore
-                deleteSubmit([record.id])
+                deleteSubmit([record.id]);
               }}>
                 删 除
               </a>
@@ -302,7 +308,12 @@ export default (): React.ReactNode => {
                 <Input placeholder="请输入标题" style={{maxWidth: "500px"}}/>
               </Form.Item>
               <Form.Item name={"place"} label="位置" rules={[{required: true}]}>
-                <Input placeholder="请输入显示位置" style={{maxWidth: "500px"}}/>
+                <Select placeholder="请输入显示位置" style={{maxWidth: "500px"}}>
+                  {Object.keys(enums?.[Enums.WebNotice] || {}).map((k) => {
+                    return <Select.Option key={"place_" + k}
+                                          value={k}>{enums?.[Enums.WebNotice]?.[k]}</Select.Option>;
+                  })}
+                </Select>
               </Form.Item>
               <Form.Item name={"sort"} label="排序" rules={[{required: true}]}>
                 <InputNumber placeholder="请输入排序数值" style={{maxWidth: "500px", minWidth: "150px"}}/>

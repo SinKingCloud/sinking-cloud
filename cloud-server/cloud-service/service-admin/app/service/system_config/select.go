@@ -24,6 +24,9 @@ func (s *service) Select(where map[string]string, orderByField string, orderByTy
 	if where["value"] != "" {
 		query.Where("`value` like ?", "%"+where["value"]+"%")
 	}
+	if where["control"] != "" {
+		query.Where("`control` = ?", where["control"])
+	}
 	if where["create_time_start"] != "" {
 		query.Where("`create_time` >= ?", where["create_time_start"])
 	}

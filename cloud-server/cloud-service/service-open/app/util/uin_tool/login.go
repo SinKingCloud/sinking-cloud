@@ -15,8 +15,8 @@ import (
 // add 添加账号
 func (s *speed) add(uin string, pwd string, phone string, proto int) bool {
 	//上锁
-	server2.GetIns().ServerLock(s.addr)
-	defer server2.GetIns().ServerUnLock(s.addr)
+	server2.GetIns().ServerLock("add_" + s.addr)
+	defer server2.GetIns().ServerUnLock("add_" + s.addr)
 	p := "0"
 	if proto == 1 {
 		p = "1"
@@ -132,13 +132,13 @@ func (s *speed) getQrCode(verifyUrl string) string {
 // login 登陆账号
 func (s *speed) login(uin string, code string) (int, error, string, string) {
 	//阻塞锁
-	server2.GetIns().ServerWaitLock(s.addr)
+	server2.GetIns().ServerWaitLock("add_" + s.addr)
 	//判断qq是否并发登陆
-	if server2.GetIns().ServerIsLock(uin) {
+	if server2.GetIns().ServerIsLock("uin_" + uin) {
 		return Error, errors.New("操作频繁,请稍后重试"), "", ""
 	}
 	//解除并发锁
-	defer server2.GetIns().ServerUnLock(uin)
+	defer server2.GetIns().ServerUnLock("uin_" + uin)
 	url := "/?&type=Android/&pe=login/"
 	data := map[string]string{
 		"Uin":   uin,

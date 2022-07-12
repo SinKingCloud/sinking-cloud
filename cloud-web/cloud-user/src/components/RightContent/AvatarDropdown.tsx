@@ -1,5 +1,5 @@
 import React, {useCallback} from 'react';
-import {ContactsOutlined, FormOutlined, LogoutOutlined, SettingOutlined} from '@ant-design/icons';
+import {FormOutlined, LogoutOutlined, SettingOutlined} from '@ant-design/icons';
 import {Avatar, Menu, Spin} from 'antd';
 // @ts-ignore
 import {history, useModel} from 'umi';
@@ -80,12 +80,8 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({menu}) => {
             账号设置
           </Menu.Item>
           <Menu.Item key="log">
-            <FormOutlined />
+            <FormOutlined/>
             操作日志
-          </Menu.Item>
-          <Menu.Item key="real">
-            <ContactsOutlined />
-            实名认证
           </Menu.Item>
         </>
       )}

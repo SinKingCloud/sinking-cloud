@@ -315,9 +315,6 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 					return pcLogin
 				})
 				break
-			case Zone:
-				res[Zone] = s.zoneSpeed(uin.Uin)
-				break
 			case Online:
 				if !uin.IsFirst {
 					res[Online] = speedP(func() bool {

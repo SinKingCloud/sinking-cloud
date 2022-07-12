@@ -104,6 +104,7 @@ func loadPageRoute(s *sinking_web.Engine) {
 	handle := &page.ControllerPage{}
 	r.GET("/menu", sinking_server.HandleFunc(handle.Menu))       //获取菜单列表
 	r.GET("/control", sinking_server.HandleFunc(handle.Control)) //获取页面控件
+	r.GET("/enum", sinking_server.HandleFunc(handle.Enum))       //获取枚举数据
 }
 
 // loadPersonRoute 加载个人操作路由

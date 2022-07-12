@@ -1,17 +1,26 @@
 import React, {useEffect, useState} from 'react';
 import {PageContainer} from '@ant-design/pro-layout';
-import {Badge, Button, Card, Form, Input, List, message, Modal, Pagination, Select, Tooltip, Typography} from 'antd';
+import {
+  Badge,
+  Button,
+  Card,
+  Descriptions,
+  List,
+  message,
+  Modal,
+  Pagination,
+  Tag,
+  Tooltip,
+  Typography
+} from 'antd';
 import styles from './style.less';
 import {
-  CodeSandboxOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  ExclamationCircleOutlined,
+  CloudDownloadOutlined, ExclamationCircleOutlined,
   EyeOutlined,
-  PlusOutlined
+  PlusOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
-import {createApp, deleteApp, getAppList, updateApp} from "@/services/app/app";
-import {getRandStr} from "@/util/string";
+import {Download, getAuthList} from "@/services/app/auth";
 
 export default (): React.ReactNode => {
   const nullData = {};
@@ -20,7 +29,7 @@ export default (): React.ReactNode => {
   const [pageLoading, setPageLoading] = useState(false);
   const getApps = (p: number = 1) => {
     setPageLoading(true);
-    getAppList({page_size: 11, page: p}).then((r) => {
+    getAuthList({page_size: 11, page: p}).then((r) => {
       setPageLoading(false);
       if (r.code != 200) {
         message.error(r.message || "获取应用列表失败");
@@ -31,28 +40,39 @@ export default (): React.ReactNode => {
     })
   }
   useEffect(() => {
-    getApps();
+    //getApps();
   }, []);
+
+  /**
+   * tab操作
+   */
+  const [tabStatus, setTabStatus] = useState({
+    operationKey: 'detail',
+    tabActiveKey: 'shop',
+  });
+  const onTabChange = (tabActiveKey: any) => {
+    if (tabActiveKey == 'detail') {
+      getApps();
+    }
+    setTabStatus({...tabStatus, tabActiveKey});
+  };
   const content = (
     <div className={styles.pageHeaderContent}>
       <p>
-        本平台提供了十分强大的开放能力，当您需要使用平台开放能力时，
-        您需要再此页面创建应用并获取密匙以此完成对接。
+        本平台研发了众多产品,在此页面您可购买使用许可并下载程序源代码。
       </p>
       <div className={styles.contentLink}>
-        <a onClick={() => {
-          setIsModalVisible(true);
-        }}>
-          <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/MjEImQtenlyueSmVEfUD.svg"/>{' '}
-          创建应用
+        <a>
+          <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/MjEImQtenlyueSmVEfUD.svg"/>
+          购买应用
         </a>
         <a>
-          <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/NbuDUAuBlIApFuDvWiND.svg"/>{' '}
-          获取密匙
+          <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/NbuDUAuBlIApFuDvWiND.svg"/>
+          安装应用
         </a>
         <a>
-          <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/ohOEPSYdDTNnyMbGuyLb.svg"/>{' '}
-          产品接入
+          <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/ohOEPSYdDTNnyMbGuyLb.svg"/>
+          产品上线
         </a>
       </div>
     </div>
@@ -65,186 +85,152 @@ export default (): React.ReactNode => {
       />
     </div>
   );
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [form] = Form.useForm();//新建编辑表单
-  const formOnFinish = async (values: any) => {
-    let api = createApp;
-    if (values?.id || 0 > 0) {
-      api = updateApp;
-      values.status = values?.status.toString() || "0";
-    }
-    setIsModalVisible(false);
-    form.resetFields();
-    api(values).then((r) => {
-      if (r.code != 200) {
-        message.error(r.message || "请求失败").then()
-      } else {
-        getApps(page.currentPage)
-      }
-    });
-  }
+  /**
+   * 详情弹窗
+   */
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
-  const [viewForm] = Form.useForm();//密匙表单
-  return (
-    <PageContainer loading={pageLoading} content={content} extraContent={extraContent}>
-      <Modal key={"form"} destroyOnClose={true} width={"400px"} forceRender={true}
-             title={form.getFieldValue("id") == undefined ? "添加应用" : "编辑应用"}
-             visible={isModalVisible} onOk={form.submit} okText={"确 认"} onCancel={() => {
-        setIsModalVisible(false);
-        form.resetFields();
-      }}>
-        <Form form={form} name="control-hooks" onFinish={formOnFinish} labelAlign="right" labelCol={{span: 6}}
-              wrapperCol={{span: 16}}>
-          <Form.Item name={"id"} label="ID" hidden={true}>
-            <Input placeholder="请输入ID"/>
-          </Form.Item>
-          <Form.Item name={"name"} label="应用名称" rules={[{required: true}]}>
-            <Input placeholder="请输入应用名称"/>
-          </Form.Item>
-          <Form.Item name={"describe"} label="应用描述" rules={[{required: true}]}>
-            <Input.TextArea placeholder="请输入应用描述"/>
-          </Form.Item>
-          <Form.Item name={"status"} label="应用状态" rules={[{required: true}]}>
-            <Select placeholder="请输入应用状态">
-              <Select.Option value={0}>正常</Select.Option>
-              <Select.Option value={2}>禁用</Select.Option>
-            </Select>
-          </Form.Item>
-        </Form>
-      </Modal>
-      <Modal key={"view"} width={"400px"} destroyOnClose={true} forceRender={true} title={"应用密匙"}
-             visible={isViewModalVisible}
-             okText={"重 置"} onOk={() => {
-        Modal.confirm({
-          title: '确定要重置密匙吗?',
-          icon: <ExclamationCircleOutlined/>,
-          content: '重置后该应用需使用新的密匙重新接入',
-          okType: 'danger',
-          onOk() {
-            updateApp({id: viewForm.getFieldValue("id"), key: getRandStr(32).toUpperCase()}).then((r) => {
-              setIsViewModalVisible(false);
-              form.resetFields();
-              if (r.code != 200) {
-                message.error(r.message || "请求失败").then()
-              } else {
-                getApps(page.currentPage)
+  const [authInfo, setAuthInfo] = useState<any>({});
+  /**
+   * 下载程序
+   */
+  const downloadApp = (id: number) => {
+    Modal.confirm({
+      title: '确定要下载程序吗?',
+      icon: <ExclamationCircleOutlined/>,
+      content: '系统将生成您的专属指纹程序',
+      okType: 'primary',
+      onOk() {
+        const key = "downloadApp";
+        message.loading({
+          content: '正在构建程序',
+          key,
+          duration: 600,
+        }).then();
+        Download({id: id}).then((r) => {
+          if (r?.code == 200) {
+            message.destroy(key);
+            Modal.success({
+              content: '构建程序成功,请点击按钮开始下载',
+              okText: '下载',
+              onOk() {
+                window.location.href = r?.data;
               }
             });
-          },
+          } else {
+            message.error({content: r?.message || "请求错误", key, duration: 2}).then();
+          }
         });
-      }} onCancel={() => {
-        setIsViewModalVisible(false);
-        form.resetFields();
-      }}>
-        <Form form={viewForm} name="control-hooks2" labelAlign="right" labelCol={{span: 6}}
-              wrapperCol={{span: 18}}>
-          <Form.Item name={"id"} label="应用ID" rules={[{required: true}]}>
-            <Input placeholder="请输入应用ID" disabled/>
-          </Form.Item>
-          <Form.Item name={"key"} label="应用密匙" rules={[{required: true}]}>
-            <Input placeholder="请输入应用密匙" disabled/>
-          </Form.Item>
-        </Form>
-      </Modal>
-      <div className={styles.cardList}>
-        <List
-          loading={false}
-          grid={{
-            gutter: 16,
-            xs: 1,
-            sm: 2,
-            md: 3,
-            lg: 3,
-            xl: 4,
-            xxl: 4,
-          }}
-          dataSource={[nullData, ...appList]}
-          renderItem={(item: any) => {
-            if (item && item?.id) {
+      },
+    });
+  };
+  return (
+    <PageContainer loading={pageLoading} content={content} extraContent={extraContent}
+                   tabActiveKey={tabStatus.tabActiveKey}
+                   onTabChange={onTabChange}
+                   tabList={[
+                     {
+                       key: 'shop',
+                       tab: '应用商店',
+                     },
+                     {
+                       key: 'detail',
+                       tab: '我的授权',
+                     },
+                   ]}>
+      {tabStatus.tabActiveKey == "detail" && (<>
+        <Modal key={"view"} width={"450px"} destroyOnClose={true} forceRender={true} footer={null} title={"授权详情"}
+               visible={isViewModalVisible}
+               bodyStyle={{padding: "5px"}}
+               onCancel={() => {
+                 setIsViewModalVisible(false);
+               }}>
+          <Descriptions
+            bordered
+            column={1}
+          >
+            <Descriptions.Item label="程序名称">{authInfo?.name || "未知应用"}(ID:{authInfo?.auth_id || 0})</Descriptions.Item>
+            <Descriptions.Item label="程序价格">{authInfo?.price?.toFixed(2) || "0.00"}元</Descriptions.Item>
+            <Descriptions.Item label="授权域名">{authInfo?.domain || "未知"}</Descriptions.Item>
+            <Descriptions.Item label="许可证代码">{authInfo?.code || "未知"}</Descriptions.Item>
+            <Descriptions.Item label="授权时间">{authInfo?.create_time || "未知"}</Descriptions.Item>
+            <Descriptions.Item label="绑定IP">{authInfo?.ip || "未绑定"}</Descriptions.Item>
+          </Descriptions>
+        </Modal>
+        <div className={styles.cardList}>
+          <List
+            loading={false}
+            grid={{
+              gutter: 16,
+              xs: 1,
+              sm: 2,
+              md: 3,
+              lg: 3,
+              xl: 4,
+              xxl: 4,
+            }}
+            dataSource={[nullData, ...appList]}
+            renderItem={(item: any) => {
+              if (item && item?.id) {
+                return (
+                  <List.Item key={item?.id}>
+                    <Card
+                      hoverable
+                      className={styles.card}
+                      bodyStyle={{padding: "24px 24px 0 24px"}}
+                      actions={[
+                        <Tooltip title={"查看详情"}><a key="view" onClick={() => {
+                          setAuthInfo(item);
+                          setIsViewModalVisible(true);
+                        }}><EyeOutlined/></a></Tooltip>,
+                        <Tooltip title={"下载程序"}><a key="download" onClick={() => {
+                          downloadApp(item?.id);
+                        }}><CloudDownloadOutlined/></a></Tooltip>
+                      ]}>
+                      <Card.Meta
+                        avatar={<Tooltip title={"授权状态:" + (item?.status == 0 ? "正常" : "禁用")}><Badge
+                          color={item?.status == 0 ? "green" : "red"}
+                          dot={true}><SafetyCertificateOutlined
+                          className={styles.cardAvatar}/></Badge></Tooltip>}
+                        title={<a>{item?.name}</a>}
+                        description={
+                          <Typography.Paragraph
+                            className={styles.item}
+                            ellipsis={{
+                              rows: 1,
+                            }}
+                          >
+                            <Tag color="green">授权域名: {item?.domain}</Tag>
+                          </Typography.Paragraph>
+                        }
+                      />
+                    </Card>
+                  </List.Item>
+                );
+              }
               return (
-                <List.Item key={item?.id}>
-                  <Card
-                    hoverable
-                    className={styles.card}
-                    actions={[
-                      <Tooltip title={"查看密匙"}><a key="view" onClick={() => {
-                        viewForm.setFieldsValue(item);
-                        setIsViewModalVisible(true);
-                      }}><EyeOutlined/></a></Tooltip>,
-                      <Tooltip title={"编辑应用"}><a key="edit" onClick={() => {
-                        form.setFieldsValue(item);
-                        setIsModalVisible(true);
-                      }}><EditOutlined/></a></Tooltip>,
-                      <Tooltip title={"删除应用"}><a key="delete" onClick={() => {
-                        Modal.confirm({
-                          title: '您确定要删除该应用吗?',
-                          icon: <ExclamationCircleOutlined/>,
-                          content: '删除后该应用所关联的数据将会转移至主应用',
-                          okType: 'danger',
-                          onOk() {
-                            Modal.confirm({
-                              title: '请再次确认是否删除?',
-                              icon: <ExclamationCircleOutlined/>,
-                              content: '删除后将不可恢复',
-                              okType: 'danger',
-                              onOk() {
-                                deleteApp({id: item?.id}).then((r) => {
-                                  if (r.code != 200) {
-                                    message.error(r.message || "请求失败").then()
-                                  } else {
-                                    getApps(page.currentPage)
-                                    message.success(r.message).then()
-                                  }
-                                })
-                              },
-                            });
-                          },
-                        });
-                      }}><DeleteOutlined/></a></Tooltip>
-                    ]}>
-                    <Card.Meta
-                      avatar={<Tooltip title={"应用状态:" + (item?.status == 0 ? "正常" : "禁用")}><Badge
-                        color={item?.status == 0 ? "green" : "red"}
-                        dot={true}><CodeSandboxOutlined
-                        className={styles.cardAvatar}/></Badge></Tooltip>}
-                      title={<a>{item?.name}</a>}
-                      description={
-                        <Typography.Paragraph
-                          className={styles.item}
-                          ellipsis={{
-                            rows: 3,
-                          }}
-                        >
-                          {item?.describe}
-                        </Typography.Paragraph>
-                      }
-                    />
-                  </Card>
+                <List.Item>
+                  <Button type="dashed" className={styles.newButton} onClick={() => {
+                    let tabActiveKey = "shop";
+                    setTabStatus({...tabStatus, tabActiveKey});
+                  }}>
+                    <PlusOutlined/> 添加授权
+                  </Button>
                 </List.Item>
               );
-            }
-            return (
-              <List.Item>
-                <Button type="dashed" className={styles.newButton} onClick={() => {
-                  setIsModalVisible(true);
-                }}>
-                  <PlusOutlined/> 添加应用
-                </Button>
-              </List.Item>
-            );
-          }}
-        />
+            }}
+          />
 
-      </div>
-      <div hidden={page.total <= 11}>
-        <Pagination style={{textAlign: "center", marginTop: "20px"}} responsive={true} pageSize={10}
-                    defaultCurrent={page?.currentPage || 1}
-                    onChange={(p) => {
-                      setPage({currentPage: p, total: page.total});
-                      getApps(p);
-                    }}
-                    total={page?.total || 0}/>
-      </div>
+        </div>
+        <div hidden={page.total <= 11}>
+          <Pagination style={{textAlign: "center", marginTop: "20px"}} responsive={true} pageSize={10}
+                      defaultCurrent={page?.currentPage || 1}
+                      onChange={(p) => {
+                        setPage({currentPage: p, total: page.total});
+                        getApps(p);
+                      }}
+                      total={page?.total || 0}/>
+        </div>
+      </>)}
     </PageContainer>
   );
 };

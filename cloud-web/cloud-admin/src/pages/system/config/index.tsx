@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {PageContainer} from "@ant-design/pro-layout";
 import ProCard from '@ant-design/pro-card';
-import ProForm, {ProFormText} from "@ant-design/pro-form";
+import ProForm, {ProFormDigit, ProFormSelect, ProFormText, ProFormTextArea} from "@ant-design/pro-form";
 import {getConfigList, updateConfigs} from "@/services/system/config";
 import {message} from "antd";
 import {toTreeData} from "@/util/tree";
@@ -67,17 +67,74 @@ export default (): React.ReactNode => {
           return (<ProCard.TabPane key={tab?.id} tab={tab?.name}>
             <ProForm key={"form" + tab?.id} onFinish={onFinish}>
               {tab?.children.map((configs: any) => {
-                return (<ProFormText
-                  allowClear={false}
-                  width="md"
-                  key={configs?.id}
-                  name={configs?.key}
-                  initialValue={configs?.value}
-                  label={configs?.name}
-                  tooltip={configs?.describe}
-                  placeholder={"请输入" + configs?.name}
-                  rules={[{required: true, message: "请输入" + configs?.name,},]}
-                />);
+                let control;
+                const cons = (configs?.control || "").split("|");
+                let values: any = {};
+                if (cons.length > 1) {
+                  for (let i = 1; i < cons.length; i++) {
+                    const temp = cons[i].split(":");
+                    if (temp.length == 2) {
+                      values[temp[0]] = temp[1];
+                    }
+                  }
+                }
+                switch (cons[0]) {
+                  case "select":
+                    control = <ProFormSelect
+                      allowClear={false}
+                      width="md"
+                      key={configs?.id}
+                      name={configs?.key}
+                      initialValue={configs?.value}
+                      label={configs?.name}
+                      tooltip={configs?.describe}
+                      valueEnum={values}
+                      placeholder={"请选择" + configs?.name}
+                      rules={[{required: true, message: "请选择" + configs?.name,},]}
+                    />
+                    break;
+                  case "number":
+                    control = <ProFormDigit
+                      width="md"
+                      key={configs?.id}
+                      name={configs?.key}
+                      initialValue={configs?.value}
+                      label={configs?.name}
+                      tooltip={configs?.describe}
+                      min={values?.min || 0}
+                      max={values?.max || 100}
+                      placeholder={"请输入" + configs?.name}
+                      rules={[{required: true, message: "请输入" + configs?.name,},]}
+                    />
+                    break
+                  case "text_area":
+                    control = <ProFormTextArea
+                      allowClear={false}
+                      width="md"
+                      key={configs?.id}
+                      name={configs?.key}
+                      initialValue={configs?.value}
+                      label={configs?.name}
+                      tooltip={configs?.describe}
+                      placeholder={"请输入" + configs?.name}
+                      rules={[{required: true, message: "请输入" + configs?.name,},]}
+                    />
+                    break
+                  default:
+                    control = <ProFormText
+                      allowClear={false}
+                      width="md"
+                      key={configs?.id}
+                      name={configs?.key}
+                      initialValue={configs?.value}
+                      label={configs?.name}
+                      tooltip={configs?.describe}
+                      placeholder={"请输入" + configs?.name}
+                      rules={[{required: true, message: "请输入" + configs?.name,},]}
+                    />
+                    break;
+                }
+                return control;
               })}
             </ProForm>
           </ProCard.TabPane>);

@@ -44,7 +44,7 @@ func (*shop) Buy(userId int, authId int, domain string) error {
 		return errors.New("系统已存在此授权,无需重复授权")
 	}
 	//判断余额
-	if user.Money < authApp.Price {
+	if authApp.Price > 0 && user.Money < authApp.Price {
 		return errors.New("账户余额不足,请充值")
 	}
 	//扣款
@@ -61,7 +61,9 @@ func (*shop) Buy(userId int, authId int, domain string) error {
 	})
 	//购买失败退会余额
 	if err != nil {
-		rpc.WebUser.Money(userId, 1, fmt.Sprintf("%.2f", authApp.Price))
+		if authApp.Price > 0 {
+			rpc.WebUser.Money(userId, 1, fmt.Sprintf("%.2f", authApp.Price))
+		}
 		return errors.New("购买失败,请联系管理员")
 	}
 	rpc.WebUserPayLog.Create(user.Id, 1, 1, authApp.Price, "在线消费", "购买"+authApp.Name+",授权域名:"+domain)
