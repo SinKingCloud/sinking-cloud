@@ -28,6 +28,7 @@
 @dropdown-overlay-radius: 5px; //下拉框圆角
 @dropdown-overlay-shadow: 0px 0px 10px 10px rgba(241, 241, 241, 0.54); //下拉框阴影
 @ant-pagination-radius: 5px; //分页圆角
+@notification-radius: 10px; //消息圆角
 html,
 body,
 #root {
@@ -250,7 +251,8 @@ ol {
   box-shadow: none !important;
   border-radius: 0 !important;
 }
-.ant-pro-card .ant-card{
+
+.ant-pro-card .ant-card {
   box-shadow: none !important;
   border-radius: 0 !important;
 }
@@ -502,4 +504,16 @@ textarea {
   top: 0 !important;
   right: -1px !important;
   border-top-right-radius: 6px !important;
+}
+
+/**
+ * 通知样式
+ */
+.ant-notification-notice {
+  border-radius: @notification-radius !important;
+}
+
+.ant-notification-notice-closable .ant-notification-notice-message {
+  font-weight: bolder !important;
+  color: #5e5e5e;
 }

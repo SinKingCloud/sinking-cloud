@@ -86,6 +86,12 @@ type response struct {
 	Body     string `json:"-"`
 }
 
+type speedStatus struct {
+	Code    int          `json:"code"`
+	Data    *SpeedStatus `json:"data"`
+	Message string       `json:"message"`
+}
+
 // SpeedStatus 任务状态
 type SpeedStatus struct {
 	CommonInfoGetQQLevelInfo struct {
@@ -165,7 +171,6 @@ type SpeedStatus struct {
 		SuperclubYearPeriod   interface{} `json:"superclub_year_period"`
 		ClubStatus            int         `json:"clubStatus"`
 	} `json:"commonInfo.getQQInfo"`
-	Pskey    string `json:"pskey"`
-	Skey     string `json:"skey"`
-	Superkey string `json:"Superkey"`
+	Pskey string `json:"pskey"`
+	Skey  string `json:"skey"`
 }

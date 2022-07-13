@@ -47,3 +47,14 @@ export async function deleteApp(body: any, options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+/** 获取更新日志 GET /user/auth/app/version */
+export async function getUpdateLog(params?: {}, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/auth/app/version', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}

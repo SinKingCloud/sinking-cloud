@@ -40,7 +40,7 @@ func test() {
 				//}
 			}
 		}
-	}, Thread: 30}).Run()
+	}, Thread: 100}).Run()
 
 	time.Sleep(1 * time.Second)
 	list, err := uin2.GetIns().SelectUinJob(3000)

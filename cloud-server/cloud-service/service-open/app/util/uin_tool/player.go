@@ -164,8 +164,8 @@ func (s *speed) pcOffline(uin string) bool {
 }
 
 // pcSpeed 电脑加速
-func (s *speed) pcSpeed(uin string) bool {
-	url := "/?&type=Android/&pe=pc/"
+func (s *speed) pcLogin(uin string) bool {
+	url := "/?&type=pc/&pe=login/"
 	data := map[string]string{
 		"Uin": uin,
 	}
@@ -173,11 +173,16 @@ func (s *speed) pcSpeed(uin string) bool {
 	if err != nil {
 		return false
 	}
-	return res.State == "0"
+	var state *captcha
+	err = json.Unmarshal([]byte(res.State), &state)
+	if err != nil || state == nil {
+		return false
+	}
+	return state.Stype == "11"
 }
 
-// pcForceSpeed 电脑加速
-func (s *speed) pcForceSpeed(uin string) bool {
+// pcCode 电脑加速
+func (s *speed) pcCode(uin string) bool {
 	url := "/?&type=Android/&pe=codepc/"
 	data := map[string]string{
 		"Uin": uin,
@@ -195,6 +200,23 @@ func (s *speed) pcForceSpeed(uin string) bool {
 		}
 	}
 	return res.State == "0"
+}
+
+// pcForceSpeed 电脑加速
+func (s *speed) pcForceSpeed(uin string) bool {
+	r := s.pcLogin(uin)
+	if !r {
+		r = s.pcLogin(uin)
+		if !r {
+			r = s.pcLogin(uin)
+		}
+	}
+	if r {
+		if s.pcCode(uin) {
+			return s.pcLogin(uin)
+		}
+	}
+	return false
 }
 
 // friendSpeed 加好友加速
@@ -263,9 +285,12 @@ func (s *speed) getSpeedStatus(uin string) (d *SpeedStatus, e error) {
 	if res.State == "" {
 		return nil, nil
 	}
-	e = json.Unmarshal([]byte(res.State), &d)
+	var t *speedStatus
+	e = json.Unmarshal([]byte(res.State), &t)
 	d.Skey = res.Skey
 	d.Pskey = res.Pskey
-	d.Superkey = res.Superkey
+	if e == nil && t != nil && t.Data != nil {
+		d = t.Data
+	}
 	return
 }
