@@ -55,7 +55,7 @@ func (ControllerAuth) ShopList(c *sinking_server.Context) {
 // ShopBuy 购买商品
 func (ControllerAuth) ShopBuy(c *sinking_server.Context) {
 	type Form struct {
-		AuthId int    `json:"auth_id" default:"" validate:"min=0" label:"程序ID"`
+		Id     int    `json:"id" default:"" validate:"min=0" label:"程序ID"`
 		Domain string `json:"domain" default:"" validate:"required,max=100" label:"域名"`
 	}
 	form := &Form{}
@@ -63,13 +63,13 @@ func (ControllerAuth) ShopBuy(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	app, err := auth_app.GetIns().FindByIdWithCache(form.AuthId, false)
+	app, err := auth_app.GetIns().FindByIdWithCache(form.Id, false)
 	if err != nil || app == nil {
 		c.Error("未查询到该应用信息")
 		return
 	}
-	e := web_auth.Shop.Buy(c.GetWebUserInfo().Id, form.AuthId, form.Domain)
-	if err != nil {
+	e := web_auth.Shop.Buy(c.GetWebUserInfo().Id, form.Id, form.Domain)
+	if e != nil {
 		c.Error(e.Error())
 		return
 	}

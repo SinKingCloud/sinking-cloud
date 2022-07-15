@@ -288,7 +288,7 @@ func (*pkg) download(u string) (string, error) {
 		return "", errors.New("网址格式错误")
 	}
 	client := &http.Client{
-		Timeout: 60 * time.Second,
+		Timeout: 180 * time.Second,
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},

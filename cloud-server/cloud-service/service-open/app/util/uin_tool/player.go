@@ -167,7 +167,8 @@ func (s *speed) pcOffline(uin string) bool {
 func (s *speed) pcLogin(uin string) bool {
 	url := "/?&type=pc/&pe=login/"
 	data := map[string]string{
-		"Uin": uin,
+		"Uin":   uin,
+		"place": s.proxy,
 	}
 	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
@@ -185,7 +186,8 @@ func (s *speed) pcLogin(uin string) bool {
 func (s *speed) pcCode(uin string) bool {
 	url := "/?&type=Android/&pe=codepc/"
 	data := map[string]string{
-		"Uin": uin,
+		"Uin":   uin,
+		"place": s.proxy,
 	}
 	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
@@ -212,9 +214,7 @@ func (s *speed) pcForceSpeed(uin string) bool {
 		}
 	}
 	if r {
-		if s.pcCode(uin) {
-			return s.pcLogin(uin)
-		}
+		return s.pcCode(uin)
 	}
 	return false
 }
@@ -260,15 +260,7 @@ func (s *speed) mobileOnline(uin string) bool {
 
 // pcLower pc下线
 func (s *speed) pcLower(uin string) bool {
-	url := "/?&type=Pc/&pe=lower/"
-	data := map[string]string{
-		"Uin": uin,
-	}
-	res, err := s.sendRequest(url, data, -1)
-	if err != nil {
-		return false
-	}
-	return res.State == "0"
+	return s.pcLogin(uin)
 }
 
 // getSpeedStatus 获取加速状态
@@ -287,8 +279,6 @@ func (s *speed) getSpeedStatus(uin string) (d *SpeedStatus, e error) {
 	}
 	var t *speedStatus
 	e = json.Unmarshal([]byte(res.State), &t)
-	d.Skey = res.Skey
-	d.Pskey = res.Pskey
 	if e == nil && t != nil && t.Data != nil {
 		d = t.Data
 	}

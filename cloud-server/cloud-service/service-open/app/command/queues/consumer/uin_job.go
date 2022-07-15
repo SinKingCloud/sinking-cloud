@@ -7,7 +7,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin"
@@ -197,16 +196,16 @@ func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, s
 	s := uin_tool.NewUinTool(addr, proxy)
 	jobStatus := status.CommonInfoGetQQLevelInfo
 	//执行签到任务
-	if len(signCheckJobs) > 0 {
-		producer.NewSignJobProducer().Build(&producer.SignJob{
-			Uin:   uin.Uin,
-			Addr:  addr,
-			Proxy: proxy,
-			Skey:  status.Skey,
-			PSkey: status.Pskey,
-			Jobs:  signCheckJobs,
-		}).Send()
-	}
+	//if len(signCheckJobs) > 0 {
+	//	producer.NewSignJobProducer().Build(&producer.SignJob{
+	//		Uin:   uin.Uin,
+	//		Addr:  addr,
+	//		Proxy: proxy,
+	//		Skey:  status.Skey,
+	//		PSkey: status.Pskey,
+	//		Jobs:  signCheckJobs,
+	//	}).Send()
+	//}
 	//判断加速项目并加速
 	var speedJobs []int
 	for _, v := range speedCheckJobs {

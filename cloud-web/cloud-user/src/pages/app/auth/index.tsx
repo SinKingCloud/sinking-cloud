@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {PageContainer} from '@ant-design/pro-layout';
 import {
   Badge,
@@ -21,8 +21,9 @@ import {
   PlusOutlined,
   ShoppingCartOutlined, SlackOutlined,
 } from "@ant-design/icons";
-import {Download, getAuthList, getShopList} from "@/services/app/auth";
+import {Download, getAuthList, getShopList, shopBuy} from "@/services/app/auth";
 import {getUpdateLog} from "@/services/app/app";
+import {ModalForm, ProFormInstance, ProFormText} from "@ant-design/pro-form";
 
 export default (): React.ReactNode => {
   const nullData = {};
@@ -172,6 +173,11 @@ export default (): React.ReactNode => {
       },
     });
   };
+  /**
+   * 购买表单
+   */
+  const formRef = useRef<ProFormInstance>();
+  const [buyModalVisible, setBuyModalVisible] = useState<boolean>(false);
   return (
     <PageContainer loading={pageLoading} content={content} extraContent={extraContent}
                    tabActiveKey={tabStatus.tabActiveKey}
@@ -186,6 +192,58 @@ export default (): React.ReactNode => {
                        tab: '我的授权',
                      },
                    ]}>
+      <ModalForm
+        title={"购买【" + (shopInfo?.name || "未知应用") + "】"}
+        formRef={formRef}
+        visible={buyModalVisible}
+        initialValues={shopInfo}
+        onVisibleChange={setBuyModalVisible}
+        width={"350px"}
+        submitter={{
+          searchConfig: {
+            resetText: '取消',
+          },
+          resetButtonProps: {
+            onClick: () => {
+              formRef.current?.resetFields();
+              setBuyModalVisible(false);
+            },
+          },
+        }}
+        layout={"horizontal"}
+        onFinish={async (values) => {
+          Modal.confirm({
+            title: '确定要购买程序吗?',
+            icon: <ExclamationCircleOutlined/>,
+            content: '您需要消费' + (shopInfo?.price?.toFixed(2) || "0.00") + '元',
+            okType: 'primary',
+            onOk() {
+              const key = "shopBuy";
+              message.loading({
+                content: '正在购买应用',
+                key,
+                duration: 60,
+              }).then();
+              shopBuy(values).then((r) => {
+                if (r?.code == 200) {
+                  let tabActiveKey = "detail";
+                  setTabStatus({...tabStatus, tabActiveKey});
+                  getApps();
+                  message.success({content: r?.message || "请求错误", key, duration: 2}).then();
+                } else {
+                  message.error({content: r?.message || "请求错误", key, duration: 3}).then();
+                }
+              })
+            },
+          });
+          return true;
+        }}
+      >
+        <ProFormText name="id" rules={[{required: true, message: '请输入授权ID'}]} hidden={true} label="应用ID"
+                     placeholder="请输入授权ID"/>
+        <ProFormText name="domain" rules={[{required: true, message: '请输入域名,无需填写前缀'}]} label="授权域名"
+                     placeholder="请输入域名,无需填写前缀"/>
+      </ModalForm>
       <Modal key={"updates"} width={"450px"} destroyOnClose={true} forceRender={true} footer={null} title={"更新日志"}
              visible={isUpdateModalVisible}
              onCancel={() => {
@@ -269,9 +327,11 @@ export default (): React.ReactNode => {
                         }}><CloudSyncOutlined/></a></Tooltip>,
                         <Tooltip title={"购买应用"}><a key="buy" onClick={() => {
                           if (item?.status != 0) {
-                            message.error("该应用以暂停销售,详情请咨询客服")
+                            message.error("该应用已暂停销售,详情请咨询客服")
                           } else {
-
+                            formRef?.current?.setFieldsValue({id: item?.id, domain: ""});
+                            setShopInfo(item);
+                            setBuyModalVisible(true);
                           }
                         }}><ShoppingCartOutlined/></a></Tooltip>
                       ]}>
