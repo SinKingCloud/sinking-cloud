@@ -13,8 +13,13 @@ import (
 )
 
 // add 添加账号
-func (s *speed) add(uin string, pwd string, phone string, proto int) bool {
-	//上锁
+func (s *speed) add(uin string, pwd string, phone string, phoneArea string, proto int) bool {
+	//判断单线程是否上锁
+	if server2.GetIns().ServerIsLock("add_" + s.addr) {
+		//有锁的话等待执行完成
+		server2.GetIns().ServerWaitLock("add_" + s.addr)
+	}
+	//加锁
 	server2.GetIns().ServerLock("add_" + s.addr)
 	defer server2.GetIns().ServerUnLock("add_" + s.addr)
 	p := "0"
@@ -27,6 +32,7 @@ func (s *speed) add(uin string, pwd string, phone string, proto int) bool {
 		"Pass":     pwd,
 		"brand":    "",
 		"model":    "",
+		"areacode": phoneArea,
 		"protocol": p,
 		"phone":    phone,
 	}
@@ -35,7 +41,6 @@ func (s *speed) add(uin string, pwd string, phone string, proto int) bool {
 		return false
 	}
 	if res.State == "0" {
-		s.pcAdd(uin)
 		return true
 	}
 	return false
@@ -131,12 +136,13 @@ func (s *speed) getQrCode(verifyUrl string) string {
 
 // login 登陆账号
 func (s *speed) login(uin string, code string) (int, error, string, string) {
-	//阻塞锁
+	//添加账号时候等待
 	server2.GetIns().ServerWaitLock("add_" + s.addr)
 	//判断qq是否并发登陆
 	if server2.GetIns().ServerIsLock("uin_" + uin) {
 		return Error, errors.New("操作频繁,请稍后重试"), "", ""
 	}
+	server2.GetIns().ServerWaitLock("uin_" + uin)
 	//解除并发锁
 	defer server2.GetIns().ServerUnLock("uin_" + uin)
 	url := "/?&type=Android/&pe=login/"

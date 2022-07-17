@@ -45,6 +45,7 @@ func loadApiRoute(s *sinking_web.Engine) {
 	uinGroup.GET("/self", sinking_server.HandleFunc(handleUin.Self))                    //账户信息
 	uinGroup.POST("/buy", sinking_server.HandleFunc(handleUin.Buy))                     //业务下单
 	uinGroup.GET("/servers", sinking_server.HandleFunc((&uin.ControllerServer{}).List)) //地区列表
+	uinGroup.GET("/countries", sinking_server.HandleFunc((&uin.ControllerArea{}).List)) //国家列表
 	uinGroup.GET("/project", sinking_server.HandleFunc(handleUin.Project))              //功能列表
 	uinGroup.GET("/activity", sinking_server.HandleFunc(handleUin.Activity))            //活动列表
 	uinSetGroup := uinGroup.Group("/operate")
@@ -107,7 +108,8 @@ func loadUserRoute(s *sinking_web.Engine) {
 	handleOrder := &uin.ControllerOrder{}
 	uinGroup.GET("/orders", sinking_server.HandleFunc(handleOrder.List)) //订单列表
 	handleLog := &uin.ControllerLog{}
-	uinGroup.GET("/logs", sinking_server.HandleFunc(handleLog.List)) //日志列表
+	uinGroup.GET("/logs", sinking_server.HandleFunc(handleLog.List))                    //日志列表
+	uinGroup.GET("/countries", sinking_server.HandleFunc((&uin.ControllerArea{}).List)) //国家列表
 
 	//oauth应用
 	handleOauth := &oauth.ControllerOauth{}

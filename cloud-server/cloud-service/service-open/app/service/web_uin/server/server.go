@@ -50,9 +50,6 @@ func (s *service) ServerWaitLock(key string) {
 			i++
 			time.Sleep(5 * time.Second)
 		} else {
-			if i > 0 {
-				time.Sleep(2 * time.Second)
-			}
 			break
 		}
 	}

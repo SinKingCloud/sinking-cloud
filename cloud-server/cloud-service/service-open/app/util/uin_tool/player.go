@@ -179,7 +179,7 @@ func (s *speed) pcLogin(uin string) bool {
 	if err != nil || state == nil {
 		return false
 	}
-	return state.Stype == "11"
+	return state.Stype == "11" || state.Stype == "8"
 }
 
 // pcCode 电脑加速
@@ -214,7 +214,9 @@ func (s *speed) pcForceSpeed(uin string) bool {
 		}
 	}
 	if r {
-		return s.pcCode(uin)
+		if s.pcCode(uin) {
+			return s.pcLogin(uin)
+		}
 	}
 	return false
 }

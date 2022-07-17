@@ -7,9 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
-	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	uin2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/uin_tool"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"gorm.io/gorm"
 	"log"
@@ -33,13 +31,13 @@ func test() {
 			//执行挂机任务
 			uin := param.(*model.AppUin)
 			if uin != nil {
-				//producer.NewUinJobProducer().Build(uin).Send()
-				server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
-				if err == nil && server != nil {
-					s := uin_tool.NewUinTool(server.Addr, server.Proxy)
-					jobs := []int{uin_tool.Pc}
-					s.Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, jobs, false)
-				}
+				producer.NewUinJobProducer().Build(uin).Send()
+				//server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
+				//if err == nil && server != nil {
+				//	s := uin_tool.NewUinTool(server.Addr, server.Proxy)
+				//	jobs := []int{uin_tool.Pc}
+				//	s.Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, jobs, false)
+				//}
 			}
 		}
 	}, Thread: 100}).Run()

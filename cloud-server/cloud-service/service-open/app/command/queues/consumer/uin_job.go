@@ -166,7 +166,7 @@ func speed(uin *model.AppUin) {
 			fail, _ = check(server.Addr, server.Proxy, uin, speedJobs, signJobs, true, false)
 		} else {
 			//正常挂机
-			fail, _ = uin_tool.NewUinTool(server.Addr, server.Proxy).Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, speedJobs, true)
+			fail, _ = uin_tool.NewUinTool(server.Addr, server.Proxy).Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, speedJobs, true)
 			if !fail {
 				fail, _ = check(server.Addr, server.Proxy, uin, speedJobs, signJobs, false, true) //判断未执行的秒加速项目并补挂一次
 			}
@@ -194,7 +194,6 @@ func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, s
 		return false, nil
 	}
 	s := uin_tool.NewUinTool(addr, proxy)
-	jobStatus := status.CommonInfoGetQQLevelInfo
 	//执行签到任务
 	//if len(signCheckJobs) > 0 {
 	//	producer.NewSignJobProducer().Build(&producer.SignJob{
@@ -215,7 +214,7 @@ func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, s
 			if isFirst {
 				continue
 			}
-			isCheck = jobStatus.IMobileQQOnline != "1"
+			isCheck = status.IMobileQQOnline != "1"
 			if !isCheck && lower {
 				//下线手机
 				s.MobileOffline(uin.Uin)
@@ -225,7 +224,7 @@ func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, s
 			if isFirst {
 				continue
 			}
-			isCheck = jobStatus.IPCQQOnline != "1"
+			isCheck = status.IPCQQOnline != "1"
 			if !isCheck && lower {
 				//下线PC
 				s.PcOffline(uin.Uin)
@@ -235,10 +234,10 @@ func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, s
 			if isFirst {
 				continue
 			}
-			isCheck = jobStatus.INoHideOnline != "1"
+			isCheck = status.INoHideOnline != "1"
 			break
 		case uin_tool.Medal:
-			isCheck = jobStatus.IMedal != "1"
+			isCheck = status.IMedal != "1"
 			if isCheck {
 				v = uin_tool.Pc
 			}
@@ -247,37 +246,37 @@ func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, s
 			if isFirst {
 				continue
 			}
-			isCheck = jobStatus.QzoneVisitor != "1"
+			isCheck = status.QzoneVisitor != "1"
 			break
 		case uin_tool.Ws:
-			isCheck = jobStatus.WeishiVideoview != "1"
+			isCheck = status.WeishiVideoview != "1"
 			break
 		case uin_tool.MicroShow:
-			isCheck = jobStatus.ICmshowActive != "1"
+			isCheck = status.ICmshowActive != "1"
 			break
 		case uin_tool.Safe:
 			if isFirst {
 				continue
 			}
-			isCheck = jobStatus.IPCSafeOnline != "1"
+			isCheck = status.IPCSafeOnline != "1"
 			break
 		case uin_tool.Game:
-			isCheck = jobStatus.IMobileGameOnline != "1"
+			isCheck = status.IMobileGameOnline != "1"
 			break
 		case uin_tool.Sport:
 			isCheck = false
 			if time.Now().Day() <= 8 {
-				isCheck = jobStatus.IQQSportStep != "1"
+				isCheck = status.IQQSportStep != "1"
 			}
 			break
 		case uin_tool.MobileClock:
-			isCheck = jobStatus.IDailySign != "1"
+			isCheck = status.IDailySign != "1"
 			break
 		case uin_tool.ZoneClock:
-			isCheck = jobStatus.IQzoneState != "1"
+			isCheck = status.IQzoneState != "1"
 			break
 		case uin_tool.Friend:
-			isCheck = jobStatus.IAddFriend != "1"
+			isCheck = status.IAddFriend != "1"
 			break
 		}
 		if isCheck {
@@ -285,7 +284,7 @@ func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, s
 		}
 	}
 	if len(speedJobs) > 0 {
-		return s.Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, speedJobs, isFirst)
+		return s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, speedJobs, isFirst)
 	}
 	return false, nil
 }

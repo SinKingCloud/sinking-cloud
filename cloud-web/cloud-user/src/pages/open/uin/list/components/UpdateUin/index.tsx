@@ -1,11 +1,11 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Button, Form, Input, message, Modal, Select} from "antd";
-import {changeUinPassword, changeUinPhone, uinLogin} from "@/services/open/uin/uin";
+import {changeUinPassword, changeUinPhone, getAreaList, uinLogin} from "@/services/open/uin/uin";
 // @ts-ignore
 import CryptoJS from 'crypto-js';
 // @ts-ignore
 import Script from 'react-load-script';
-import {getUrlQuery} from "@/util/string";
+import {getUrlQuery, implode} from "@/util/string";
 // @ts-ignore
 import QRCode from "qrcode.react/lib";
 import {checkMobile} from "@/util/device";
@@ -138,8 +138,8 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
           await changeUinPassword({uin: initUin, pwd: CryptoJS.MD5(values.pwd).toString()})
         }
       } else if (values.login_type == "phone") {
-        if ((values.phone?.length || 0) == 11) {
-          await changeUinPhone({uin: initUin, phone: values.phone})
+        if ((values.phone?.length || 0) >= 5) {
+          await changeUinPhone({uin: initUin, phone: values.phone, phone_area: values?.phone_area || ""})
         }
       }
       //发起登陆请求
@@ -190,6 +190,20 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
     setConfirmLoading(false);
   }
   const [initLoginType, setInitLoginType] = useState(formRef?.current?.getFieldValue("login_type"));
+  /**
+   * 区号数据
+   */
+  const [areaCode, setAreaCode] = useState<any>([]);
+  const getAreaCode = () => {
+    getAreaList().then((r) => {
+      if (r?.code == 200) {
+        setAreaCode(r?.data || []);
+      }
+    });
+  };
+  useEffect(() => {
+    getAreaCode();
+  }, []);
   return (
     <>
       <Modal title="请使用QQ扫描二维码" key={"qrCodeVerify"
@@ -224,6 +238,23 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
             }}>
               <Select.Option value={"pwd"}>密码登陆</Select.Option>
               <Select.Option value={"phone"}>手机号登陆</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name={"phone_area"}
+                     hidden={step != "normal" || (initLoginType != "phone" && form.getFieldValue("login_type") != "phone")}
+                     label="手机区号">
+            <Select
+              placeholder="留空则使用上次登陆的手机区号"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) => {
+                return implode('', option!.children).includes(input.toLowerCase());
+              }}
+            >
+              {areaCode.map((item: any) => {
+                return <Select.Option key={item?.area_cn + item?.code}
+                                      value={item?.code}>{item?.area_cn}+{item?.code}</Select.Option>
+              })}
             </Select>
           </Form.Item>
           <Form.Item name={"phone"}

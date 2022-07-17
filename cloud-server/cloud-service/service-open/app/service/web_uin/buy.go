@@ -83,7 +83,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 					_ = server2.GetIns().UpdateById(server.Id, map[string]interface{}{
 						"uin_num": gorm.Expr("`uin_num`+1"),
 					})
-					_ = ServerUinCreate(server.Id, uin, pwd, "", 0)
+					_ = ServerUinCreate(server.Id, uin, pwd, "", "", 0)
 				}()
 				uinInfo, err = uin2.GetIns().FindByUserIdWithUin(user.Id, uin)
 			}

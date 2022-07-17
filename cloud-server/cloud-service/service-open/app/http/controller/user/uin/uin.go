@@ -174,12 +174,20 @@ func (ControllerUin) ChangePassword(c *sinking_server.Context) {
 // ChangePhone 更改挂机手机号
 func (ControllerUin) ChangePhone(c *sinking_server.Context) {
 	type Form struct {
-		Uin   string `json:"uin" validate:"required,numeric" label:"QQ账号"`
-		Phone string `json:"phone" validate:"required,len=11" label:"绑定手机"`
+		Uin       string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Phone     string `json:"phone" validate:"required,numeric" label:"绑定手机"`
+		PhoneArea string `json:"phone_area" validate:"omitempty,numeric" label:"绑定手机国家区号"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorJson(form); !ok {
 		c.Error(msg)
+		return
+	}
+	if form.PhoneArea == "" {
+		form.PhoneArea = "86"
+	}
+	if str.Area.CheckIn(form.PhoneArea) {
+		c.Error("未查询到所属手机区号")
 		return
 	}
 	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
@@ -195,7 +203,7 @@ func (ControllerUin) ChangePhone(c *sinking_server.Context) {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
-	err = web_uin.ChangePhone(uinInfo.Id, form.Phone)
+	err = web_uin.ChangePhone(uinInfo.Id, form.Phone, form.PhoneArea)
 	if err == nil {
 		c.Success("更改挂机手机成功,请重新登录上线")
 	} else {
@@ -352,7 +360,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 					c.Error("登陆错误")
 					return
 				}
-				err := web_uin.ChangePhone(uinInfo.Id, uinInfo.Phone)
+				err := web_uin.ChangePhone(uinInfo.Id, uinInfo.Phone, uinInfo.PhoneArea)
 				if err != nil {
 					c.Error("登陆错误")
 					return
@@ -383,7 +391,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			}
 			captcha = form.Rand + "/" + form.Ticket
 		}
-		code, e, data, loginUin = q.Login(uinInfo.Uin, uinInfo.Password, uinInfo.Phone, uinInfo.LoginType, captcha)
+		code, e, data, loginUin = q.Login(uinInfo.Uin, uinInfo.Password, uinInfo.Phone, uinInfo.PhoneArea, uinInfo.LoginType, captcha)
 		if e != nil || code != uin_tool.Success {
 			if code == uin_tool.NeedCaptcha {
 				c.Return(400, e.Error(), data)

@@ -47,7 +47,9 @@ func Check(now time.Time) {
 					var ids []int
 					for _, v := range list {
 						//发送至消息队列
-						producer.NewProxyJobProducer().Build(v).Send()
+						if v.Proxy != "" {
+							producer.NewProxyJobProducer().Build(v).Send()
+						}
 						ids = append(ids, v.Id)
 					}
 					//更改检测时间

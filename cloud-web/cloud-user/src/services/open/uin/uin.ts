@@ -12,6 +12,17 @@ export async function getUinList(params?: {}, options?: { [key: string]: any }) 
   });
 }
 
+/** 区号列表 GET /open/user/uin/countries */
+export async function getAreaList(params?: {}, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/countries', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
 /** 挂机地区列表 GET /open/user/uin/servers */
 export async function getServerList(params?: {}, options?: { [key: string]: any }) {
   return request<API.Response>('/open/user/uin/servers', {

@@ -10,10 +10,11 @@ import Marquee from 'react-fast-marquee';
 import React, {useEffect, useState} from "react";
 import {useModel} from "@@/plugin-model/useModel";
 import ProCard from "@ant-design/pro-card";
-import {NotificationOutlined, PlusOutlined, QqOutlined} from "@ant-design/icons";
+import {CodeSandboxOutlined, NotificationOutlined, PlusOutlined} from "@ant-design/icons";
 import NoticeInfo from "@/components/Other/Notice/NoticeInfo";
 import {getNoticeList} from "@/services/common/notice";
 import {ago} from "@/util/time";
+import {getAppList} from "@/services/app/app";
 
 const PageHeaderContent: FC<{ currentUser: Partial<any> }> = ({currentUser}) => {
   const loading = currentUser && Object.keys(currentUser).length;
@@ -99,11 +100,26 @@ export default (): React.ReactNode => {
     setNoticeVisible(false);
   }
   /**
+   * 获取应用信息
+   */
+  const [appData, setAppData] = useState<any>([]);
+  const [appLoading, setAppLoading] = useState(true);
+  const getAppData = () => {
+    setAppLoading(true);
+    getAppList({page: 1, page_size: 5}).then((r) => {
+      if (r?.code == 200) {
+        setAppData(r?.data?.list);
+      }
+      setAppLoading(false);
+    })
+  };
+  /**
    * 初始化数据
    */
   useEffect(() => {
     getNoticeData();
     getUserData();
+    getAppData();
   }, []);
   return (
     <PageContainer title={false}>
@@ -134,157 +150,44 @@ export default (): React.ReactNode => {
                 title="我的应用"
                 bordered={false}
                 extra={<Link to="/app/open">查看全部</Link>}
-                loading={false}
+                loading={appLoading}
                 bodyStyle={{padding: 0}}
               >
-                <Card.Grid className={styles.projectGrid} style={{padding: 0}}>
-                  <Card bodyStyle={{padding: 0}} bordered={false}>
-                    <Card.Meta
-                      style={{padding: "24px"}}
-                      title={
-                        <div className={styles.cardTitle}>
-                          <Avatar size="small" src="https://q4.qlogo.cn/headimg_dl?dst_uin=2361935468&spec=100"/>
-                          <Link to={""}>2361935468 <QqOutlined/></Link>
-                        </div>
-                      }
-                      description={<>
-                        <Row gutter={24} style={{fontSize: "10px"}}>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            挂机地区: <span style={{color: "blue"}}>上海</span>
-                          </Col>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            挂机状态: <span style={{color: "green"}}>正常</span>
-                          </Col>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            挂机剩余: <span style={{color: "blue"}}>30天</span>
-                          </Col>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            扩展剩余: <span style={{color: "blue"}}>30天</span>
-                          </Col>
-                        </Row>
-                      </>}
-                    />
-                    <div className={styles.projectItemContent}>
-                      <Link to="" title={"查看详情"}>添加于2天前</Link>
-                      <span className={styles.datetime} title="查看详情">
-                        <Link to="">查看</Link>
-                      </span>
-                    </div>
-                  </Card>
-                </Card.Grid>
-
-                <Card.Grid className={styles.projectGrid} style={{padding: 0}}>
-                  <Card bodyStyle={{padding: 0}} bordered={false}>
-                    <Card.Meta
-                      style={{padding: "24px"}}
-                      title={
-                        <div className={styles.cardTitle}>
-                          <Avatar size="small" src="https://q4.qlogo.cn/headimg_dl?dst_uin=7758521&spec=100"/>
-                          <Link to={""}>7758521 <QqOutlined/></Link>
-                        </div>
-                      }
-                      description={<>
-                        <Row gutter={24} style={{fontSize: "10px"}}>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            挂机地区: <span style={{color: "blue"}}>北京</span>
-                          </Col>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            挂机状态: <span style={{color: "red"}}>异常</span>
-                          </Col>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            挂机剩余: <span style={{color: "blue"}}>30天</span>
-                          </Col>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            扩展剩余: <span style={{color: "blue"}}>30天</span>
-                          </Col>
-                        </Row>
-                      </>}
-                    />
-                    <div className={styles.projectItemContent}>
-                      <Link to="" title={"查看详情"}>添加于1周前</Link>
-                      <span className={styles.datetime} title="查看详情">
-                        <Link to="">查看</Link>
-                      </span>
-                    </div>
-                  </Card>
-                </Card.Grid>
-
-                <Card.Grid className={styles.projectGrid} style={{padding: 0}}>
-                  <Card bodyStyle={{padding: 0}} bordered={false}>
-                    <Card.Meta
-                      style={{padding: "24px"}}
-                      title={
-                        <div className={styles.cardTitle}>
-                          <Avatar size="small" src="https://q4.qlogo.cn/headimg_dl?dst_uin=2961466671&spec=100"/>
-                          <Link to={""}>2961466671 <QqOutlined/></Link>
-                        </div>
-                      }
-                      description={<>
-                        <Row gutter={24} style={{fontSize: "10px"}}>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            挂机地区: <span style={{color: "blue"}}>安徽</span>
-                          </Col>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            挂机状态: <span style={{color: "green"}}>正常</span>
-                          </Col>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            挂机剩余: <span style={{color: "blue"}}>30天</span>
-                          </Col>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            扩展剩余: <span style={{color: "blue"}}>30天</span>
-                          </Col>
-                        </Row>
-                      </>}
-                    />
-                    <div className={styles.projectItemContent}>
-                      <Link to="" title={"查看详情"}>添加于2个月前</Link>
-                      <span className={styles.datetime} title="查看详情">
-                        <Link to="">查看</Link>
-                      </span>
-                    </div>
-                  </Card>
-                </Card.Grid>
-
-                <Card.Grid className={styles.projectGrid} style={{padding: 0}}>
-                  <Card bodyStyle={{padding: 0}} bordered={false}>
-                    <Card.Meta
-                      style={{padding: "24px"}}
-                      title={
-                        <div className={styles.cardTitle}>
-                          <Avatar size="small" src="https://q4.qlogo.cn/headimg_dl?dst_uin=5211314&spec=100"/>
-                          <Link to={""}>5211314 <QqOutlined/></Link>
-                        </div>
-                      }
-                      description={<>
-                        <Row gutter={24} style={{fontSize: "10px"}}>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            挂机地区: <span style={{color: "blue"}}>安徽</span>
-                          </Col>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            挂机状态: <span style={{color: "green"}}>正常</span>
-                          </Col>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            挂机剩余: <span style={{color: "blue"}}>30天</span>
-                          </Col>
-                          <Col xl={12} lg={12} md={12} sm={12} xs={12}>
-                            扩展剩余: <span style={{color: "blue"}}>30天</span>
-                          </Col>
-                        </Row>
-                      </>}
-                    />
-                    <div className={styles.projectItemContent}>
-                      <Link to="" title={"查看详情"}>添加于2个月前</Link>
-                      <span className={styles.datetime} title="查看详情">
-                        <Link to="">查看</Link>
-                      </span>
-                    </div>
-                  </Card>
-                </Card.Grid>
+                {appData?.map((item: any) => {
+                  return <Card.Grid className={styles.projectGrid} style={{padding: 0}}>
+                    <Card bodyStyle={{padding: 0}} bordered={false}>
+                      <Card.Meta
+                        style={{padding: "24px"}}
+                        title={
+                          <div className={styles.cardTitle}>
+                            <CodeSandboxOutlined style={{color: "black", fontSize: "20px"}}/>
+                            <Link to={"/app/open"}> {item?.name} </Link>
+                          </div>
+                        }
+                        description={<>
+                          <Row gutter={24} style={{fontSize: "10px"}}>
+                            <Col xl={24} lg={24} md={24} sm={24} xs={24}>
+                              {item?.describe}
+                            </Col>
+                          </Row>
+                        </>}
+                      />
+                      <div className={styles.projectItemContent}>
+                        <Link to="/app/open" title={"查看详情"}>添加于{ago(item?.create_time)}</Link>
+                        <span className={styles.datetime} title="查看详情">
+                          <Link to="/app/open">查看</Link>
+                        </span>
+                      </div>
+                    </Card>
+                  </Card.Grid>
+                })}
                 <Card.Grid className={styles.projectGrid} style={{padding: "0px"}}>
                   <Card bodyStyle={{padding: 0}} bordered={false}>
-                    <Button type="dashed" className={styles.newButton}>
-                      <PlusOutlined/> 立即添加
-                    </Button>
+                    <Link to="/app/open">
+                      <Button type="dashed" className={styles.newButton}>
+                        <PlusOutlined/> 立即添加
+                      </Button>
+                    </Link>
                   </Card>
                 </Card.Grid>
               </ProCard>

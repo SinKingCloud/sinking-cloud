@@ -3,6 +3,7 @@ package uin_tool
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/job"
+	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"sync"
 	"time"
@@ -19,23 +20,21 @@ func NewUinTool(addr string, proxy string) *speed {
 }
 
 // Create 创建账号
-func (s *speed) Create(uin string, pwd string, phone string, proto int) bool {
-	return s.add(uin, pwd, phone, proto)
+func (s *speed) Create(uin string, pwd string, phone string, phoneArea string, proto int) bool {
+	return s.add(uin, pwd, phone, phoneArea, proto)
 }
 
 // Login 登陆账号
-func (s *speed) Login(uin string, pwd string, phone string, proto int, code string) (int, error, string, string) {
+func (s *speed) Login(uin string, pwd string, phone string, phoneArea string, proto int, code string) (int, error, string, string) {
 	a, b, c, d := s.login(uin, code)
 	if a == NotCreate {
-		s.add(uin, pwd, phone, proto)
+		s.add(uin, pwd, phone, phoneArea, proto)
 		a, b, c, d = s.login(uin, code)
 	}
 	if a == Success {
 		go func(uin string) {
 			time.Sleep(1 * time.Second)
 			s.mobileOnline(uin)
-			time.Sleep(2 * time.Second)
-			s.pcForceSpeed(uin)
 		}(uin)
 	}
 	return a, b, c, d
@@ -55,7 +54,7 @@ func (s *speed) VerifyLogin(uin string, code string) (int, error, string, string
 
 // Delete 删除QQ
 func (s *speed) Delete(uin string) bool {
-	return s.add(uin, "123456", "18888888888", 0)
+	return s.add(uin, "123456", "18888888888", "86", 0)
 }
 
 // MobileOffline 下线手机
@@ -127,6 +126,7 @@ type speedJob struct {
 	Uin       string
 	Pwd       string
 	Phone     string
+	PhoneArea string
 	Proto     int
 	SpeedJobs []int
 	IsFirst   bool
@@ -155,7 +155,7 @@ func (s *speed) speedByPc(uin *speedJob) {
 						if !mobileLogin {
 							c, _, _, _ := s.login(uin.Uin, "")
 							if c == NotCreate {
-								if s.add(uin.Uin, uin.Pwd, uin.Phone, uin.Proto) {
+								if s.add(uin.Uin, uin.Pwd, uin.Phone, uin.PhoneArea, uin.Proto) {
 									c, _, _, _ = s.login(uin.Uin, "")
 								}
 							} else if c == EnvError {
@@ -225,10 +225,11 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 	pcLogin := false     //是否登录pc
 	isBreak := false     //是否异常
 	speedA := func(f func() bool) bool {
+		server2.GetIns().ServerWaitLock("add_" + s.addr)
 		if !mobileLogin {
 			c, _, _, _ := s.login(uin.Uin, "")
 			if c == NotCreate {
-				if s.add(uin.Uin, uin.Pwd, uin.Phone, uin.Proto) {
+				if s.add(uin.Uin, uin.Pwd, uin.Phone, uin.PhoneArea, uin.Proto) {
 					c, _, _, _ = s.login(uin.Uin, "")
 				}
 			} else if c == EnvError {
@@ -243,6 +244,7 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 		return false
 	}
 	speedP := func(f func() bool) bool {
+		server2.GetIns().ServerWaitLock("add_" + s.addr)
 		if !pcLogin {
 			if !mobileLogin {
 				speedA(func() bool {
@@ -269,25 +271,24 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 		if err != nil || status == nil {
 			return false, []int{}
 		}
-		jobStatus := status.CommonInfoGetQQLevelInfo
 		var speedJobs []int
 		for _, v := range jobs {
 			isCheck := false
 			switch v {
 			case MicroShow:
-				isCheck = jobStatus.ICmshowActive != "1"
+				isCheck = status.ICmshowActive != "1"
 				break
 			case Sport:
 				isCheck = false
 				if time.Now().Day() <= 8 {
-					isCheck = jobStatus.IQQSportStep != "1"
+					isCheck = status.IQQSportStep != "1"
 				}
 				break
 			case MobileClock:
-				isCheck = jobStatus.IDailySign != "1"
+				isCheck = status.IDailySign != "1"
 				break
 			case ZoneClock:
-				isCheck = jobStatus.IQzoneState != "1"
+				isCheck = status.IQzoneState != "1"
 				break
 			}
 			if isCheck {
@@ -398,11 +399,12 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 }
 
 // Speed QQ项目加速
-func (s *speed) Speed(uin string, pwd string, phone string, proto int, speedJobs []int, isFirst bool) (bool, map[int]bool) {
+func (s *speed) Speed(uin string, pwd string, phone string, phoneArea string, proto int, speedJobs []int, isFirst bool) (bool, map[int]bool) {
 	return s.SpeedAll(&speedJob{
 		Uin:       uin,
 		Pwd:       pwd,
 		Phone:     phone,
+		PhoneArea: phoneArea,
 		Proto:     proto,
 		SpeedJobs: speedJobs,
 		IsFirst:   isFirst,

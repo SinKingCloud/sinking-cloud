@@ -50,3 +50,29 @@ export function getQueryString(url: string = ""): string {
   }
   return url.substring(firstIndex + 1);
 }
+
+/**
+ * 对象分割成字符串
+ * @param glue 分割字符
+ * @param pieces 数据
+ */
+export function implode(glue: string, pieces: any) {
+  let i = '',
+    retVal = '',
+    tGlue = '';
+  if (arguments.length === 1) {
+    pieces = glue;
+    glue = '';
+  }
+  if (typeof pieces === 'object') {
+    if (Object.prototype.toString.call(pieces) === '[object Array]') {
+      return pieces.join(glue);
+    }
+    for (i in pieces) {
+      retVal += tGlue + pieces[i];
+      tGlue = glue;
+    }
+    return retVal;
+  }
+  return pieces;
+}

@@ -15,13 +15,13 @@ import (
 )
 
 // ServerUinCreate 挂机服务器创建账号
-func ServerUinCreate(serverId int, uin string, pwd string, phone string, loginType int) error {
+func ServerUinCreate(serverId int, uin string, pwd string, phone string, phoneArea string, loginType int) error {
 	serverInfo, err := server2.GetIns().FindById(serverId)
 	if err != nil || serverInfo == nil || serverInfo.Status != server2.Normal {
 		return errors.New("未查询到挂机服务器信息,请更换挂机服务器")
 	}
 	s := uin_tool.NewUinTool(serverInfo.Addr, serverInfo.Proxy)
-	if !s.Create(uin, pwd, phone, loginType) {
+	if !s.Create(uin, pwd, phone, phoneArea, loginType) {
 		return errors.New("更新挂机信息失败,请重试")
 	}
 	return nil
@@ -53,7 +53,7 @@ func ChangeSetting(uinId int, newSetting map[string]string) error {
 	if err != nil {
 		set = make(map[string]string)
 	}
-	for k, _ := range Setting {
+	for k := range Setting {
 		if newSetting[k] != "" && set[k] != newSetting[k] {
 			if newSetting[k] == "1" {
 				set[k] = "1"
@@ -62,12 +62,12 @@ func ChangeSetting(uinId int, newSetting map[string]string) error {
 			}
 		}
 	}
-	str, err := json.Marshal(set)
+	bytes, err := json.Marshal(set)
 	if err != nil {
 		return errors.New("修改配置错误")
 	}
 	err = uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{
-		"setting": string(str),
+		"setting": string(bytes),
 	})
 	if err != nil {
 		return errors.New("修改配置失败")
@@ -97,7 +97,7 @@ func ChangePassword(uinId int, pwd string) error {
 				Content: "修改挂机密码",
 			})
 		}()
-		_ = ServerUinCreate(uinInfo.ServerId, uinInfo.Uin, pwd, uinInfo.Phone, 0)
+		_ = ServerUinCreate(uinInfo.ServerId, uinInfo.Uin, pwd, uinInfo.Phone, uinInfo.PhoneArea, 0)
 		err = uin.GetIns().UpdateById(uinInfo.Id, data)
 		if err != nil {
 			return errors.New("更改挂机密码失败")
@@ -107,7 +107,7 @@ func ChangePassword(uinId int, pwd string) error {
 }
 
 // ChangePhone 更改挂机手机
-func ChangePhone(uinId int, phone string) error {
+func ChangePhone(uinId int, phone string, phoneArea string) error {
 	uinInfo, err := uin.GetIns().FindById(uinId)
 	if err != nil || uinInfo == nil {
 		return errors.New("未查询到QQ信息")
@@ -128,7 +128,7 @@ func ChangePhone(uinId int, phone string) error {
 				Content: "修改挂机手机",
 			})
 		}()
-		_ = ServerUinCreate(uinInfo.ServerId, uinInfo.Uin, uinInfo.Password, phone, 1)
+		_ = ServerUinCreate(uinInfo.ServerId, uinInfo.Uin, uinInfo.Password, phone, phoneArea, 1)
 		err = uin.GetIns().UpdateById(uinInfo.Id, data)
 		if err != nil {
 			return errors.New("更改挂机手机失败")
@@ -177,41 +177,39 @@ func GetUinSpeedStatus(addr string, proxy string, uin string, isSync bool) (*uin
 	if err == nil && status != nil && !isFail {
 		//更新QQ信息
 		fun := func(status *uin_tool.SpeedStatus, uin string) {
-			levelInfo := status.CommonInfoGetQQLevelInfo
-			uinInfo := status.CommonInfoGetQQInfo
 			//qq信息
-			level, e := strconv.Atoi(uinInfo.IQQLevel)
+			level, e := strconv.Atoi(status.IQQLevel)
 			if e != nil {
 				level = 0
 			}
 			info := &model.AppUinInfo{
 				Uin:         uin,
-				NickName:    uinInfo.SNickName,
+				NickName:    status.SNickName,
 				Level:       level,
-				ActivateDay: levelInfo.ITotalActiveDay,
-				TodayDay:    levelInfo.IRealDays,
+				ActivateDay: status.ITotalActiveDay,
+				TodayDay:    status.IRealDays,
 			}
 			//加速状态
 			speedInfo := map[string]string{
-				"mobile":       levelInfo.IMobileQQOnline,
-				"pc":           levelInfo.IPCQQOnline,
-				"online":       levelInfo.INoHideOnline,
-				"zone":         levelInfo.QzoneVisitor,
-				"medal":        levelInfo.IMedal,
-				"ws":           levelInfo.WeishiVideoview,
-				"micro_show":   levelInfo.ICmshowActive,
-				"safe":         levelInfo.IPCSafeOnline,
-				"game":         levelInfo.IMobileGameOnline,
-				"sport":        levelInfo.IQQSportStep,
-				"mobile_clock": levelInfo.IDailySign,
-				"zone_clock":   levelInfo.IQzoneState,
-				"login":        levelInfo.IContinueLogin,
-				"friend":       levelInfo.IAddFriend,
+				"mobile":       status.IMobileQQOnline,
+				"pc":           status.IPCQQOnline,
+				"online":       status.INoHideOnline,
+				"zone":         status.QzoneVisitor,
+				"medal":        status.IMedal,
+				"ws":           status.WeishiVideoview,
+				"micro_show":   status.ICmshowActive,
+				"safe":         status.IPCSafeOnline,
+				"game":         status.IMobileGameOnline,
+				"sport":        status.IQQSportStep,
+				"mobile_clock": status.IDailySign,
+				"zone_clock":   status.IQzoneState,
+				"login":        status.IContinueLogin,
+				"friend":       status.IAddFriend,
 			}
 			if time.Now().Day() > 8 {
 				speedInfo["sport"] = "1"
 			}
-			for k, _ := range Setting {
+			for k := range Setting {
 				if speedInfo[k] == "" {
 					speedInfo[k] = "1"
 				}
