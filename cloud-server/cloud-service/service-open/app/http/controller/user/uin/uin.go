@@ -186,7 +186,7 @@ func (ControllerUin) ChangePhone(c *sinking_server.Context) {
 	if form.PhoneArea == "" {
 		form.PhoneArea = "86"
 	}
-	if str.Area.CheckIn(form.PhoneArea) {
+	if !str.Area.CheckIn(form.PhoneArea) {
 		c.Error("未查询到所属手机区号")
 		return
 	}

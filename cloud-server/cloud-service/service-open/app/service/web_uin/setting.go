@@ -115,6 +115,7 @@ func ChangePhone(uinId int, phone string, phoneArea string) error {
 	if phone != uinInfo.Phone || uinInfo.LoginType != 1 {
 		data := make(map[string]interface{})
 		data["phone"] = phone
+		data["phone_area"] = phoneArea
 		data["login_type"] = 1
 		data["uin_status"] = 1
 		go func() {

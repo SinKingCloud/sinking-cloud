@@ -49,10 +49,6 @@ func (ControllerAuth) Check(c *sinking_server.Context) {
 		c.Error("获取应用信息失败,请前往官网查看详情")
 		return
 	}
-	if authApp.Status != auth_app.Normal {
-		c.Error("该应用已下架,请前往官网查看详情")
-		return
-	}
 	ver := 0
 	authVersion, e := auth_version.GetIns().FindByIdWithCache(authApp.VersionId, false)
 	if e == nil && authVersion != nil {
