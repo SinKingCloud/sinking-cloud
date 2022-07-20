@@ -62,7 +62,7 @@ func (*shop) Buy(userId int, authId int, domain string) error {
 	//写入授权
 	err = user_auth.GetIns().Create(&model.UserAuth{
 		UserId: user.Id,
-		AuthId: user.Id,
+		AuthId: authApp.Id,
 		Domain: domain,
 		Code:   str.GetSnowWorkIns().GetUuid(),
 		Status: user_auth.Normal,
