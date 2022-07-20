@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"crypto/md5"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -151,6 +152,12 @@ func (p *pkg) buildPkg(types int, authVersion *model.AuthVersion, userAuth *mode
 					case "{$ip}":
 						s = userAuth.Ip
 						break
+					case "{$version}":
+						s = authVersion.Version
+						break
+					case "{$version_number}":
+						s = strconv.Itoa(authVersion.VersionNumber)
+						break
 					default:
 						s = ""
 					}
@@ -290,7 +297,12 @@ func (*pkg) download(u string) (string, error) {
 	client := &http.Client{
 		Timeout: 180 * time.Second,
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+				VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+					return nil
+				},
+			},
 		},
 	}
 	req, _ := http.NewRequest("GET", u, strings.NewReader(""))

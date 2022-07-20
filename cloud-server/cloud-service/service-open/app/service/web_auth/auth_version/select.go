@@ -53,6 +53,7 @@ func (s *service) Select(where map[string]string, orderByField string, orderByTy
 func (s *service) SelectUpgrade(authId int, versionNumber int) (list []*AuthVersion, err error) {
 	err = util.Database.Db.Model(&model.AuthVersion{}).
 		Where("`auth_id` = ? and `version_number` > ? and `status` = ?", authId, versionNumber, Normal).
+		Order("`version_number` desc").
 		Find(&list).Error
 	return
 }

@@ -96,7 +96,7 @@ func (ControllerAuth) Upgrade(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	userAuth, e := user_auth.GetIns().Find(map[string]string{"code": form.Code})
+	userAuth, e := user_auth.GetIns().Find(map[string]string{"code": form.Code, "user_id": strconv.Itoa(c.GetWebUserInfo().Id)})
 	if e != nil || userAuth == nil {
 		c.Error("获取授权许可证失败，请前往官网下载正版产品")
 		return
@@ -125,7 +125,7 @@ func (ControllerAuth) Package(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	userAuth, e := user_auth.GetIns().Find(map[string]string{"code": form.Code})
+	userAuth, e := user_auth.GetIns().Find(map[string]string{"code": form.Code, "user_id": strconv.Itoa(c.GetWebUserInfo().Id)})
 	if e != nil || userAuth == nil {
 		c.Error("获取授权许可证失败，请前往官网下载正版产品")
 		return
