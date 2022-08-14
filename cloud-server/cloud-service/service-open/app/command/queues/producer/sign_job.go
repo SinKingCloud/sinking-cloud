@@ -6,6 +6,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
 )
 
 // signJobProducerIns 生产者单例
@@ -26,13 +27,10 @@ type signJob struct {
 
 // SignJob 数据结构
 type SignJob struct {
-	Uin      string
-	Addr     string
-	Proxy    string
-	Skey     string
-	PSkey    string
-	SuperKey string
-	Jobs     []int
+	Uin   *model.AppUin
+	Addr  string
+	Proxy string
+	Jobs  []int
 }
 
 // Build 构建消息

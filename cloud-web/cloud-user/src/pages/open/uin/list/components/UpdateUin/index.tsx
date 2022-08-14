@@ -229,7 +229,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
                setInitLoginType(formRef?.current?.getFieldValue("login_type"))
                onCancel?.();
              }} confirmLoading={confirmLoading}>
-        <Script url={"https://cdn.open-api.cn/app/uin/captcha/captcha.js"}/>
+        <Script url={"https://cdn.yunhuoke.cn/app/uin/captcha/captcha.js"}/>
         <Form name="control-hooks" form={form} ref={formRef} onFinish={onFinish} labelAlign="right"
               labelCol={{span: 6}}>
           <Form.Item name={"login_type"} label="登陆方式" rules={[{required: true}]}>

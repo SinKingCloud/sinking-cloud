@@ -11,7 +11,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/auth_app"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/user_auth"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_user"
-	"regexp"
 	"strconv"
 )
 
@@ -22,13 +21,6 @@ var Shop *shop
 
 // Buy 购买授权
 func (*shop) Buy(userId int, authId int, domain string) error {
-	_, err := regexp.MatchString("(\\w*\\.?){1}\\.(com.cn|net.cn|gov.cn|org\\.nz|org.cn|com|net|org|gov|cc|biz|info|cn|co)$", domain)
-	if err != nil {
-		return errors.New("授权域名格式错误")
-	}
-	reg := regexp.MustCompile("(\\w*\\.?){1}\\.(com.cn|net.cn|gov.cn|org\\.nz|org.cn|com|net|org|gov|cc|biz|info|cn|co)$")
-	data := reg.Find([]byte(domain))
-	domain = string(data)
 	key := constant.LockAuthBuy + strconv.Itoa(userId) + "_" + strconv.Itoa(authId) + "_" + domain
 	//上锁，避免同时下单太多
 	if !util.Cache.Lock(key, constant.LockTimeAuthBuy) {
@@ -60,7 +52,7 @@ func (*shop) Buy(userId int, authId int, domain string) error {
 		return errors.New("扣款失败，请联系管理员")
 	}
 	//写入授权
-	err = user_auth.GetIns().Create(&model.UserAuth{
+	err := user_auth.GetIns().Create(&model.UserAuth{
 		UserId: user.Id,
 		AuthId: authApp.Id,
 		Domain: domain,

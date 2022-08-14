@@ -163,6 +163,10 @@ func (ControllerUin) ChangePassword(c *sinking_server.Context) {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
+	if !util.Cache.Lock(constant.LockUserUinOperate+uinInfo.Uin, constant.LockTimeUserUinOperate) {
+		c.Error("操作过于频繁,请等待5s后再试")
+		return
+	}
 	err = web_uin.ChangePassword(uinInfo.Id, form.Pwd)
 	if err == nil {
 		c.Success("更改挂机密码成功,请重新登录上线")
@@ -201,6 +205,10 @@ func (ControllerUin) ChangePhone(c *sinking_server.Context) {
 	}
 	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
 		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
+	if !util.Cache.Lock(constant.LockUserUinOperate+uinInfo.Uin, constant.LockTimeUserUinOperate) {
+		c.Error("操作过于频繁,请等待5s后再试")
 		return
 	}
 	err = web_uin.ChangePhone(uinInfo.Id, form.Phone, form.PhoneArea)
@@ -393,6 +401,11 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		}
 		code, e, data, loginUin = q.Login(uinInfo.Uin, uinInfo.Password, uinInfo.Phone, uinInfo.PhoneArea, uinInfo.LoginType, captcha)
 		if e != nil || code != uin_tool.Success {
+			if code == uin_tool.NotCreate {
+				if q.Create(uinInfo.Uin, uinInfo.Password, uinInfo.Phone, uinInfo.PhoneArea, uinInfo.LoginType) {
+					code, e, data, loginUin = q.Login(uinInfo.Uin, uinInfo.Password, uinInfo.Phone, uinInfo.PhoneArea, uinInfo.LoginType, captcha)
+				}
+			}
 			if code == uin_tool.NeedCaptcha {
 				c.Return(400, e.Error(), data)
 			} else if code == uin_tool.NeedCode {
@@ -426,6 +439,11 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	if form.Step != "normal" {
 		code, e, data, loginUin = q.VerifyLogin(uinInfo.Uin, verify)
 		if e != nil || code != uin_tool.Success {
+			if code == uin_tool.NotCreate {
+				if q.Create(uinInfo.Uin, uinInfo.Password, uinInfo.Phone, uinInfo.PhoneArea, uinInfo.LoginType) {
+					code, e, data, loginUin = q.VerifyLogin(uinInfo.Uin, verify)
+				}
+			}
 			if code == uin_tool.NeedCode {
 				c.Return(401, e.Error(), data)
 			} else if code == uin_tool.NeedCaptcha {
@@ -484,7 +502,9 @@ func (ControllerUin) Delete(c *sinking_server.Context) {
 		return
 	}
 	go func(uinInfo *model.AppUin) {
-		_ = web_uin.ServerUinDelete(uinInfo.ServerId, uinInfo.Uin)
+		if uinInfo.UinStatus == uin.Normal {
+			_ = web_uin.ServerUinDelete(uinInfo.ServerId, uinInfo.Uin)
+		}
 		_ = server2.GetIns().UpdateById(uinInfo.ServerId, map[string]interface{}{
 			"uin_num": gorm.Expr("`uin_num`-1"),
 		})

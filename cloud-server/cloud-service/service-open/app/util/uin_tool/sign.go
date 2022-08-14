@@ -1,11 +1,15 @@
 package uin_tool
 
 import (
+	"bytes"
 	"compress/gzip"
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -57,14 +61,16 @@ func (s *sign) getClient() *http.Client {
 				return http.ErrUseLastResponse
 			},
 		}
+		tran := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
 		if s.proxy != "" {
 			proxy, err := url.Parse("http://" + s.proxy)
 			if err == nil {
-				s.httpClient.Transport = &http.Transport{
-					Proxy: http.ProxyURL(proxy),
-				}
+				tran.Proxy = http.ProxyURL(proxy)
 			}
 		}
+		s.httpClient.Transport = tran
 	}
 	return s.httpClient
 }
@@ -73,6 +79,70 @@ func (s *sign) getClient() *http.Client {
 type signResponse struct {
 	Body   string
 	Header http.Header
+}
+
+// byteToString byte转string
+func (s *sign) byteToString(p []byte) string {
+	for i := 0; i < len(p); i++ {
+		if p[i] == 0 {
+			return string(p[0:i])
+		}
+	}
+	return string(p)
+}
+
+// getRandom 获取随机数
+func (s *sign) getRandom(l int) string {
+	str := "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	strList := []byte(str)
+
+	result := []byte{}
+	i := 0
+
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for i < l {
+		n := strList[r.Intn(len(strList))]
+		result = append(result, n)
+		i = i + 1
+	}
+	return string(result)
+}
+
+func (s *sign) GzipEncode(input []byte) ([]byte, error) {
+	// 创建一个新的 byte 输出流
+	var buf bytes.Buffer
+	// 创建一个新的 gzip 输出流
+	gzipWriter := gzip.NewWriter(&buf)
+	// 将 input byte 数组写入到此输出流中
+	_, err := gzipWriter.Write(input)
+	if err != nil {
+		_ = gzipWriter.Close()
+		return nil, err
+	}
+	if err := gzipWriter.Close(); err != nil {
+		return nil, err
+	}
+	// 返回压缩后的 bytes 数组
+	return buf.Bytes(), nil
+}
+
+func (s *sign) GzipDecode(input []byte) ([]byte, error) {
+	// 创建一个新的 gzip.Reader
+	bytesReader := bytes.NewReader(input)
+	gzipReader, err := gzip.NewReader(bytesReader)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		// defer 中关闭 gzipReader
+		_ = gzipReader.Close()
+	}()
+	buf := new(bytes.Buffer)
+	// 从 Reader 中读取出数据
+	if _, err := buf.ReadFrom(gzipReader); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
 
 // request 发送request请求
@@ -100,7 +170,7 @@ func (s *sign) request(url string, method string, headers map[string]string, dat
 			}
 		}(resp.Body)
 	}
-	var body []byte
+	var body string
 	if isGzip {
 		r, e := gzip.NewReader(resp.Body)
 		if e != nil {
@@ -110,16 +180,16 @@ func (s *sign) request(url string, method string, headers map[string]string, dat
 		if e != nil {
 			return nil, e
 		}
-		body = b
+		body = string(b)
 	} else {
 		b, e := ioutil.ReadAll(resp.Body)
 		if e != nil {
 			return nil, e
 		}
-		body = b
+		body = string(b)
 	}
 	res := &signResponse{
-		Body:   string(body),
+		Body:   body,
 		Header: resp.Header.Clone(),
 	}
 	return res, nil
@@ -270,6 +340,7 @@ func (s *sign) VipSign() {
 		"user-agent": "Mozilla/5.0 (Linux; U; Android 4.4.1; zh-cn) AppleWebKit/533.1 (KHTML, like Gecko)Version/4.0 MQQBrowser/5.5 Mobile Safari/533.1",
 		"referer":    "https://vip.qq.com/",
 		"cookie":     s.cookie,
+		"origin":     "https://iyouxi3.vip.qq.com/",
 	}
 	u := "https://iyouxi3.vip.qq.com/ams3.0.php?_c=page&actid=79968&format=json&g_tk=" + s.gtk2 + "&cachetime=" + strconv.FormatInt(time.Now().Unix(), 10)
 	_, _ = s.request(u, "GET", h, "", false) //会员面板签到
@@ -341,6 +412,7 @@ func (s *sign) BlueDiaSin() {
 			_, _ = s.request(u, "GET", h, "", false) //蓝钻抽奖
 		}
 	}
+
 }
 
 // DaleDouSign 大乐斗签到
@@ -354,8 +426,8 @@ func (s *sign) DaleDouSign() {
 	_, _ = s.request(u, "GET", h, "", false)
 }
 
-// GameCenterSign 游戏中心签到
-func (s *sign) GameCenterSign() {
+// QQGamSign QQ游戏签到
+func (s *sign) QQGamSign() {
 	u := "https://social.minigame.qq.com/cgi-bin/social/welcome_panel_operate?format=json&cmd=2&uin=" + s.uin + "&g_tk=" + s.gtk
 	h := map[string]string{
 		"Accept-Encoding": "gzip,deflate,sdch",
@@ -368,6 +440,79 @@ func (s *sign) GameCenterSign() {
 	_, _ = s.request(u, "GET", h, "", true)
 	u = "https://social.minigame.qq.com/cgi-bin/social/CheckInPanel_Operate?Cmd=CheckIn_Operate&g_tk=" + s.gtk
 	_, _ = s.request(u, "GET", h, "", true)
+}
+
+// GameCenterSign 游戏中心签到
+func (s *sign) GameCenterSign() {
+	u := "https://w.gamecenter.qq.com/v1/cgi-bin/home-spa/task/receive-task?t=" + strconv.FormatInt(time.Now().Unix(), 10) + "449&g_tk=" + s.gtk + "&p_tk="
+	h := map[string]string{
+		"user-agent": "Mozilla/5.0 (Linux; Android 10; MI 9 Build/QKQ1.190825.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045330 Mobile Safari/537.36 V1_AND_SQ_8.4.1_1442_YYB_D QQ/8.4.1.4680 NetType/4G WebP/0.3.0 Pixel/1080 StatusBarHeight/76 SimpleUISwitch/1 QQTheme/2921",
+		"cookie":     s.cookie,
+		"referer":    "https://speed.gamecenter.qq.com/pushgame/v1/home/task?_wv=18950115&_wwv=393",
+	}
+	_, _ = s.request(u, "POST", h, "taskid=1&taskType=1&taskSubType=0&appid=&area=2&partition=0&roleId=", false)
 	u = "https://info.gamecenter.qq.com/cgi-bin/gc_my_tab_async_fcgi?merge=1&ver=0&st=" + strconv.FormatInt(time.Now().Unix(), 10) + "746&sid=&uin=" + s.uin + "&number=0&path=489&plat=qq&gamecenter=1&_wv=1031&_proxy=1&gc_version=2&ADTAG=gamecenter&notShowPub=1&param=%7B%220%22%3A%7B%22param%22%3A%7B%22platform%22%3A1%2C%22tt%22%3A1%7D%2C%22module%22%3A%22gc_my_tab%22%2C%22method%22%3A%22sign_in%22%7D%7D&g_tk=" + s.gtk
-	_, _ = s.request(u, "GET", h, "", true)
+	_, _ = s.request(u, "GET", h, "", false)
+}
+
+// WeiYunSign 微云签到
+func (s *sign) WeiYunSign() {
+	u := "https://h5.weiyun.com/login?go_url=https%3A%2F%2Fh5.weiyun.com%2Fsign_in"
+	h := map[string]string{
+		"user-agent": "Mozilla/5.0 (Linux; Android 10; MI 9 Build/QKQ1.190825.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045330 Mobile Safari/537.36 V1_AND_SQ_8.4.1_1442_YYB_D QQ/8.4.1.4680 NetType/4G WebP/0.3.0 Pixel/1080 StatusBarHeight/76 SimpleUISwitch/1 QQTheme/2921",
+		"cookie":     s.cookie,
+		"referer":    "https://h5.weiyun.com/sign_in",
+	}
+	_, _ = s.request(u, "GET", h, "", false)
+}
+
+// QQMusicSign QQ音乐签到
+func (s *sign) QQMusicSign() {
+	u := "https://u.y.qq.com/cgi-bin/musicu.fcg"
+	h := map[string]string{
+		"content-type": "application/json",
+		"user-agent":   "Mozilla/5.0 (Linux; Android 10; MI 9 Build/QKQ1.190825.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045330 Mobile Safari/537.36 V1_AND_SQ_8.4.1_1442_YYB_D QQ/8.4.1.4680 NetType/4G WebP/0.3.0 Pixel/1080 StatusBarHeight/76 SimpleUISwitch/1 QQTheme/2921",
+		"cookie":       s.cookie,
+		"referer":      "https://u.y.qq.com/cgi-bin/musicu.fcg",
+	}
+
+	post := "{\"req_0\":{\"module\":\"UserGrow.UserGrowScore\",\"method\":\"receive_score\",\"param\":{\"musicid\":\"" + s.uin + "\",\"type\":15}},\"comm\":{\"g_tk\":" + s.gtk + ",\"uin\":" + s.uin + ",\"format\":\"json\",\"ct\":23,\"cv\":0}}"
+	_, _ = s.request(u, "POST", h, post, false)
+
+	post = "{\"comm\":{\"g_tk\":" + s.gtk + ",\"uin\":" + s.uin + ",\"format\":\"json\",\"inCharset\":\"utf-8\",\"outCharset\":\"utf-8\",\"notice\":0,\"platform\":\"h5\",\"needNewCode\":1,\"uid\":\"\"},\"req_0\":{\"module\":\"music.actCenter.ActCenterSignNewSvr\",\"method\":\"DoSignIn\",\"param\":{\"ActID\":\"PR-Config20200828-31525466015\"}}}"
+	_, _ = s.request(u, "POST", h, post, false)
+
+	post = "{\"req_0\":{\"module\":\"UserGrow.UserGrowScore\",\"method\":\"receive_score\",\"param\":{\"musicid\":\"" + s.uin + "\",\"type\":1}},\"comm\":{\"g_tk\":" + s.gtk + ",\"uin\":" + s.uin + ",\"format\":\"json\",\"ct\":23,\"cv\":0}}"
+	_, _ = s.request(u, "POST", h, post, false)
+
+	post = "{\"req_0\":{\"module\":\"Radio.RadioLucky\",\"method\":\"clockIn\",\"param\":{\"platform\":2}},\"comm\":{\"g_tk\":" + s.gtk + ",\"uin\":" + s.uin + ",\"format\":\"json\"}}"
+	_, _ = s.request(u, "POST", h, post, false)
+
+	u = "https://stat.y.qq.com/android/fcgi-bin/imusic_tj"
+	ua := "QQMusic 9020807(android 9)"
+	timestamp := time.Now().Unix()
+	times := "3599"
+	timekey := strings.ToUpper(s.Md5(strconv.FormatInt(timestamp, 10) + times + s.uin + "gk2$Lh-&l4#!4iow"))
+	h = map[string]string{
+		"user-agent": ua,
+	}
+	xml := "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><rom>XiaoMi/MIUI/V11</rom><ct>11</ct><cv>9020807</cv><v>9020807</v><mcc>460</mcc><uid>" + strconv.FormatInt(timestamp, 10) + "</uid><mnc>00</mnc><chid>72264</chid><os_ver>9</os_ver><phonetype>MI 1000</phonetype><devicelevel>40</devicelevel><nettype>1023</nettype><qq>" + s.uin + "</qq><cid>228</cid><item cmd=\"1\" optime=\"" + strconv.FormatInt(timestamp, 10) + "\" nettype=\"1023\" QQ=\"" + s.uin + "\" uid=\"" + strconv.FormatInt(timestamp, 10) + "\" os=\"9\" model=\"MI 8\" mcc=\"460\" version=\"9.2.8.7\" songtype=\"1\" playtype=\"4\" from=\"9,30,321,\" dts=\"0\" openstore=\"0\" rec_reason=\"\" crytype=\"5\" paytype=\"3\" abt=\"220_220002\" tjreport=\"\" desktoplyric=\"0\" playdevice=\"0\" outdev=\"0\" url=\"5\" playmode=\"1\" cdn=\"\" cdnip=\"\" hasFirstBuffer=\"3\" filetype=\"3\" err=\"0\"  issoftdecode=\"2\" wait_time=\"292\" player_retry=\"0\" timekey=\"" + timekey + "\" vkey=\"" + s.getRandom(112) + "\" time=\"" + times + "\" errcode=\"\" vip_level=\"0\" songid=\"231769209\" /></root>"
+	encode, err := s.GzipEncode([]byte(xml))
+	if err == nil {
+		_, _ = s.request(u, "GET", h, string(encode), false)
+	}
+}
+
+func (s *sign) VideoSign() {
+	//签到地址
+	u := "https://access.video.qq.com/user/auth_login?type=qq&login_flag=1&g_tk=" + s.gtk + "&raw=1&vappid=11059694&vsecret=fdf61a6be0aad57132bc5cdf78ac30145b6cd2c1470b0cfe"
+	h := map[string]string{
+		"content-type": "application/json",
+		"user-agent":   "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/104.0.5112.81",
+		"cookie":       s.cookie,
+		"referer":      "https://m.v.qq.com/",
+	}
+	fmt.Println(s.gtk2)
+	r, e := s.request(u, "GET", h, "", false)
+	fmt.Println(r, e)
 }

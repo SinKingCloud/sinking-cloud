@@ -22,7 +22,7 @@ const isDev = process.env.NODE_ENV === 'development';
 Settings = Object.assign(Settings, {
   title: '云开放平台',
   logo: '/logo.svg',
-  api: isDev ? 'http://127.0.0.1:1000' : 'https://gateway.open-api.cn',
+  api: isDev ? 'http://127.0.0.1:1000' : 'https://gateway.yunhuoke.cn',
   base: '/',
 });
 

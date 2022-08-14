@@ -2,7 +2,9 @@ package uin_tool
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -100,15 +102,16 @@ func (s *speed) zoneSpeed(uin string) bool {
 	if !s.checkZoneStatus(uin) {
 		return false
 	}
-	url := "/?&type=Pc/&pe=fangke/"
-	data := map[string]string{
-		"Uin": uin,
-	}
-	res, err := s.sendRequest(url, data, -1)
+	url := "http://qhzb.xyz:81/api/Outinterface/dlxd?dlid=3294519810&Apikey=ZdTeYUxyD5p8stvU0ZqJXgvkCCbHcQn8&qtype=1&mode=2&sid=&qqnum=" + uin + "&need=10"
+	resp, err := getClientWithTimout(30).Get(url)
 	if err != nil {
 		return false
 	}
-	return res.State == "0"
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err == nil {
+		fmt.Println("访客提交:", string(bytes))
+	}
+	return true
 }
 
 // medalSpeed 勋章加速
@@ -164,22 +167,24 @@ func (s *speed) pcOffline(uin string) bool {
 }
 
 // pcSpeed 电脑加速
-func (s *speed) pcLogin(uin string) bool {
+func (s *speed) pcLogin(uin string, useProxy bool) (bool, bool, bool) {
 	url := "/?&type=pc/&pe=login/"
 	data := map[string]string{
-		"Uin":   uin,
-		"place": s.proxy,
+		"Uin": uin,
+	}
+	if useProxy {
+		data["place"] = s.proxy
 	}
 	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
-		return false
+		return false, false, false
 	}
 	var state *captcha
 	err = json.Unmarshal([]byte(res.State), &state)
 	if err != nil || state == nil {
-		return false
+		return false, false, false
 	}
-	return state.Stype == "11" || state.Stype == "8"
+	return state.Stype != "404", state.Stype == "11" || state.Stype == "8", state.Stype == "-1"
 }
 
 // pcCode 电脑加速
@@ -206,16 +211,39 @@ func (s *speed) pcCode(uin string) bool {
 
 // pcForceSpeed 电脑加速
 func (s *speed) pcForceSpeed(uin string) bool {
-	r := s.pcLogin(uin)
+	useProxy := true
+	exists, r, isLogin := s.pcLogin(uin, useProxy)
+	if isLogin {
+		return true
+	}
+	if !exists {
+		useProxy = false
+	}
 	if !r {
-		r = s.pcLogin(uin)
+		exists, r, isLogin = s.pcLogin(uin, useProxy)
+		if isLogin {
+			return true
+		}
 		if !r {
-			r = s.pcLogin(uin)
+			exists, r, isLogin = s.pcLogin(uin, useProxy)
+			if isLogin {
+				return true
+			}
+			if !r {
+				exists, r, isLogin = s.pcLogin(uin, useProxy)
+				if isLogin {
+					return true
+				}
+			}
 		}
 	}
 	if r {
 		if s.pcCode(uin) {
-			return s.pcLogin(uin)
+			_, b, isLogin := s.pcLogin(uin, useProxy)
+			if isLogin {
+				return true
+			}
+			return b
 		}
 	}
 	return false
@@ -226,6 +254,26 @@ func (s *speed) friendSpeed(uin string) bool {
 	url := "/?&type=Android/&pe=Friends/"
 	data := map[string]string{
 		"Uin": uin,
+	}
+	res, err := s.sendRequest(url, data, -1)
+	if err != nil {
+		return false
+	}
+	return res.State == "0"
+}
+
+// wordSpeed 小世界加速
+func (s *speed) wordSpeed(uin string) bool {
+	url := "/?&type=Android/&pe=smallworld/"
+	pics := []string{
+		"http://worldtj.photo.store.qq.com/psc?/world/O0cFsaTfOlqjIAnYAvw8WkoTvari4*imstS0pam.nlFO3nT*a5oWOFC6I0VYe6knchD5ofMjYyO4Venpw4UXBolsEZluBcB8iaf1m0YEK4k!/b&bo=sASwBLAEsAQRHyg!&wm_text=QOeOi.iAgeWQiSA!",
+		"http://worldtj.photo.store.qq.com/psc?/world/O0cFsaTfOlqjIAnYAvw8WhOEdWLO4uOmOY3e9pvVhJd7TTTealNJpTehedk8dthSb.ghI2fcS61E7VNbvKrlPe9.FObzO2Qfk4iSm4BogmE!/b&bo=OAQ4BDgEOAQRHyg!&wm_text=QOeOi.iAgeWQiSA!",
+		"http://worldtj.photo.store.qq.com/psc?/world/O0cFsaTfOlqjIAnYAvw8WkoTvari4*imstS0pam.nlFiCyVnMuGDw5ljgTNla6ejjmfRP3f0H8ZNPOjXfHGhtBwlLuoUa1M9gYMH38YEpzY!/b&bo=OAQ4BDgEOAQRHyg!&wm_text=QOeOi.iAgeWQiSA!",
+	}
+	data := map[string]string{
+		"Uin":     uin,
+		"picture": pics[rand.Intn(len(pics))],
+		"code":    s.RandNum(6),
 	}
 	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
@@ -262,7 +310,8 @@ func (s *speed) mobileOnline(uin string) bool {
 
 // pcLower pc下线
 func (s *speed) pcLower(uin string) bool {
-	return s.pcLogin(uin)
+	_, b, _ := s.pcLogin(uin, false)
+	return b
 }
 
 // getSpeedStatus 获取加速状态
@@ -285,4 +334,18 @@ func (s *speed) getSpeedStatus(uin string) (d *SpeedStatus, e error) {
 		d = t.Data
 	}
 	return
+}
+
+// Cookies 获取cookies
+func (s *speed) Cookies(uin string, domain string) (string, string) {
+	url := "/?&type=Android/&pe=value/"
+	data := map[string]interface{}{
+		"Uin":  uin,
+		"code": domain,
+	}
+	res, e := s.sendRequest(url, data, -1)
+	if e != nil {
+		return "", ""
+	}
+	return res.Skey, res.Pskey
 }

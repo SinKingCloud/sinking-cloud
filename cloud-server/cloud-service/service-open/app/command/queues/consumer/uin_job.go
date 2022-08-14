@@ -7,6 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin"
@@ -195,16 +196,18 @@ func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, s
 	}
 	s := uin_tool.NewUinTool(addr, proxy)
 	//执行签到任务
-	//if len(signCheckJobs) > 0 {
-	//	producer.NewSignJobProducer().Build(&producer.SignJob{
-	//		Uin:   uin.Uin,
-	//		Addr:  addr,
-	//		Proxy: proxy,
-	//		Skey:  status.Skey,
-	//		PSkey: status.Pskey,
-	//		Jobs:  signCheckJobs,
-	//	}).Send()
-	//}
+	if uin.UinStatus == uin2.Normal && len(signCheckJobs) > 0 {
+		stamp, e2 := time.ParseInLocation("2006-01-02 15:04:05", uin.RunTime.String(), time.Local)
+		//5小时执行一次
+		if e2 == nil && stamp.Unix()+5*3600 < time.Now().Unix() {
+			producer.NewSignJobProducer().Build(&producer.SignJob{
+				Uin:   uin,
+				Addr:  addr,
+				Proxy: proxy,
+				Jobs:  signCheckJobs,
+			}).Send()
+		}
+	}
 	//判断加速项目并加速
 	var speedJobs []int
 	for _, v := range speedCheckJobs {
@@ -253,6 +256,9 @@ func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, s
 			break
 		case uin_tool.MicroShow:
 			isCheck = status.ICmshowActive != "1"
+			break
+		case uin_tool.Word:
+			isCheck = status.ISmallWorld != "1"
 			break
 		case uin_tool.Safe:
 			if isFirst {

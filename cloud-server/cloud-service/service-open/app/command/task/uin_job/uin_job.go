@@ -35,15 +35,15 @@ func test() {
 				//server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
 				//if err == nil && server != nil {
 				//	s := uin_tool.NewUinTool(server.Addr, server.Proxy)
-				//	jobs := []int{uin_tool.Pc}
-				//	s.Speed(uin.Uin, uin.Password, uin.Phone, uin.LoginType, jobs, false)
+				//	jobs := []int{uin_tool.Safe}
+				//	s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, jobs, false)
 				//}
 			}
 		}
-	}, Thread: 100}).Run()
+	}, Thread: 50}).Run()
 
 	time.Sleep(1 * time.Second)
-	list, err := uin2.GetIns().SelectUinJob(3000)
+	list, err := uin2.GetIns().SelectUinJob(5000)
 	if err == nil {
 		//避免重复挂机
 		seeded := make(map[string]bool)
@@ -99,7 +99,7 @@ func send(minute int64) {
 		//查询当前时间需要代挂的QQ
 		for {
 			if util.Cache.Lock(lock, constant.LockTimeUinJob) {
-				list, err := uin2.GetIns().SelectAllUinJob(200, minute, str.NewTimeTool().GetZeroTime(time.Now()).Format("2006-01-02 15:04:05"))
+				list, err := uin2.GetIns().SelectAllUinJob(1000, minute, str.NewTimeTool().GetZeroTime(time.Now()).Format("2006-01-02 15:04:05"))
 				if err == nil && len(list) > 0 {
 					//需更改状态id
 					var ids []int
@@ -183,7 +183,7 @@ func check(t time.Time) {
 		//查询当前时间需要补挂的QQ
 		for {
 			if util.Cache.Lock(lock, constant.LockTimeUinCheckJob) {
-				list, err := uin2.GetIns().SelectUinCheckJob(100, start, end)
+				list, err := uin2.GetIns().SelectUinCheckJob(1000, start, end)
 				if err == nil && len(list) > 0 {
 					var ids []int
 					for _, v := range list {

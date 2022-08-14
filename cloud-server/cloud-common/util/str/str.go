@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/axgle/mahonia"
 	"golang.org/x/crypto/bcrypt"
@@ -203,4 +204,13 @@ func (stringTool StringTool) ConvertToString(srcCode string, tagCode string) str
 	_, cdata, _ := tagCoder.Translate([]byte(srcResult), true)
 	result := string(cdata)
 	return result
+}
+
+// ToJson 转json
+func (stringTool StringTool) ToJson(data interface{}) string {
+	str, err := json.Marshal(data)
+	if err != nil {
+		return ""
+	}
+	return string(str)
 }

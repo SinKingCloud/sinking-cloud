@@ -10,5 +10,5 @@ type ControllerArea struct {
 
 // List 获取支持的区号
 func (ControllerArea) List(c *sinking_server.Context) {
-	c.SuccessWithData("", str.Area.Get())
+	c.SuccessWithData("获取成功", str.Area.Get())
 }

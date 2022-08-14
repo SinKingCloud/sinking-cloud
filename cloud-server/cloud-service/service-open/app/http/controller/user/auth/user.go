@@ -79,7 +79,7 @@ func (ControllerAuth) Download(c *sinking_server.Context) {
 		return
 	}
 	userAuth, e := user_auth.GetIns().FindById(form.Id)
-	if e != nil || userAuth == nil {
+	if e != nil || userAuth == nil || userAuth.UserId != c.GetWebUserInfo().Id {
 		c.Error("获取授权许可证失败")
 		return
 	}

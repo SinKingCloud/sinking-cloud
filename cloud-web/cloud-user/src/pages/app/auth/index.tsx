@@ -40,8 +40,8 @@ export default (): React.ReactNode => {
       if (r.code != 200) {
         message.error(r.message || "获取应用列表失败");
       } else {
-        setAppList(r.data.list);
-        setPage({currentPage: p, total: r.data.total});
+        setAppList(r?.data?.list || []);
+        setPage({currentPage: p || 1, total: r?.data?.total || 0});
       }
     })
   }
@@ -57,7 +57,7 @@ export default (): React.ReactNode => {
       if (r.code != 200) {
         message.error(r.message || "获取商品列表失败");
       } else {
-        setShopList(r.data.list);
+        setShopList(r?.data?.list || []);
         setShopPage({currentPage: p, total: r.data.total});
       }
     });

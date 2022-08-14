@@ -18,12 +18,14 @@ var Setting = map[string]string{
 	"zone_clock":   "1",
 	"login":        "1",
 	"friend":       "1",
+	"word":         "1",
 	"vip":          "1",
 	"big_vip":      "1",
 	"hz":           "1",
 	"lz":           "1",
 	"ld":           "1",
 	"game_center":  "1",
+	"yy":           "1",
 }
 
 // JobMap 映射表
@@ -43,6 +45,7 @@ var JobMap = map[string]map[string]int{
 		"zone_clock":   uin_tool.ZoneClock,
 		"login":        uin_tool.Login,
 		"friend":       uin_tool.Friend,
+		"word":         uin_tool.Word,
 	},
 	"sign": {
 		"vip":         uin_tool.Vip,
@@ -51,6 +54,7 @@ var JobMap = map[string]map[string]int{
 		"lz":          uin_tool.Lz,
 		"ld":          uin_tool.Ld,
 		"game_center": uin_tool.GameCenter,
+		"yy":          uin_tool.Music,
 	},
 }
 
@@ -62,7 +66,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "手机在线",
 			"describe": "手机在线满6小时加速1天",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/sq.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/sq.png",
 			"edit":     "true",
 		},
 		"pc": {
@@ -70,7 +74,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "电脑在线",
 			"describe": "电脑在线2小时加速0.5天",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/pc.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/pc.png",
 			"edit":     "true",
 		},
 		"online": {
@@ -78,7 +82,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "非隐身在线",
 			"describe": "非隐身时长满2小时加速0.2天",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/ys.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ys.png",
 			"edit":     "false",
 		},
 		"zone": {
@@ -86,7 +90,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "空间访客",
 			"describe": "QQ空间今日访客数超过10人加速0.5天",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/kj.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/kj.png",
 			"edit":     "true",
 		},
 		"medal": {
@@ -94,7 +98,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "勋章墙",
 			"describe": "点亮勋章墙图标，加速0.2天",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/xz.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/xz.png",
 			"edit":     "false",
 		},
 		"ws": {
@@ -102,7 +106,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "微视观看",
 			"describe": "微视看视频满30分钟，加速0.5天",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/ws.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ws.png",
 			"edit":     "true",
 		},
 		"micro_show": {
@@ -110,7 +114,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "厘米秀活跃",
 			"describe": "厘米秀活跃达到70加速0.2天",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/cm.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/cm.png",
 			"edit":     "true",
 		},
 		"safe": {
@@ -118,7 +122,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "电脑管家",
 			"describe": "电脑管家日登录达30分钟，加速0.2天",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/gj.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/gj.png",
 			"edit":     "true",
 		},
 		"game": {
@@ -126,7 +130,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "游戏加速",
 			"describe": "玩10分钟游戏加速0.2天",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/sy.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/sy.png",
 			"edit":     "true",
 		},
 		"sport": {
@@ -134,7 +138,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "运动加速",
 			"describe": "步行满5000步或跑步满1km加速0.2天,月限8次",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/yd.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/yd.png",
 			"edit":     "true",
 		},
 		"mobile_clock": {
@@ -142,7 +146,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "登陆打卡",
 			"describe": "手机签到打卡加速0.5天",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/dk.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/dk.png",
 			"edit":     "true",
 		},
 		"zone_clock": {
@@ -150,7 +154,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "发布说说",
 			"describe": "发布说说签到打卡加速0.5天",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/ss.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ss.png",
 			"edit":     "true",
 		},
 		"login": {
@@ -158,7 +162,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "连续登录",
 			"describe": "连续登录手机加速0.5天",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/dl.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/dl.png",
 			"edit":     "false",
 		},
 		"friend": {
@@ -166,7 +170,15 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "speed",
 			"name":     "好友加速",
 			"describe": "每日添加一位好友加速0.5天",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/hy.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/hy.png",
+			"edit":     "true",
+		},
+		"word": {
+			"sort":     "15",
+			"type":     "speed",
+			"name":     "小世界加速",
+			"describe": "每日发布动态加速0.5天",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/xsj.png",
 			"edit":     "true",
 		},
 	},
@@ -176,7 +188,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "sign",
 			"name":     "会员成长",
 			"describe": "SVIP6级年费以上用户，每月SVIP成长值840点左右",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/vip.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/vip.png",
 			"edit":     "true",
 		},
 		"big_vip": {
@@ -184,7 +196,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "sign",
 			"name":     "大会员成长",
 			"describe": "大会员签到/访客/点赞/师徒/分享，每日25点成长值",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/big_vip.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/big_vip.png",
 			"edit":     "true",
 		},
 		"hz": {
@@ -192,7 +204,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "sign",
 			"name":     "黄钻成长",
 			"describe": "黄钻每日完成三次打卡任务，每日获得15点成长值",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/hz.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/hz.png",
 			"edit":     "true",
 		},
 		"lz": {
@@ -200,7 +212,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "sign",
 			"name":     "蓝钻成长",
 			"describe": "蓝钻每日领取两次成长值4+4，每日获得8点成长值",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/lz.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/lz.png",
 			"edit":     "true",
 		},
 		"ld": {
@@ -208,7 +220,7 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "sign",
 			"name":     "乐斗签到",
 			"describe": "自动完成QQ空间Q宠大乐斗每日签到、领取礼包等",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/ld.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ld.png",
 			"edit":     "true",
 		},
 		"game_center": {
@@ -216,7 +228,15 @@ var Project = map[string]map[string]map[string]string{
 			"type":     "sign",
 			"name":     "游戏中心",
 			"describe": "每日完成手Q游戏中心日常任务获得游戏币和活跃值",
-			"logo":     "https://cdn.open-api.cn/app/uin/img/game_center.png",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/game_center.png",
+			"edit":     "true",
+		},
+		"yy": {
+			"sort":     "21",
+			"type":     "sign",
+			"name":     "音乐签到",
+			"describe": "每日完成QQ音乐签到和刷歌时长",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/yq.png",
 			"edit":     "true",
 		},
 	},

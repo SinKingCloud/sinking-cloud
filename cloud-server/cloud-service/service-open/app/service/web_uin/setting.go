@@ -3,13 +3,19 @@ package web_uin
 import (
 	"encoding/json"
 	"errors"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
+	cookie2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/cookie"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/log"
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin_info"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/uin_tool"
+	"io"
+	"io/ioutil"
+	"net/http"
 	"strconv"
 	"time"
 )
@@ -171,10 +177,60 @@ func GetUinLevelInfo(uinId int) (*model.AppUinInfo, error) {
 	return uinLevelInfo, e
 }
 
+// GetLevelInfo 获取等级信息
+func GetLevelInfo(uin string, skey string, pskey string) (*uin_tool.SpeedStatus, error, bool) {
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", "https://ti.qq.com/qqlevel/srf/getQQLevelAllInfo?bkn=683611393", nil)
+	if err != nil {
+		return nil, errors.New("发起请求失败"), false
+	}
+	req.Header.Set("Origin", "https://ti.qq.com")
+	req.Header.Set("Pragma", "no-cache")
+	req.Header.Set("Referer", "https://ti.qq.com/qqlevel/index?")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/104.0.5112.81")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Cookie", "uin=o"+uin+"; skey="+skey+"; p_skey="+pskey)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, errors.New("请求失败"), false
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			return
+		}
+	}(resp.Body)
+	bodyText, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.New("获取返回值失败"), false
+	}
+	type speedStatus struct {
+		Data *uin_tool.SpeedStatus `json:"data"`
+	}
+	var t *speedStatus
+	e := json.Unmarshal(bodyText, &t)
+	if e != nil || t == nil || t.Data == nil {
+		return nil, errors.New("cookies失效"), true
+	}
+	return t.Data, nil, false
+}
+
 // GetUinSpeedStatus 获取加速任务状态
-func GetUinSpeedStatus(addr string, proxy string, uin string, isSync bool) (*uin_tool.SpeedStatus, error, bool) {
-	s := uin_tool.NewUinTool(addr, proxy)
-	status, err, isFail := s.Status(uin)
+func GetUinSpeedStatus(addr string, proxy string, uin string, isSync bool) (status *uin_tool.SpeedStatus, err error, isFail bool) {
+	err, skey, pskey := GetUinCookies(addr, proxy, uin, "ti.qq.com", false)
+	if err == nil && skey != "" && pskey != "" {
+		status2, e, isExpire := GetLevelInfo(uin, skey, pskey)
+		if e == nil && !isExpire && status2 != nil {
+			status = status2
+		}
+	}
+	if status == nil {
+		s := uin_tool.NewUinTool(addr, proxy)
+		status, err, isFail = s.Status(uin)
+	} else {
+		err = nil
+		isFail = false
+	}
 	if err == nil && status != nil && !isFail {
 		//更新QQ信息
 		fun := func(status *uin_tool.SpeedStatus, uin string) {
@@ -206,6 +262,7 @@ func GetUinSpeedStatus(addr string, proxy string, uin string, isSync bool) (*uin
 				"zone_clock":   status.IQzoneState,
 				"login":        status.IContinueLogin,
 				"friend":       status.IAddFriend,
+				"word":         status.ISmallWorld,
 			}
 			if time.Now().Day() > 8 {
 				speedInfo["sport"] = "1"
@@ -224,4 +281,65 @@ func GetUinSpeedStatus(addr string, proxy string, uin string, isSync bool) (*uin
 		}
 	}
 	return status, err, isFail
+}
+
+// GetUinCookies 获取QQ cookies
+func GetUinCookies(addr string, proxy string, uin string, domain string, refresh bool) (err error, skey string, pSkey string) {
+	key := constant.LockUinCookie + uin + "_" + domain
+	//上锁
+	if !util.Cache.Lock(key, constant.LockTimeUinCookie) {
+		return errors.New("系统繁忙,请稍后重试"), "", ""
+	}
+	defer util.Cache.UnLock(key) //释放并发锁
+	//查询数据库是否存在此cookie
+	cookie, err := cookie2.GetIns().FindByUinDomainWithCache(uin, domain, refresh)
+	if err != nil || cookie == nil {
+		//获取并写入cookie
+		s := uin_tool.NewUinTool(addr, proxy)
+		skey, pSkey = s.Cookies(uin, domain)
+		if skey == "" || pSkey == "" {
+			return errors.New("获取cookie失败"), "", ""
+		}
+		//写入数据库
+		if cookie2.GetIns().Create(&model.AppUinCookie{
+			Uin:    uin,
+			Domain: domain,
+			Cookie: cookie2.GetIns().CookieToStr(&cookie2.Cookie{
+				Uin:   uin,
+				Skey:  skey,
+				Pskey: pSkey,
+			}),
+			Status: cookie2.Normal,
+		}) != nil {
+			return errors.New("获取cookie失败"), "", ""
+		}
+		return nil, skey, pSkey
+	} else {
+		//查看cookie是否到时间需要更新
+		stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", cookie.CheckTime.String(), time.Local)
+		//小于三小时或者cookie失效了则更新cookie
+		if cookie.Status != cookie2.Normal || stamp.Unix() < time.Now().Unix()-3600*3 {
+			s := uin_tool.NewUinTool(addr, proxy)
+			skey, pSkey = s.Cookies(uin, domain)
+			if skey == "" || pSkey == "" {
+				return errors.New("获取cookie失败"), "", ""
+			}
+			//更新数据库cookie
+			if cookie2.GetIns().UpdateByUinDomain(uin, domain, map[string]interface{}{
+				"cookie": cookie2.GetIns().CookieToStr(&cookie2.Cookie{
+					Uin:   uin,
+					Skey:  skey,
+					Pskey: pSkey,
+				}),
+				"status":     cookie2.Normal,
+				"check_time": str.DateTime(time.Now()),
+			}) == nil {
+				return nil, skey, pSkey
+			} else {
+				return errors.New("获取cookie失败"), "", ""
+			}
+		}
+		t := cookie2.GetIns().StrToCookie(cookie.Cookie)
+		return nil, t.Skey, t.Pskey
+	}
 }

@@ -18,7 +18,7 @@ var httpClient *http.Client
 func getClient() *http.Client {
 	if httpClient == nil {
 		httpClient = &http.Client{
-			Timeout: 60 * time.Second,
+			Timeout: 60 * 3 * time.Second,
 		}
 	}
 	return httpClient
@@ -77,13 +77,12 @@ func (s *speed) sendRequest(url string, data interface{}, timeout int) (*respons
 
 // response 响应结构
 type response struct {
-	Type     string `json:"Type"`
-	State    string `json:"State"`
-	Uin      int64  `json:"Uin"`
-	Pskey    string `json:"pskey"`
-	Skey     string `json:"skey"`
-	Superkey string `json:"Superkey"`
-	Body     string `json:"-"`
+	Type  string `json:"Type"`
+	State string `json:"State"`
+	Uin   int64  `json:"Uin"`
+	Pskey string `json:"pskey"`
+	Skey  string `json:"skey"`
+	Body  string `json:"-"`
 }
 
 type speedStatus struct {
@@ -124,6 +123,7 @@ type SpeedStatus struct {
 	IQzoneState         string `json:"iQzoneState"`       //空间说说加速
 	IRealDays           string `json:"iRealDays"`         //今日加速天数
 	ISVip               string `json:"iSVip"`             //是否为超级会员
+	ISmallWorld         string `json:"iSmallWorld"`       //小世界加速
 	ISpeedType          string `json:"iSpeedType"`
 	ISqq                string `json:"iSqq"`
 	ISqqLevel           string `json:"iSqqLevel"`

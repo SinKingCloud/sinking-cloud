@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // add 添加账号
@@ -43,6 +44,7 @@ func (s *speed) add(uin string, pwd string, phone string, phoneArea string, prot
 	if res.State == "0" {
 		return true
 	}
+	time.Sleep(3 * time.Second)
 	return false
 }
 
@@ -153,7 +155,7 @@ func (s *speed) login(uin string, code string) (int, error, string, string) {
 	}
 	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
-		return Error, errors.New("服务器连接失败,请稍后重试"), "", ""
+		return Error, errors.New("服务正在升级中,请稍后重试"), "", ""
 	}
 	var state *captcha
 	err = json.Unmarshal([]byte(res.State), &state)

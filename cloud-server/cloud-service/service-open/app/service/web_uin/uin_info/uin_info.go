@@ -43,19 +43,48 @@ func (s *service) Save(data *model.AppUinInfo, speedInfo map[string]string) (err
 		if data.Level > 0 {
 			d["level"] = data.Level
 		}
-		if speedInfo != nil {
-			bytes, e := json.Marshal(speedInfo)
-			if e == nil {
-				t := string(bytes)
-				d["speed_info"] = t
-				data.SpeedInfo = t
+		//获取QQ信息
+		info, e := s.FindByUin(data.Uin)
+		if e != nil || info == nil {
+			if speedInfo != nil {
+				bytes, e1 := json.Marshal(speedInfo)
+				if e1 == nil {
+					t := string(bytes)
+					d["speed_info"] = t
+					data.SpeedInfo = t
+				}
 			}
-		}
-		if s.CountByUin(data.Uin) > 0 {
-			err = s.UpdateByUin(data.Uin, d)
-		} else {
+			//不存在
 			data.UpdateTime = str.DateTime(time.Now())
 			err = s.Create(data)
+		} else {
+			var job map[string]string
+			//存在
+			stamp, e2 := time.ParseInLocation("2006-01-02 15:04:05", info.UpdateTime.String(), time.Local)
+			if e2 == nil && stamp.Unix() > str.NewTimeTool().GetZeroTime(time.Now()).Unix() {
+				//今日执行过的就判断是否已经加速项目
+				var status map[string]string
+				e1 := json.Unmarshal([]byte(info.SpeedInfo), &status)
+				if e1 == nil {
+					for k, v := range status {
+						if v != "1" && speedInfo[k] != "" {
+							status[k] = speedInfo[k]
+						}
+					}
+				}
+				job = status
+			} else {
+				job = speedInfo
+			}
+			if job != nil {
+				bytes, e1 := json.Marshal(job)
+				if e1 == nil {
+					t := string(bytes)
+					d["speed_info"] = t
+					data.SpeedInfo = t
+				}
+			}
+			err = s.UpdateByUin(data.Uin, d)
 		}
 	} else {
 		err = errors.New("系统繁忙")

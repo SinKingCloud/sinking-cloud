@@ -23,7 +23,7 @@ const isDev = process.env.NODE_ENV === 'development';
 Settings = Object.assign(Settings, {
   title: '沉沦云网络',
   logo: '/logo.svg',
-  api: isDev ? 'http://127.0.0.1:1000' : 'https://gateway.open-api.cn',
+  api: isDev ? 'http://127.0.0.1:1000' : 'https://gateway.clwl.cn',
   base: '/',
 });
 

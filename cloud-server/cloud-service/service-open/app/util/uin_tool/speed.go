@@ -82,6 +82,7 @@ const (
 	ZoneClock          //11.空间打卡
 	Login              //12.连续登陆加速
 	Friend             //13.加好友加速
+	Word               //14.小世界加速
 
 	Vip        //14.会员签到
 	BigVip     //15.大会员签到
@@ -89,6 +90,7 @@ const (
 	Lz         //17.蓝钻签到
 	Ld         //18.大乐斗签到
 	GameCenter //19.游戏中心签到
+	Music      //20.音乐签到
 )
 
 // Status 获取挂机状态 状态,错误,是否异常
@@ -244,7 +246,6 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 		return false
 	}
 	speedP := func(f func() bool) bool {
-		server2.GetIns().ServerWaitLock("add_" + s.addr)
 		if !pcLogin {
 			if !mobileLogin {
 				speedA(func() bool {
@@ -323,6 +324,9 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 					})
 				}
 				break
+			case Zone:
+				res[Zone] = s.zoneSpeed(uin.Uin)
+				break
 			case Ws:
 				res[Ws] = speedA(func() bool {
 					return s.wsSpeed(uin.Uin)
@@ -331,6 +335,11 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 			case MicroShow:
 				res[MicroShow] = speedA(func() bool {
 					return s.microShowSpeed(uin.Uin)
+				})
+				break
+			case Word:
+				res[Word] = speedA(func() bool {
+					return s.wordSpeed(uin.Uin)
 				})
 				break
 			case Safe:

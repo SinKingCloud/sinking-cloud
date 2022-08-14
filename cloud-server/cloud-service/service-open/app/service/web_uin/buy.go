@@ -113,10 +113,9 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 					firstBuy = n
 				}
 			}
-		} else {
-			//赠送天数
-			giftDays = GetGiftDays(month)
 		}
+		//赠送天数
+		giftDays = GetGiftDays(month)
 		//实际到账天数
 		days := month*30*firstBuy + giftDays
 		//更改到期时间
