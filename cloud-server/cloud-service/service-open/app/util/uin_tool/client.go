@@ -18,7 +18,7 @@ var httpClient *http.Client
 func getClient() *http.Client {
 	if httpClient == nil {
 		httpClient = &http.Client{
-			Timeout: 60 * 3 * time.Second,
+			Timeout: 60 * 5 * time.Second,
 		}
 	}
 	return httpClient
@@ -33,7 +33,10 @@ func getClientWithTimout(timeout int) *http.Client {
 
 // sendRequest 发送请求
 func (s *speed) sendRequest(url string, data interface{}, timeout int) (*response, error) {
-	url = "http://" + s.addr + url
+	//s.addr = "150.138.79.144:3457"
+	if url[0:4] != "http" {
+		url = "http://" + s.addr + url
+	}
 	req, err := http.NewRequest("POST", url, strings.NewReader(s.toJson(data)))
 	if err != nil {
 		log.Println("错误：请求地址", url, "请求参数", s.toJson(data))

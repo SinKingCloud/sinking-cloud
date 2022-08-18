@@ -23,6 +23,11 @@ func (s *speed) add(uin string, pwd string, phone string, phoneArea string, prot
 	//加锁
 	server2.GetIns().ServerLock("add_" + s.addr)
 	defer server2.GetIns().ServerUnLock("add_" + s.addr)
+	//阻止全局登陆
+	server2.GetIns().ServerInc("add_"+s.addr, 120)
+	defer server2.GetIns().ServerDec("add_"+s.addr, 120)
+	//等待计数器完成
+	server2.GetIns().ServerNumWaitZero("login_" + s.addr)
 	p := "0"
 	if proto == 1 {
 		p = "1"
@@ -48,17 +53,40 @@ func (s *speed) add(uin string, pwd string, phone string, phoneArea string, prot
 	return false
 }
 
-func (s *speed) pcAdd(uin string) bool {
-	url := "/?&type=pc/&pe=intopc/"
+// SmsVerify 短信验证
+type SmsVerify struct {
+	Retcode   int    `json:"retcode"`
+	Retmsg    string `json:"retmsg"`
+	NeedCheck bool   `json:"needCheck"`
+	AreaCode  string `json:"areaCode"`
+	PhoneNum  string `json:"phoneNum"`
+	Sms       string `json:"sms"`
+	SendTo    string `json:"sendTo"`
+}
+
+// AuthSmsStep 验证短信
+func (s *speed) AuthSmsStep(uin string, step string, sig string, rand string, ticket string, areacode string, mobile string, anonymousMobile string) (*SmsVerify, error) {
+	arr := strings.Split(s.addr, ":")
+	url := "http://" + arr[0] + ":3500/?&type=Android/&pe=authentication" + step + "/"
 	data := map[string]string{
-		"Uin":  uin,
-		"Code": "0",
+		"Uin":             uin,
+		"sig":             sig,
+		"randstr":         rand,
+		"ticket":          ticket,
+		"mobile":          mobile,
+		"anonymousmobile": anonymousMobile,
+		"areacode":        areacode,
 	}
 	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
-		return false
+		return nil, errors.New("发送请求失败")
 	}
-	return res.State == "0"
+	var sms *SmsVerify
+	err = json.Unmarshal([]byte(res.Body), &sms)
+	if err != nil || res == nil {
+		return nil, errors.New("解析数据失败")
+	}
+	return sms, nil
 }
 
 const (
@@ -66,11 +94,11 @@ const (
 	Success            //登陆成功
 	NeedCaptcha        //需要验证滑动验证码
 	NeedCode           //需要验证短信验证码
-	NeedQrCode         //需要扫码验证
 	PassError          //密码错误
 	EnvError           //环境异常
 	UinLock            //账号冻结
 	NotCreate          //未添加QQ
+	NeedSendSms        //需要发送短信
 )
 
 type captcha struct {
@@ -143,10 +171,17 @@ func (s *speed) login(uin string, code string) (int, error, string, string) {
 	//判断qq是否并发登陆
 	if server2.GetIns().ServerIsLock("uin_" + uin) {
 		return Error, errors.New("操作频繁,请稍后重试"), "", ""
+	} else {
+		server2.GetIns().ServerLock("uin_" + uin)
 	}
-	server2.GetIns().ServerWaitLock("uin_" + uin)
-	//解除并发锁
-	defer server2.GetIns().ServerUnLock("uin_" + uin)
+	defer server2.GetIns().ServerUnLock("uin_" + uin) //解除并发锁
+	//阻止全局新增
+	server2.GetIns().ServerInc("login_"+s.addr, 120)
+	defer server2.GetIns().ServerDec("login_"+s.addr, 120)
+
+	//等待计数器完成
+	server2.GetIns().ServerNumWaitZero("add_" + s.addr)
+
 	url := "/?&type=Android/&pe=login/"
 	data := map[string]string{
 		"Uin":   uin,
@@ -163,7 +198,7 @@ func (s *speed) login(uin string, code string) (int, error, string, string) {
 		return Error, errors.New("解析服务器结果错误"), "", ""
 	}
 	if state.Stype == "-2" {
-		return NotCreate, errors.New("系统不存在此QQ"), "", ""
+		return NotCreate, errors.New("系统正在大量挂机中,请稍后重试"), "", ""
 	}
 	if state.Stype == "0" || state.Stype == "-1" || res.State == "0" {
 		return Success, nil, "", strconv.FormatInt(res.Uin, 10)
@@ -175,7 +210,7 @@ func (s *speed) login(uin string, code string) (int, error, string, string) {
 		return EnvError, errors.New("登陆环境异常"), "", ""
 	}
 	if state.Stype == "7" && state.HkUrl != "" {
-		return NeedQrCode, errors.New("请使用QQ扫描二维码验证"), s.getQrCode(state.HkUrl), ""
+		return NeedSendSms, errors.New("请验证安全手机"), state.HkUrl, ""
 	}
 	if state.Stype == "8" {
 		return UinLock, errors.New("账号已被冻结"), "", ""
@@ -183,11 +218,11 @@ func (s *speed) login(uin string, code string) (int, error, string, string) {
 	if state.Stype == "9" {
 		return PassError, errors.New("账号密码错误"), "", ""
 	}
-	if state.Stype == "12" || state.Stype == "13" {
-		return NeedCode, errors.New("请提交设备锁验证码"), s.getQrCode(state.HkUrl), ""
-	}
 	if state.Stype == "11" {
 		return NeedCaptcha, errors.New("请验证滑动验证码"), state.HkUrl, ""
+	}
+	if state.Stype == "12" || state.Stype == "13" {
+		return NeedCode, errors.New("请提交设备锁验证码"), s.getQrCode(state.HkUrl), ""
 	}
 	return Error, errors.New("未知状态"), "", ""
 }

@@ -187,3 +187,15 @@ export async function uinLogin(body: any, options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+/** 短信验证 POST /open/user/uin/operate/sms */
+export async function uinSms(body: any, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/operate/sms', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}

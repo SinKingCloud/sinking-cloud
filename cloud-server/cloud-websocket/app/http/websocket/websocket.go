@@ -32,6 +32,7 @@ func Handler(c *sinking_server.Context) {
 	wsServer := sinking_websocket.WebSocket{
 		OnError: func(err error) {
 			Connection.Delete(id)
+			util.Cache.Delete(util2.CacheNameWebSocketUser + id)
 		},
 		OnConnect: func(ws *sinking_websocket.Conn) {
 			Connection.Set(id, ws)
@@ -41,6 +42,7 @@ func Handler(c *sinking_server.Context) {
 		},
 		OnClose: func(err error) {
 			Connection.Delete(id)
+			util.Cache.Delete(util2.CacheNameWebSocketUser + id)
 		},
 		OnMessage: func(ws *sinking_websocket.Conn, messageType int, data []byte) {
 			//只返回时间信息,用作心跳判断

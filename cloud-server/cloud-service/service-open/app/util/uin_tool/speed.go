@@ -3,7 +3,6 @@ package uin_tool
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/job"
-	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"sync"
 	"time"
@@ -227,7 +226,6 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 	pcLogin := false     //是否登录pc
 	isBreak := false     //是否异常
 	speedA := func(f func() bool) bool {
-		server2.GetIns().ServerWaitLock("add_" + s.addr)
 		if !mobileLogin {
 			c, _, _, _ := s.login(uin.Uin, "")
 			if c == NotCreate {

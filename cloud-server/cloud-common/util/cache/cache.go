@@ -10,4 +10,6 @@ type Cache interface {
 	Lock(key string, ttl int64) bool
 	IsLock(key string) bool
 	UnLock(key string) bool
+	Inc(key string) int
+	Dec(key string) int
 }

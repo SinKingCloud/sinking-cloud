@@ -214,3 +214,13 @@ func (stringTool StringTool) ToJson(data interface{}) string {
 	}
 	return string(str)
 }
+
+// ToMap 转map
+func (stringTool StringTool) ToMap(data string) map[string]string {
+	var d map[string]string
+	e := json.Unmarshal([]byte(data), &d)
+	if e == nil {
+		return d
+	}
+	return nil
+}

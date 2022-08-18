@@ -154,20 +154,6 @@ export default (): React.ReactNode => {
       copyable: true,
     },
     {
-      title: '登陆方式',
-      dataIndex: 'login_type',
-      hideInSearch: true,
-      tip: 'QQ的挂机登陆方式',
-      valueEnum: {
-        0: {
-          text: '密码登录',
-        },
-        1: {
-          text: '手机登陆',
-        },
-      },
-    },
-    {
       title: '账号状态',
       dataIndex: 'uin_status',
       tip: '账号挂机状态,异常状态需要重新登陆才能恢复',

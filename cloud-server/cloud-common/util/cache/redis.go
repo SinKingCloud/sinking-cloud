@@ -143,3 +143,25 @@ func (client *Redis) closeRedisClient(c1 redis.Conn) {
 		return
 	}
 }
+
+// Inc 自增
+func (client *Redis) Inc(key string) int {
+	c1 := client.Pool.Get()
+	defer client.closeRedisClient(c1)
+	reply, err := redis.Int(c1.Do("incr", key))
+	if err != nil {
+		return 0
+	}
+	return reply
+}
+
+// Dec 自增
+func (client *Redis) Dec(key string) int {
+	c1 := client.Pool.Get()
+	defer client.closeRedisClient(c1)
+	reply, err := redis.Int(c1.Do("decr", key))
+	if err != nil {
+		return 0
+	}
+	return reply
+}

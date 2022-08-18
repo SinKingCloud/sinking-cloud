@@ -198,14 +198,6 @@ func (s *speed) pcCode(uin string) bool {
 	if err != nil {
 		return false
 	}
-	if res.State == "-2" {
-		if s.pcAdd(uin) {
-			res, err = s.sendRequest(url, data, -1)
-			if err != nil {
-				return false
-			}
-		}
-	}
 	return res.State == "0"
 }
 

@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
+	"strconv"
 	"time"
 )
 
@@ -46,7 +47,58 @@ func (s *service) ServerIsLock(key string) bool {
 func (s *service) ServerWaitLock(key string) {
 	i := 0
 	for true {
+		if i >= 120 {
+			break
+		}
 		if util.Cache.IsLock(constant.LockUinServer + key) {
+			i++
+			time.Sleep(5 * time.Second)
+		} else {
+			break
+		}
+	}
+}
+
+// ServerInc 自增
+func (s *service) ServerInc(key string, second int) int {
+	key = constant.LockUinServer + "num_" + key
+	if second > 0 {
+		defer util.Cache.SetExpire(key, int64(second*1000))
+	}
+	return util.Cache.Inc(key)
+}
+
+// ServerDec 自减
+func (s *service) ServerDec(key string, second int) int {
+	key = constant.LockUinServer + "num_" + key
+	if second > 0 {
+		defer util.Cache.SetExpire(key, int64(second*1000))
+	}
+	return util.Cache.Dec(key)
+}
+
+// ServerNum 获取计数器
+func (s *service) ServerNum(key string) int {
+	str, exists := util.Cache.Get(constant.LockUinServer + "num_" + key)
+	if exists && str != "" {
+		num, err := strconv.Atoi(str)
+		if err == nil {
+			return num
+		}
+		return 0
+	}
+	return 0
+}
+
+// ServerNumWaitZero 等待计数器变为0
+func (s *service) ServerNumWaitZero(key string) {
+	key = constant.LockUinServer + "num_" + key
+	i := 0
+	for true {
+		if i >= 120 {
+			break
+		}
+		if s.ServerNum(key) > 0 {
 			i++
 			time.Sleep(5 * time.Second)
 		} else {

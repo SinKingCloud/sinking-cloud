@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Form, Input, message, Modal, Select} from "antd";
-import {changeUinPassword, changeUinPhone, getAreaList, uinLogin} from "@/services/open/uin/uin";
+import {Button, Form, Input, message, Modal, Select, Typography} from "antd";
+import {changeUinPassword, changeUinPhone, getAreaList, uinLogin, uinSms} from "@/services/open/uin/uin";
 // @ts-ignore
 import CryptoJS from 'crypto-js';
 // @ts-ignore
@@ -28,47 +28,11 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
     setIsQrCodeModalVisible(true);
   };
   const jumpQQ = (qrurl: string) => {
-    const ua = window.navigator.userAgent.toLowerCase();
-    const is_ios = ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1;
-    let schemacallback = '';
-    if (is_ios) {
-      schemacallback = 'weixin://';
-    } else if (ua.indexOf('ucbrowser') > -1) {
-      schemacallback = 'ucweb://';
-    } else if (ua.indexOf('meizu') > -1) {
-      schemacallback = 'mzbrowser://';
-    } else if (ua.indexOf('liebaofast') > -1) {
-      schemacallback = 'lb://';
-    } else if (ua.indexOf('baidubrowser') > -1) {
-      schemacallback = 'bdbrowser://';
-    } else if (ua.indexOf('baiduboxapp') > -1) {
-      schemacallback = 'bdapp://';
-    } else if (ua.indexOf('mqqbrowser') > -1) {
-      schemacallback = 'mqqbrowser://';
-    } else if (ua.indexOf('qihoobrowser') > -1) {
-      schemacallback = 'qihoobrowser://';
-    } else if (ua.indexOf('chrome') > -1) {
-      schemacallback = 'googlechrome://';
-    } else if (ua.indexOf('sogoumobilebrowser') > -1) {
-      schemacallback = 'SogouMSE://';
-    } else if (ua.indexOf('xiaomi') > -1) {
-      schemacallback = 'miuibrowser://';
-    } else {
-      schemacallback = 'googlechrome://';
-    }
-    if (is_ios) {
-      message.warn('跳转到QQ登录后请手动返回当前浏览器');
-      window.location.href = 'wtloginmqq3://ptlogin/qlogin?qrcode=' + encodeURIComponent(qrurl) + '&schemacallback=' + encodeURIComponent(schemacallback);
-    } else {
-      window.location.href = 'wtloginmqq://ptlogin/qlogin?qrcode=' + encodeURIComponent(qrurl) + '&schemacallback=' + encodeURIComponent(schemacallback);
-    }
+    window.location.href = 'mqqapi://forward/url?src_type=web&style=default&=1&version=1&url_prefix=' + window.btoa(qrurl);
   }
   const qrCodeHandleOk = () => {
     setIsQrCodeConfirmLoading(true);
     uinLogin({uin: initUin, step: "qrcode", login_type: "pwd"}).then((r) => {
-      if (r?.code != 200) {
-        message.warn("请使用手机QQ扫描二维码并授权登录")
-      }
       loginHandle(r);
     }).catch(() => {
       setIsQrCodeConfirmLoading(false);
@@ -100,33 +64,143 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
       });
     });
   }
+  /**
+   * 短信验证处理
+   */
+  const [smsStep, setSmsStep] = useState("1");//短信验证步骤
+  const [smsHash, setSmsHash] = useState("");//短信验证票据
+  const [smsTicket, setSmsTicket] = useState("");//短信验证ticket
+  const [smsRandStr, setSmsRandStr] = useState("");//短信验证rand_str
+  const [smsData, setSmsData] = useState<any>({});//返回data
+  const [smsPhone, setSmsPhone] = useState("");//手机号输入框
+  const [isSmsModalVisible, setIsSmsModalVisible] = useState(false);//短信验证弹窗
+  const [isSmsConfirmLoading, setIsSmsConfirmLoading] = useState(false);//短信验证按钮
+  const showSmsModal = () => {
+    setIsSmsModalVisible(true);
+  };
+  const hideSmsModal = () => {
+    setIsSmsModalVisible(false);
+  };
+  const smsHandleOk = () => {
+    setIsSmsConfirmLoading(true);
+    //步骤一:初始化滑块并获取绑定手机
+    if (smsStep == "1") {
+      //初始化滑块
+      // @ts-ignore
+      sinking.setAid(2090581062).init(function (t: any) {
+        if ((t?.ticket || "") != "" && (t?.randstr || "") != "") {
+          setSmsTicket(t?.ticket);
+          setSmsRandStr(t?.randstr);
+          //获取绑定手机
+          uinSms({uin: initUin, step: "1", rand: t?.randstr, ticket: t?.ticket, hash: smsHash}).then((r) => {
+            setIsSmsConfirmLoading(false);
+            if (r?.code != 200) {
+              message.error(r?.message || "请求失败");
+            } else {
+              setSmsData(r?.data);
+              setSmsStep("2");
+            }
+          });
+        } else {
+          setIsSmsConfirmLoading(false);
+          message.warn("请完成滑块验证")
+        }
+      });
+    }
+    //步骤二:填写手机号并发起验证请求
+    if (smsStep == "2") {
+      const tempPhone = smsData?.phone || "";
+      if (smsPhone == "" || smsPhone.length != tempPhone.length) {
+        setIsSmsConfirmLoading(false);
+        message.error("请填写完整手机号码");
+        return;
+      }
+      if (!/^[0-9]+.?[0-9]*$/.test(smsPhone)) {
+        message.error("手机号码必须为数字");
+        return;
+      }
+      //验证手机号是否正确
+      for (let i = 0; i < tempPhone.length; i++) {
+        if (tempPhone.charAt(i) != '*' && smsPhone.charAt(i) != tempPhone.charAt(i)) {
+          setIsSmsConfirmLoading(false);
+          message.error("请填写正确的手机号");
+          return;
+        }
+      }
+      //发起请求
+      uinSms({
+        uin: initUin,
+        step: "2",
+        rand: smsRandStr,
+        ticket: smsTicket,
+        hash: smsHash,
+        phone: smsPhone
+      }).then((r) => {
+        setIsSmsConfirmLoading(false);
+        if (r?.code != 200) {
+          message.error(r?.message || "请求失败");
+        } else {
+          setSmsData(r?.data);
+          setSmsStep("3");
+        }
+      });
+    }
+    //步骤三:验证是否发起短信
+    if (smsStep == "3") {
+      //发起请求
+      uinSms({
+        uin: initUin,
+        step: "3",
+        rand: smsRandStr,
+        ticket: smsTicket,
+        hash: smsHash,
+        phone: smsPhone
+      }).then((r) => {
+        setIsSmsConfirmLoading(false);
+        if (r?.code != 200) {
+          message.error(r?.message || "请求失败");
+        } else {
+          setSmsData({});
+          setSmsStep("1");
+          smsHandleCancel();
+          form?.submit();
+        }
+      });
+    }
+  };
+  const smsHandleCancel = () => {
+    hideSmsModal()
+  };
+  //登陆处理
   const loginHandle = (r: any) => {
-    if (r.code == 200) {
+    if (r?.code == 200) {
       setConfirmLoading(false);
       setIsQrCodeConfirmLoading(false);
       setIsQrCodeModalVisible(false);
       //登陆成功
-      message.success(r.message || "更新状态成功");
+      message.success(r?.message || "更新状态成功");
       onOk?.();
-    } else if (r.code == 400) {
-      captchaLogin(r.data);
-    } else if (r.code == 401) {
+    } else if (r?.code == 400) {
+      captchaLogin(r?.data);
+    } else if (r?.code == 401) {
       setConfirmLoading(false);
       setIsQrCodeConfirmLoading(false);
       //需要短信验证码
       setStep("sms");
       setQrCode(r?.data);
-    } else if (r.code == 402) {
+    } else if (r?.code == 399) {
       setConfirmLoading(false);
       setIsQrCodeConfirmLoading(false);
-      //必须要扫码验证
-      setQrCode(r?.data);
-      showQrCodeModal();
+      //开始走验证短信步骤
+      setSmsStep("1");
+      setSmsHash(r?.data);
+      showSmsModal();
     } else {
       setStep("normal");
+      setQrCode("");
       setConfirmLoading(false);
       setIsQrCodeConfirmLoading(false);
-      message.error(r.message || "更新状态失败");
+      message.error(r?.message || "更新状态失败");
       return
     }
   }
@@ -206,7 +280,42 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
   }, []);
   return (
     <>
-      <Modal title="请使用QQ扫描二维码" key={"qrCodeVerify"
+      <Modal title="身份验证" key={"smsVerify"
+      } width={370} destroyOnClose={true} maskClosable={false} visible={isSmsModalVisible}
+             onOk={smsHandleOk} onCancel={smsHandleCancel} confirmLoading={isSmsConfirmLoading}
+             okText={smsStep == "1" ? "开始验证" : "下一步"}>
+        {smsStep == "1" && <>
+          <p>
+            当前登录存在安全风险，为保障您的账号安全，请使用常用设备或者经过身份验证后登陆
+          </p>
+        </>}
+        {smsStep == "2" && <>
+          <p>
+            请输入 {smsData?.phone} 的完整手机号验证身份
+          </p>
+          <div>
+            <Input placeholder="请输入完整的手机号" onChange={(e) => {
+              setSmsPhone(e?.target?.value);
+            }}/>
+          </div>
+        </>}
+        {smsStep == "3" && <>
+          <p>
+            请使用手机号 {smsPhone}
+          </p>
+          <p>
+            编辑短信 {smsData?.sms || "1"}
+          </p>
+          <div>
+            发送至 <Typography.Text copyable>{smsData?.phone || "106988881700511"}</Typography.Text>
+          </div>
+          <br/>
+          <p>
+            发送完毕请回到此页面点击下一步
+          </p>
+        </>}
+      </Modal>
+      <Modal title="请使用手机扫描二维码" key={"qrCodeVerify"
       } width={370} destroyOnClose={true} maskClosable={false} visible={isQrCodeModalVisible}
              onOk={qrCodeHandleOk} onCancel={qrCodeHandleCancel} confirmLoading={isQrCodeConfirmLoading}
              okText={"我已扫码"}>
@@ -219,7 +328,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
         <div style={{textAlign: "center", marginTop: "20px", marginBottom: "-10px"}} hidden={!checkMobile()}>
           <Button type="primary" onClick={() => {
             jumpQQ(qrCode);
-          }}>跳转QQ快捷登录</Button>
+          }}>跳转手机快捷扫码</Button>
         </div>
       </Modal>
       <Modal title={"更新挂机"} key={"UpdateUin"} width={370} destroyOnClose={true} forceRender={true} maskClosable={false}
