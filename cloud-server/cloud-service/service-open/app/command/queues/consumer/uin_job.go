@@ -183,7 +183,7 @@ func speed(uin *model.AppUin) {
 			data["uin_status"] = 0 //设置正常状态
 		}
 	}
-	_ = uin2.GetIns().UpdateById(uin.Id, data)
+	_ = uin2.GetIns().UpdateByUin(uin.Uin, data)
 }
 
 // check 检测挂机失败的项目

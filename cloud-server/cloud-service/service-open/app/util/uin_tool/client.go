@@ -33,9 +33,9 @@ func getClientWithTimout(timeout int) *http.Client {
 
 // sendRequest 发送请求
 func (s *speed) sendRequest(url string, data interface{}, timeout int) (*response, error) {
-	//s.addr = "150.138.79.144:3457"
 	if url[0:4] != "http" {
-		url = "http://" + s.addr + url
+		arr := strings.Split(s.addr, ":")
+		url = "http://" + arr[0] + ":3456" + url
 	}
 	req, err := http.NewRequest("POST", url, strings.NewReader(s.toJson(data)))
 	if err != nil {
