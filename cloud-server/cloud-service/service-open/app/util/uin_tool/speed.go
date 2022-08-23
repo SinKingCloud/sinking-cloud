@@ -3,6 +3,7 @@ package uin_tool
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/job"
+	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"sync"
 	"time"
@@ -92,30 +93,13 @@ const (
 	Music      //20.音乐签到
 )
 
-// Status 获取挂机状态 状态,错误,是否异常
-func (s *speed) Status(uin string) (*SpeedStatus, error, bool) {
+// Status 获取挂机状态 状态,错误,是否异常,服务器是否异常
+func (s *speed) Status(uin string) (*SpeedStatus, error, bool, bool) {
 	status, e := s.getSpeedStatus(uin)
 	if e != nil {
-		return nil, e, false
+		return nil, e, false, false
 	}
-	if status == nil {
-		code, _, _, _ := s.login(uin, "")
-		if code == Success {
-			status, e = s.getSpeedStatus(uin)
-			if e != nil || status == nil {
-				s.MobileOffline(uin)
-				code, _, _, _ = s.login(uin, "")
-				if code == Success {
-					status, e = s.getSpeedStatus(uin)
-				} else {
-					return status, e, true
-				}
-			}
-		} else {
-			return status, e, true
-		}
-	}
-	return status, e, false
+	return status, e, false, false
 }
 
 var (
@@ -225,15 +209,14 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 	mobileLogin := false //是否登录手机
 	pcLogin := false     //是否登录pc
 	isBreak := false     //是否异常
+	serverError := false //系统异常
 	speedA := func(f func() bool) bool {
 		if !mobileLogin {
 			c, _, _, _ := s.login(uin.Uin, "")
-			if c == NotCreate {
-				if s.add(uin.Uin, uin.Pwd, uin.Phone, uin.PhoneArea, uin.Proto) {
-					c, _, _, _ = s.login(uin.Uin, "")
-				}
-			} else if c == EnvError {
+			if c == EnvError {
 				c, _, _, _ = s.login(uin.Uin, "")
+			} else if c == Error {
+				serverError = true
 			}
 			mobileLogin = c == Success
 		}
@@ -263,7 +246,7 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 		return false
 	}
 	getTryJobs := func(jobs []int) (bool, []int) {
-		status, err, isFail := s.Status(uin.Uin)
+		status, err, isFail, _ := s.Status(uin.Uin)
 		if isFail {
 			return true, []int{}
 		}
@@ -402,11 +385,19 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 			IsFirst:   uin.IsFirst,
 		})
 	}
+	if serverError {
+		return false, res
+	}
 	return isBreak, res
 }
 
 // Speed QQ项目加速
 func (s *speed) Speed(uin string, pwd string, phone string, phoneArea string, proto int, speedJobs []int, isFirst bool) (bool, map[int]bool) {
+	if server2.GetIns().ServerLock("speed_" + uin) {
+		defer server2.GetIns().ServerUnLock("speed_" + uin)
+	} else {
+		return false, map[int]bool{}
+	}
 	return s.SpeedAll(&speedJob{
 		Uin:       uin,
 		Pwd:       pwd,

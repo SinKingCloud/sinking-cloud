@@ -35,15 +35,25 @@ func test() {
 				//server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
 				//if err == nil && server != nil {
 				//	s := uin_tool.NewUinTool(server.Addr, server.Proxy)
-				//	jobs := []int{uin_tool.Ws, uin_tool.Safe, uin_tool.Game}
+				//	jobs := []int{uin_tool.Mobile, uin_tool.Pc}
 				//	s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, jobs, false)
+				//	//fun := func() {
+				//	//	for true {
+				//	//		login, _, _, _ := s.Login(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, "")
+				//	//		if login != uin_tool.Success {
+				//	//			return
+				//	//		}
+				//	//	}
+				//	//}
+				//	//go fun()
+				//	//go fun()
 				//}
 			}
 		}
-	}, Thread: 50}).Run()
+	}, Thread: 200}).Run()
 
 	time.Sleep(1 * time.Second)
-	list, err := uin2.GetIns().SelectUinJob(20000)
+	list, err := uin2.GetIns().SelectUinJob(10000)
 	if err == nil {
 		//避免重复挂机
 		seeded := make(map[string]bool)

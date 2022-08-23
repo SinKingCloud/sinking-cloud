@@ -55,7 +55,7 @@ func (s *service) Select(where map[string]string, orderByField string, orderByTy
 // SelectUinJob 查询全部代挂任务
 func (s *service) SelectUinJob(limit int) (list []*model.AppUin, err error) {
 	query := util.Database.Db.Model(&model.AppUin{})
-	query.Where("`status`=0 and `uin_status`=1")
+	query.Where("`uin_status`=0 and `status` =0")
 	err = query.Limit(limit).Find(&list).Error
 	return
 }

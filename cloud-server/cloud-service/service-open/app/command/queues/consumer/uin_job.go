@@ -94,7 +94,7 @@ func (l *uinJob) run(uin *model.AppUin) {
 					util.Log.Println(param, i)
 				})
 			}
-		}, Thread: 100}).Run()
+		}, Thread: 120}).Run()
 		g.Wait()
 		serverLock.Unlock()
 	}
@@ -158,6 +158,7 @@ func speed(uin *model.AppUin) {
 	}
 	if len(speedJobs) > 0 || len(signJobs) > 0 {
 		var fail bool
+		isCheck = false
 		if isCheck {
 			//只允许9点前执行第三次挂机
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 && time.Now().Unix()-stamp.Unix() > 2*3600 {
@@ -182,16 +183,16 @@ func speed(uin *model.AppUin) {
 			data["uin_status"] = 0 //设置正常状态
 		}
 	}
-	_ = uin2.GetIns().UpdateByUin(uin.Uin, data)
+	_ = uin2.GetIns().UpdateById(uin.Id, data)
 }
 
 // check 检测挂机失败的项目
 func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, signCheckJobs []int, lower bool, isFirst bool) (bool, map[int]bool) {
-	status, err, isFail := web_uin.GetUinSpeedStatus(addr, proxy, uin.Uin, true)
-	if isFail {
+	status, err, isFail, serverError := web_uin.GetUinSpeedStatus(addr, proxy, uin.Uin, true)
+	if isFail && !serverError {
 		return true, nil
 	}
-	if err != nil || status == nil {
+	if err != nil || status == nil || serverError {
 		return false, nil
 	}
 	s := uin_tool.NewUinTool(addr, proxy)

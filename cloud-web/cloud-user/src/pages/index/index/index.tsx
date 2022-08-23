@@ -154,7 +154,7 @@ export default (): React.ReactNode => {
                 bodyStyle={{padding: 0}}
               >
                 {appData?.map((item: any) => {
-                  return <Card.Grid className={styles.projectGrid} style={{padding: 0}}>
+                  return <Card.Grid className={styles.projectGrid} style={{padding: 0}} key={item?.id}>
                     <Card bodyStyle={{padding: 0}} bordered={false}>
                       <Card.Meta
                         style={{padding: "24px"}}
@@ -207,11 +207,12 @@ export default (): React.ReactNode => {
               itemLayout="horizontal"
               dataSource={noticeData}
               renderItem={(item: any) => (
-                <Skeleton avatar title={false} loading={noticeLoading} active>
+                <Skeleton avatar title={false} loading={noticeLoading} key={item?.id} active>
                   <List.Item
                     actions={[<a key="list-loadmore-edit" onClick={() => {
                       showNoticeInfoModal(item?.id || 0);
                     }}>查看</a>]}
+                    key={item?.id}
                   >
                     <List.Item.Meta
                       key={"notice-" + item?.id}

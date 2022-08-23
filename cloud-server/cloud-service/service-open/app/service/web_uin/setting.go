@@ -168,8 +168,8 @@ func GetUinLevelInfo(uinId int) (*model.AppUinInfo, error) {
 	if refresh {
 		server, e2 := server2.GetIns().FindById(uinInfo.ServerId)
 		if e2 == nil && server != nil {
-			_, err2, isFail := GetUinSpeedStatus(server.Addr, server.Proxy, uinInfo.Uin, false)
-			if !isFail && err2 == nil {
+			_, err2, isFail, serverError := GetUinSpeedStatus(server.Addr, server.Proxy, uinInfo.Uin, false)
+			if !isFail && err2 == nil && !serverError {
 				uinLevelInfo, e = uin_info.GetIns().FindByUin(uinInfo.Uin)
 			}
 		}
@@ -216,7 +216,7 @@ func GetLevelInfo(uin string, skey string, pskey string) (*uin_tool.SpeedStatus,
 }
 
 // GetUinSpeedStatus 获取加速任务状态
-func GetUinSpeedStatus(addr string, proxy string, uin string, isSync bool) (status *uin_tool.SpeedStatus, err error, isFail bool) {
+func GetUinSpeedStatus(addr string, proxy string, uin string, isSync bool) (status *uin_tool.SpeedStatus, err error, isFail bool, serverError bool) {
 	err, skey, pskey := GetUinCookies(addr, proxy, uin, "ti.qq.com", false)
 	if err == nil && skey != "" && pskey != "" {
 		status2, e, isExpire := GetLevelInfo(uin, skey, pskey)
@@ -224,14 +224,18 @@ func GetUinSpeedStatus(addr string, proxy string, uin string, isSync bool) (stat
 			status = status2
 		}
 	}
+	serverError = false
 	if status == nil {
 		s := uin_tool.NewUinTool(addr, proxy)
-		status, err, isFail = s.Status(uin)
+		status, err, isFail, serverError = s.Status(uin)
 	} else {
 		err = nil
 		isFail = false
 	}
-	if err == nil && status != nil && !isFail {
+	if serverError {
+		isFail = false
+	}
+	if err == nil && status != nil && !isFail && !serverError {
 		//更新QQ信息
 		fun := func(status *uin_tool.SpeedStatus, uin string) {
 			//qq信息
@@ -280,7 +284,7 @@ func GetUinSpeedStatus(addr string, proxy string, uin string, isSync bool) (stat
 			fun(status, uin)
 		}
 	}
-	return status, err, isFail
+	return status, err, isFail, serverError
 }
 
 // GetUinCookies 获取QQ cookies
@@ -318,7 +322,7 @@ func GetUinCookies(addr string, proxy string, uin string, domain string, refresh
 		//查看cookie是否到时间需要更新
 		stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", cookie.CheckTime.String(), time.Local)
 		//小于三小时或者cookie失效了则更新cookie
-		if cookie.Status != cookie2.Normal || stamp.Unix() < time.Now().Unix()-3600*3 {
+		if cookie.Status != cookie2.Normal || stamp.Unix() < time.Now().Unix()-3600*5 {
 			s := uin_tool.NewUinTool(addr, proxy)
 			skey, pSkey = s.Cookies(uin, domain)
 			if skey == "" || pSkey == "" {

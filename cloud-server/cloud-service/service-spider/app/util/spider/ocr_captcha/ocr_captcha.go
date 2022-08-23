@@ -40,9 +40,27 @@ func Captcha(securityUrl string) (string, error) {
 		mouse := page.Mouse
 		mouse.MustMove(button.X+10, button.Y)
 		mouse.MustDown(proto.InputMouseButtonLeft)
-		err := mouse.Move(button.X+340, button.Y+30, 180+rand.Intn(3))
+		//err := mouse.Move(button.X+340, button.Y+30, 180+rand.Intn(3))
+		//err := mouse.Move(button.X+550, button.Y+30, 220+rand.Intn(3))
+		var err error
+		i := 1
+		for i < 340 {
+			num := rand.Intn(20)
+			if num < 5 {
+				continue
+			}
+			i += num
+			if i > 340 {
+				i = 340
+			}
+			err = mouse.Move(button.X+float64(i), button.Y+30, 2)
+			if err != nil {
+				break
+			}
+		}
 		if err == nil {
 			mouse.MustUp("left")
+			time.Sleep(10 * time.Second)
 			net, e1 := page.Cookies([]string{"https://duguang.aliyun.com"})
 			if e1 != nil {
 				e = errors.New("获取cookie失败")
@@ -55,8 +73,9 @@ func Captcha(securityUrl string) (string, error) {
 					cookies = v.Value
 				}
 			}
+			//time.Sleep(999 * time.Second)
 			if fail {
-				e = errors.New("获取cookie失败")
+				e = errors.New("获取cookie-x5sec失败")
 			}
 		} else {
 			e = errors.New("滑动验证失败")

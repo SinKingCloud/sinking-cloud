@@ -335,13 +335,13 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
+	if uin.GetIns().Count(map[string]string{"uin": form.Uin, "status": strconv.Itoa(uin.Error)}) > 0 {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
 	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
 	if err != nil || uinInfo == nil {
 		c.Error("未查询到QQ信息,请先添加QQ")
-		return
-	}
-	if uinInfo.Status == uin.Error {
-		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
 	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
@@ -432,6 +432,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		break
 	case "qrcode":
 		verify = "123456"
+		time.Sleep(2 * time.Second)
 		break
 	case "sms":
 		if form.Code == "" {
