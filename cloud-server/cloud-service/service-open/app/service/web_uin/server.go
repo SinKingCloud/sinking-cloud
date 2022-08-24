@@ -8,12 +8,29 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/log"
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/uin_tool"
 	"gorm.io/gorm"
 )
 
 // GetServer 获取可用挂机server节点
 func GetServer(key string) (data *model.AppUinServer, err error) {
-	err = util.Database.Db.Where("`key`=? and `pid`>0 and `status`=0 ", key).Order("`uin_num` asc").First(&data).Error
+	var list []*model.AppUinServer
+	err = util.Database.Db.Where("`key`= ? and `pid`>0 and `status`=0 ", key).Order("`uin_num` asc").Find(&list).Error
+	if err == nil {
+		num := -1
+		for _, v := range list {
+			//判断是否可用
+			s := uin_tool.NewUinTool(v.Addr, "")
+			t := s.GetCpu()
+			if num < 0 || (t >= 0 && t < num) {
+				num = t
+				data = v
+			}
+		}
+	}
+	if data == nil {
+		err = errors.New("无可用节点")
+	}
 	return
 }
 
@@ -38,7 +55,6 @@ func ChangeServer(uinId int, key string) (error, bool) {
 			change = true
 		}
 		go func() {
-			_ = ServerUinCreate(server.Id, uinInfo.Uin, uinInfo.Password, uinInfo.Phone, uinInfo.PhoneArea, uinInfo.LoginType)
 			//写入QQ操作记录
 			_ = log.GetIns().Create(&model.AppUinLog{
 				UserId:  uinInfo.UserId,

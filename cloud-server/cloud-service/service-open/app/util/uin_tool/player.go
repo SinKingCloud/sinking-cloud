@@ -3,9 +3,11 @@ package uin_tool
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -340,4 +342,38 @@ func (s *speed) Cookies(uin string, domain string) (string, string) {
 		return "", ""
 	}
 	return res.Skey, res.Pskey
+}
+
+// CheckHealth 健康检查
+func (s *speed) CheckHealth() bool {
+	url := "/?&type=Android/&pe=time/"
+	res, e := s.sendRequest(url, "", 2)
+	if e != nil {
+		return false
+	}
+	return res.Body != ""
+}
+
+// GetCpu cpu使用
+func (s *speed) GetCpu() int {
+	arr := strings.Split(s.addr, ":")
+	url := "http://" + arr[0] + ":1954"
+	resp, err := http.Get(url)
+	if resp != nil && resp.Body != nil {
+		defer func(Body io.ReadCloser) {
+			err := Body.Close()
+			if err != nil {
+				return
+			}
+		}(resp.Body)
+	}
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return -1
+	}
+	num, err := strconv.Atoi(strings.Trim(strings.Replace(string(bytes), "\n", "", -1), ""))
+	if err != nil {
+		return -1
+	}
+	return num
 }

@@ -94,7 +94,7 @@ func (l *uinJob) run(uin *model.AppUin) {
 					util.Log.Println(param, i)
 				})
 			}
-		}, Thread: 120}).Run()
+		}, Thread: 250}).Run()
 		g.Wait()
 		serverLock.Unlock()
 	}
@@ -158,7 +158,6 @@ func speed(uin *model.AppUin) {
 	}
 	if len(speedJobs) > 0 || len(signJobs) > 0 {
 		var fail bool
-		isCheck = false
 		if isCheck {
 			//只允许9点前执行第三次挂机
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 && time.Now().Unix()-stamp.Unix() > 2*3600 {

@@ -1,6 +1,7 @@
 package uin_job
 
 import (
+	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/job"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
@@ -17,7 +18,8 @@ import (
 
 // Run 定时挂机任务投递
 func Run() {
-	go player() //轮询执行
+	go player()      //执行挂机任务
+	go countUinNum() //执行同步数量任务
 	//go test()
 }
 
@@ -81,9 +83,112 @@ func test() {
 	}
 }
 
+func test3(v *model.AppUin) {
+	var info *model.AppUinServer
+	//老机器
+	e := util.Database.Db.Where("`addr` = ? AND `key` = ? AND `pid`>0", "150.138.79.144:3456", v.ServerKey).First(&info).Error
+	if e == nil {
+		fmt.Print(v.ServerKey, "老的", info.Id)
+		e1 := util.Database.Db.Model(&model.AppUin{}).Where("`id` = ?", v.Id).Update("server_id", info.Id).Error
+		if e1 == nil {
+			fmt.Println(v.Uin, "修改成功")
+		}
+	}
+}
+
+func test4(v *model.AppUin) {
+	var info *model.AppUinServer
+	//老机器
+	e := util.Database.Db.Where("`addr` = ? AND `key` = ? AND `pid`>0", "150.138.83.146:3456", v.ServerKey).First(&info).Error
+	if e == nil {
+		fmt.Print(v.ServerKey, "新的", info.Id)
+		e1 := util.Database.Db.Model(&model.AppUin{}).Where("`id` = ?", v.Id).Update("server_id", info.Id).Error
+		if e1 == nil {
+			fmt.Println(v.Uin, "修改成功")
+		}
+	}
+}
+
+func test5() {
+	var list []*model.AppUin
+	err := util.Database.Db.Model(&model.AppUin{}).Where("`create_time` > '2022-08-23 22:17:00'").Find(&list).Error
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	ch1 := make(chan interface{})
+	go (&job.Task{Producer: func(channel chan interface{}) {
+		ch1 = channel
+	}, Consumer: func(param interface{}) {
+		test4(param.(*model.AppUin))
+	}, Thread: 25}).Run()
+	time.Sleep(5 * time.Second)
+	data := map[string]int{}
+	for _, v := range list {
+		data[v.ServerKey] = 1
+		ch1 <- v
+	}
+}
+
+func test2() {
+	var list []*model.AppUin
+	err := util.Database.Db.Model(&model.AppUin{}).Where("`create_time` < '2022-08-23 12:00:00'").Find(&list).Error
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	ch1 := make(chan interface{})
+	go (&job.Task{Producer: func(channel chan interface{}) {
+		ch1 = channel
+	}, Consumer: func(param interface{}) {
+		test3(param.(*model.AppUin))
+	}, Thread: 25}).Run()
+	ch2 := make(chan interface{})
+	go (&job.Task{Producer: func(channel chan interface{}) {
+		ch2 = channel
+	}, Consumer: func(param interface{}) {
+		test4(param.(*model.AppUin))
+	}, Thread: 25}).Run()
+	time.Sleep(5 * time.Second)
+	data := map[string]int{}
+	for _, v := range list {
+		//fmt.Println(v)
+		if data[v.ServerKey] == 0 {
+			data[v.ServerKey] = 1
+			ch1 <- v
+			//go test3(v)
+			//老机器
+			//var info *model.AppUinServer
+			//e := util.Database.Db.Where("`addr` = ? AND `key` = ? AND `pid`>0", "150.138.79.144:3456", v.ServerKey).First(&info).Error
+			//if e == nil {
+			//	fmt.Print(v.ServerKey, "老的", info.Id)
+			//	e1 := util.Database.Db.Model(&model.AppUin{}).Where("`id` = ?", v.Id).Update("server_id", info.Id).Error
+			//	if e1 == nil {
+			//		fmt.Println(v.Uin, "修改成功")
+			//	}
+			//}
+		} else {
+			data[v.ServerKey] = 0
+			ch2 <- v
+			//go test4(v)
+			//新机器
+			//var info *model.AppUinServer
+			//e := util.Database.Db.Where("`addr` = ? AND `key` = ? AND `pid`>0", "150.138.83.146:3456", v.ServerKey).First(&info).Error
+			//if e == nil {
+			//	fmt.Print(v.ServerKey, "新的", info.Id)
+			//	e1 := util.Database.Db.Model(&model.AppUin{}).Where("`id` = ?", v.Id).Update("server_id", info.Id).Error
+			//	if e1 == nil {
+			//		fmt.Println(v.Uin, "修改成功")
+			//	}
+			//}
+		}
+		//time.Sleep(10 * time.Millisecond)
+	}
+}
+
 // player 轮询挂机
 func player() {
-	oldMinute := (time.Now().Unix() - str.NewTimeTool().GetZeroTime(time.Now()).Unix()) / 60
+	oldMinute := (time.Now().Unix() - str.NewTimeTool().GetZeroTime(time.Now()).Unix()) / 60 //1分钟检测一次
 	for {
 		sinking_web.Try(func() {
 			//获取当前执行分钟数
@@ -219,4 +324,33 @@ func check(t time.Time) {
 	}, func(i interface{}) {
 		log.Println("定时任务执行错误,位置", start, "详情", i)
 	})
+}
+
+// countUinNum 统计服务器QQ数量
+func countUinNum() {
+	for true {
+		time.Sleep(600 * time.Second)
+		var servers []*model.AppUinServer
+		err := util.Database.Db.Model(&model.AppUinServer{}).Where("`pid` > 0").Find(&servers).Error
+		if err != nil {
+			return
+		}
+		for _, v := range servers {
+			var total int64
+			e := util.Database.Db.Model(&model.AppUin{}).Where("`server_id` = ?", v.Id).Count(&total).Error
+			if e != nil {
+				continue
+			}
+			if int64(v.UinNum) != total {
+				data := map[string]interface{}{
+					"uin_num":     total,
+					"update_time": str.DateTime(time.Now()),
+				}
+				e = util.Database.Db.Model(&model.AppUinServer{}).Where("`id` = ? ", v.Id).Updates(data).Error
+				if e != nil {
+					continue
+				}
+			}
+		}
+	}
 }

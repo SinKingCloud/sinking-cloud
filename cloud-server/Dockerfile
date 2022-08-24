@@ -95,12 +95,12 @@ EXPOSE 1004
 ENTRYPOINT  ["./service-open"]
 
 #################爬虫服务镜像####################
-FROM centos:centos7.9.2009 as service-spider
-ENV TIME_ZONE Asia/Shanghai
-WORKDIR /data/sinking
-COPY --from=sinking-builder /data/sinking/cloud-service/service-spider/service-spider .
-COPY --from=sinking-builder /data/sinking/cloud-service/service-spider/config/ ./config/
-RUN yum install wget -y && wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm && yum localinstall -y google-chrome-stable_current_x86_64.rpm
-EXPOSE 1006
-ENTRYPOINT  ["./service-spider"]
+#FROM centos:centos7.9.2009 as service-spider
+#ENV TIME_ZONE Asia/Shanghai
+#WORKDIR /data/sinking
+#COPY --from=sinking-builder /data/sinking/cloud-service/service-spider/service-spider .
+#COPY --from=sinking-builder /data/sinking/cloud-service/service-spider/config/ ./config/
+#RUN yum install wget -y && wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm && yum localinstall -y google-chrome-stable_current_x86_64.rpm
+#EXPOSE 1006
+#ENTRYPOINT  ["./service-spider"]
 
