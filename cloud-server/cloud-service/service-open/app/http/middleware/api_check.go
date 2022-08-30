@@ -33,7 +33,7 @@ func ApiCheck() sinking_web.HandlerFunc {
 			return
 		}
 		u, err := web_user.GetIns().FindByIdWithCache(app.UserId, false)
-		if err != nil || u == nil || u.Status != 0 {
+		if err != nil || u == nil || u.Status != web_user.Normal {
 			c.TokenError("获取应用所属账户异常,请检查账户状态", nil)
 			c.Abort()
 			return

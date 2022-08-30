@@ -22,7 +22,7 @@ func GetServer(key string) (data *model.AppUinServer, err error) {
 			//判断是否可用
 			s := uin_tool.NewUinTool(v.Addr, "")
 			t := s.GetCpu()
-			if num < 0 || (t >= 0 && t < num) {
+			if (num < 0 || (t >= 0 && t < num)) && s.CheckHealth() {
 				num = t
 				data = v
 			}

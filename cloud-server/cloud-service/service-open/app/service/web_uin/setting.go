@@ -189,7 +189,7 @@ func GetLevelInfo(uin string, skey string, pskey string) (*uin_tool.SpeedStatus,
 	req.Header.Set("Referer", "https://ti.qq.com/qqlevel/index?")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/104.0.5112.81")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Cookie", "uin=o"+uin+"; skey="+skey+"; p_skey="+pskey)
+	req.Header.Set("Cookie", "uin=o"+uin+"; skey="+skey+"; p_uin=o"+uin+"; p_skey="+pskey)
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, errors.New("请求失败"), false

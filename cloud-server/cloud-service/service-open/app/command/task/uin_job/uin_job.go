@@ -8,11 +8,14 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
+	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	uin2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/uin_tool"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"gorm.io/gorm"
 	"log"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -20,6 +23,7 @@ import (
 func Run() {
 	go player()      //执行挂机任务
 	go countUinNum() //执行同步数量任务
+	go health()      //健康检测
 	//go test()
 }
 
@@ -36,9 +40,14 @@ func test() {
 				producer.NewUinJobProducer().Build(uin).Send()
 				//server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
 				//if err == nil && server != nil {
-				//	s := uin_tool.NewUinTool(server.Addr, server.Proxy)
-				//	jobs := []int{uin_tool.Mobile, uin_tool.Pc}
-				//	s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, jobs, false)
+				//	//if server.Addr == "150.138.79.144:3456" {
+				//	//	s := uin_tool.NewUinTool(server.Addr, server.Proxy)
+				//	//	fmt.Println(s.Cookies(uin.Uin, "ti.qq.com"))
+				//	//	fmt.Println(s.Cookies(uin.Uin, "qzone.qq.com"))
+				//	//}
+				//	//s := uin_tool.NewUinTool(server.Addr, server.Proxy)
+				//	//jobs := []int{uin_tool.Pc}
+				//	//s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, jobs, false)
 				//	//fun := func() {
 				//	//	for true {
 				//	//		login, _, _, _ := s.Login(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, "")
@@ -52,31 +61,33 @@ func test() {
 				//}
 			}
 		}
-	}, Thread: 200}).Run()
+	}, Thread: 50}).Run()
 
 	time.Sleep(1 * time.Second)
-	list, err := uin2.GetIns().SelectUinJob(10000)
-	if err == nil {
-		//避免重复挂机
-		seeded := make(map[string]bool)
-		for _, v := range list {
-			var speedUin *model.AppUin
-			uinList, err1 := uin2.GetIns().SelectByUin(v.Uin)
-			if err1 == nil && len(uinList) > 0 {
-				for _, v1 := range uinList {
-					//取出一个qq
-					if speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
-						speedUin = v1
+	for i := 0; i < 1; i++ {
+		list, err := uin2.GetIns().SelectUinJob(10000)
+		if err == nil {
+			//避免重复挂机
+			seeded := make(map[string]bool)
+			for _, v := range list {
+				var speedUin *model.AppUin
+				uinList, err1 := uin2.GetIns().SelectByUin(v.Uin)
+				if err1 == nil && len(uinList) > 0 {
+					for _, v1 := range uinList {
+						//取出一个qq
+						if speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
+							speedUin = v1
+						}
 					}
-				}
-				//发布到消息队列执行
-				if speedUin != nil && seeded[speedUin.Uin] == false {
-					//避免同一查询有重复
-					seeded[speedUin.Uin] = true
-					//发布至消息队列
-					//v.RunTime = str.DateTime(time.Now().Add(-30))
-					//producer.NewUinJobProducer().Build(v).Send()
-					ch1 <- v
+					//发布到消息队列执行
+					if speedUin != nil && seeded[speedUin.Uin] == false {
+						//避免同一查询有重复
+						seeded[speedUin.Uin] = true
+						//发布至消息队列
+						//v.RunTime = str.DateTime(time.Now().Add(-30))
+						//producer.NewUinJobProducer().Build(v).Send()
+						ch1 <- v
+					}
 				}
 			}
 		}
@@ -352,5 +363,34 @@ func countUinNum() {
 				}
 			}
 		}
+	}
+}
+
+// health 健康检测
+func health() {
+	g := &sync.WaitGroup{}
+	fun := func(addr string) {
+		g.Add(1)
+		defer g.Add(-1)
+		s := uin_tool.NewUinTool(addr, "")
+		cpu := s.GetCpu()
+		if cpu <= 0 || cpu >= 80 || !s.CheckHealth() {
+			//阻塞全局请求
+			server2.GetIns().ServerLock("server_" + addr)
+		} else {
+			//解锁全局请求
+			server2.GetIns().ServerUnLock("server_" + addr)
+		}
+	}
+	for true {
+		var adders []string
+		err := util.Database.Db.Model(&model.AppUinServer{}).Where("`pid` > 0").Group("addr").Select("addr").Find(&adders).Error
+		if err == nil {
+			for _, v := range adders {
+				go fun(v)
+			}
+		}
+		g.Wait()
+		time.Sleep(2 * time.Second)
 	}
 }

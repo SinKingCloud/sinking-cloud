@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"crypto/tls"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -515,4 +516,20 @@ func (s *sign) VideoSign() {
 	fmt.Println(s.gtk2)
 	r, e := s.request(u, "GET", h, "", false)
 	fmt.Println(r, e)
+}
+
+// VisitLevelPage 查看等级页面
+func (s *sign) VisitLevelPage() error {
+	req, err := http.NewRequest("GET", "https://ti.qq.com/qqlevel/index?_wv=3&_wwv=1&tab=6&source=15", nil)
+	if err != nil {
+		return errors.New("发送请求失败")
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/104.0.5112.102")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Cookie", "uin=o"+s.uin+"; skey="+s.sKey+"; p_uin=o"+s.uin+"; p_skey="+s.psKey)
+	_, err = s.getClient().Do(req)
+	if err != nil {
+		return errors.New("发送请求失败")
+	}
+	return nil
 }

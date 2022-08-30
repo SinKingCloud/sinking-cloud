@@ -31,6 +31,7 @@ func (l *signJob) Listen() {
 		err := json.Unmarshal(mqMsg.Body, s)
 		if err == nil {
 			l.sign(s)
+			//fmt.Println(s)
 		}
 	})
 	if err != nil {

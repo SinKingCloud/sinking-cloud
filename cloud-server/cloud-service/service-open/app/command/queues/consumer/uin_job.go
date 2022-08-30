@@ -41,6 +41,7 @@ func (l *uinJob) Listen() {
 		err := json.Unmarshal(mqMsg.Body, s)
 		if err == nil {
 			l.run(s)
+			//fmt.Println(s)
 		}
 	})
 	if err != nil {
@@ -78,8 +79,8 @@ func (l *uinJob) run(uin *model.AppUin) {
 		serverIdLock.Unlock()
 	}
 	if servers[server.Addr] == nil {
-		//构建消费协程
 		serverLock.Lock()
+		//构建消费协程
 		g := &sync.WaitGroup{}
 		g.Add(1)
 		go (&job.Task{Producer: func(channel chan interface{}) {
@@ -94,7 +95,7 @@ func (l *uinJob) run(uin *model.AppUin) {
 					util.Log.Println(param, i)
 				})
 			}
-		}, Thread: 250}).Run()
+		}, Thread: 100}).Run()
 		g.Wait()
 		serverLock.Unlock()
 	}
@@ -164,12 +165,12 @@ func speed(uin *model.AppUin) {
 				data["check_time"] = str.DateTime(time.Now().Add(4.2 * 3600 * time.Second))
 			}
 			//检测挂机
-			fail, _ = check(server.Addr, server.Proxy, uin, speedJobs, signJobs, true, false)
+			fail, _ = checkJob(server, uin, speedJobs, signJobs, true, false)
 		} else {
 			//正常挂机
-			fail, _ = uin_tool.NewUinTool(server.Addr, server.Proxy).Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, speedJobs, true)
+			fail, _ = speedJob(server, uin, speedJobs, true)
 			if !fail {
-				fail, _ = check(server.Addr, server.Proxy, uin, speedJobs, signJobs, false, true) //判断未执行的秒加速项目并补挂一次
+				fail, _ = checkJob(server, uin, speedJobs, signJobs, false, true) //判断未执行的秒加速项目并补挂一次
 			}
 			//只允许9点前执行第二次挂机
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 {
@@ -180,21 +181,23 @@ func speed(uin *model.AppUin) {
 			data["uin_status"] = 1 //设置异常状态
 		} else {
 			data["uin_status"] = 0 //设置正常状态
+
 		}
 	}
 	_ = uin2.GetIns().UpdateByUin(uin.Uin, data)
 }
 
-// check 检测挂机失败的项目
-func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, signCheckJobs []int, lower bool, isFirst bool) (bool, map[int]bool) {
-	status, err, isFail, serverError := web_uin.GetUinSpeedStatus(addr, proxy, uin.Uin, true)
+// checkJob 检测挂机失败的项目
+func checkJob(server *model.AppUinServer, uin *model.AppUin, speedCheckJobs []int, signCheckJobs []int, lower bool, isFirst bool) (bool, map[int]bool) {
+	//获取加速详情
+	status, err, isFail, serverError := web_uin.GetUinSpeedStatus(server.Addr, server.Proxy, uin.Uin, true)
 	if isFail && !serverError {
 		return true, nil
 	}
 	if err != nil || status == nil || serverError {
 		return false, nil
 	}
-	s := uin_tool.NewUinTool(addr, proxy)
+	s := uin_tool.NewUinTool(server.Addr, server.Proxy)
 	//执行签到任务
 	if uin.UinStatus == uin2.Normal && len(signCheckJobs) > 0 {
 		stamp, e2 := time.ParseInLocation("2006-01-02 15:04:05", uin.RunTime.String(), time.Local)
@@ -202,8 +205,8 @@ func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, s
 		if e2 == nil && stamp.Unix()+5*3600 < time.Now().Unix() {
 			producer.NewSignJobProducer().Build(&producer.SignJob{
 				Uin:   uin,
-				Addr:  addr,
-				Proxy: proxy,
+				Addr:  server.Addr,
+				Proxy: server.Proxy,
 				Jobs:  signCheckJobs,
 			}).Send()
 		}
@@ -290,7 +293,21 @@ func check(addr string, proxy string, uin *model.AppUin, speedCheckJobs []int, s
 		}
 	}
 	if len(speedJobs) > 0 {
-		return s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, speedJobs, isFirst)
+		return speedJob(server, uin, speedJobs, isFirst)
 	}
 	return false, nil
+}
+
+// speedJob 加速项目
+func speedJob(server *model.AppUinServer, uin *model.AppUin, speedJobs []int, isFirst bool) (bool, map[int]bool) {
+	fail, b := uin_tool.NewUinTool(server.Addr, server.Proxy).Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, speedJobs, isFirst)
+	if !fail {
+		//访问加速页面
+		e, skey, pskey := web_uin.GetUinCookies(server.Addr, server.Proxy, uin.Uin, "ti.qq.com", false)
+		if e == nil && skey != "" && pskey != "" {
+			t := uin_tool.NewSignTool(uin.Uin, server.Proxy, skey, pskey, "")
+			_ = t.VisitLevelPage()
+		}
+	}
+	return fail, b
 }

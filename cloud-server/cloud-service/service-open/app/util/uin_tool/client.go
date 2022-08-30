@@ -2,7 +2,9 @@ package uin_tool
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"io"
 	"io/ioutil"
 	"log"
@@ -18,7 +20,7 @@ var httpClient *http.Client
 func getClient() *http.Client {
 	if httpClient == nil {
 		httpClient = &http.Client{
-			Timeout: 60 * 5 * time.Second,
+			Timeout: 60 * 60 * time.Second,
 		}
 	}
 	return httpClient
@@ -33,10 +35,16 @@ func getClientWithTimout(timeout int) *http.Client {
 
 // sendRequest 发送请求
 func (s *speed) sendRequest(url string, data interface{}, timeout int) (*response, error) {
+	//检测服务器是否宕机
+	if !server.GetIns().ServerWaitLock("server_" + s.addr) {
+		return nil, errors.New("连接服务器失败")
+	}
+	//构建发送请求
 	if url[0:4] != "http" {
 		arr := strings.Split(s.addr, ":")
 		url = "http://" + arr[0] + ":3456" + url
 	}
+	startTime := time.Now().UnixMilli()
 	req, err := http.NewRequest("POST", url, strings.NewReader(s.toJson(data)))
 	if err != nil {
 		log.Println("错误：请求地址", url, "请求参数", s.toJson(data))
@@ -50,8 +58,9 @@ func (s *speed) sendRequest(url string, data interface{}, timeout int) (*respons
 		client = getClientWithTimout(timeout)
 	}
 	resp, err := client.Do(req)
+	reqTime := time.Now().UnixMilli() - startTime
 	if err != nil {
-		log.Println("错误：请求地址", url, "请求参数", s.toJson(data))
+		log.Println("请求毫秒数", reqTime, "错误：请求地址", url, "请求参数", s.toJson(data))
 		return nil, err
 	}
 	if resp != nil && resp.Body != nil {
@@ -64,13 +73,13 @@ func (s *speed) sendRequest(url string, data interface{}, timeout int) (*respons
 	}
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("错误：请求地址", url, "请求参数", s.toJson(data), "结果", string(bytes))
+		log.Println("请求毫秒数", reqTime, "错误：请求地址", reqTime, "请求参数", s.toJson(data), "结果", string(bytes))
 		return nil, err
 	}
 	body := str.NewStringTool(string(bytes)).ConvertToString("gbk", "utf-8")
 	var res *response
 	err = json.Unmarshal([]byte(body), &res)
-	log.Println("请求地址", url, "请求参数", s.toJson(data), "结果", body)
+	log.Println("请求毫秒数", reqTime, "请求地址", url, "请求参数", s.toJson(data), "结果", body)
 	if err != nil {
 		return nil, err
 	}

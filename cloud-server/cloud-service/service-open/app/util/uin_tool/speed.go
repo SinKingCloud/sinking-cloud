@@ -266,12 +266,6 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 					isCheck = status.IQQSportStep != "1"
 				}
 				break
-			case MobileClock:
-				isCheck = status.IDailySign != "1"
-				break
-			case ZoneClock:
-				isCheck = status.IQzoneState != "1"
-				break
 			}
 			if isCheck {
 				speedJobs = append(speedJobs, v)

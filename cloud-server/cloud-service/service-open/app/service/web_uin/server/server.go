@@ -43,20 +43,23 @@ func (s *service) ServerIsLock(key string) bool {
 	return util.Cache.IsLock(constant.LockUinServer + key)
 }
 
-// ServerWaitLock 判断服务器是否上锁,上锁的话阻塞任务执行,5s一个判断周期
-func (s *service) ServerWaitLock(key string) {
+// ServerWaitLock 判断服务器是否上锁,上锁的话阻塞任务执行,5s一个判断周期 是否可以继续执行
+func (s *service) ServerWaitLock(key string) bool {
+	res := false
 	i := 0
 	for true {
-		if i >= 120 {
+		if i >= 720 {
 			break
 		}
 		if util.Cache.IsLock(constant.LockUinServer + key) {
 			i++
 			time.Sleep(5 * time.Second)
 		} else {
+			res = true
 			break
 		}
 	}
+	return res
 }
 
 // ServerInc 自增
