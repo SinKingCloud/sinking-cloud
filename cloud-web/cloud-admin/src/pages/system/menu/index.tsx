@@ -320,7 +320,7 @@ export default (): React.ReactNode => {
       </Modal>
       <ProTable
         defaultSize={"small"}
-        form={{layout: "vertical"}}
+        form={{layout: "vertical",autoFocusFirstInput: false}}
         headerTitle={'菜单管理'}
         actionRef={actionRef}
         rowKey={'id'}

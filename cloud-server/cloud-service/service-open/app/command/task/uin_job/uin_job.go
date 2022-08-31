@@ -37,28 +37,29 @@ func test() {
 			//执行挂机任务
 			uin := param.(*model.AppUin)
 			if uin != nil {
-				producer.NewUinJobProducer().Build(uin).Send()
-				//server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
-				//if err == nil && server != nil {
-				//	//if server.Addr == "150.138.79.144:3456" {
-				//	//	s := uin_tool.NewUinTool(server.Addr, server.Proxy)
-				//	//	fmt.Println(s.Cookies(uin.Uin, "ti.qq.com"))
-				//	//	fmt.Println(s.Cookies(uin.Uin, "qzone.qq.com"))
-				//	//}
-				//	//s := uin_tool.NewUinTool(server.Addr, server.Proxy)
-				//	//jobs := []int{uin_tool.Pc}
-				//	//s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, jobs, false)
-				//	//fun := func() {
-				//	//	for true {
-				//	//		login, _, _, _ := s.Login(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, "")
-				//	//		if login != uin_tool.Success {
-				//	//			return
-				//	//		}
-				//	//	}
-				//	//}
-				//	//go fun()
-				//	//go fun()
-				//}
+				//producer.NewUinJobProducer().Build(uin).Send()
+				server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
+				if err == nil && server != nil {
+					if server.Addr == "150.138.79.144:3456" {
+						//s := uin_tool.NewUinTool(server.Addr, server.Proxy)
+						//fmt.Println(s.Cookies(uin.Uin, "ti.qq.com"))
+						//fmt.Println(s.Cookies(uin.Uin, "qzone.qq.com"))
+						producer.NewUinJobProducer().Build(uin).Send()
+					}
+					//s := uin_tool.NewUinTool(server.Addr, server.Proxy)
+					//jobs := []int{uin_tool.Pc}
+					//s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, jobs, false)
+					//fun := func() {
+					//	for true {
+					//		login, _, _, _ := s.Login(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, "")
+					//		if login != uin_tool.Success {
+					//			return
+					//		}
+					//	}
+					//}
+					//go fun()
+					//go fun()
+				}
 			}
 		}
 	}, Thread: 50}).Run()

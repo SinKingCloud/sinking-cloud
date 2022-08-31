@@ -107,6 +107,7 @@ type captcha struct {
 	Content string `json:"fromContent"`
 }
 
+// getQrCode 获取设备锁二维码
 func (s *speed) getQrCode(verifyUrl string) string {
 	if !strings.Contains(verifyUrl, "uin=") || !strings.Contains(verifyUrl, "&sig=") {
 		return ""

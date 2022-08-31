@@ -168,7 +168,7 @@ export default (): React.ReactNode => {
       </Modal>
       <ProTable
         defaultSize={"small"}
-        form={{layout: "vertical"}}
+        form={{layout: "vertical",autoFocusFirstInput: false}}
         headerTitle={'请求日志'}
         actionRef={actionRef}
         formRef={ref}

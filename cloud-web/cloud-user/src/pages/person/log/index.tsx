@@ -104,7 +104,7 @@ export default (): React.ReactNode => {
     <PageContainer title={false}>
       <ProTable
         defaultSize={"small"}
-        form={{layout: "vertical"}}
+        form={{layout: "vertical",autoFocusFirstInput: false}}
         headerTitle={'操作日志'}
         actionRef={actionRef}
         formRef={ref}

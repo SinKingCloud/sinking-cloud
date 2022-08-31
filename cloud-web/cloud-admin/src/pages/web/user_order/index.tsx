@@ -271,7 +271,7 @@ export default (): React.ReactNode => {
       </Modal>
       <ProTable
         defaultSize={"small"}
-        form={{layout: "vertical"}}
+        form={{layout: "vertical",autoFocusFirstInput: false}}
         headerTitle={'订单记录'}
         actionRef={actionRef}
         formRef={ref}

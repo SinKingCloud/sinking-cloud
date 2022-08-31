@@ -403,7 +403,7 @@ export default (): React.ReactNode => {
            }}/>
       <ProTable
         defaultSize={"small"}
-        form={{layout: "vertical"}}
+        form={{layout: "vertical", autoFocusFirstInput: false}}
         headerTitle={'挂机列表'}
         actionRef={actionRef}
         formRef={ref}

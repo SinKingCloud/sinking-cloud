@@ -118,9 +118,9 @@ type speedJob struct {
 }
 
 func (s *speed) speedByPc(uin *speedJob) {
+	pcServerLock.Lock()
 	if pcServers[s.addr] == nil {
 		//构建其他项目消费协程
-		pcServerLock.Lock()
 		g := &sync.WaitGroup{}
 		g.Add(1)
 		go (&job.Task{Producer: func(channel chan interface{}) {
@@ -198,8 +198,8 @@ func (s *speed) speedByPc(uin *speedJob) {
 			}
 		}, Thread: 5}).Run()
 		g.Wait()
-		pcServerLock.Unlock()
 	}
+	pcServerLock.Unlock()
 	//按照服务分发至不同协程执行
 	pcServers[s.addr] <- uin
 }

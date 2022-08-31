@@ -68,18 +68,21 @@ func (l *uinJob) run(uin *model.AppUin) {
 	if err != nil || server == nil {
 		return
 	}
-	if serverIds[uin.ServerId] == nil || serverIds[uin.ServerId].Status != server.Status || serverIds[uin.ServerId].Proxy != server.Proxy {
+	serverIdLock.Lock()
+	tempServer := serverIds[uin.ServerId]
+	serverIdLock.Unlock()
+	if tempServer == nil || tempServer.Status != server.Status || tempServer.Proxy != server.Proxy {
 		serverIdLock.Lock()
 		serverIds[uin.ServerId] = server
 		serverIdLock.Unlock()
 	}
-	if serverIds[uin.ServerId].Status != server2.Normal {
+	if tempServer.Status != server2.Normal {
 		serverIdLock.Lock()
 		serverIds[uin.ServerId].Proxy = ""
 		serverIdLock.Unlock()
 	}
+	serverLock.Lock()
 	if servers[server.Addr] == nil {
-		serverLock.Lock()
 		//构建消费协程
 		g := &sync.WaitGroup{}
 		g.Add(1)
@@ -97,15 +100,17 @@ func (l *uinJob) run(uin *model.AppUin) {
 			}
 		}, Thread: 100}).Run()
 		g.Wait()
-		serverLock.Unlock()
 	}
+	serverLock.Unlock()
 	//按照服务分发至不同协程执行
 	servers[server.Addr] <- uin
 }
 
 // speed 执行挂机任务
 func speed(uin *model.AppUin) {
+	serverIdLock.Lock()
 	server := serverIds[uin.ServerId]
+	serverIdLock.Unlock()
 	if server == nil {
 		return
 	}

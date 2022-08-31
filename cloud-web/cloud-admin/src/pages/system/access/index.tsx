@@ -334,7 +334,7 @@ export default (): React.ReactNode => {
         // @ts-ignore
         columns={columns}
         defaultSize={"small"}
-        form={{layout: "vertical"}}
+        form={{layout: "vertical",autoFocusFirstInput: false}}
         headerTitle={'接口列表'}
         actionRef={actionRef}
         formRef={ref}

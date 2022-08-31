@@ -266,7 +266,7 @@ export default (): React.ReactNode => {
           <ProTable
             actionRef={ref}
             defaultSize={"small"}
-            form={{layout: "vertical"}}
+            form={{layout: "vertical",autoFocusFirstInput: false}}
             headerTitle={'充值记录'}
             rowKey={'id'}
             options={{
