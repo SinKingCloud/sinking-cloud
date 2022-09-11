@@ -2,6 +2,7 @@ package sinking
 
 import (
 	"encoding/json"
+	"errors"
 	queue3 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/queue"
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
@@ -66,4 +67,13 @@ func (l *webSocketProducer) Send() {
 		l.run()
 	}
 	webSocketProducerTask <- l.msg
+}
+
+// Auth 授权token
+func (l *webSocketProducer) Auth(token string) error {
+	//颁发一个token
+	if util.Cache.SetWithExpire(util2.CacheNameWebSocketAuth+token, token, util2.CacheTimeWebSocketAuth) {
+		return nil
+	}
+	return errors.New("授权token失败")
 }

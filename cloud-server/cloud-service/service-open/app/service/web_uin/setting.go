@@ -103,10 +103,23 @@ func ChangePassword(uinId int, pwd string) error {
 				Content: "修改挂机密码",
 			})
 		}()
-		_ = ServerUinCreate(uinInfo.ServerId, uinInfo.Uin, pwd, uinInfo.Phone, uinInfo.PhoneArea, 0)
-		err = uin.GetIns().UpdateById(uinInfo.Id, data)
-		if err != nil {
-			return errors.New("更改挂机密码失败")
+		r := false
+		for i := 0; i <= 5; i++ {
+			e := ServerUinCreate(uinInfo.ServerId, uinInfo.Uin, pwd, uinInfo.Phone, uinInfo.PhoneArea, 0)
+			if e == nil {
+				r = true
+				break
+			} else {
+				time.Sleep(500 * time.Millisecond)
+			}
+		}
+		if r {
+			err = uin.GetIns().UpdateById(uinInfo.Id, data)
+			if err != nil {
+				return errors.New("更改挂机密码失败")
+			}
+		} else {
+			return errors.New("更改挂机密码失败,请稍后重试")
 		}
 	}
 	return nil
@@ -135,10 +148,23 @@ func ChangePhone(uinId int, phone string, phoneArea string) error {
 				Content: "修改挂机手机",
 			})
 		}()
-		_ = ServerUinCreate(uinInfo.ServerId, uinInfo.Uin, uinInfo.Password, phone, phoneArea, 1)
-		err = uin.GetIns().UpdateById(uinInfo.Id, data)
-		if err != nil {
-			return errors.New("更改挂机手机失败")
+		r := false
+		for i := 0; i <= 5; i++ {
+			e := ServerUinCreate(uinInfo.ServerId, uinInfo.Uin, uinInfo.Password, phone, phoneArea, 1)
+			if e == nil {
+				r = true
+				break
+			} else {
+				time.Sleep(500 * time.Millisecond)
+			}
+		}
+		if r {
+			err = uin.GetIns().UpdateById(uinInfo.Id, data)
+			if err != nil {
+				return errors.New("更改挂机手机失败")
+			}
+		} else {
+			return errors.New("更改挂机手机失败,请稍后重试")
 		}
 	}
 	return nil

@@ -14,7 +14,6 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"gorm.io/gorm"
 	"log"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -37,14 +36,17 @@ func test() {
 			//执行挂机任务
 			uin := param.(*model.AppUin)
 			if uin != nil {
+				//fmt.Println(uin)
 				//producer.NewUinJobProducer().Build(uin).Send()
 				server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
 				if err == nil && server != nil {
-					if server.Addr == "150.138.79.144:3456" {
+					if server.Addr == "150.138.83.146:3456" {
 						//s := uin_tool.NewUinTool(server.Addr, server.Proxy)
 						//fmt.Println(s.Cookies(uin.Uin, "ti.qq.com"))
 						//fmt.Println(s.Cookies(uin.Uin, "qzone.qq.com"))
 						producer.NewUinJobProducer().Build(uin).Send()
+						//jobs := []int{uin_tool.Welfare}
+						//s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, jobs, false)
 					}
 					//s := uin_tool.NewUinTool(server.Addr, server.Proxy)
 					//jobs := []int{uin_tool.Pc}
@@ -200,6 +202,19 @@ func test2() {
 
 // player 轮询挂机
 func player() {
+	ch1 := make(chan interface{})
+	go (&job.Task{Producer: func(channel chan interface{}) {
+		ch1 = channel
+	}, Consumer: func(param interface{}) {
+		send(param.(int64))
+	}, Thread: 1}).Run()
+	ch2 := make(chan interface{})
+	go (&job.Task{Producer: func(channel chan interface{}) {
+		ch2 = channel
+	}, Consumer: func(param interface{}) {
+		check(param.(time.Time))
+	}, Thread: 1}).Run()
+	time.Sleep(1 * time.Second)
 	oldMinute := (time.Now().Unix() - str.NewTimeTool().GetZeroTime(time.Now()).Unix()) / 60 //1分钟检测一次
 	for {
 		sinking_web.Try(func() {
@@ -209,8 +224,8 @@ func player() {
 			minute := (nowTime.Unix() - zeroTime.Unix()) / 60
 			if oldMinute != minute {
 				oldMinute = minute
-				go send(minute)                                             //执行挂机任务
-				go check(zeroTime.Add(time.Minute * time.Duration(minute))) //执行检测任务
+				ch1 <- minute                                            //执行挂机任务
+				ch2 <- zeroTime.Add(time.Minute * time.Duration(minute)) //执行检测任务
 			}
 			time.Sleep(5 * time.Second)
 		}, func(i interface{}) {
@@ -222,7 +237,7 @@ func player() {
 // send 发送任务至队列
 func send(minute int64) {
 	sinking_web.Try(func() {
-		lock := constant.LockUinJob + strconv.Itoa(int(minute))
+		lock := constant.LockUinJob
 		//查询当前时间需要代挂的QQ
 		for {
 			if util.Cache.Lock(lock, constant.LockTimeUinJob) {
@@ -255,7 +270,7 @@ func send(minute int64) {
 								}
 								ids = append(ids, v1.Id)
 								//取出一个正常qq
-								if v1.Status == uin2.Normal && v1.UinStatus == 0 && speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
+								if v1.Status == uin2.Normal && v1.UinStatus == uin2.Normal && speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
 									speedUin = v1
 								}
 							}
@@ -265,7 +280,8 @@ func send(minute int64) {
 							//避免同一查询有重复
 							seeded[speedUin.Uin] = true
 							//发布至消息队列
-							producer.NewUinJobProducer().Build(v).Send()
+							producer.NewUinJobProducer().Build(speedUin).Send()
+							log.Println("发送挂机任务", speedUin.Uin)
 						}
 					}
 					//更改等级挂机天数
@@ -306,17 +322,36 @@ func check(t time.Time) {
 	start := t.Format("2006-01-02 15:04:05")
 	end := t.Add(time.Second * 59).Format("2006-01-02 15:04:05")
 	sinking_web.Try(func() {
-		lock := constant.LockUinCheckJob + start
+		lock := constant.LockUinCheckJob
 		//查询当前时间需要补挂的QQ
 		for {
 			if util.Cache.Lock(lock, constant.LockTimeUinCheckJob) {
 				list, err := uin2.GetIns().SelectUinCheckJob(1000, start, end)
 				if err == nil && len(list) > 0 {
-					var ids []int
+					var ids []int //需要更改得ids
+					//避免重复挂机
+					seeded := make(map[string]bool)
 					for _, v := range list {
+						var speedUin *model.AppUin
+						//查询重复QQ计费
+						uinList, err1 := uin2.GetIns().SelectByUin(v.Uin)
+						if err1 == nil && len(uinList) > 0 {
+							for _, v1 := range uinList {
+								ids = append(ids, v1.Id)
+								//取出一个正常qq
+								if v1.Status == uin2.Normal && v1.UinStatus == uin2.Normal && speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
+									speedUin = v1
+								}
+							}
+						}
 						//发布到消息队列执行
-						producer.NewUinJobProducer().Build(v).Send()
-						ids = append(ids, v.Id)
+						if speedUin != nil && seeded[speedUin.Uin] == false {
+							//避免同一查询有重复
+							seeded[speedUin.Uin] = true
+							//发布至消息队列
+							producer.NewUinJobProducer().Build(speedUin).Send()
+							log.Println("发送补挂任务", speedUin.Uin)
+						}
 					}
 					//更改代挂状态
 					if len(ids) > 0 {

@@ -4,10 +4,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/jwt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-go/sinking-websocket"
-	"strconv"
 	"time"
 )
 
@@ -17,17 +15,15 @@ var Connection *sinking_websocket.WebSocketConnections
 func Handler(c *sinking_server.Context) {
 	//获取token
 	token := c.Request.Header.Get("Sec-WebSocket-Protocol")
-	if token == "" {
-		c.NotLogin("您还未登陆,请先登陆账户", nil)
+	if token == "" || len(token) != 32 {
+		c.NotLogin("token验证失败", nil)
 		return
 	}
-	key := jwt.CheckToken(token)
-	if key == nil || key.WebUser == nil || time.Now().Unix() > key.ExpiresAt {
-		c.TokenError("登陆超时,请重新登陆", nil)
+	id, exists := util.Cache.Get(util2.CacheNameWebSocketAuth + token) //获取token信息
+	if !exists {
+		c.NotLogin("token鉴权失败", nil)
 		return
 	}
-	//获取uid
-	id := strconv.Itoa(key.WebUser.Id)
 	//ws推送业务
 	wsServer := sinking_websocket.WebSocket{
 		OnError: func(err error) {

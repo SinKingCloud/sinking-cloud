@@ -56,6 +56,11 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
     const cap_cd = obj["cap_cd"];
     // @ts-ignore
     sinking.setAid(16).setData(initUin, sid, cap_cd).init(function (t: any) {
+      if ((t?.ticket || "") == "" || (t?.randstr || "") == "") {
+        setConfirmLoading(false);
+        message.warn("请完成滑块验证");
+        return;
+      }
       //验证成功
       uinLogin({uin: initUin, step: "captcha", ticket: t?.ticket || "ticket", login_type: "pwd"}).then((r) => {
         loginHandle(r);
@@ -103,7 +108,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
           });
         } else {
           setIsSmsConfirmLoading(false);
-          message.warn("请完成滑块验证")
+          message.warn("请完成滑块验证");
         }
       });
     }
@@ -207,13 +212,24 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
   const onFinish = async (values: any) => {
     if (step == "normal") {
       setConfirmLoading(true);
+      let body;
+      let change;
       if (values.login_type == "pwd") {
         if ((values.pwd?.length || 0) > 5) {
-          await changeUinPassword({uin: initUin, pwd: CryptoJS.MD5(values.pwd).toString()})
+          body = {uin: initUin, pwd: CryptoJS.MD5(values.pwd).toString()};
+          change = changeUinPassword;
         }
       } else if (values.login_type == "phone") {
         if ((values.phone?.length || 0) >= 5) {
-          await changeUinPhone({uin: initUin, phone: values.phone, phone_area: values?.phone_area || ""})
+          body = {uin: initUin, phone: values.phone, phone_area: values?.phone_area || ""};
+          change = changeUinPhone;
+        }
+      }
+      if (change != undefined && body != undefined) {
+        const rep = await change(body);
+        if (rep?.code != 200) {
+          loginHandle(rep);
+          return;
         }
       }
       //发起登陆请求
@@ -223,6 +239,11 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
         scrollBy(0, -top);
         // @ts-ignore
         sinking.setAid(2081081773).init(function (t: any) {
+          if ((t?.ticket || "") == "" || (t?.randstr || "") == "") {
+            setConfirmLoading(false);
+            message.warn("请完成滑块验证");
+            return;
+          }
           //验证成功
           uinLogin({
             uin: initUin,

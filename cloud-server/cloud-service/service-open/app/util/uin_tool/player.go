@@ -130,10 +130,11 @@ func (s *speed) medalSpeed(uin string) bool {
 }
 
 // zoneClockSpeed 空间打卡加速
-func (s *speed) zoneClockSpeed(uin string) bool {
+func (s *speed) zoneClockSpeed(uin string, code string) bool {
 	url := "/?&type=Android/&pe=qzone/"
 	data := map[string]string{
-		"Uin": uin,
+		"Uin":  uin,
+		"code": code,
 	}
 	res, err := s.sendRequest(url, data, -1)
 	if err != nil {
@@ -366,6 +367,9 @@ func (s *speed) GetCpu() int {
 				return
 			}
 		}(resp.Body)
+	}
+	if err != nil {
+		return -1
 	}
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

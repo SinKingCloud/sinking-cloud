@@ -74,7 +74,7 @@ const (
 	Zone               //3.访客加速
 	Medal              //4.勋章墙加速
 	Ws                 //5.微视加速
-	MicroShow          //6.厘米秀加速
+	Word               //7.小世界加速
 	Safe               //7.管家加速
 	Game               //8.游戏加速
 	Sport              //9.运动加速
@@ -82,7 +82,6 @@ const (
 	ZoneClock          //11.空间打卡
 	Login              //12.连续登陆加速
 	Friend             //13.加好友加速
-	Word               //14.小世界加速
 
 	Vip        //14.会员签到
 	BigVip     //15.大会员签到
@@ -105,6 +104,9 @@ func (s *speed) Status(uin string) (*SpeedStatus, error, bool, bool) {
 var (
 	pcServers    = make(map[string]chan interface{}) //PC服务器列表
 	pcServerLock = &sync.Mutex{}                     //PC并发锁
+
+	//welfareMap     []*WelfareUser  //待组队加速QQ列表
+	//welfareMapLock = &sync.Mutex{} //组队加速锁
 )
 
 type speedJob struct {
@@ -214,6 +216,7 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 		if !mobileLogin {
 			c, _, _, _ := s.login(uin.Uin, "")
 			if c == EnvError {
+				time.Sleep(5 * time.Second)
 				c, _, _, _ = s.login(uin.Uin, "")
 			} else if c == Error {
 				serverError = true
@@ -257,9 +260,6 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 		for _, v := range jobs {
 			isCheck := false
 			switch v {
-			case MicroShow:
-				isCheck = status.ICmshowActive != "1"
-				break
 			case Sport:
 				isCheck = false
 				if time.Now().Day() <= 8 {
@@ -307,11 +307,6 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 					return s.wsSpeed(uin.Uin)
 				})
 				break
-			case MicroShow:
-				res[MicroShow] = speedA(func() bool {
-					return s.microShowSpeed(uin.Uin)
-				})
-				break
 			case Word:
 				res[Word] = speedA(func() bool {
 					return s.wordSpeed(uin.Uin)
@@ -343,7 +338,13 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 				break
 			case ZoneClock:
 				res[ZoneClock] = speedA(func() bool {
-					return s.zoneClockSpeed(uin.Uin)
+					if s.zoneClockSpeed(uin.Uin, "1") {
+						if !s.zoneClockSpeed(uin.Uin, "2") {
+							return s.zoneClockSpeed(uin.Uin, "3")
+						}
+						return true
+					}
+					return false
 				})
 				break
 			case Friend:

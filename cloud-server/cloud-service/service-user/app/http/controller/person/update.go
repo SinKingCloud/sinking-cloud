@@ -101,6 +101,11 @@ func (ControllerPerson) Phone(c *sinking_server.Context) {
 		c.Error("短信验证码校验失败")
 		return
 	}
+	tempUser, _ := user.GetIns().FindByPhone(form.Phone)
+	if tempUser != nil {
+		c.Error("该手机号已被他人占用")
+		return
+	}
 	if err := user.GetIns().UpdateById(c.GetWebUserInfo().Id,
 		map[string]interface{}{"phone": form.Phone}); err == nil {
 		log.GetIns().CreateByQueue(c, log.EventEdit, "修改手机", "修改绑定手机")

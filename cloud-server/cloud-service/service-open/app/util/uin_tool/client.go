@@ -103,16 +103,16 @@ type speedStatus struct {
 
 // SpeedStatus 任务状态
 type SpeedStatus struct {
-	Lxby                string `json:"Lxby"`
-	QzoneVisitor        string `json:"QzoneVisitor"` //访客加速
-	SVIPStar            string `json:"SVIPStar"`
-	WeishiVideoview     string `json:"WeishiVideoview"` //微视加速
-	IAddFriend          string `json:"iAddFriend"`      //加好友加速
-	IBaseDays           string `json:"iBaseDays"`       //基础服务加速
-	IBigClubGrowth      string `json:"iBigClubGrowth"`
-	IBigClubLevel       string `json:"iBigClubLevel"`
-	IBigClubSpeed       string `json:"iBigClubSpeed"`
-	IBigClubVipFlag     string `json:"iBigClubVipFlag"`
+	Lxby                string `json:"Lxby"`                //连续包月加速
+	QzoneVisitor        string `json:"QzoneVisitor"`        //访客加速
+	SVIPStar            string `json:"SVIPStar"`            //svip star加速
+	WeishiVideoview     string `json:"WeishiVideoview"`     //微视加速
+	IAddFriend          string `json:"iAddFriend"`          //加好友加速
+	IBaseDays           string `json:"iBaseDays"`           //基础服务加速
+	IBigClubGrowth      string `json:"iBigClubGrowth"`      //大会员成长值
+	IBigClubLevel       string `json:"iBigClubLevel"`       //大会员等级
+	IBigClubSpeed       string `json:"iBigClubSpeed"`       //大会员成长速度
+	IBigClubVipFlag     string `json:"iBigClubVipFlag"`     //是否开通大会员
 	ICmshowActive       string `json:"iCmshowActive"`       //厘米秀加速
 	IContinueLogin      string `json:"iContinueLogin"`      //连续登陆加速
 	ICostMs             string `json:"iCostMs"`             //本次请求毫秒数
@@ -140,15 +140,15 @@ type SpeedStatus struct {
 	ISqq                string `json:"iSqq"`
 	ISqqLevel           string `json:"iSqqLevel"`
 	ISqqSpeedRate       string `json:"iSqqSpeedRate"`
-	ISvrDays            string `json:"iSvrDays"`        //服务加速
-	ITotalActiveDay     string `json:"iTotalActiveDay"` //QQ活跃天数
-	ITotalDays          string `json:"iTotalDays"`      //QQ最大活跃天数
-	IVip                string `json:"iVip"`            //是否为会员
-	IVipLevel           string `json:"iVipLevel"`       //会员等级
-	IVipSpeedRate       string `json:"iVipSpeedRate"`   //会员成长值速度
-	IYearBigClubFlag    string `json:"iYearBigClubFlag"`
-	IYearVip            string `json:"iYearVip"`  //是否为年费会员
-	SFaceUrl            string `json:"sFaceUrl"`  //头像地址
-	SNickName           string `json:"sNickName"` //昵称
-	SpeedStar           string `json:"speedStar"` //是否开通加速星
+	ISvrDays            string `json:"iSvrDays"`         //服务加速
+	ITotalActiveDay     string `json:"iTotalActiveDay"`  //QQ活跃天数
+	ITotalDays          string `json:"iTotalDays"`       //QQ今日活跃天数
+	IVip                string `json:"iVip"`             //是否为会员
+	IVipLevel           string `json:"iVipLevel"`        //会员等级
+	IVipSpeedRate       string `json:"iVipSpeedRate"`    //会员成长值速度
+	IYearBigClubFlag    string `json:"iYearBigClubFlag"` //是否为年费大会员
+	IYearVip            string `json:"iYearVip"`         //是否为年费会员
+	SFaceUrl            string `json:"sFaceUrl"`         //头像地址
+	SNickName           string `json:"sNickName"`        //昵称
+	SpeedStar           string `json:"speedStar"`        //是否开通加速星
 }

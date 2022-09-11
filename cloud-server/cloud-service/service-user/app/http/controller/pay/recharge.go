@@ -13,7 +13,7 @@ import (
 func (ControllerPay) Recharge(c *sinking_server.Context) {
 	type Form struct {
 		Money int `json:"money" default:"" validate:"min=1,max=99999" label:"充值金额"`
-		Type  int `json:"type" default:"" validate:"oneof=0 1" label:"充值方式"`
+		Type  int `json:"type" default:"" validate:"oneof=0" label:"充值方式"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorJson(form); !ok {
@@ -31,11 +31,11 @@ func (ControllerPay) Recharge(c *sinking_server.Context) {
 	err := order.GetIns().Create(&model.WebUserOrder{
 		UserId:    c.GetWebUserInfo().Id,
 		PayType:   form.Type,
-		OrderType: 0,
+		OrderType: order.OrdersTypeRecharge,
 		Money:     float64(form.Money),
 		TradeNo:   tradeNo,
 		Name:      "账户余额充值",
-		Status:    0,
+		Status:    order.StatusUnPay,
 	})
 	if err == nil {
 		c.SuccessWithData("创建订单成功", tradeNo)

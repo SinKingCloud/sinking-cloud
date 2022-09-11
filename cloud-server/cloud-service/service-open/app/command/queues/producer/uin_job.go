@@ -35,6 +35,10 @@ func (l *uinJob) Build(d *model.AppUin) *uinJob {
 func (l *uinJob) run() {
 	go func(tasks chan *model.AppUin) {
 		for task := range tasks {
+			//最大锁定两小时
+			if !util.Cache.Lock(constant.LockUinJob+task.Uin, constant.LockTimeUinJob*12) {
+				continue
+			}
 			bytes, err := json.Marshal(task)
 			if err != nil {
 				continue

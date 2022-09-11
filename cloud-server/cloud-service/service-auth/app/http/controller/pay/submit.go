@@ -18,7 +18,7 @@ func (p ControllerPay) Submit(c *sinking_server.Context) {
 		return
 	}
 	userOrder, err := order.GetIns().FindByTradeNo(form.TradeNo)
-	if err != nil || userOrder == nil || userOrder.Status != 0 {
+	if err != nil || userOrder == nil || userOrder.Status != order.StatusUnPay {
 		c.Error("未查询到有效订单")
 		return
 	}
@@ -26,7 +26,7 @@ func (p ControllerPay) Submit(c *sinking_server.Context) {
 	var url string
 	var err2 error
 	switch userOrder.PayType {
-	case 0:
+	case order.PayTypeAliPay:
 		url, err2 = p.Alipay(userOrder.TradeNo, fmt.Sprintf("%.2f", userOrder.Money), userOrder.Name)
 		break
 	default:

@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 		err := json.Unmarshal(mqMsg.Body, s)
 		if err == nil {
 			l.run(s)
-			//fmt.Println(s)
+			util.Cache.UnLock(constant.LockUinJob + s.Uin)
 		}
 	})
 	if err != nil {
@@ -65,22 +65,14 @@ func (l *uinJob) run(uin *model.AppUin) {
 	}
 	//获取挂机服务器信息
 	server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
-	if err != nil || server == nil {
+	if err != nil || server == nil || server.Status != server2.Normal {
 		return
 	}
 	serverIdLock.Lock()
-	tempServer := serverIds[uin.ServerId]
-	serverIdLock.Unlock()
-	if tempServer == nil || tempServer.Status != server.Status || tempServer.Proxy != server.Proxy {
-		serverIdLock.Lock()
+	if serverIds[uin.ServerId] == nil || serverIds[uin.ServerId].Status != server.Status || serverIds[uin.ServerId].Proxy != server.Proxy {
 		serverIds[uin.ServerId] = server
-		serverIdLock.Unlock()
 	}
-	if tempServer.Status != server2.Normal {
-		serverIdLock.Lock()
-		serverIds[uin.ServerId].Proxy = ""
-		serverIdLock.Unlock()
-	}
+	serverIdLock.Unlock()
 	serverLock.Lock()
 	if servers[server.Addr] == nil {
 		//构建消费协程
@@ -98,7 +90,7 @@ func (l *uinJob) run(uin *model.AppUin) {
 					util.Log.Println(param, i)
 				})
 			}
-		}, Thread: 100}).Run()
+		}, Thread: 150}).Run()
 		g.Wait()
 	}
 	serverLock.Unlock()
@@ -186,7 +178,6 @@ func speed(uin *model.AppUin) {
 			data["uin_status"] = 1 //设置异常状态
 		} else {
 			data["uin_status"] = 0 //设置正常状态
-
 		}
 	}
 	_ = uin2.GetIns().UpdateByUin(uin.Uin, data)
@@ -218,6 +209,7 @@ func checkJob(server *model.AppUinServer, uin *model.AppUin, speedCheckJobs []in
 	}
 	//判断加速项目并加速
 	var speedJobs []int
+	pc := false
 	for _, v := range speedCheckJobs {
 		isCheck := false
 		switch v {
@@ -236,7 +228,10 @@ func checkJob(server *model.AppUinServer, uin *model.AppUin, speedCheckJobs []in
 				continue
 			}
 			isCheck = status.IPCQQOnline != "1"
-			if !isCheck && lower {
+			if isCheck && !pc {
+				pc = true
+			}
+			if !isCheck && status.INoHideOnline == "1" && lower {
 				//下线PC
 				s.PcOffline(uin.Uin)
 			}
@@ -246,10 +241,15 @@ func checkJob(server *model.AppUinServer, uin *model.AppUin, speedCheckJobs []in
 				continue
 			}
 			isCheck = status.INoHideOnline != "1"
+			if isCheck && !pc {
+				pc = true
+				v = uin_tool.Pc
+			}
 			break
 		case uin_tool.Medal:
 			isCheck = status.IMedal != "1"
-			if isCheck {
+			if isCheck && !pc {
+				pc = true
 				v = uin_tool.Pc
 			}
 			break
@@ -261,9 +261,6 @@ func checkJob(server *model.AppUinServer, uin *model.AppUin, speedCheckJobs []in
 			break
 		case uin_tool.Ws:
 			isCheck = status.WeishiVideoview != "1"
-			break
-		case uin_tool.MicroShow:
-			isCheck = status.ICmshowActive != "1"
 			break
 		case uin_tool.Word:
 			isCheck = status.ISmallWorld != "1"
@@ -278,7 +275,6 @@ func checkJob(server *model.AppUinServer, uin *model.AppUin, speedCheckJobs []in
 			isCheck = status.IMobileGameOnline != "1"
 			break
 		case uin_tool.Sport:
-			isCheck = false
 			if time.Now().Day() <= 8 {
 				isCheck = status.IQQSportStep != "1"
 			}

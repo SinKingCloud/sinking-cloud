@@ -131,8 +131,13 @@ func (ControllerUin) Buy(c *sinking_server.Context) {
 			form.AppId = appInfo.Id
 		}
 	}
+	u := c.GetWebUserInfo()
+	//if u.RealAuth != service.WebUserRealAuthed {
+	//	c.Error("请先完成实名认证")
+	//	return
+	//}
 	//下单
-	err = web_uin.Buy(c.GetWebUserInfo().Id, form.AppId, form.ServerKey, form.Uin, form.Pwd, form.Type, form.Month, true)
+	err = web_uin.Buy(u.Id, form.AppId, form.ServerKey, form.Uin, form.Pwd, form.Type, form.Month, true)
 	if err != nil {
 		c.Error(err.Error())
 	} else {
@@ -172,7 +177,7 @@ func (ControllerUin) ChangePassword(c *sinking_server.Context) {
 	if err == nil {
 		c.Success("更改挂机密码成功,请重新登录上线")
 	} else {
-		c.Error("更改挂机密码失败")
+		c.Error("更改挂机密码失败,请稍后重试")
 	}
 }
 
@@ -216,7 +221,7 @@ func (ControllerUin) ChangePhone(c *sinking_server.Context) {
 	if err == nil {
 		c.Success("更改挂机手机成功,请重新登录上线")
 	} else {
-		c.Error("更改挂机手机失败")
+		c.Error("更改挂机手机失败,请稍后重试")
 	}
 }
 
@@ -431,7 +436,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		verify = form.Ticket
 		break
 	case "qrcode":
-		verify = "123456"
+		verify = ""
 		time.Sleep(2 * time.Second)
 		break
 	case "sms":
@@ -445,6 +450,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	if form.Step != "normal" {
 		code, e, data, loginUin = q.VerifyLogin(uinInfo.Uin, verify)
 		if form.Step == "qrcode" && (code == uin_tool.EnvError || code == uin_tool.NeedCode) {
+			time.Sleep(3 * time.Second)
 			code, e, data, loginUin = q.VerifyLogin(uinInfo.Uin, verify)
 			if code == uin_tool.EnvError {
 				code, e, data, loginUin = q.VerifyLogin(uinInfo.Uin, verify)

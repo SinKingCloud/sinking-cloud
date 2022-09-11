@@ -5,6 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/auth"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/captcha"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/rpc/log"
 )
 
 func (ControllerSystem) Login(c *sinking_server.Context) {
@@ -35,6 +36,6 @@ func (ControllerSystem) Login(c *sinking_server.Context) {
 		return
 	}
 	//写入登录日志
-	rpc.Log.CreateAdmin(user.Id, c.GetRequestId(), c.GetRequestIp(), 0, "账户登录", "账户登陆成功")
+	rpc.Log.CreateAdmin(user.Id, c.GetRequestId(), c.GetRequestIp(), log.AdminEventLogin, "账户登录", "账户登陆成功")
 	c.SuccessWithData("登陆成功", token)
 }

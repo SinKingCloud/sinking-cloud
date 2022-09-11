@@ -26,6 +26,7 @@ func GetWebUserInfoByPhone(phone string, code string) (u *model.WebUser, e error
 		if !util.Cache.Lock(key, constant.LockTimeWebUserReg) {
 			e = errors.New("系统繁忙,请稍后重试")
 		} else {
+			defer util.Cache.UnLock(key) //解锁
 			//创建用户
 			tempPhone, _ := strconv.ParseInt(phone, 10, 64)
 			e = util.Database.Db.Create(&model.WebUser{
@@ -34,7 +35,6 @@ func GetWebUserInfoByPhone(phone string, code string) (u *model.WebUser, e error
 				Money:    0,
 				Status:   0,
 			}).Error
-			util.Cache.UnLock(key) //解锁
 			if e != nil {
 				e = errors.New("注册账号失败")
 				return

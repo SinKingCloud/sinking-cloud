@@ -25,22 +25,11 @@ func Log() sinking_web.HandlerFunc {
 			return
 		}
 		//普通请求记录日志
-		getHeader := func(header http.Header) string {
-			temp := ""
-			for k, v := range header {
-				temp2 := ""
-				for _, v1 := range v {
-					temp2 += v1 + ";"
-				}
-				temp += k + ":" + temp2 + "\n"
-			}
-			return temp
-		}
-		requestTime := time.Now()                     //请求时间
-		method := c.Request.Method                    //请求方式
-		header := getHeader(c.Request.Header.Clone()) //请求头
-		requestId := c.GetRequestId()                 //请求id
-		requestIp := c.ClientIP(true)                 //请求ip
+		requestTime := time.Now()                           //请求时间
+		method := c.Request.Method                          //请求方式
+		header := getHeaderString(c.Request.Header.Clone()) //请求头
+		requestId := c.GetRequestId()                       //请求id
+		requestIp := c.ClientIP(true)                       //请求ip
 		if requestIp == "" {
 			requestIp = "localhost"
 		}
@@ -77,7 +66,6 @@ func Log() sinking_web.HandlerFunc {
 		if responseHeader.Get("Content-Type") == "application/json" {
 			responseBody = writer.body.String()
 		}
-
 		//拼接日志
 		log := &model.SystemLogRequest{
 			Id:             strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10),
@@ -89,7 +77,7 @@ func Log() sinking_web.HandlerFunc {
 			RequestBody:    string(body),
 			RequestTime:    str.DateTime(requestTime),
 			ResponseCode:   c.StatusCode,
-			ResponseHeader: getHeader(responseHeader),
+			ResponseHeader: getHeaderString(responseHeader),
 			ResponseBody:   responseBody,
 			ResponseTime:   int(time.Since(requestTime).Microseconds() / 1000),
 			GroupName:      c.GetString(constant.ServerGroupName),
@@ -110,4 +98,17 @@ type responseBodyWriter struct {
 func (r responseBodyWriter) Write(b []byte) (int, error) {
 	r.body.Write(b)
 	return r.ResponseWriter.Write(b)
+}
+
+// getHeaderString 获取header
+func getHeaderString(header http.Header) string {
+	temp := ""
+	for k, v := range header {
+		temp2 := ""
+		for _, v1 := range v {
+			temp2 += v1 + ";"
+		}
+		temp += k + ":" + temp2 + "\n"
+	}
+	return temp
 }

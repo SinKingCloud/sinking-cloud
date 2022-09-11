@@ -208,7 +208,7 @@ func (s *speed) login(uin string, code string) (int, error, string, string) {
 		return Error, errors.New("登陆失败"), "", ""
 	}
 	if state.Stype == "7" && state.HkUrl == "" {
-		return EnvError, errors.New("登陆环境异常"), "", ""
+		return EnvError, errors.New("登陆环境异常,请切换网络重试"), "", ""
 	}
 	if state.Stype == "7" && state.HkUrl != "" {
 		return NeedSendSms, errors.New("请验证安全手机"), state.HkUrl, ""

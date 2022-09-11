@@ -65,7 +65,7 @@ export default (): React.ReactNode => {
       >
         {configTrees.map((tab: any) => {
           return (<ProCard.TabPane key={tab?.id} tab={tab?.name}>
-            <ProForm key={"form" + tab?.id} onFinish={onFinish}>
+            <ProForm key={"form" + tab?.id} onFinish={onFinish} autoFocusFirstInput={false}>
               {tab?.children.map((configs: any) => {
                 let control;
                 const cons = (configs?.control || "").split("|");
