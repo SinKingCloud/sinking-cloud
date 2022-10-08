@@ -42,7 +42,7 @@ func (s *speed) sendRequest(url string, data interface{}, timeout int) (*respons
 	//构建发送请求
 	if url[0:4] != "http" {
 		arr := strings.Split(s.addr, ":")
-		url = "http://" + arr[0] + ":3456" + url
+		url = "http://" + arr[0] + ":3457" + url
 	}
 	startTime := time.Now().UnixMilli()
 	req, err := http.NewRequest("POST", url, strings.NewReader(s.toJson(data)))

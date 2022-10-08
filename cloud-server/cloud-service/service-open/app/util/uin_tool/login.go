@@ -227,3 +227,8 @@ func (s *speed) login(uin string, code string) (int, error, string, string) {
 	}
 	return Error, errors.New("未知状态"), "", ""
 }
+
+// checkLogin 判断是否登录
+func (s *speed) checkLogin(uin string) bool {
+	return uin == ""
+}

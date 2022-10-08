@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -260,15 +259,15 @@ func (s *speed) friendSpeed(uin string) bool {
 // wordSpeed 小世界加速
 func (s *speed) wordSpeed(uin string) bool {
 	url := "/?&type=Android/&pe=smallworld/"
-	pics := []string{
-		"http://worldtj.photo.store.qq.com/psc?/world/O0cFsaTfOlqjIAnYAvw8WkoTvari4*imstS0pam.nlFO3nT*a5oWOFC6I0VYe6knchD5ofMjYyO4Venpw4UXBolsEZluBcB8iaf1m0YEK4k!/b&bo=sASwBLAEsAQRHyg!&wm_text=QOeOi.iAgeWQiSA!",
-		"http://worldtj.photo.store.qq.com/psc?/world/O0cFsaTfOlqjIAnYAvw8WhOEdWLO4uOmOY3e9pvVhJd7TTTealNJpTehedk8dthSb.ghI2fcS61E7VNbvKrlPe9.FObzO2Qfk4iSm4BogmE!/b&bo=OAQ4BDgEOAQRHyg!&wm_text=QOeOi.iAgeWQiSA!",
-		"http://worldtj.photo.store.qq.com/psc?/world/O0cFsaTfOlqjIAnYAvw8WkoTvari4*imstS0pam.nlFiCyVnMuGDw5ljgTNla6ejjmfRP3f0H8ZNPOjXfHGhtBwlLuoUa1M9gYMH38YEpzY!/b&bo=OAQ4BDgEOAQRHyg!&wm_text=QOeOi.iAgeWQiSA!",
-	}
+	//pics := []string{
+	//	"http://worldtj.photo.store.qq.com/psc?/world/O0cFsaTfOlqjIAnYAvw8WkoTvari4*imstS0pam.nlFO3nT*a5oWOFC6I0VYe6knchD5ofMjYyO4Venpw4UXBolsEZluBcB8iaf1m0YEK4k!/b&bo=sASwBLAEsAQRHyg!&wm_text=QOeOi.iAgeWQiSA!",
+	//	"http://worldtj.photo.store.qq.com/psc?/world/O0cFsaTfOlqjIAnYAvw8WhOEdWLO4uOmOY3e9pvVhJd7TTTealNJpTehedk8dthSb.ghI2fcS61E7VNbvKrlPe9.FObzO2Qfk4iSm4BogmE!/b&bo=OAQ4BDgEOAQRHyg!&wm_text=QOeOi.iAgeWQiSA!",
+	//	"http://worldtj.photo.store.qq.com/psc?/world/O0cFsaTfOlqjIAnYAvw8WkoTvari4*imstS0pam.nlFiCyVnMuGDw5ljgTNla6ejjmfRP3f0H8ZNPOjXfHGhtBwlLuoUa1M9gYMH38YEpzY!/b&bo=OAQ4BDgEOAQRHyg!&wm_text=QOeOi.iAgeWQiSA!",
+	//}
 	data := map[string]string{
-		"Uin":     uin,
-		"picture": pics[rand.Intn(len(pics))],
-		"code":    s.RandNum(6),
+		"Uin": uin,
+		//"picture": pics[rand.Intn(len(pics))],
+		//"code":    s.RandNum(6),
 	}
 	res, err := s.sendRequest(url, data, -1)
 	if err != nil {

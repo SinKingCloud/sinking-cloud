@@ -41,6 +41,7 @@ func (l *uinJob) Listen() {
 		err := json.Unmarshal(mqMsg.Body, s)
 		if err == nil {
 			l.run(s)
+			//fmt.Println(s)
 			util.Cache.UnLock(constant.LockUinJob + s.Uin)
 		}
 	})
@@ -52,10 +53,10 @@ func (l *uinJob) Listen() {
 
 var (
 	servers    = make(map[string]chan interface{}) //服务器列表
-	serverLock = &sync.Mutex{}                     //并发锁
+	serverLock = &sync.RWMutex{}                   //并发锁
 
 	serverIds    = make(map[int]*model.AppUinServer) //服务器列表
-	serverIdLock = &sync.Mutex{}                     //并发锁
+	serverIdLock = &sync.RWMutex{}                   //并发锁
 )
 
 // run 执行任务
@@ -159,7 +160,7 @@ func speed(uin *model.AppUin) {
 		if isCheck {
 			//只允许9点前执行第三次挂机
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 && time.Now().Unix()-stamp.Unix() > 2*3600 {
-				data["check_time"] = str.DateTime(time.Now().Add(4.2 * 3600 * time.Second))
+				data["check_time"] = str.DateTime(time.Now().Add(4.5 * 3600 * time.Second))
 			}
 			//检测挂机
 			fail, _ = checkJob(server, uin, speedJobs, signJobs, true, false)
@@ -171,7 +172,7 @@ func speed(uin *model.AppUin) {
 			}
 			//只允许9点前执行第二次挂机
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 {
-				data["check_time"] = str.DateTime(time.Now().Add(2.1 * 3600 * time.Second))
+				data["check_time"] = str.DateTime(time.Now().Add(2.5 * 3600 * time.Second))
 			}
 		}
 		if fail {

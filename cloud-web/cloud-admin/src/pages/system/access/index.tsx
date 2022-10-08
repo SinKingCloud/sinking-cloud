@@ -56,12 +56,12 @@ export default (): React.ReactNode => {
     }
     setIsModalVisible(false)
     api(values).then((r) => {
-      if (r.code != 200) {
-        message.error(r.message || "请求失败").then()
+      if (r?.code != 200) {
+        message.error(r?.message || "请求失败").then()
       } else {
         // @ts-ignore
-        actionRef.current.reload()
-        form.resetFields();
+        actionRef?.current?.reload()
+        form?.resetFields();
         message.success(r.message).then()
       }
     })
@@ -78,15 +78,15 @@ export default (): React.ReactNode => {
       values.status = values.status.toString();
     }
     updateAccess(values).then((r) => {
-      if (r.code != 200) {
-        message.error(r.message || "请求失败").then()
+      if (r?.code != 200) {
+        message.error(r?.message || "请求失败").then()
       } else {
         // @ts-ignore
-        actionRef.current.reload()
+        actionRef?.current?.reload()
         // @ts-ignore
-        actionRef.current.clearSelected();
-        edit.resetFields();
-        message.success(r.message).then()
+        actionRef?.current?.clearSelected();
+        edit?.resetFields();
+        message.success(r?.message).then()
       }
     })
   }
@@ -103,12 +103,12 @@ export default (): React.ReactNode => {
       okType: 'danger',
       onOk() {
         deleteAccess({ids: ids}).then((r) => {
-          if (r.code != 200) {
-            message.error(r.message || "请求失败").then()
+          if (r?.code != 200) {
+            message.error(r?.message || "请求失败").then()
           } else {
             // @ts-ignore
-            actionRef.current.reloadAndRest()
-            message.success(r.message).then()
+            actionRef?.current?.reloadAndRest()
+            message.success(r?.message).then()
           }
         })
       },

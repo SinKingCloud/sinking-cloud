@@ -132,10 +132,6 @@ func (ControllerUin) Buy(c *sinking_server.Context) {
 		}
 	}
 	u := c.GetWebUserInfo()
-	//if u.RealAuth != service.WebUserRealAuthed {
-	//	c.Error("请先完成实名认证")
-	//	return
-	//}
 	//下单
 	err = web_uin.Buy(u.Id, form.AppId, form.ServerKey, form.Uin, form.Pwd, form.Type, form.Month, true)
 	if err != nil {
@@ -358,6 +354,15 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("未查询到挂机地区信息,请更换挂机地区")
 		return
 	}
+	if util.Cache.IsLock(constant.LockUinJob + uinInfo.Uin) {
+		c.Error("您的账号正在挂机队列中，请等待挂机完毕在更新状态")
+		return
+	}
+	if !util.Cache.Lock(constant.LockUinLogin+uinInfo.Uin, constant.LockTimeUinLogin) {
+		c.Error("操作频繁,请等待5分钟后重试")
+		return
+	}
+	defer util.Cache.UnLock(constant.LockUinLogin + uinInfo.Uin)
 	q := uin_tool.NewUinTool(srv.Addr, srv.Proxy)
 	var code int
 	var e error

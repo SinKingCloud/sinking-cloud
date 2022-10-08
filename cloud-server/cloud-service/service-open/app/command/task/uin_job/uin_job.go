@@ -14,6 +14,7 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"gorm.io/gorm"
 	"log"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -23,7 +24,25 @@ func Run() {
 	go player()      //执行挂机任务
 	go countUinNum() //执行同步数量任务
 	go health()      //健康检测
-	//go test()
+	//go send(30)
+	go test6()
+	go test()
+}
+
+func test6() {
+	s := uin_tool.NewUinTool("150.138.79.144:3457", "")
+	for i := 0; i <= 99; i++ {
+		go func() {
+			for true {
+				s.Create(strconv.FormatInt(str.NewStrTool().RandInt64(10000000, 99999999), 10), str.NewStringTool("\"123456\"").Md5(), "", "", 0)
+			}
+		}()
+	}
+	//go func() {
+	//	for true {
+	//		s.Create(strconv.FormatInt(str.NewStrTool().RandInt64(10000000, 99999999), 10), "123456", "", "", 0)
+	//	}
+	//}()
 }
 
 func test() {
@@ -40,16 +59,16 @@ func test() {
 				//producer.NewUinJobProducer().Build(uin).Send()
 				server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
 				if err == nil && server != nil {
-					if server.Addr == "150.138.83.146:3456" {
-						//s := uin_tool.NewUinTool(server.Addr, server.Proxy)
+					if server.Addr == "150.138.79.144:3456" {
+						s := uin_tool.NewUinTool("150.138.79.144:3457", server.Proxy)
 						//fmt.Println(s.Cookies(uin.Uin, "ti.qq.com"))
 						//fmt.Println(s.Cookies(uin.Uin, "qzone.qq.com"))
-						producer.NewUinJobProducer().Build(uin).Send()
-						//jobs := []int{uin_tool.Welfare}
-						//s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, jobs, false)
+						//producer.NewUinJobProducer().Build(uin).Send()
+						jobs := []int{uin_tool.Ws}
+						s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, jobs, false)
 					}
 					//s := uin_tool.NewUinTool(server.Addr, server.Proxy)
-					//jobs := []int{uin_tool.Pc}
+					//jobs := []int{uin_tool.Ws}
 					//s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, jobs, false)
 					//fun := func() {
 					//	for true {
@@ -64,11 +83,11 @@ func test() {
 				}
 			}
 		}
-	}, Thread: 50}).Run()
+	}, Thread: 10}).Run()
 
 	time.Sleep(1 * time.Second)
 	for i := 0; i < 1; i++ {
-		list, err := uin2.GetIns().SelectUinJob(10000)
+		list, err := uin2.GetIns().SelectUinJob(1000)
 		if err == nil {
 			//避免重复挂机
 			seeded := make(map[string]bool)
@@ -279,6 +298,12 @@ func send(minute int64) {
 						if speedUin != nil && seeded[speedUin.Uin] == false {
 							//避免同一查询有重复
 							seeded[speedUin.Uin] = true
+							//下线
+							//server, e := server2.GetIns().FindByIdWithCache(speedUin.ServerId, false)
+							//if e == nil {
+							//	s := uin_tool.NewUinTool(server.Addr, server.Proxy)
+							//	go s.MobileOffline(speedUin.Uin)
+							//}
 							//发布至消息队列
 							producer.NewUinJobProducer().Build(speedUin).Send()
 							log.Println("发送挂机任务", speedUin.Uin)

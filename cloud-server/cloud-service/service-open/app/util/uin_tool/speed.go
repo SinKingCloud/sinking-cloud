@@ -214,14 +214,18 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 	serverError := false //系统异常
 	speedA := func(f func() bool) bool {
 		if !mobileLogin {
-			c, _, _, _ := s.login(uin.Uin, "")
-			if c == EnvError {
-				time.Sleep(5 * time.Second)
-				c, _, _, _ = s.login(uin.Uin, "")
-			} else if c == Error {
-				serverError = true
+			if s.checkLogin(uin.Uin) {
+				mobileLogin = true
+			} else {
+				c, _, _, _ := s.login(uin.Uin, "")
+				if c == EnvError {
+					time.Sleep(5 * time.Second)
+					c, _, _, _ = s.login(uin.Uin, "")
+				} else if c == Error {
+					serverError = true
+				}
+				mobileLogin = c == Success
 			}
-			mobileLogin = c == Success
 		}
 		isBreak = !mobileLogin
 		if mobileLogin {
@@ -304,6 +308,7 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 				break
 			case Ws:
 				res[Ws] = speedA(func() bool {
+					return true
 					return s.wsSpeed(uin.Uin)
 				})
 				break
@@ -338,6 +343,9 @@ func (s *speed) SpeedAll(uin *speedJob) (bool, map[int]bool) {
 				break
 			case ZoneClock:
 				res[ZoneClock] = speedA(func() bool {
+					if !s.zoneClockSpeed(uin.Uin, "2") {
+						s.zoneClockSpeed(uin.Uin, "3")
+					}
 					if s.zoneClockSpeed(uin.Uin, "1") {
 						if !s.zoneClockSpeed(uin.Uin, "2") {
 							return s.zoneClockSpeed(uin.Uin, "3")
