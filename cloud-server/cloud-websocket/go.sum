@@ -61,8 +61,8 @@ github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20220831145132-f9f6978b9cc7 h1:n7ZAIGCdjM2UtRVieSoT8nQJnG0AIrBkYDXGPk7pMzA=
 github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20220831145132-f9f6978b9cc7/go.mod h1:yKxs0d0LCaraNwGjJaouWN5XIfmzMypgkb8S2ICemjc=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20220427143833-b9862a01a5e3 h1:6216hqsT6VNxtgGOEhs4HeqXR0eermN8NGULoKcylZY=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20220427143833-b9862a01a5e3/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20220914035625-a775ed93d556 h1:ZitNl/oW53jKQc2YQ2zYTRNwxrv+/+iDx8uSB8K+YUs=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20220914035625-a775ed93d556/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20211125053718-b26199caff3f h1:9y1ywFisOEP/Gi0PXBRQfFQtWmReeZ1dtkEUwSohHD8=
 github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20211125053718-b26199caff3f/go.mod h1:hlJtUA3tf3O9AwpLPjMIK6pmOBa+dPXd6abCLsm14uQ=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868/go.mod h1:srphKZ1i+yGXxl/LpBS7ZIECTjCTPzZzAMtJWoG3sLo=

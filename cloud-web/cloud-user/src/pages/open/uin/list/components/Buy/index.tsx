@@ -27,7 +27,7 @@ const Buy: React.FC<BuyProps> = (props) => {
     });
     getServerList({page_size: 999}).then((r) => {
       if (r.code != 200) {
-        message.error(r.message || "请求失败").then();
+        message.error(r?.message || "请求失败").then();
       } else {
         const map = {};
         r.data.list.forEach((item: any) => {
@@ -75,10 +75,10 @@ const Buy: React.FC<BuyProps> = (props) => {
     uinBuy(values).then((r) => {
       if (r.code == 200) {
         form.resetFields();
-        message.success({content: r.message, key, duration: 2}).then();
+        message.success({content: r?.message, key, duration: 2}).then();
         onSuccess?.(values.uin, values.type, values.month, isNewUin);
       } else {
-        message.error({content: r.message, key, duration: 2}).then();
+        message.error({content: r?.message, key, duration: 2}).then();
       }
     });
   }

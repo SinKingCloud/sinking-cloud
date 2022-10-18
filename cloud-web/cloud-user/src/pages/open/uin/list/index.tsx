@@ -290,7 +290,7 @@ export default (): React.ReactNode => {
         return <Dropdown overlay={<Menu>
           <Menu.Item key={"password"} hidden={hide}>
             <a style={{fontSize: "small"}} onClick={() => {
-              showUinModal(record?.uin, record?.login_type);
+              showUinModal(record?.uin);
             }}>
               更新挂机
             </a>
@@ -343,10 +343,8 @@ export default (): React.ReactNode => {
   const [uinVisible, setUinVisible] = useState(false);
   const [uin, setUin] = useState("");
   const updateRef = useRef();
-  const showUinModal = (uin: string = "", type: number = 0) => {
+  const showUinModal = (uin: string = "") => {
     setUin(uin);
-    // @ts-ignore
-    updateRef?.current?.setFieldsValue({login_type: type == 0 ? "pwd" : "phone"});
     setUinVisible(true);
   }
   const hideUinModal = () => {
@@ -398,7 +396,7 @@ export default (): React.ReactNode => {
              actionRef?.current?.reload?.();
              //新添加账号需更新状态
              if (isNewUin) {
-               showUinModal(uin, 0);
+               showUinModal(uin);
              }
            }}/>
       <ProTable

@@ -19,7 +19,7 @@ func loadRoute(s *sinking_web.Engine) {
 	loadAdminRoute(s)
 }
 
-//加载api路由
+// 加载api路由
 func loadApiRoute(s *sinking_web.Engine) {
 	g := s.Group("/api")
 
@@ -45,7 +45,6 @@ func loadApiRoute(s *sinking_web.Engine) {
 	uinGroup.GET("/self", sinking_server.HandleFunc(handleUin.Self))                    //账户信息
 	uinGroup.POST("/buy", sinking_server.HandleFunc(handleUin.Buy))                     //业务下单
 	uinGroup.GET("/servers", sinking_server.HandleFunc((&uin.ControllerServer{}).List)) //地区列表
-	uinGroup.GET("/countries", sinking_server.HandleFunc((&uin.ControllerArea{}).List)) //国家列表
 	uinGroup.GET("/project", sinking_server.HandleFunc(handleUin.Project))              //功能列表
 	uinGroup.GET("/activity", sinking_server.HandleFunc(handleUin.Activity))            //活动列表
 	uinSetGroup := uinGroup.Group("/operate")
@@ -56,7 +55,6 @@ func loadApiRoute(s *sinking_web.Engine) {
 	uinSetGroup.POST("/run", sinking_server.HandleFunc(handleUin.Job))                 //执行挂机任务
 	uinSetGroup.POST("/setting", sinking_server.HandleFunc(handleUin.Setting))         //修改功能设置
 	uinSetGroup.POST("/password", sinking_server.HandleFunc(handleUin.ChangePassword)) //修改挂机密码
-	uinSetGroup.POST("/phone", sinking_server.HandleFunc(handleUin.ChangePhone))       //修改挂机手机
 	uinSetGroup.POST("/server", sinking_server.HandleFunc(handleUin.ChangeServer))     //修改挂机地区
 	uinSetGroup.POST("/timing", sinking_server.HandleFunc(handleUin.ChangeTiming))     //修改挂机时间
 	uinSetGroup.POST("/status", sinking_server.HandleFunc(handleUin.ChangeStatus))     //修改挂机状态
@@ -98,7 +96,6 @@ func loadUserRoute(s *sinking_web.Engine) {
 	uinSetGroup.POST("/run", sinking_server.HandleFunc(handleUin.Job))                 //执行挂机任务
 	uinSetGroup.POST("/setting", sinking_server.HandleFunc(handleUin.Setting))         //修改功能设置
 	uinSetGroup.POST("/password", sinking_server.HandleFunc(handleUin.ChangePassword)) //修改挂机密码
-	uinSetGroup.POST("/phone", sinking_server.HandleFunc(handleUin.ChangePhone))       //修改挂机手机
 	uinSetGroup.POST("/server", sinking_server.HandleFunc(handleUin.ChangeServer))     //修改挂机地区
 	uinSetGroup.POST("/timing", sinking_server.HandleFunc(handleUin.ChangeTiming))     //修改挂机时间
 	uinSetGroup.POST("/status", sinking_server.HandleFunc(handleUin.ChangeStatus))     //修改挂机状态
@@ -110,8 +107,7 @@ func loadUserRoute(s *sinking_web.Engine) {
 	handleOrder := &uin.ControllerOrder{}
 	uinGroup.GET("/orders", sinking_server.HandleFunc(handleOrder.List)) //订单列表
 	handleLog := &uin.ControllerLog{}
-	uinGroup.GET("/logs", sinking_server.HandleFunc(handleLog.List))                    //日志列表
-	uinGroup.GET("/countries", sinking_server.HandleFunc((&uin.ControllerArea{}).List)) //国家列表
+	uinGroup.GET("/logs", sinking_server.HandleFunc(handleLog.List)) //日志列表
 
 	//oauth应用
 	handleOauth := &oauth.ControllerOauth{}

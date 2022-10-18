@@ -1,21 +1,16 @@
 package uin_job
 
 import (
-	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/job"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/command/queues/producer"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
-	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	uin2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/uin_tool"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"gorm.io/gorm"
 	"log"
-	"strconv"
-	"sync"
 	"time"
 )
 
@@ -23,200 +18,31 @@ import (
 func Run() {
 	go player()      //执行挂机任务
 	go countUinNum() //执行同步数量任务
-	go health()      //健康检测
-	//go send(30)
-	go test6()
-	go test()
-}
-
-func test6() {
-	s := uin_tool.NewUinTool("150.138.79.144:3457", "")
-	for i := 0; i <= 99; i++ {
-		go func() {
-			for true {
-				s.Create(strconv.FormatInt(str.NewStrTool().RandInt64(10000000, 99999999), 10), str.NewStringTool("\"123456\"").Md5(), "", "", 0)
-			}
-		}()
-	}
-	//go func() {
-	//	for true {
-	//		s.Create(strconv.FormatInt(str.NewStrTool().RandInt64(10000000, 99999999), 10), "123456", "", "", 0)
-	//	}
-	//}()
+	//test()
 }
 
 func test() {
-	time.Sleep(5 * time.Second)
-	ch1 := make(chan interface{})
-	go (&job.Task{Producer: func(channel chan interface{}) {
-		ch1 = channel
-	}, Consumer: func(param interface{}) {
-		if param != nil {
-			//执行挂机任务
-			uin := param.(*model.AppUin)
-			if uin != nil {
-				//fmt.Println(uin)
-				//producer.NewUinJobProducer().Build(uin).Send()
-				server, err := server2.GetIns().FindByIdWithCache(uin.ServerId, false)
-				if err == nil && server != nil {
-					if server.Addr == "150.138.79.144:3456" {
-						s := uin_tool.NewUinTool("150.138.79.144:3457", server.Proxy)
-						//fmt.Println(s.Cookies(uin.Uin, "ti.qq.com"))
-						//fmt.Println(s.Cookies(uin.Uin, "qzone.qq.com"))
-						//producer.NewUinJobProducer().Build(uin).Send()
-						jobs := []int{uin_tool.Ws}
-						s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, jobs, false)
-					}
-					//s := uin_tool.NewUinTool(server.Addr, server.Proxy)
-					//jobs := []int{uin_tool.Ws}
-					//s.Speed(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, jobs, false)
-					//fun := func() {
-					//	for true {
-					//		login, _, _, _ := s.Login(uin.Uin, uin.Password, uin.Phone, uin.PhoneArea, uin.LoginType, "")
-					//		if login != uin_tool.Success {
-					//			return
-					//		}
-					//	}
-					//}
-					//go fun()
-					//go fun()
-				}
-			}
-		}
-	}, Thread: 10}).Run()
-
-	time.Sleep(1 * time.Second)
-	for i := 0; i < 1; i++ {
-		list, err := uin2.GetIns().SelectUinJob(1000)
-		if err == nil {
-			//避免重复挂机
-			seeded := make(map[string]bool)
-			for _, v := range list {
-				var speedUin *model.AppUin
-				uinList, err1 := uin2.GetIns().SelectByUin(v.Uin)
-				if err1 == nil && len(uinList) > 0 {
-					for _, v1 := range uinList {
-						//取出一个qq
-						if speedUin == nil && (v1.PlayerDay > 0 || v1.SignDay > 0) {
-							speedUin = v1
-						}
-					}
-					//发布到消息队列执行
-					if speedUin != nil && seeded[speedUin.Uin] == false {
-						//避免同一查询有重复
-						seeded[speedUin.Uin] = true
-						//发布至消息队列
-						//v.RunTime = str.DateTime(time.Now().Add(-30))
-						//producer.NewUinJobProducer().Build(v).Send()
-						ch1 <- v
-					}
-				}
-			}
-		}
-	}
-}
-
-func test3(v *model.AppUin) {
-	var info *model.AppUinServer
-	//老机器
-	e := util.Database.Db.Where("`addr` = ? AND `key` = ? AND `pid`>0", "150.138.79.144:3456", v.ServerKey).First(&info).Error
-	if e == nil {
-		fmt.Print(v.ServerKey, "老的", info.Id)
-		e1 := util.Database.Db.Model(&model.AppUin{}).Where("`id` = ?", v.Id).Update("server_id", info.Id).Error
-		if e1 == nil {
-			fmt.Println(v.Uin, "修改成功")
-		}
-	}
-}
-
-func test4(v *model.AppUin) {
-	var info *model.AppUinServer
-	//老机器
-	e := util.Database.Db.Where("`addr` = ? AND `key` = ? AND `pid`>0", "150.138.83.146:3456", v.ServerKey).First(&info).Error
-	if e == nil {
-		fmt.Print(v.ServerKey, "新的", info.Id)
-		e1 := util.Database.Db.Model(&model.AppUin{}).Where("`id` = ?", v.Id).Update("server_id", info.Id).Error
-		if e1 == nil {
-			fmt.Println(v.Uin, "修改成功")
-		}
-	}
-}
-
-func test5() {
-	var list []*model.AppUin
-	err := util.Database.Db.Model(&model.AppUin{}).Where("`create_time` > '2022-08-23 22:17:00'").Find(&list).Error
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	ch1 := make(chan interface{})
-	go (&job.Task{Producer: func(channel chan interface{}) {
-		ch1 = channel
-	}, Consumer: func(param interface{}) {
-		test4(param.(*model.AppUin))
-	}, Thread: 25}).Run()
-	time.Sleep(5 * time.Second)
-	data := map[string]int{}
-	for _, v := range list {
-		data[v.ServerKey] = 1
-		ch1 <- v
-	}
-}
-
-func test2() {
-	var list []*model.AppUin
-	err := util.Database.Db.Model(&model.AppUin{}).Where("`create_time` < '2022-08-23 12:00:00'").Find(&list).Error
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	ch1 := make(chan interface{})
-	go (&job.Task{Producer: func(channel chan interface{}) {
-		ch1 = channel
-	}, Consumer: func(param interface{}) {
-		test3(param.(*model.AppUin))
-	}, Thread: 25}).Run()
-	ch2 := make(chan interface{})
-	go (&job.Task{Producer: func(channel chan interface{}) {
-		ch2 = channel
-	}, Consumer: func(param interface{}) {
-		test4(param.(*model.AppUin))
-	}, Thread: 25}).Run()
-	time.Sleep(5 * time.Second)
-	data := map[string]int{}
-	for _, v := range list {
-		//fmt.Println(v)
-		if data[v.ServerKey] == 0 {
-			data[v.ServerKey] = 1
-			ch1 <- v
-			//go test3(v)
-			//老机器
-			//var info *model.AppUinServer
-			//e := util.Database.Db.Where("`addr` = ? AND `key` = ? AND `pid`>0", "150.138.79.144:3456", v.ServerKey).First(&info).Error
-			//if e == nil {
-			//	fmt.Print(v.ServerKey, "老的", info.Id)
-			//	e1 := util.Database.Db.Model(&model.AppUin{}).Where("`id` = ?", v.Id).Update("server_id", info.Id).Error
-			//	if e1 == nil {
-			//		fmt.Println(v.Uin, "修改成功")
-			//	}
-			//}
-		} else {
-			data[v.ServerKey] = 0
-			ch2 <- v
-			//go test4(v)
-			//新机器
-			//var info *model.AppUinServer
-			//e := util.Database.Db.Where("`addr` = ? AND `key` = ? AND `pid`>0", "150.138.83.146:3456", v.ServerKey).First(&info).Error
-			//if e == nil {
-			//	fmt.Print(v.ServerKey, "新的", info.Id)
-			//	e1 := util.Database.Db.Model(&model.AppUin{}).Where("`id` = ?", v.Id).Update("server_id", info.Id).Error
-			//	if e1 == nil {
-			//		fmt.Println(v.Uin, "修改成功")
-			//	}
-			//}
-		}
-		//time.Sleep(10 * time.Millisecond)
-	}
+	//fmt.Println("开始查询")
+	//fmt.Println(uin2.GetIns().UpdateByServerId(54, map[string]interface{}{
+	//	"server_key": "xj",
+	//}))
+	//list, err := server.GetIns().SelectAllServer()
+	//if err == nil {
+	//	for _, ins := range list {
+	//		proxy := &oicq.Proxy{
+	//			Addr: ins.Proxy,
+	//			Port: "8787",
+	//			User: "sinking-oicq",
+	//			Pwd:  "sinking-oicq",
+	//		}
+	//		bytes, e := json.Marshal(&proxy)
+	//		if e == nil {
+	//			fmt.Println(server.GetIns().UpdateById(ins.Id, map[string]interface{}{
+	//				"proxy": string(bytes),
+	//			}))
+	//		}
+	//	}
+	//}
 }
 
 // player 轮询挂机
@@ -272,7 +98,7 @@ func send(minute int64) {
 					//避免重复计费
 					costed := make(map[string]bool)
 					for _, v := range list {
-						var speedUin *model.AppUin
+						var speedUin *uin2.AppUinJob
 						//查询重复QQ计费
 						uinList, err1 := uin2.GetIns().SelectByUin(v.Uin)
 						if err1 == nil && costed[v.Uin] == false && len(uinList) > 0 {
@@ -298,15 +124,8 @@ func send(minute int64) {
 						if speedUin != nil && seeded[speedUin.Uin] == false {
 							//避免同一查询有重复
 							seeded[speedUin.Uin] = true
-							//下线
-							//server, e := server2.GetIns().FindByIdWithCache(speedUin.ServerId, false)
-							//if e == nil {
-							//	s := uin_tool.NewUinTool(server.Addr, server.Proxy)
-							//	go s.MobileOffline(speedUin.Uin)
-							//}
 							//发布至消息队列
 							producer.NewUinJobProducer().Build(speedUin).Send()
-							log.Println("发送挂机任务", speedUin.Uin)
 						}
 					}
 					//更改等级挂机天数
@@ -357,7 +176,7 @@ func check(t time.Time) {
 					//避免重复挂机
 					seeded := make(map[string]bool)
 					for _, v := range list {
-						var speedUin *model.AppUin
+						var speedUin *uin2.AppUinJob
 						//查询重复QQ计费
 						uinList, err1 := uin2.GetIns().SelectByUin(v.Uin)
 						if err1 == nil && len(uinList) > 0 {
@@ -375,7 +194,6 @@ func check(t time.Time) {
 							seeded[speedUin.Uin] = true
 							//发布至消息队列
 							producer.NewUinJobProducer().Build(speedUin).Send()
-							log.Println("发送补挂任务", speedUin.Uin)
 						}
 					}
 					//更改代挂状态
@@ -405,7 +223,7 @@ func countUinNum() {
 		var servers []*model.AppUinServer
 		err := util.Database.Db.Model(&model.AppUinServer{}).Where("`pid` > 0").Find(&servers).Error
 		if err != nil {
-			return
+			continue
 		}
 		for _, v := range servers {
 			var total int64
@@ -424,34 +242,5 @@ func countUinNum() {
 				}
 			}
 		}
-	}
-}
-
-// health 健康检测
-func health() {
-	g := &sync.WaitGroup{}
-	fun := func(addr string) {
-		g.Add(1)
-		defer g.Add(-1)
-		s := uin_tool.NewUinTool(addr, "")
-		cpu := s.GetCpu()
-		if cpu <= 0 || cpu >= 80 || !s.CheckHealth() {
-			//阻塞全局请求
-			server2.GetIns().ServerLock("server_" + addr)
-		} else {
-			//解锁全局请求
-			server2.GetIns().ServerUnLock("server_" + addr)
-		}
-	}
-	for true {
-		var adders []string
-		err := util.Database.Db.Model(&model.AppUinServer{}).Where("`pid` > 0").Group("addr").Select("addr").Find(&adders).Error
-		if err == nil {
-			for _, v := range adders {
-				go fun(v)
-			}
-		}
-		g.Wait()
-		time.Sleep(2 * time.Second)
 	}
 }

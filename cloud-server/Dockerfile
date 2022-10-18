@@ -1,4 +1,4 @@
-FROM golang as sinking-builder
+FROM golang:1.19 as sinking-builder
 
 #作者
 MAINTAINER sinkingcloud 1178710004@qq.com
@@ -7,6 +7,12 @@ MAINTAINER sinkingcloud 1178710004@qq.com
 ENV GO111MODULE on
 ENV CGO_ENABLED 0
 ENV GOPROXY=https://goproxy.cn
+ENV GO111MODULE=on
+ENV GOPRIVATE=github.com/SinKingCloud
+RUN git config --global http.proxy socks5://admin:123456@23.224.230.136:8787
+RUN git config --global https.proxy socks5://admin:123456@23.224.230.136:8787
+RUN git config --global url."https://SinKingCloud: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@github.com".insteadOf "https://github.com"
+RUN apt install apt-transport-https
 
 #复制代码
 COPY . /data/sinking

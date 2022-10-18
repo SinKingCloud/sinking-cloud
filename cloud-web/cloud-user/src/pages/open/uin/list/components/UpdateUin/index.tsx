@@ -1,11 +1,11 @@
-import React, {useEffect, useState} from 'react';
-import {Button, Form, Input, message, Modal, Select, Typography} from "antd";
-import {changeUinPassword, changeUinPhone, getAreaList, uinLogin, uinSms} from "@/services/open/uin/uin";
+import React, {useState} from 'react';
+import {Alert, Button, Form, Input, message, Modal, Typography} from "antd";
+import {changeUinPassword, uinLogin, uinSms} from "@/services/open/uin/uin";
 // @ts-ignore
 import CryptoJS from 'crypto-js';
 // @ts-ignore
 import Script from 'react-load-script';
-import {getUrlQuery, implode} from "@/util/string";
+import {getUrlQuery} from "@/util/string";
 // @ts-ignore
 import QRCode from "qrcode.react/lib";
 import {checkMobile} from "@/util/device";
@@ -22,6 +22,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
   const {uin, formRef, visible, onOk, onCancel} = props;
   const [step, setStep] = useState("normal");
   const [qrCode, setQrCode] = useState("");
+  const [uinPhone, setUinPhone] = useState("");
   const [isQrCodeModalVisible, setIsQrCodeModalVisible] = useState(false);
   const [isQrCodeConfirmLoading, setIsQrCodeConfirmLoading] = useState(false);
   const showQrCodeModal = () => {
@@ -32,7 +33,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
   }
   const qrCodeHandleOk = () => {
     setIsQrCodeConfirmLoading(true);
-    uinLogin({uin: initUin, step: "qrcode", login_type: "pwd"}).then((r) => {
+    uinLogin({uin: initUin, step: "normal"}).then((r) => {
       loginHandle(r);
     }).catch(() => {
       setIsQrCodeConfirmLoading(false);
@@ -62,7 +63,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
         return;
       }
       //验证成功
-      uinLogin({uin: initUin, step: "captcha", ticket: t?.ticket || "ticket", login_type: "pwd"}).then((r) => {
+      uinLogin({uin: initUin, step: "captcha", ticket: t?.ticket || "ticket"}).then((r) => {
         loginHandle(r);
       }).catch(() => {
         setConfirmLoading(false);
@@ -73,7 +74,6 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
    * 短信验证处理
    */
   const [smsStep, setSmsStep] = useState("1");//短信验证步骤
-  const [smsHash, setSmsHash] = useState("");//短信验证票据
   const [smsTicket, setSmsTicket] = useState("");//短信验证ticket
   const [smsRandStr, setSmsRandStr] = useState("");//短信验证rand_str
   const [smsData, setSmsData] = useState<any>({});//返回data
@@ -97,7 +97,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
           setSmsTicket(t?.ticket);
           setSmsRandStr(t?.randstr);
           //获取绑定手机
-          uinSms({uin: initUin, step: "1", rand: t?.randstr, ticket: t?.ticket, hash: smsHash}).then((r) => {
+          uinSms({uin: initUin, step: "1", rand: t?.randstr, ticket: t?.ticket}).then((r) => {
             setIsSmsConfirmLoading(false);
             if (r?.code != 200) {
               message.error(r?.message || "请求失败");
@@ -138,7 +138,6 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
         step: "2",
         rand: smsRandStr,
         ticket: smsTicket,
-        hash: smsHash,
         phone: smsPhone
       }).then((r) => {
         setIsSmsConfirmLoading(false);
@@ -158,7 +157,6 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
         step: "3",
         rand: smsRandStr,
         ticket: smsTicket,
-        hash: smsHash,
         phone: smsPhone
       }).then((r) => {
         setIsSmsConfirmLoading(false);
@@ -177,7 +175,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
     hideSmsModal()
   };
   //登陆处理
-  const loginHandle = (r: any) => {
+  const loginHandle = (r: any, reset: boolean = true) => {
     if (r?.code == 200) {
       setConfirmLoading(false);
       setIsQrCodeConfirmLoading(false);
@@ -187,22 +185,28 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
       onOk?.();
     } else if (r?.code == 400) {
       captchaLogin(r?.data);
-    } else if (r?.code == 401) {
-      setConfirmLoading(false);
-      setIsQrCodeConfirmLoading(false);
-      //需要短信验证码
-      setStep("sms");
-      setQrCode(r?.data);
     } else if (r?.code == 399) {
       setConfirmLoading(false);
       setIsQrCodeConfirmLoading(false);
       //开始走验证短信步骤
       setSmsStep("1");
-      setSmsHash(r?.data);
       showSmsModal();
+    } else if (r?.code == 398) {
+      setConfirmLoading(false);
+      setIsQrCodeConfirmLoading(false);
+      //展示选择验证方式弹窗
+      if ((r?.data?.qrcode || "") != "") {
+        setQrCode(r?.data?.qrcode);
+      }
+      if ((r?.data?.phone || "") != "") {
+        setUinPhone(r?.data?.phone);
+      }
+      setStep("sms");
     } else {
-      setStep("normal");
-      setQrCode("");
+      if (reset) {
+        setStep("normal");
+        setQrCode("");
+      }
       setConfirmLoading(false);
       setIsQrCodeConfirmLoading(false);
       message.error(r?.message || "更新状态失败");
@@ -214,16 +218,9 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
       setConfirmLoading(true);
       let body;
       let change;
-      if (values.login_type == "pwd") {
-        if ((values.pwd?.length || 0) > 5) {
-          body = {uin: initUin, pwd: CryptoJS.MD5(values.pwd).toString()};
-          change = changeUinPassword;
-        }
-      } else if (values.login_type == "phone") {
-        if ((values.phone?.length || 0) >= 5) {
-          body = {uin: initUin, phone: values.phone, phone_area: values?.phone_area || ""};
-          change = changeUinPhone;
-        }
+      if ((values.pwd?.length || 0) > 5) {
+        body = {uin: initUin, pwd: CryptoJS.MD5(values.pwd).toString()};
+        change = changeUinPassword;
       }
       if (change != undefined && body != undefined) {
         const rep = await change(body);
@@ -233,46 +230,38 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
         }
       }
       //发起登陆请求
-      if (values.login_type == "phone") {
-        //需要滑块验证码
-        let top = document.body.scrollTop || document.documentElement.scrollTop
-        scrollBy(0, -top);
-        // @ts-ignore
-        sinking.setAid(2081081773).init(function (t: any) {
-          if ((t?.ticket || "") == "" || (t?.randstr || "") == "") {
-            setConfirmLoading(false);
-            message.warn("请完成滑块验证");
-            return;
-          }
-          //验证成功
-          uinLogin({
-            uin: initUin,
-            step: "normal",
-            ticket: t?.ticket || "ticket",
-            rand: t?.randstr || "rand", login_type: values.login_type
-          }).then((r) => {
-            loginHandle(r);
-          }).catch(() => {
-            setConfirmLoading(false);
-          });
-        });
-      } else {
-        uinLogin({uin: initUin, step: "normal", login_type: values.login_type}).then((r) => {
-          loginHandle(r)
-        });
-      }
+      uinLogin({uin: initUin, step: "normal"}).then((r) => {
+        loginHandle(r, false)
+      });
     } else {
       if ((values.sms?.length || 0) != 6) {
         message.error("请输入正确的验证码")
         return;
       }
       setConfirmLoading(true);
-      uinLogin({uin: initUin, step: "sms", code: values.sms, login_type: values.login_type}).then((r) => {
-        loginHandle(r);
+      uinLogin({uin: initUin, step: "sms", code: values.sms}).then((r) => {
+        loginHandle(r, false);
       }).catch(() => {
         setConfirmLoading(false);
       });
     }
+  }
+  /**
+   * 获取验证码
+   */
+  const [getSmsLoading, setIsGetSmsLoading] = useState(false);
+  const getSms = () => {
+    const key = "getSms"
+    message.loading({content: '正在获取验证码', key, duration: 60}).then();
+    setIsGetSmsLoading(true);
+    uinLogin({uin: initUin, step: "get_sms"}).then((r) => {
+      setIsGetSmsLoading(false);
+      if (r?.code == 200) {
+        message.success({content: r?.message, key, duration: 2}).then();
+      } else {
+        message.error({content: r?.message || "获取验证码失败", key, duration: 2}).then();
+      }
+    });
   }
   /**
    * 监听数据
@@ -281,24 +270,10 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
   if (initUin != uin) {
     setStep("normal");
     setQrCode("");
+    setUinPhone("");
     setInitUin(uin);
     setConfirmLoading(false);
   }
-  const [initLoginType, setInitLoginType] = useState(formRef?.current?.getFieldValue("login_type"));
-  /**
-   * 区号数据
-   */
-  const [areaCode, setAreaCode] = useState<any>([]);
-  const getAreaCode = () => {
-    getAreaList().then((r) => {
-      if (r?.code == 200) {
-        setAreaCode(r?.data || []);
-      }
-    });
-  };
-  useEffect(() => {
-    getAreaCode();
-  }, []);
   return (
     <>
       <Modal title="身份验证" key={"smsVerify"
@@ -356,51 +331,32 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
              visible={visible} onOk={form.submit} okText={"登陆"}
              onCancel={() => {
                formRef?.current?.resetFields();
-               setInitLoginType(formRef?.current?.getFieldValue("login_type"))
                onCancel?.();
              }} confirmLoading={confirmLoading}>
         <Script url={"https://cdn.yunhuoke.cn/app/uin/captcha/captcha.js"}/>
-        <Form name="control-hooks" form={form} ref={formRef} onFinish={onFinish} labelAlign="right"
-              labelCol={{span: 6}}>
-          <Form.Item name={"login_type"} label="登陆方式" rules={[{required: true}]}>
-            <Select placeholder="请选择登陆方式" onChange={(e) => {
-              setInitLoginType(e);
-            }}>
-              <Select.Option value={"pwd"}>密码登陆</Select.Option>
-              <Select.Option value={"phone"}>手机号登陆</Select.Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name={"phone_area"}
-                     hidden={step != "normal" || (initLoginType != "phone" && form.getFieldValue("login_type") != "phone")}
-                     label="手机区号">
-            <Select
-              placeholder="留空则使用上次登陆的手机区号"
-              showSearch
-              optionFilterProp="children"
-              filterOption={(input, option) => {
-                return implode('', option!.children).includes(input.toLowerCase());
-              }}
-            >
-              {areaCode.map((item: any) => {
-                return <Select.Option key={item?.area_cn + item?.code}
-                                      value={item?.code}>{item?.area_cn}+{item?.code}</Select.Option>
-              })}
-            </Select>
-          </Form.Item>
-          <Form.Item name={"phone"}
-                     hidden={step != "normal" || (initLoginType != "phone" && form.getFieldValue("login_type") != "phone")}
-                     label="登陆手机">
-            <Input placeholder="留空则使用上次登陆的手机"/>
-          </Form.Item>
+        <Alert message={<>
+          <div>请使用验证码验证或手机扫码验证设备锁</div>
+          <div hidden={uinPhone == ""}>当前密保手机:{uinPhone}</div>
+        </>} type="info"
+               style={{marginTop: "-10px", marginBottom: "20px", display: step == "sms" ? "flex" : "none"}} showIcon/>
+        <Form name="control-hooks" form={form} ref={formRef} onFinish={onFinish}
+              labelAlign="right"
+              labelCol={{span: 6}} layout={"vertical"}>
           <Form.Item name={"pwd"}
-                     hidden={step != "normal" || (initLoginType != "pwd" && form.getFieldValue("login_type") != "pwd")}
+                     hidden={step != "normal"}
                      label="挂机密码">
             <Input placeholder="留空则使用上次更新的密码"/>
           </Form.Item>
           <Form.Item name={"sms"} hidden={step != "sms"} label="短信验证码">
-            <Input placeholder="请输入短信验证码" type={"number"}/>
+            <Input placeholder="请输入短信验证码" type={"number"} onChange={(e) => {
+              form?.setFieldsValue({sms: e.target.value})
+            }} style={{maxWidth: "155px"}}/>
+            <Button type="primary" style={{marginLeft: "10px"}} size={"small"} ghost loading={getSmsLoading}
+                    onClick={getSms}>
+              获取
+            </Button>
           </Form.Item>
-          <div hidden={initLoginType == "phone" || qrCode == ""}
+          <div hidden={qrCode == "" || step != "sms"}
                style={{float: "right", marginTop: "-10px", marginBottom: "-10px"}}>
             <a onClick={showQrCodeModal}>切换扫码验证</a></div>
         </Form>

@@ -22,6 +22,6 @@ const (
 	Login           //登陆账号
 	Run             //执行补挂
 	Timing          //修改时间
-	Phone           //修改手机
+	Delete          //删除挂机
 	Status          //修改状态
 )

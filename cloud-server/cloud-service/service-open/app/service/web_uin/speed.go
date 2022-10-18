@@ -1,18 +1,15 @@
 package web_uin
 
-import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/uin_tool"
+import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/oicq"
+)
 
 // Setting 功能设置
 var Setting = map[string]string{
 	"mobile":       "1",
 	"pc":           "1",
 	"online":       "1",
-	"zone":         "1",
-	"medal":        "1",
 	"ws":           "1",
-	"safe":         "1",
-	"game":         "1",
-	"sport":        "1",
 	"mobile_clock": "1",
 	"zone_clock":   "1",
 	"login":        "1",
@@ -28,31 +25,26 @@ var Setting = map[string]string{
 }
 
 // JobMap 映射表
-var JobMap = map[string]map[string]int{
+var JobMap = map[string]map[string]oicq.Job{
 	"speed": {
-		"mobile":       uin_tool.Mobile,
-		"pc":           uin_tool.Pc,
-		"online":       uin_tool.Online,
-		"zone":         uin_tool.Zone,
-		"medal":        uin_tool.Medal,
-		"ws":           uin_tool.Ws,
-		"safe":         uin_tool.Safe,
-		"game":         uin_tool.Game,
-		"sport":        uin_tool.Sport,
-		"mobile_clock": uin_tool.MobileClock,
-		"zone_clock":   uin_tool.ZoneClock,
-		"login":        uin_tool.Login,
-		"friend":       uin_tool.Friend,
-		"word":         uin_tool.Word,
+		"mobile":       oicq.None,
+		"pc":           oicq.Pc,
+		"online":       oicq.None,
+		"ws":           oicq.Ws,
+		"mobile_clock": oicq.MobileClock,
+		"zone_clock":   oicq.ZoneClock,
+		"login":        oicq.None,
+		"friend":       oicq.Friend,
+		"word":         oicq.Word,
 	},
 	"sign": {
-		"vip":         uin_tool.Vip,
-		"big_vip":     uin_tool.BigVip,
-		"hz":          uin_tool.Hz,
-		"lz":          uin_tool.Lz,
-		"ld":          uin_tool.Ld,
-		"game_center": uin_tool.GameCenter,
-		"yy":          uin_tool.Music,
+		"vip":         oicq.Vip,
+		"big_vip":     oicq.BigVip,
+		"hz":          oicq.Hz,
+		"lz":          oicq.Lz,
+		"ld":          oicq.Ld,
+		"game_center": oicq.GameCenter,
+		"yy":          oicq.Music,
 	},
 }
 
@@ -65,7 +57,7 @@ var Project = map[string]map[string]map[string]string{
 			"name":     "手机在线",
 			"describe": "手机在线满6小时加速1天",
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/sq.png",
-			"edit":     "true",
+			"edit":     "false",
 		},
 		"pc": {
 			"sort":     "2",
@@ -83,22 +75,6 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ys.png",
 			"edit":     "false",
 		},
-		"zone": {
-			"sort":     "4",
-			"type":     "speed",
-			"name":     "空间访客",
-			"describe": "QQ空间今日访客数超过10人加速0.5天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/kj.png",
-			"edit":     "true",
-		},
-		"medal": {
-			"sort":     "5",
-			"type":     "speed",
-			"name":     "勋章墙",
-			"describe": "点亮勋章墙图标，加速0.2天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/xz.png",
-			"edit":     "false",
-		},
 		"ws": {
 			"sort":     "6",
 			"type":     "speed",
@@ -113,30 +89,6 @@ var Project = map[string]map[string]map[string]string{
 			"name":     "小世界加速",
 			"describe": "每日发布动态加速0.5天",
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/xsj.png",
-			"edit":     "true",
-		},
-		"safe": {
-			"sort":     "8",
-			"type":     "speed",
-			"name":     "电脑管家",
-			"describe": "电脑管家日登录达30分钟，加速0.2天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/gj.png",
-			"edit":     "true",
-		},
-		"game": {
-			"sort":     "9",
-			"type":     "speed",
-			"name":     "游戏加速",
-			"describe": "玩10分钟游戏加速0.2天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/sy.png",
-			"edit":     "true",
-		},
-		"sport": {
-			"sort":     "10",
-			"type":     "speed",
-			"name":     "运动加速",
-			"describe": "步行满5000步或跑步满1km加速0.2天,月限8次",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/yd.png",
 			"edit":     "true",
 		},
 		"mobile_clock": {

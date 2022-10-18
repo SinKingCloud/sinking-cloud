@@ -12,17 +12,6 @@ export async function getUinList(params?: {}, options?: { [key: string]: any }) 
   });
 }
 
-/** 区号列表 GET /open/user/uin/countries */
-export async function getAreaList(params?: {}, options?: { [key: string]: any }) {
-  return request<API.Response>('/open/user/uin/countries', {
-    method: 'GET',
-    params: {
-      ...params,
-    },
-    ...(options || {}),
-  });
-}
-
 /** 挂机地区列表 GET /open/user/uin/servers */
 export async function getServerList(params?: {}, options?: { [key: string]: any }) {
   return request<API.Response>('/open/user/uin/servers', {
@@ -107,18 +96,6 @@ export async function changeUinTiming(body: any, options?: { [key: string]: any 
 /** 修改挂机密码 POST /open/user/uin/operate/password */
 export async function changeUinPassword(body: any, options?: { [key: string]: any }) {
   return request<API.Response>('/open/user/uin/operate/password', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  });
-}
-
-/** 修改挂机手机 POST /open/user/uin/operate/phone */
-export async function changeUinPhone(body: any, options?: { [key: string]: any }) {
-  return request<API.Response>('/open/user/uin/operate/phone', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

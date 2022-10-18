@@ -6,14 +6,14 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
+	uin2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
 )
 
 // uinJobProducerIns 生产者单例
 var uinJobProducerIns queue.MqProducer
 
 // uinJobProducerTask 异步发送
-var uinJobProducerTask chan *model.AppUin
+var uinJobProducerTask chan *uin2.AppUinJob
 
 // NewUinJobProducer 实例化
 func NewUinJobProducer() *uinJob {
@@ -22,23 +22,19 @@ func NewUinJobProducer() *uinJob {
 
 // uinJob 结构
 type uinJob struct {
-	uin *model.AppUin
+	uin *uin2.AppUinJob
 }
 
 // Build 构建消息
-func (l *uinJob) Build(d *model.AppUin) *uinJob {
+func (l *uinJob) Build(d *uin2.AppUinJob) *uinJob {
 	l.uin = d
 	return l
 }
 
 // run 异步执行
 func (l *uinJob) run() {
-	go func(tasks chan *model.AppUin) {
+	go func(tasks chan *uin2.AppUinJob) {
 		for task := range tasks {
-			//最大锁定两小时
-			if !util.Cache.Lock(constant.LockUinJob+task.Uin, constant.LockTimeUinJob*12) {
-				continue
-			}
 			bytes, err := json.Marshal(task)
 			if err != nil {
 				continue
@@ -55,7 +51,7 @@ func (l *uinJob) run() {
 func (l *uinJob) Send() {
 	if uinJobProducerIns == nil {
 		uinJobProducerIns = sinking.GetRocketProducerServer(constant.UinJobGroup, 1)
-		uinJobProducerTask = make(chan *model.AppUin)
+		uinJobProducerTask = make(chan *uin2.AppUinJob)
 		l.run()
 	}
 	uinJobProducerTask <- l.uin

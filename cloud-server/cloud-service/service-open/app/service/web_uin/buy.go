@@ -67,9 +67,8 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 				ServerKey: server.Key,
 				Uin:       uin,
 				Password:  pwd,
-				Phone:     "",
-				LoginType: 0,
 				UinStatus: 1,
+				Device:    0,
 				SignDay:   0,
 				PlayerDay: 0,
 				RunDay:    0,
@@ -79,12 +78,9 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 			}
 			err = uin2.GetIns().Create(uinLog)
 			if err == nil {
-				go func() {
-					_ = server2.GetIns().UpdateById(server.Id, map[string]interface{}{
-						"uin_num": gorm.Expr("`uin_num`+1"),
-					})
-					_ = ServerUinCreate(server.Id, uin, pwd, "", "", 0)
-				}()
+				_ = server2.GetIns().UpdateById(server.Id, map[string]interface{}{
+					"uin_num": gorm.Expr("`uin_num`+1"),
+				})
 				uinInfo, err = uin2.GetIns().FindByUserIdWithUin(user.Id, uin)
 			}
 		}
@@ -131,7 +127,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 		}
 		//挂机地点变动
 		if serverKey != "" && serverKey != uinInfo.ServerKey {
-			_, _ = ChangeServer(uinInfo.Id, serverKey)
+			_ = ChangeServer(uinInfo.Id, serverKey)
 		}
 		err = uin2.GetIns().UpdateById(uinInfo.Id, data)
 		if err != nil {

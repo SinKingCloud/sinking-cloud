@@ -12,39 +12,39 @@ import (
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin_info"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/uin_tool"
-	"io"
-	"io/ioutil"
-	"net/http"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/oicq"
+	"github.com/SinKingCloud/sinking-oicq/binary-mobile/client"
+	"github.com/SinKingCloud/sinking-oicq/binary-mobile/utils"
 	"strconv"
 	"time"
 )
 
-// ServerUinCreate 挂机服务器创建账号
-func ServerUinCreate(serverId int, uin string, pwd string, phone string, phoneArea string, loginType int) error {
-	serverInfo, err := server2.GetIns().FindById(serverId)
-	if err != nil || serverInfo == nil || serverInfo.Status != server2.Normal {
-		return errors.New("未查询到挂机服务器信息,请更换挂机服务器")
-	}
-	s := uin_tool.NewUinTool(serverInfo.Addr, serverInfo.Proxy)
-	if !s.Create(uin, pwd, phone, phoneArea, loginType) {
-		return errors.New("更新挂机信息失败,请重试")
-	}
-	return nil
-}
-
 // ServerUinDelete 挂机服务器删除账号
-func ServerUinDelete(serverId int, uin string) error {
-	serverInfo, err := server2.GetIns().FindById(serverId)
-	if err != nil || serverInfo == nil || serverInfo.Status != server2.Normal {
-		return errors.New("未查询到挂机服务器信息")
+func ServerUinDelete(u int) error {
+	uinInfo, err := uin.GetIns().FindById(u)
+	if err != nil || uinInfo == nil {
+		return errors.New("未查询到QQ信息")
 	}
-	s := uin_tool.NewUinTool(serverInfo.Addr, serverInfo.Proxy)
-	s.MobileOffline(uin)
-	s.PcOffline(uin)
-	if !s.Delete(uin) {
-		return errors.New("删除挂机失败")
+	err = uin.GetIns().DeleteById(uinInfo.Id)
+	if err != nil {
+		return err
 	}
+	q, err := strconv.ParseInt(uinInfo.Uin, 10, 64)
+	if err == nil {
+		oicq.DelOicqInstance(q) //删除实例
+	}
+	go func(uinInfo *model.AppUin) {
+		//写入QQ操作记录
+		_ = log.GetIns().Create(&model.AppUinLog{
+			UserId:  uinInfo.UserId,
+			AppId:   uinInfo.AppId,
+			UinId:   uinInfo.Id,
+			Uin:     uinInfo.Uin,
+			Type:    log.Delete,
+			Title:   "删除挂机",
+			Content: "删除挂机账号",
+		})
+	}(uinInfo)
 	return nil
 }
 
@@ -87,11 +87,10 @@ func ChangePassword(uinId int, pwd string) error {
 	if err != nil || uinInfo == nil {
 		return errors.New("未查询到QQ信息")
 	}
-	if pwd != uinInfo.Password || uinInfo.LoginType != 0 {
+	if pwd != uinInfo.Password {
 		data := make(map[string]interface{})
 		data["password"] = pwd
-		data["login_type"] = 0
-		data["uin_status"] = 1
+		data["uin_status"] = uin.StatusUinError
 		go func() {
 			_ = log.GetIns().Create(&model.AppUinLog{
 				UserId:  uinInfo.UserId,
@@ -103,69 +102,24 @@ func ChangePassword(uinId int, pwd string) error {
 				Content: "修改挂机密码",
 			})
 		}()
-		r := false
-		for i := 0; i <= 5; i++ {
-			e := ServerUinCreate(uinInfo.ServerId, uinInfo.Uin, pwd, uinInfo.Phone, uinInfo.PhoneArea, 0)
-			if e == nil {
-				r = true
-				break
-			} else {
-				time.Sleep(500 * time.Millisecond)
-			}
-		}
-		if r {
-			err = uin.GetIns().UpdateById(uinInfo.Id, data)
-			if err != nil {
-				return errors.New("更改挂机密码失败")
-			}
-		} else {
-			return errors.New("更改挂机密码失败,请稍后重试")
+		err = uin.GetIns().UpdateById(uinInfo.Id, data)
+		if err != nil {
+			return errors.New("更改挂机密码失败")
 		}
 	}
 	return nil
 }
 
-// ChangePhone 更改挂机手机
-func ChangePhone(uinId int, phone string, phoneArea string) error {
-	uinInfo, err := uin.GetIns().FindById(uinId)
-	if err != nil || uinInfo == nil {
-		return errors.New("未查询到QQ信息")
-	}
-	if phone != uinInfo.Phone || uinInfo.LoginType != 1 {
-		data := make(map[string]interface{})
-		data["phone"] = phone
-		data["phone_area"] = phoneArea
-		data["login_type"] = 1
-		data["uin_status"] = 1
-		go func() {
-			_ = log.GetIns().Create(&model.AppUinLog{
-				UserId:  uinInfo.UserId,
-				AppId:   uinInfo.AppId,
-				UinId:   uinInfo.Id,
-				Uin:     uinInfo.Uin,
-				Type:    log.Phone,
-				Title:   "修改手机",
-				Content: "修改挂机手机",
-			})
-		}()
-		r := false
-		for i := 0; i <= 5; i++ {
-			e := ServerUinCreate(uinInfo.ServerId, uinInfo.Uin, uinInfo.Password, phone, phoneArea, 1)
-			if e == nil {
-				r = true
-				break
-			} else {
-				time.Sleep(500 * time.Millisecond)
-			}
-		}
-		if r {
-			err = uin.GetIns().UpdateById(uinInfo.Id, data)
-			if err != nil {
-				return errors.New("更改挂机手机失败")
-			}
-		} else {
-			return errors.New("更改挂机手机失败,请稍后重试")
-		}
+// SaveLoginToken 保存登陆token
+func SaveLoginToken(u string, pwd string, token []byte, device int) error {
+	data := make(map[string]interface{})
+	data["token"] = utils.Bin2HexTo(token)
+	data["uin_status"] = int(uin.StatusUinNormal)
+	data["password"] = pwd
+	data["device"] = device
+	err := uin.GetIns().UpdateByUin(u, data)
+	if err != nil {
+		return errors.New("更改挂机密码失败")
 	}
 	return nil
 }
@@ -182,11 +136,11 @@ func GetUinLevelInfo(uinId int) (*model.AppUinInfo, error) {
 	if (e != nil || uinLevelInfo == nil) && uinInfo.UinStatus == uin.Normal {
 		refresh = true
 	}
-	//每隔三小时或者上次刷新在昨天时刷新一次数据
+	//上次刷新在昨天时刷新一次数据
 	if !refresh && e == nil && uinLevelInfo != nil {
 		stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", uinLevelInfo.UpdateTime.String(), time.Local)
 		todayUnix := str.NewTimeTool().GetZeroTime(time.Now()).Unix()
-		if stamp.Unix() < todayUnix || stamp.Unix()+60*60*3 < time.Now().Unix() {
+		if stamp.Unix() < todayUnix {
 			refresh = true
 		}
 	}
@@ -194,8 +148,8 @@ func GetUinLevelInfo(uinId int) (*model.AppUinInfo, error) {
 	if refresh {
 		server, e2 := server2.GetIns().FindById(uinInfo.ServerId)
 		if e2 == nil && server != nil {
-			_, err2, isFail, serverError := GetUinSpeedStatus(server.Addr, server.Proxy, uinInfo.Uin, false)
-			if !isFail && err2 == nil && !serverError {
+			_, err2 := GetUinSpeedStatus(uinInfo.Uin, false)
+			if err2 == nil {
 				uinLevelInfo, e = uin_info.GetIns().FindByUin(uinInfo.Uin)
 			}
 		}
@@ -203,173 +157,116 @@ func GetUinLevelInfo(uinId int) (*model.AppUinInfo, error) {
 	return uinLevelInfo, e
 }
 
-// GetLevelInfo 获取等级信息
-func GetLevelInfo(uin string, skey string, pskey string) (*uin_tool.SpeedStatus, error, bool) {
-	client := &http.Client{}
-	req, err := http.NewRequest("POST", "https://ti.qq.com/qqlevel/srf/getQQLevelAllInfo?bkn=683611393", nil)
+// GetUinSpeedStatus 获取加速任务状态
+func GetUinSpeedStatus(uin string, isSync bool) (status *client.SpeedStatus, err error) {
+	cli, err := GetOicqIns(uin, false)
 	if err != nil {
-		return nil, errors.New("发起请求失败"), false
+		return nil, err
 	}
-	req.Header.Set("Origin", "https://ti.qq.com")
-	req.Header.Set("Pragma", "no-cache")
-	req.Header.Set("Referer", "https://ti.qq.com/qqlevel/index?")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/104.0.5112.81")
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Cookie", "uin=o"+uin+"; skey="+skey+"; p_uin=o"+uin+"; p_skey="+pskey)
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, errors.New("请求失败"), false
-	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			return
+	err, status = cli.Mobile.Speed.Info()
+	if err == nil && status != nil {
+		if isSync {
+			go func() {
+				_ = SetUinSpeedStatus(uin, status)
+			}()
+		} else {
+			_ = SetUinSpeedStatus(uin, status)
 		}
-	}(resp.Body)
-	bodyText, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.New("获取返回值失败"), false
 	}
-	type speedStatus struct {
-		Data *uin_tool.SpeedStatus `json:"data"`
-	}
-	var t *speedStatus
-	e := json.Unmarshal(bodyText, &t)
-	if e != nil || t == nil || t.Data == nil {
-		return nil, errors.New("cookies失效"), true
-	}
-	return t.Data, nil, false
+	return status, err
 }
 
-// GetUinSpeedStatus 获取加速任务状态
-func GetUinSpeedStatus(addr string, proxy string, uin string, isSync bool) (status *uin_tool.SpeedStatus, err error, isFail bool, serverError bool) {
-	err, skey, pskey := GetUinCookies(addr, proxy, uin, "ti.qq.com", false)
-	if err == nil && skey != "" && pskey != "" {
-		status2, e, isExpire := GetLevelInfo(uin, skey, pskey)
-		if e == nil && !isExpire && status2 != nil {
-			status = status2
-		}
-	}
-	serverError = false
+// SetUinSpeedStatus 设置加速任务状态
+func SetUinSpeedStatus(uin string, status *client.SpeedStatus) error {
 	if status == nil {
-		s := uin_tool.NewUinTool(addr, proxy)
-		status, err, isFail, serverError = s.Status(uin)
-	} else {
-		err = nil
-		isFail = false
+		return errors.New("加速状态不能为空")
 	}
-	if serverError {
-		isFail = false
+	//qq信息
+	level, e := strconv.Atoi(status.IQQLevel)
+	if e != nil {
+		level = 0
 	}
-	if err == nil && status != nil && !isFail && !serverError {
-		//更新QQ信息
-		fun := func(status *uin_tool.SpeedStatus, uin string) {
-			//qq信息
-			level, e := strconv.Atoi(status.IQQLevel)
-			if e != nil {
-				level = 0
-			}
-			info := &model.AppUinInfo{
-				Uin:         uin,
-				NickName:    status.SNickName,
-				Level:       level,
-				ActivateDay: status.ITotalActiveDay,
-				TodayDay:    status.IRealDays,
-			}
-			//加速状态
-			speedInfo := map[string]string{
-				"mobile":       status.IMobileQQOnline,
-				"pc":           status.IPCQQOnline,
-				"online":       status.INoHideOnline,
-				"zone":         status.QzoneVisitor,
-				"medal":        status.IMedal,
-				"ws":           status.WeishiVideoview,
-				"micro_show":   status.ICmshowActive,
-				"safe":         status.IPCSafeOnline,
-				"game":         status.IMobileGameOnline,
-				"sport":        status.IQQSportStep,
-				"mobile_clock": status.IDailySign,
-				"zone_clock":   status.IQzoneState,
-				"login":        status.IContinueLogin,
-				"friend":       status.IAddFriend,
-				"word":         status.ISmallWorld,
-			}
-			if time.Now().Day() > 8 {
-				speedInfo["sport"] = "1"
-			}
-			for k := range Setting {
-				if speedInfo[k] == "" {
-					speedInfo[k] = "1"
-				}
-			}
-			_ = uin_info.GetIns().Save(info, speedInfo)
-		}
-		if isSync {
-			go fun(status, uin)
-		} else {
-			fun(status, uin)
+	info := &model.AppUinInfo{
+		Uin:         uin,
+		NickName:    status.SNickName,
+		Level:       level,
+		ActivateDay: status.ITotalActiveDay,
+		TodayDay:    status.IRealDays,
+	}
+	//加速状态
+	speedInfo := map[string]string{
+		"mobile":       status.IMobileQQOnline,
+		"pc":           status.IPCQQOnline,
+		"online":       status.INoHideOnline,
+		"zone":         status.QzoneVisitor,
+		"medal":        status.IMedal,
+		"ws":           status.WeishiVideoview,
+		"micro_show":   status.ICmshowActive,
+		"safe":         status.IPCSafeOnline,
+		"game":         status.IMobileGameOnline,
+		"sport":        status.IQQSportStep,
+		"mobile_clock": status.IDailySign,
+		"zone_clock":   status.IQzoneState,
+		"login":        status.IContinueLogin,
+		"friend":       status.IAddFriend,
+		"word":         status.ISmallWorld,
+	}
+	for k := range Setting {
+		if speedInfo[k] == "" {
+			speedInfo[k] = "1"
 		}
 	}
-	return status, err, isFail, serverError
+	return uin_info.GetIns().Save(info, speedInfo)
 }
 
 // GetUinCookies 获取QQ cookies
-func GetUinCookies(addr string, proxy string, uin string, domain string, refresh bool) (err error, skey string, pSkey string) {
+func GetUinCookies(uin string, domain string, refresh bool) (err error, cookies string) {
 	key := constant.LockUinCookie + uin + "_" + domain
 	//上锁
 	if !util.Cache.Lock(key, constant.LockTimeUinCookie) {
-		return errors.New("系统繁忙,请稍后重试"), "", ""
+		return errors.New("系统繁忙,请稍后重试"), ""
 	}
 	defer util.Cache.UnLock(key) //释放并发锁
 	//查询数据库是否存在此cookie
 	cookie, err := cookie2.GetIns().FindByUinDomainWithCache(uin, domain, refresh)
 	if err != nil || cookie == nil {
-		//获取并写入cookie
-		s := uin_tool.NewUinTool(addr, proxy)
-		skey, pSkey = s.Cookies(uin, domain)
-		if skey == "" || pSkey == "" {
-			return errors.New("获取cookie失败"), "", ""
-		}
-		//写入数据库
+		return errors.New("获取cookie失败"), ""
+	} else {
+		return nil, cookie.Cookie
+	}
+}
+
+// SetUinCookies 设置QQ cookies
+func SetUinCookies(uin string, domain string, cookies string) error {
+	key := constant.LockUinCookie + uin + "_" + domain
+	//上锁
+	if !util.Cache.Lock(key, constant.LockTimeUinCookie) {
+		return errors.New("系统繁忙,请稍后重试")
+	}
+	defer util.Cache.UnLock(key) //释放并发锁
+	//查询数据库是否存在此cookie
+	cookie, err := cookie2.GetIns().FindByUinDomainWithCache(uin, domain, false)
+	if err != nil || cookie == nil {
+		//写入cookie
 		if cookie2.GetIns().Create(&model.AppUinCookie{
 			Uin:    uin,
 			Domain: domain,
-			Cookie: cookie2.GetIns().CookieToStr(&cookie2.Cookie{
-				Uin:   uin,
-				Skey:  skey,
-				Pskey: pSkey,
-			}),
+			Cookie: cookies,
 			Status: cookie2.Normal,
 		}) != nil {
-			return errors.New("获取cookie失败"), "", ""
+			return errors.New("设置cookie失败")
 		}
-		return nil, skey, pSkey
 	} else {
-		//查看cookie是否到时间需要更新
-		stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", cookie.CheckTime.String(), time.Local)
-		//小于三小时或者cookie失效了则更新cookie
-		if cookie.Status != cookie2.Normal || stamp.Unix() < time.Now().Unix()-3600*5 {
-			s := uin_tool.NewUinTool(addr, proxy)
-			skey, pSkey = s.Cookies(uin, domain)
-			if skey == "" || pSkey == "" {
-				return errors.New("获取cookie失败"), "", ""
-			}
-			//更新数据库cookie
-			if cookie2.GetIns().UpdateByUinDomain(uin, domain, map[string]interface{}{
-				"cookie": cookie2.GetIns().CookieToStr(&cookie2.Cookie{
-					Uin:   uin,
-					Skey:  skey,
-					Pskey: pSkey,
-				}),
-				"status":     cookie2.Normal,
-				"check_time": str.DateTime(time.Now()),
-			}) == nil {
-				return nil, skey, pSkey
-			} else {
-				return errors.New("获取cookie失败"), "", ""
-			}
+		//更新cookie
+		if cookie2.GetIns().UpdateByUinDomain(uin, domain, map[string]interface{}{
+			"cookie":     cookies,
+			"status":     cookie2.Normal,
+			"check_time": str.DateTime(time.Now()),
+		}) != nil {
+			return errors.New("设置cookie失败")
 		}
-		t := cookie2.GetIns().StrToCookie(cookie.Cookie)
-		return nil, t.Skey, t.Pskey
 	}
+	//删除缓存
+	_ = cookie2.GetIns().ClearByUinDomain(uin, domain)
+	return nil
 }
