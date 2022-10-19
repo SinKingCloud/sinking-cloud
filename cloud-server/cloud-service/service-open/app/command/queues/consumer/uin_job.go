@@ -40,7 +40,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("3307701730")
+	//	list, _ := uin2.GetIns().SelectByUin("2486724867")
 	//	for _, v := range list {
 	//		if v.UinStatus == 0 {
 	//			fmt.Println("发送任务", v)

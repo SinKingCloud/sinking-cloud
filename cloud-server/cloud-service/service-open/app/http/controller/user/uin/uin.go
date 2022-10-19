@@ -263,10 +263,6 @@ func (ControllerUin) ChangeStatus(c *sinking_server.Context) {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
-	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
-		c.Error("该QQ未下单或已过期,无法操作")
-		return
-	}
 	err = web_uin.ChangeStatus(uinInfo.Id, form.Status)
 	if err == nil {
 		c.Success("更改挂机状态成功")

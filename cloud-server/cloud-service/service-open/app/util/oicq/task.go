@@ -116,7 +116,7 @@ func startDoHeartbeat() {
 					go func(tasks chan *Oicq) {
 						for task := range tasks {
 							//发送pc心跳
-							if task.Pc.Online.Load() {
+							if task.PcLoginTime > 0 || task.Pc.Online.Load() {
 								//pc登陆满3小时下线
 								if task.PcLoginTime > 0 && task.PcLoginTime+3600*2.5 < time.Now().Unix() {
 									task.Pc.Release()
@@ -147,6 +147,8 @@ func startDoHeartbeat() {
 										} else {
 											log.Println("pc重连失败", task.Pc.Uin)
 											task.Pc.Online.Store(false)
+											task.PcHeartTime = 0
+											task.PcLoginTime = 0
 										}
 									} else {
 										log.Println("发送心跳", task.Pc.Uin, e, "上次心跳时间", task.PcHeartTime)
@@ -158,7 +160,7 @@ func startDoHeartbeat() {
 								task.PcLoginTime = 0
 							}
 							//检测mac pc
-							if task.MacPc.Online.Load() {
+							if task.MacPcLoginTime > 0 || task.MacPc.Online.Load() {
 								//pc登陆满3小时下线
 								if task.MacPcLoginTime > 0 && task.MacPcLoginTime+3600*2.5 < time.Now().Unix() {
 									task.MacPc.Release()
@@ -188,6 +190,8 @@ func startDoHeartbeat() {
 										} else {
 											log.Println("mac重连失败", task.MacPc.Uin)
 											task.MacPc.Online.Store(false)
+											task.MacPcHeartTime = 0
+											task.MacPcLoginTime = 0
 										}
 									} else {
 										log.Println("mac 心跳", task.MacPc.Uin, e, "上次心跳时间", task.MacPcHeartTime)

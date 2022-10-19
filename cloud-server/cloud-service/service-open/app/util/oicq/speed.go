@@ -31,9 +31,6 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 		case Word: //小世界加速
 			_, status = o.Mobile.Speed.FeedCloud()
 			break
-		case SportStep: //运动刷步
-			_, status = o.Mobile.Speed.SportStep()
-			break
 		case Game: //游戏加速
 			_, cookie, status = o.Mobile.Speed.Game(cookies[v])
 			if status == mobile.SpeedCookieExpire {
