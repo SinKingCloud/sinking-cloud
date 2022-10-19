@@ -321,9 +321,8 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		return
 	}
 	var resp *client.LoginResponse
-	switch form.Step {
-	case "normal":
-		resp, err = cli.Login()
+	request := func(uinInfo *model.AppUin, fun func() (*client.LoginResponse, error)) (resp *client.LoginResponse, err error) {
+		resp, err = fun()
 		//设备异常,生成新的设备信息
 		if err == nil && resp.Error == client.DeviceVersionError {
 			if uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{"device": 100000 + rand.Intn(899999)}) == nil {
@@ -333,27 +332,37 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 					oicq.DelTempOicqInstance(q)
 					cli, err = web_uin.GetOicqInsById(uinInfo.Id, true)
 					if err != nil {
-						c.Error("连接服务器失败")
-						return
+						return nil, err
 					}
-					resp, err = cli.Login()
+					return fun()
 				}
 			}
 		}
+		return resp, err
+	}
+	switch form.Step {
+	case "normal":
+		resp, err = request(uinInfo, func() (*client.LoginResponse, error) {
+			return cli.Login()
+		})
 		break
 	case "captcha":
 		if form.Ticket == "" {
 			c.Error("ticket不能为空")
 			return
 		}
-		resp, err = cli.Mobile.SubmitTicket(form.Ticket)
+		resp, err = request(uinInfo, func() (*client.LoginResponse, error) {
+			return cli.Mobile.SubmitTicket(form.Ticket)
+		})
 		break
 	case "sms":
 		if form.Code == "" {
 			c.Error("验证码不能为空")
 			return
 		}
-		resp, err = cli.Mobile.SubmitSMS(form.Code)
+		resp, err = request(uinInfo, func() (*client.LoginResponse, error) {
+			return cli.Mobile.SubmitSMS(form.Code)
+		})
 		break
 	}
 	if err != nil {
