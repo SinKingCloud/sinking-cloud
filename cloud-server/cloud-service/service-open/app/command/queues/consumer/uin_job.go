@@ -40,7 +40,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("2486724867")
+	//	list, _ := uin2.GetIns().SelectByUin("3279769310")
 	//	for _, v := range list {
 	//		if v.UinStatus == 0 {
 	//			fmt.Println("发送任务", v)
@@ -273,7 +273,7 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 	}
 	//执行挂机项
 	log.Println("执行挂机项目", uin.Uin, jobs, cookies)
-	//jobs = []oicq.Job{oicq.Pc}
+	//jobs = []oicq.Job{oicq.Word}
 	r, resCookie := cli.ActiveProject(jobs, cookies)
 	log.Println("执行挂机结果", uin.Uin, r, resCookie)
 	if resCookie[oicq.Ws] != "" && (wsCookie == "" || resCookie[oicq.Ws] != wsCookie) {
