@@ -64,14 +64,14 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 				wg.Add(1)
 				go func(wg *sync.WaitGroup) {
 					for i1 := 0; i1 < 30; i1++ {
-						e1, state := o.Pc.FetchQrCodeStatus()
-						if e1 != nil {
+						e2, state := o.Pc.FetchQrCodeStatus()
+						if e2 != nil {
 							break
 						}
 						if state == pc.ScanCodeSuccess {
 							//登陆PC
-							e2, l := o.Pc.Login(true)
-							if e2 != nil {
+							e3, l := o.Pc.Login(true)
+							if e3 != nil {
 								break
 							}
 							o.PcLoginTime = time.Now().Unix()
@@ -100,36 +100,38 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					if o.Pc.Online.Load() {
 						status = mobile.SpeedSuccess
 					}
+				} else {
+					log.Println(o.Mobile.Uin, "pc授权登陆", e)
 				}
-				//登陆失败,使用mac协议
-				if status != mobile.SpeedSuccess {
-					r := false
-					log.Println(o.Mobile.Uin, "扫码登陆失败", e, "开始使用mac协议")
-					o.MacPc.Release()     //关闭连接
-					o.MacPc.NetLoop(true) //打开数据包接收
-					e1 := o.MacPc.TokenLogin(o.LoginToken)
-					if e1 == nil {
-						log.Println(o.Mobile.Uin, "mac token登陆成功")
+			} else {
+				log.Println(o.Mobile.Uin, "pc获取二维码失败", e, "开始使用mac协议")
+			}
+			if status == mobile.SpeedError {
+				//mac协议挂机
+				r := false
+				o.MacPc.Release() //关闭连接
+				e1 := o.MacPc.TokenLogin(o.LoginToken)
+				if e1 == nil {
+					log.Println(o.Mobile.Uin, "mac token登陆成功")
+					r = true
+				} else {
+					log.Println(o.Mobile.Uin, "mac token登陆失败", e1, "开始尝试密码登陆")
+					login, e2 := o.MacPc.Login()
+					if e2 == nil && login.Success {
+						log.Println(o.Mobile.Uin, "mac 密码登陆成功")
 						r = true
 					} else {
-						log.Println(o.Mobile.Uin, "mac token登陆失败", e1, "开始尝试密码登陆")
-						login, e2 := o.MacPc.Login()
-						if e2 == nil && login.Success {
-							log.Println(o.Mobile.Uin, "mac 密码登陆成功")
-							r = true
-						} else {
-							log.Println(o.Mobile.Uin, "mac 密码登陆失败", e2, login)
-						}
+						log.Println(o.Mobile.Uin, "mac 密码登陆失败", e2, login)
 					}
-					if r {
-						o.MacPcLoginTime = time.Now().Unix()
-						o.MacPc.NetLoop(false)     //关闭数据包接收
-						o.MacPc.ForceOnline(true)  //强制在线,不间断发送心跳
-						o.MacPc.Online.Store(true) //设置为在线状态
-						status = mobile.SpeedSuccess
-					} else {
-						status = mobile.SpeedError
-					}
+				}
+				if r {
+					o.MacPcLoginTime = time.Now().Unix()
+					o.MacPc.NetLoop(false)     //关闭数据包接收
+					o.MacPc.ForceOnline(true)  //强制在线,不间断发送心跳
+					o.MacPc.Online.Store(true) //设置为在线状态
+					status = mobile.SpeedSuccess
+				} else {
+					status = mobile.SpeedError
 				}
 			}
 			break

@@ -96,18 +96,18 @@ func startDoHeartbeat() {
 		heart.Store(true)
 		go func() {
 			for true {
-				//根据实例数量分配协程,每300个实例分配一个协程
+				//根据实例数量分配协程,每100个实例分配一个协程
 				threadNum := 0
 				oicqMap.Range(func(key, value any) bool {
 					threadNum++
 					return true
 				})
-				threadNum = threadNum / 300
+				threadNum = threadNum / 100
 				if threadNum == 0 {
 					threadNum = 1
 				}
-				if threadNum >= 200 {
-					threadNum = 200
+				if threadNum >= 300 {
+					threadNum = 300
 				}
 				//新建协程
 				tasks := make(chan *Oicq)
@@ -115,50 +115,6 @@ func startDoHeartbeat() {
 				for i := 0; i < threadNum; i++ {
 					go func(tasks chan *Oicq) {
 						for task := range tasks {
-							//发送pc心跳
-							if task.PcLoginTime > 0 || task.Pc.Online.Load() {
-								//pc登陆满3小时下线
-								if task.PcLoginTime > 0 && task.PcLoginTime+3600*2.5 < time.Now().Unix() {
-									task.Pc.Release()
-									task.Pc.Online.Store(false)
-									log.Println("pc下线", task.Pc.Uin, "登陆时间", task.PcLoginTime)
-									task.PcLoginTime = 0
-									task.PcHeartTime = 0
-								} else {
-									//执行心跳
-									e := task.Pc.DoHeartbeat(false)
-									//心跳失败，重连(最大重试3次)
-									if e != nil {
-										log.Println("pc连接丢失", task.Pc.Uin, e, "开始重新连接")
-										r := false
-										for i1 := 0; i1 < 3; i1++ {
-											if task.Pc.QuickReconnect() == nil {
-												r = true
-												task.Pc.NetLoop(false) //关闭数据监听
-												break
-											} else {
-												time.Sleep(500 * time.Millisecond)
-											}
-										}
-										//重连成功则重新设置在线状态
-										if r {
-											log.Println("pc重连成功", task.Pc.Uin)
-											task.Pc.Online.Store(true)
-										} else {
-											log.Println("pc重连失败", task.Pc.Uin)
-											task.Pc.Online.Store(false)
-											task.PcHeartTime = 0
-											task.PcLoginTime = 0
-										}
-									} else {
-										log.Println("发送心跳", task.Pc.Uin, e, "上次心跳时间", task.PcHeartTime)
-										task.PcHeartTime = time.Now().Unix()
-									}
-								}
-							} else {
-								task.PcHeartTime = 0
-								task.PcLoginTime = 0
-							}
 							//检测mac pc
 							if task.MacPcLoginTime > 0 || task.MacPc.Online.Load() {
 								//pc登陆满3小时下线
@@ -201,6 +157,66 @@ func startDoHeartbeat() {
 							} else {
 								task.MacPcHeartTime = 0
 								task.MacPcLoginTime = 0
+							}
+							//发送pc心跳
+							if task.PcLoginTime > 0 || task.Pc.Online.Load() {
+								//pc登陆满3小时下线
+								if task.PcLoginTime > 0 && task.PcLoginTime+3600*2.5 < time.Now().Unix() {
+									task.Pc.Release()
+									task.Pc.Online.Store(false)
+									log.Println("pc下线", task.Pc.Uin, "登陆时间", task.PcLoginTime)
+									task.PcLoginTime = 0
+									task.PcHeartTime = 0
+								} else {
+									//执行心跳
+									e := task.Pc.DoHeartbeat(false)
+									//心跳失败，重连(最大重试3次)
+									if e != nil {
+										log.Println("pc连接丢失", task.Pc.Uin, e, "开始重新连接")
+										r := false
+										for i1 := 0; i1 < 3; i1++ {
+											if task.Pc.QuickReconnect() == nil {
+												r = true
+												task.Pc.NetLoop(false) //关闭数据监听
+												break
+											} else {
+												time.Sleep(500 * time.Millisecond)
+											}
+										}
+										//重连成功则重新设置在线状态
+										if r {
+											log.Println("pc重连成功", task.Pc.Uin)
+											task.Pc.Online.Store(true)
+										} else {
+											log.Println("pc重连失败", task.Pc.Uin, "开始切换mac协议")
+											//继续使用mac协议挂机
+											task.MacPc.Release()     //关闭连接
+											task.MacPc.NetLoop(true) //打开数据包接收
+											e1 := task.MacPc.TokenLogin(task.LoginToken)
+											r2 := false
+											if e1 == nil {
+												log.Println(task.Mobile.Uin, "mac token 重连成功")
+												r2 = true
+											}
+											if r2 {
+												task.MacPcLoginTime = time.Now().Unix()
+												task.MacPc.NetLoop(false)     //关闭数据包接收
+												task.MacPc.ForceOnline(true)  //强制在线,不间断发送心跳
+												task.MacPc.Online.Store(true) //设置为在线状态
+											} else {
+												task.Pc.Online.Store(false)
+												task.PcHeartTime = 0
+												task.PcLoginTime = 0
+											}
+										}
+									} else {
+										log.Println("发送心跳", task.Pc.Uin, e, "上次心跳时间", task.PcHeartTime)
+										task.PcHeartTime = time.Now().Unix()
+									}
+								}
+							} else {
+								task.PcHeartTime = 0
+								task.PcLoginTime = 0
 							}
 						}
 						log.Println("协程关闭", time.Now().Unix())

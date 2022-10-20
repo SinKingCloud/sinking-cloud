@@ -18,6 +18,7 @@ import (
 	"github.com/SinKingCloud/sinking-oicq/binary-mobile/utils"
 	"gorm.io/gorm"
 	"log"
+	"runtime/debug"
 	"strconv"
 	"sync"
 	"time"
@@ -141,7 +142,7 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 				sinking_web.Try(func() {
 					l.speed(param.(*uin2.AppUinJob))
 				}, func(i interface{}) {
-					util.Log.Println(param, i)
+					util.Log.Println(param, i, string(debug.Stack()))
 				})
 				taskWait.Done()
 			}
