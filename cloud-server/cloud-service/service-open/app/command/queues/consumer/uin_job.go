@@ -40,12 +40,18 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("3279769310")
+	//	list, _ := uin2.GetIns().SelectByUin("1178710004")
 	//	for _, v := range list {
-	//		if v.UinStatus == 0 {
-	//			fmt.Println("发送任务", v)
-	//			l.run(v)
+	//		fmt.Println("发送任务", v)
+	//		for i := 0; i < 5; i++ {
+	//			go func() {
+	//				for true {
+	//					v.Uin = strconv.Itoa(rand.Intn(9999999))
+	//					l.run(v)
+	//				}
+	//			}()
 	//		}
+	//		time.Sleep(9999 * time.Second)
 	//	}
 	//}()
 	err := uinJobIns.ListenReceiveMsgDo(constant.UinJobTopic, "", func(mqMsg queue.MqMsg) {
@@ -67,12 +73,18 @@ var (
 
 	serverIds    = make(map[int]*oicq.Proxy) //服务器列表
 	serverIdLock = &sync.RWMutex{}           //并发锁
+
+	authThreadWait = &sync.WaitGroup{} //动态协程池并发锁
+	taskWait       = &sync.WaitGroup{} //任务并发锁
 )
 
 // autoStartThread 动态协程池
 func (l *uinJob) autoStartThread() {
 	go func(l *uinJob) {
 		for true {
+			//上锁,禁止新增任务
+			authThreadWait.Add(1)
+			taskWait.Wait() //等待协程内所有任务执行完毕
 			//查询所有挂机服务器
 			list, err := server2.GetIns().SelectAllServer()
 			if err == nil {
@@ -80,6 +92,7 @@ func (l *uinJob) autoStartThread() {
 					l.restartThread(server)
 				}
 			}
+			authThreadWait.Done()
 			time.Sleep(1 * time.Hour) //每1小时根据账号数量更新协程池
 		}
 	}(l)
@@ -124,11 +137,13 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 		}, Consumer: func(param interface{}) {
 			if param != nil {
 				//执行挂机任务
+				taskWait.Add(1) //任务数量+1
 				sinking_web.Try(func() {
 					l.speed(param.(*uin2.AppUinJob))
 				}, func(i interface{}) {
 					util.Log.Println(param, i)
 				})
+				taskWait.Done()
 			}
 		}, Thread: threadNum}).Run()
 	}(g)
@@ -140,7 +155,7 @@ func (l *uinJob) run(uin *uin2.AppUinJob) {
 	if uin == nil {
 		return
 	}
-
+	authThreadWait.Wait() //等待协程池处理完毕
 	for i := 0; i < 30; i++ {
 		serverLock.RLock()
 		if d, ok := servers[uin.ServerId]; ok && d != nil {

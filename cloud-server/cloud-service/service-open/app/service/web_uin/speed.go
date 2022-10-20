@@ -57,7 +57,7 @@ var Project = map[string]map[string]map[string]string{
 			"name":     "手机在线",
 			"describe": "手机在线满6小时加速1天",
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/sq.png",
-			"edit":     "false",
+			"edit":     "true",
 		},
 		"pc": {
 			"sort":     "2",
