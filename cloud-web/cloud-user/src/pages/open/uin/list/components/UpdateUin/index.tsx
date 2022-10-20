@@ -33,7 +33,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
   }
   const qrCodeHandleOk = () => {
     setIsQrCodeConfirmLoading(true);
-    uinLogin({uin: initUin, step: "qrcode"}).then((r) => {
+    uinLogin({uin: initUin, step: "normal"}).then((r) => {
       loginHandle(r);
     }).catch(() => {
       setIsQrCodeConfirmLoading(false);
@@ -341,7 +341,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
                style={{marginTop: "-10px", marginBottom: "20px", display: step == "sms" ? "flex" : "none"}} showIcon/>
         <Form name="control-hooks" form={form} ref={formRef} onFinish={onFinish}
               labelAlign="right"
-              labelCol={{span: 6}} layout={"vertical"}>
+              labelCol={{span: 6}} layout={"horizontal"}>
           <Form.Item name={"pwd"}
                      hidden={step != "normal"}
                      label="挂机密码">

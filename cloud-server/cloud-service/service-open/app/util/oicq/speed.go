@@ -59,7 +59,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 			}
 			o.Pc.Release()
 			e, url := o.Pc.FetchQrCode()
-			if e == nil {
+			if e == nil && len(url) > 32 {
 				wg := &sync.WaitGroup{}
 				wg.Add(1)
 				go func(wg *sync.WaitGroup) {

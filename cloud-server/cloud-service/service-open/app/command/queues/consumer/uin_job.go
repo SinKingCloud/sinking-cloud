@@ -41,18 +41,12 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("1178710004")
+	//	list, _ := uin2.GetIns().SelectByUin("907463655")
 	//	for _, v := range list {
-	//		fmt.Println("发送任务", v)
-	//		for i := 0; i < 5; i++ {
-	//			go func() {
-	//				for true {
-	//					v.Uin = strconv.Itoa(rand.Intn(9999999))
-	//					l.run(v)
-	//				}
-	//			}()
+	//		if v.UinStatus == 0 {
+	//			l.run(v)
+	//			break
 	//		}
-	//		time.Sleep(9999 * time.Second)
 	//	}
 	//}()
 	err := uinJobIns.ListenReceiveMsgDo(constant.UinJobTopic, "", func(mqMsg queue.MqMsg) {
@@ -284,12 +278,12 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		}
 	}
 	log.Println("获取挂机任务", uin.Uin, jobs)
+	//jobs = []oicq.Job{oicq.Pc}
 	if len(jobs) <= 0 {
 		return false, nil, cli.LoginToken
 	}
 	//执行挂机项
 	log.Println("执行挂机项目", uin.Uin, jobs, cookies)
-	//jobs = []oicq.Job{oicq.Word}
 	r, resCookie := cli.ActiveProject(jobs, cookies)
 	log.Println("执行挂机结果", uin.Uin, r, resCookie)
 	if resCookie[oicq.Ws] != "" && (wsCookie == "" || resCookie[oicq.Ws] != wsCookie) {
