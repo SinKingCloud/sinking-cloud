@@ -275,7 +275,7 @@ func (ControllerUin) ChangeStatus(c *sinking_server.Context) {
 func (ControllerUin) Login(c *sinking_server.Context) {
 	type Form struct {
 		Uin    string `json:"uin" validate:"required,numeric" label:"QQ账号"`
-		Step   string `json:"step" validate:"oneof=normal captcha get_sms sms" label:"登陆步骤"`
+		Step   string `json:"step" validate:"oneof=normal captcha get_sms sms qrcode" label:"登陆步骤"`
 		Rand   string `json:"rand" validate:"omitempty,max=500" label:"登陆rand"`
 		Ticket string `json:"ticket" validate:"omitempty,max=500" label:"登陆ticket"`
 		Code   string `json:"code" validate:"omitempty,numeric,len=6" label:"短信验证码"`
@@ -342,6 +342,12 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	}
 	switch form.Step {
 	case "normal":
+		cli.Mobile.Release() //释放资源
+		resp, err = request(uinInfo, func() (*client.LoginResponse, error) {
+			return cli.Login()
+		})
+		break
+	case "qrcode":
 		resp, err = request(uinInfo, func() (*client.LoginResponse, error) {
 			return cli.Login()
 		})

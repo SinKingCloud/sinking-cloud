@@ -33,7 +33,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
   }
   const qrCodeHandleOk = () => {
     setIsQrCodeConfirmLoading(true);
-    uinLogin({uin: initUin, step: "normal"}).then((r) => {
+    uinLogin({uin: initUin, step: "qrcode"}).then((r) => {
       loginHandle(r);
     }).catch(() => {
       setIsQrCodeConfirmLoading(false);
