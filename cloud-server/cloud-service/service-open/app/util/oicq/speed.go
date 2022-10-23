@@ -22,6 +22,38 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 		status := mobile.SpeedError
 		cookie := ""
 		switch v {
+		case Vip: //会员签到
+			_, status = o.Mobile.Speed.VipSign()
+			break
+		case BigVip: //大会员签到
+			_, status = o.Mobile.Speed.BigVipSign()
+			break
+		case Lz: //黄钻签到
+			_, status = o.Mobile.Speed.YellowSign()
+			break
+		case Ld: //乐斗签到
+			_, status = o.Mobile.Speed.DaLeDouSign()
+			break
+		case WeiYun: //微云签到
+			_, status = o.Mobile.Speed.WeiYunSign()
+			break
+		case Music: //音乐签到
+			_, status = o.Mobile.Speed.QQMusicSign()
+			break
+		case GameCenter: //游戏中心签到
+			_, status = o.Mobile.Speed.GameCenterSign()
+			break
+		case QQGame: //QQ游戏签到
+			_, status = o.Mobile.Speed.QQGamSign()
+			_, status = o.Mobile.Speed.DaoJuChengSign()
+			_, status = o.Mobile.Speed.JingPinYeYouSign()
+			break
+		case Sweet: //情侣空间签到
+			_, status = o.Mobile.Speed.SweetSign()
+			break
+		case Video: //腾讯视频
+			_, status = o.Mobile.Speed.VideoSign()
+			break
 		case Ws: //微视加速
 			_, cookie, status = o.Mobile.Speed.WeiShi(cookies[v])
 			if status == mobile.SpeedCookieExpire {

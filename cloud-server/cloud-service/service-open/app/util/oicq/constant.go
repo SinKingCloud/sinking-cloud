@@ -26,4 +26,8 @@ const (
 	Ld         //大乐斗签到
 	GameCenter //游戏中心签到
 	Music      //音乐签到
+	QQGame     //QQ游戏签到
+	Sweet      //情侣空间签到
+	Video      //腾讯视频签到
+	WeiYun     //微云签到
 )

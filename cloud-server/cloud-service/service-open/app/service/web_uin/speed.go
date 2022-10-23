@@ -22,6 +22,10 @@ var Setting = map[string]string{
 	"ld":           "1",
 	"game_center":  "1",
 	"yy":           "1",
+	"qq_game":      "1",
+	"sweet":        "1",
+	"video":        "1",
+	"weiyun":       "1",
 }
 
 // JobMap 映射表
@@ -45,6 +49,10 @@ var JobMap = map[string]map[string]oicq.Job{
 		"ld":          oicq.Ld,
 		"game_center": oicq.GameCenter,
 		"yy":          oicq.Music,
+		"qq_game":     oicq.QQGame,
+		"sweet":       oicq.Sweet,
+		"video":       oicq.Video,
+		"weiyun":      oicq.WeiYun,
 	},
 }
 
@@ -179,6 +187,38 @@ var Project = map[string]map[string]map[string]string{
 			"name":     "音乐签到",
 			"describe": "每日完成QQ音乐签到和刷歌时长",
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/yq.png",
+			"edit":     "true",
+		},
+		"qq_game": {
+			"sort":     "22",
+			"type":     "sign",
+			"name":     "QQ游戏",
+			"describe": "QQ游戏,道聚城,精品页游签到领取礼包",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/dr.png",
+			"edit":     "true",
+		},
+		"sweet": {
+			"sort":     "23",
+			"type":     "sign",
+			"name":     "情侣空间",
+			"describe": "每日情侣空间签到发表状态",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ql.png",
+			"edit":     "true",
+		},
+		"video": {
+			"sort":     "24",
+			"type":     "sign",
+			"name":     "腾讯视频",
+			"describe": "腾讯视频会员每日签到领取V力值",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/sp.png",
+			"edit":     "true",
+		},
+		"weiyun": {
+			"sort":     "25",
+			"type":     "sign",
+			"name":     "微云签到",
+			"describe": "微云每日签到领取积分",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/xy.png",
 			"edit":     "true",
 		},
 	},

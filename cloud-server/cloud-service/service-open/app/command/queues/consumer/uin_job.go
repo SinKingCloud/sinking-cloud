@@ -41,12 +41,24 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("907463655")
+	//	list, _ := uin2.GetIns().SelectByUin("198834173")
 	//	for _, v := range list {
 	//		if v.UinStatus == 0 {
 	//			l.run(v)
 	//			break
 	//		}
+	//	}
+	//}()
+	//go func() {
+	//	list, _ := uin2.GetIns().SelectByUin("1178710004")
+	//	uin := list[0]
+	//	for i := 0; i < 100; i++ {
+	//		go func() {
+	//			for i1 := 0; i1 < 100000; i1++ {
+	//				uin.Uin = strconv.Itoa(rand.Intn(999999))
+	//				l.run(uin)
+	//			}
+	//		}()
 	//	}
 	//}()
 	err := uinJobIns.ListenReceiveMsgDo(constant.UinJobTopic, "", func(mqMsg queue.MqMsg) {
@@ -69,8 +81,10 @@ var (
 	serverIds    = make(map[int]*oicq.Proxy) //服务器列表
 	serverIdLock = &sync.RWMutex{}           //并发锁
 
-	authThreadWait = &sync.WaitGroup{} //动态协程池并发锁
-	taskWait       = &sync.WaitGroup{} //任务并发锁
+	authThreadWait     = &sync.WaitGroup{} //动态协程池并发锁
+	authThreadWaitLock = &sync.RWMutex{}
+	taskWait           = &sync.WaitGroup{} //任务并发锁
+	taskWaitLock       = &sync.RWMutex{}
 )
 
 // autoStartThread 动态协程池
@@ -78,7 +92,9 @@ func (l *uinJob) autoStartThread() {
 	go func(l *uinJob) {
 		for true {
 			//上锁,禁止新增任务
+			authThreadWaitLock.RLock()
 			authThreadWait.Add(1)
+			authThreadWaitLock.RUnlock()
 			taskWait.Wait() //等待协程内所有任务执行完毕
 			//查询所有挂机服务器
 			list, err := server2.GetIns().SelectAllServer()
@@ -87,8 +103,10 @@ func (l *uinJob) autoStartThread() {
 					l.restartThread(server)
 				}
 			}
+			authThreadWaitLock.RLock()
 			authThreadWait.Done()
-			time.Sleep(1 * time.Hour) //每1小时根据账号数量更新协程池
+			authThreadWaitLock.RUnlock()
+			time.Sleep(24 * time.Hour) //每1小时根据账号数量更新协程池
 		}
 	}(l)
 }
@@ -132,13 +150,17 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 		}, Consumer: func(param interface{}) {
 			if param != nil {
 				//执行挂机任务
+				taskWaitLock.RLock()
 				taskWait.Add(1) //任务数量+1
+				taskWaitLock.RUnlock()
 				sinking_web.Try(func() {
 					l.speed(param.(*uin2.AppUinJob))
 				}, func(i interface{}) {
 					util.Log.Println(param, i, string(debug.Stack()))
 				})
+				taskWaitLock.RLock()
 				taskWait.Done()
+				taskWaitLock.RUnlock()
 			}
 		}, Thread: threadNum}).Run()
 	}(g)
@@ -154,15 +176,13 @@ func (l *uinJob) run(uin *uin2.AppUinJob) {
 	for i := 0; i < 30; i++ {
 		serverLock.RLock()
 		if d, ok := servers[uin.ServerId]; ok && d != nil {
+			d <- uin
 			serverLock.RUnlock()
 			break
 		}
 		serverLock.RUnlock()
 		time.Sleep(time.Second)
 	}
-
-	//按照服务分发至不同协程执行
-	servers[uin.ServerId] <- uin
 }
 
 // speed 执行任务
@@ -278,13 +298,18 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		}
 	}
 	log.Println("获取挂机任务", uin.Uin, jobs)
-	//jobs = []oicq.Job{oicq.Pc}
 	if len(jobs) <= 0 {
 		return false, nil, cli.LoginToken
 	}
 	//执行挂机项
 	log.Println("执行挂机项目", uin.Uin, jobs, cookies)
-	r, resCookie := cli.ActiveProject(jobs, cookies)
+	r := make(map[oicq.Job]client.SpeedCode)
+	resCookie := make(map[oicq.Job]string)
+	sinking_web.Try(func() {
+		r, resCookie = cli.ActiveProject(jobs, cookies)
+	}, func(i interface{}) {
+		log.Println("执行挂机项目出错", uin.Uin, jobs, cookies)
+	})
 	log.Println("执行挂机结果", uin.Uin, r, resCookie)
 	if resCookie[oicq.Ws] != "" && (wsCookie == "" || resCookie[oicq.Ws] != wsCookie) {
 		_ = web_uin.SetUinCookies(uin.Uin, "h5.weishi.qq.com", resCookie[oicq.Ws])
