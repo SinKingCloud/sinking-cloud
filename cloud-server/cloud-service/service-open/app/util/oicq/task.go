@@ -197,6 +197,8 @@ func startDoHeartbeat() {
 											if e1 == nil {
 												log.Println(task.Mobile.Uin, "mac token 重连成功")
 												r2 = true
+											} else {
+												log.Println(task.Mobile.Uin, "mac token 重连失败", e1)
 											}
 											if r2 {
 												task.MacPcLoginTime = time.Now().Unix()

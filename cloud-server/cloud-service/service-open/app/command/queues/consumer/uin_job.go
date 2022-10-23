@@ -309,7 +309,7 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 	sinking_web.Try(func() {
 		r, resCookie = cli.ActiveProject(jobs, cookies)
 	}, func(i interface{}) {
-		log.Println("执行挂机项目出错", uin.Uin, jobs, cookies)
+		log.Println("执行挂机项目出错", uin.Uin, jobs, cookies, i, string(debug.Stack()))
 	})
 	log.Println("执行挂机结果", uin.Uin, r, resCookie)
 	if resCookie[oicq.Ws] != "" && (wsCookie == "" || resCookie[oicq.Ws] != wsCookie) {
