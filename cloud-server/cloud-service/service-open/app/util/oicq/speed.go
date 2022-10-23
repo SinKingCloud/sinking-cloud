@@ -136,7 +136,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					log.Println(o.Mobile.Uin, "pc授权登陆", e)
 				}
 			} else {
-				log.Println(o.Mobile.Uin, "pc获取二维码失败", e, "开始使用mac协议")
+				log.Println(o.Mobile.Uin, "pc获取二维码失败", e, url, "开始使用mac协议")
 			}
 			if status == mobile.SpeedError {
 				//mac协议挂机

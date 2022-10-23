@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("198834173")
+	//	list, _ := uin2.GetIns().SelectByUin("2018271074")
 	//	for _, v := range list {
 	//		if v.UinStatus == 0 {
 	//			l.run(v)
@@ -298,6 +298,7 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		}
 	}
 	log.Println("获取挂机任务", uin.Uin, jobs)
+	//jobs = []oicq.Job{oicq.Pc}
 	if len(jobs) <= 0 {
 		return false, nil, cli.LoginToken
 	}
