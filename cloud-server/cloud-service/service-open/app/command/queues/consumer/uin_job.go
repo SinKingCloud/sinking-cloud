@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("3574537062")
+	//	list, _ := uin2.GetIns().SelectByUin("254290480")
 	//	for _, v := range list {
 	//		if v.UinStatus == 0 {
 	//			l.run(v)
@@ -226,21 +226,32 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 		}
 	}
 	data := map[string]interface{}{"run_time": str.DateTime(time.Now())}
-	stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", uin.RunTime.String(), time.Local)
+	stamp, e := time.ParseInLocation("2006-01-02 15:04:05", uin.RunTime.String(), time.Local)
+	if e != nil {
+		stamp = str.NewTimeTool().GetZeroTime(time.Now())
+	}
+	stamp2, e := time.ParseInLocation("2006-01-02 15:04:05", uin.CheckTime.String(), time.Local)
+	if e != nil {
+		stamp2 = str.NewTimeTool().GetZeroTime(time.Now())
+	}
 	isCheck := true //是否是检测任务
 	if isCost && stamp.Unix() < str.NewTimeTool().GetZeroTime(time.Now()).Unix() {
 		data["run_day"] = gorm.Expr("`run_day`+1")
 		isCheck = false
+	}
+	isSys := true //是否系统执行
+	if isCheck && (stamp2.Unix() <= str.NewTimeTool().GetZeroTime(time.Now()).Unix() || time.Now().Unix() < stamp.Unix()) {
+		isSys = false
 	}
 	if len(jobs) > 0 {
 		var fail bool
 		var token []byte
 		if isCheck {
 			//第二次挂机
-			fail, _, token = l.speedJob(proxy, uin, jobs, false)
+			fail, _, token = l.speedJob(proxy, uin, jobs, false, isSys)
 		} else {
 			//第一次挂机
-			fail, _, token = l.speedJob(proxy, uin, jobs, true)
+			fail, _, token = l.speedJob(proxy, uin, jobs, true, isSys)
 			//6.5小时后补挂一次
 			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 {
 				data["check_time"] = str.DateTime(time.Now().Add(6.5 * 3600 * time.Second))
@@ -259,7 +270,7 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 }
 
 // speedJob 加速项目
-func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Job, isFirst bool) (bool, map[int]client.SpeedStatus, []byte) {
+func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Job, isFirst bool, isSys bool) (bool, map[int]client.SpeedStatus, []byte) {
 	log.Println("开始挂机", uin)
 	uinInfo, err := uin2.GetIns().FindById(uin.Id)
 	if err != nil || uinInfo == nil {
@@ -290,7 +301,7 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		//获取未执行的项目
 		e, s := cli.Mobile.Speed.Info()
 		if e == nil {
-			jobs = l.getUnDoJobs(jobs, s)
+			jobs = l.getUnDoJobs(jobs, s, isSys)
 			if len(jobs) <= 0 {
 				//保存挂机状态
 				_ = web_uin.SetUinSpeedStatus(uin.Uin, s)
@@ -323,7 +334,7 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 }
 
 // getUnDoJobs 获取未执行的任务
-func (l *uinJob) getUnDoJobs(jobs []oicq.Job, status *client.SpeedStatus) []oicq.Job {
+func (l *uinJob) getUnDoJobs(jobs []oicq.Job, status *client.SpeedStatus, isSys bool) []oicq.Job {
 	var newJobs []oicq.Job
 	for _, v := range jobs {
 		isCheck := false
@@ -345,6 +356,9 @@ func (l *uinJob) getUnDoJobs(jobs []oicq.Job, status *client.SpeedStatus) []oicq
 			break
 		case oicq.Friend:
 			isCheck = status.IAddFriend != "1"
+			break
+		default:
+			isCheck = !isSys //用户提交则补挂签到
 			break
 		}
 		if isCheck {

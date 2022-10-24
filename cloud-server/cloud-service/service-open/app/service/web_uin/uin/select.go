@@ -70,6 +70,7 @@ type AppUinJob struct {
 	Timing     int          `gorm:"column:timing" json:"timing"`
 	Status     int          `gorm:"column:status" json:"status"`
 	RunTime    str.DateTime `gorm:"column:run_time" json:"run_time"`
+	CheckTime  str.DateTime `gorm:"column:check_time" json:"check_time"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }
