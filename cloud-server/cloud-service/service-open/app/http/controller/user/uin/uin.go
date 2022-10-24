@@ -377,7 +377,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			oicq.DelOicqInstance(q) //删除实例
 			oicq.DelTempOicqInstance(q)
 		}
-		if web_uin.SaveLoginToken(uinInfo.Uin, uinInfo.Password, token, uinInfo.Device) == nil {
+		if web_uin.SaveLoginToken(uinInfo, token) == nil {
 			go func(uinInfo *model.AppUin) {
 				//写入QQ操作记录
 				_ = log.GetIns().Create(&model.AppUinLog{

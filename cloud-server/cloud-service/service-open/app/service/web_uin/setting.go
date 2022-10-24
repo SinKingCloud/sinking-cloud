@@ -111,13 +111,15 @@ func ChangePassword(uinId int, pwd string) error {
 }
 
 // SaveLoginToken 保存登陆token
-func SaveLoginToken(u string, pwd string, token []byte, device int) error {
+func SaveLoginToken(uinInfo *model.AppUin, token []byte) error {
 	data := make(map[string]interface{})
+	data["server_id"] = uinInfo.ServerId
+	data["server_key"] = uinInfo.ServerKey
 	data["token"] = utils.Bin2HexTo(token)
 	data["uin_status"] = int(uin.StatusUinNormal)
-	data["password"] = pwd
-	data["device"] = device
-	err := uin.GetIns().UpdateByUin(u, data)
+	data["password"] = uinInfo.Password
+	data["device"] = uinInfo.Device
+	err := uin.GetIns().UpdateByUin(uinInfo.Uin, data)
 	if err != nil {
 		return errors.New("更改挂机密码失败")
 	}
