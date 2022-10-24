@@ -161,7 +161,7 @@ func startDoHeartbeat() {
 							//发送pc心跳
 							if task.PcLoginTime > 0 || task.Pc.Online.Load() {
 								//pc登陆满3小时下线
-								if task.PcLoginTime > 0 && task.PcLoginTime+3600*2.5 < time.Now().Unix() {
+								if task.PcLoginTime > 0 && task.PcLoginTime+3600*3 < time.Now().Unix() {
 									task.Pc.Release()
 									task.Pc.Online.Store(false)
 									log.Println("pc下线", task.Pc.Uin, "登陆时间", task.PcLoginTime)
