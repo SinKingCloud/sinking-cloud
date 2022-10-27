@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("254290480")
+	//	list, _ := uin2.GetIns().SelectByUin("1677397617")
 	//	for _, v := range list {
 	//		if v.UinStatus == 0 {
 	//			l.run(v)
@@ -106,7 +106,7 @@ func (l *uinJob) autoStartThread() {
 			authThreadWaitLock.RLock()
 			authThreadWait.Done()
 			authThreadWaitLock.RUnlock()
-			time.Sleep(24 * time.Hour) //每1小时根据账号数量更新协程池
+			time.Sleep(12 * time.Hour) //每12小时根据账号数量更新协程池
 		}
 	}(l)
 }

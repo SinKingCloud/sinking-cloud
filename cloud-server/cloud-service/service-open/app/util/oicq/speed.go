@@ -6,6 +6,7 @@ import (
 	pc "github.com/SinKingCloud/sinking-oicq/binary-pc/client"
 	"log"
 	"runtime/debug"
+	"strings"
 	"sync"
 	"time"
 )
@@ -92,7 +93,14 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					break
 				}
 				o.Pc.Release()
-				e, url := o.Pc.FetchQrCode()
+				var e error
+				url := ""
+				for i := 0; i < 3; i++ {
+					e, url = o.Pc.FetchQrCode()
+					if e == nil && strings.Contains(url, "&f=") {
+						break
+					}
+				}
 				if e == nil && len(url) > 32 {
 					wg := &sync.WaitGroup{}
 					wg.Add(1)

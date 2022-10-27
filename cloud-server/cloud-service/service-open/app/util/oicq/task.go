@@ -43,9 +43,9 @@ func GetOicqInstance(uin int64, password [16]byte, device int, proxy *Proxy, log
 				proxy.Port != oicq.Mobile.Proxy.Port ||
 				proxy.User != oicq.Mobile.Proxy.User ||
 				proxy.Pwd != oicq.Mobile.Proxy.Pwd) {
-			oicq.Mobile.Release()
-			oicq.Pc.Release()
-			oicq.MacPc.Release()
+			oicq.Mobile.Disconnect()
+			oicq.Pc.Disconnect()
+			oicq.MacPc.Disconnect()
 			oicq.Mobile.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd)
 			oicq.Pc.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd)
 			oicq.MacPc.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd)
