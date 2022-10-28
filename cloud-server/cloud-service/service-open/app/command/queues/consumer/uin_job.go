@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("1677397617")
+	//	list, _ := uin2.GetIns().SelectByUin("6004139")
 	//	for _, v := range list {
 	//		if v.UinStatus == 0 {
 	//			l.run(v)
@@ -297,6 +297,11 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		return true, nil, nil
 	}
 	defer cli.Mobile.Release()
+	//保存相关cookie
+	cookie := cli.Mobile.GetAllCookies()
+	for k, v := range cookie {
+		_ = web_uin.SetUinCookies(uin.Uin, k, v)
+	}
 	if !isFirst {
 		//获取未执行的项目
 		e, s := cli.Mobile.Speed.Info()
@@ -308,8 +313,8 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 			}
 		}
 	}
-	log.Println("获取挂机任务", uin.Uin, jobs)
 	//jobs = []oicq.Job{oicq.Pc}
+	log.Println("获取挂机任务", uin.Uin, jobs)
 	if len(jobs) <= 0 {
 		return false, nil, cli.LoginToken
 	}

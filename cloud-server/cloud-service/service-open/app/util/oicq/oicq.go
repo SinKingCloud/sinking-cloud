@@ -12,9 +12,7 @@ import (
 )
 
 type Oicq struct {
-	Mobile          *mobile.QQClient
-	MobileLoginTime int64
-	MobileHeartTime int64
+	Mobile *mobile.QQClient
 
 	Pc          *pc.QQClient
 	PcLoginTime int64
