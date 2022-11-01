@@ -1,18 +1,26 @@
 package ai
 
 import (
+	"bytes"
 	"compress/gzip"
 	"context"
+	"crypto/md5"
 	"crypto/tls"
+	"encoding/hex"
+	"encoding/json"
 	"golang.org/x/net/proxy"
 	"io"
+	"mime/multipart"
 	"net"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 )
 
 type ai struct {
-	Proxy *TCPProxy
+	Proxy      *TCPProxy
+	SessionKey string
 }
 
 var ins *ai
@@ -124,4 +132,89 @@ func (a *ai) sendHttpRequest(timeout time.Duration, url string, method string, h
 		}
 		return b, resp.Header, nil
 	}
+}
+
+// SendFormDataRequest 发送formData请求
+func (a *ai) SendFormDataRequest(u string, post *map[string]string, file *map[string][]byte) (body []byte, err error) {
+	traceId := md5.Sum([]byte(strconv.FormatInt(time.Now().UnixMilli(), 10)))
+	header := map[string]string{
+		"Referer":      "https://smartapps.cn/AHQ3hWGXDuWutB1dkjwK4g9DrDiDqZFe/0/page-frame.html",
+		"User-Agent":   "Mozilla/5.0 (iPad; CPU OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 swan/2.57.0 swan-baiduboxapp/13.19.5.10 baiduboxapp/13.19.5.10 (Baidu; P2 16.1)",
+		"X-BD-Traceid": hex.EncodeToString(traceId[:]),
+		"sessionKey":   a.GetSessionKey(),
+	}
+	url := "https://ai.baidu.com" + u
+	method := http.MethodGet
+	data := bytes.NewBuffer(nil)
+	w := multipart.NewWriter(data)
+	defer func(w *multipart.Writer) {
+		_ = w.Close()
+	}(w)
+	if post != nil {
+		for k, v := range *post {
+			_ = w.WriteField(k, v)
+		}
+		header["Content-Type"] = w.FormDataContentType()
+		method = http.MethodPost
+	}
+	if file != nil {
+		for k, v := range *file {
+			if createFormFile, e := w.CreateFormFile(k, k); e == nil {
+				_, _ = createFormFile.Write(v)
+			}
+		}
+		if method != http.MethodPost {
+			header["Content-Type"] = w.FormDataContentType()
+			method = http.MethodPost
+		}
+	}
+	respBytes, _, err := a.sendHttpRequest(600*time.Second, url, method, header, data, false, false)
+	return respBytes, err
+}
+
+// SendNormalRequest 发送普通请求
+func (a *ai) SendNormalRequest(u string, post *string) (body []byte, err error) {
+	traceId := md5.Sum([]byte(strconv.FormatInt(time.Now().UnixMilli(), 10)))
+	header := map[string]string{
+		"Referer":      "https://smartapps.cn/AHQ3hWGXDuWutB1dkjwK4g9DrDiDqZFe/0/page-frame.html",
+		"User-Agent":   "Mozilla/5.0 (iPad; CPU OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 swan/2.57.0 swan-baiduboxapp/13.19.5.10 baiduboxapp/13.19.5.10 (Baidu; P2 16.1)",
+		"X-BD-Traceid": hex.EncodeToString(traceId[:]),
+		"sessionKey":   a.GetSessionKey(),
+	}
+	url := "https://ai.baidu.com" + u
+	method := http.MethodGet
+	data := strings.NewReader(*post)
+	respBytes, _, err := a.sendHttpRequest(600*time.Second, url, method, header, data, false, false)
+	return respBytes, err
+}
+
+// GetSessionKey 获取sessionKey
+func (a *ai) GetSessionKey() string {
+	if a.SessionKey == "" {
+		url := "https://ai.baidu.com/weapp/login?code=4908f2e82a54121da3a823a5a8b9e860Nn"
+		header := map[string]string{
+			"Referer":    "https://smartapps.cn/AHQ3hWGXDuWutB1dkjwK4g9DrDiDqZFe/0/page-frame.html",
+			"User-Agent": "Mozilla/5.0 (iPad; CPU OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 swan/2.57.0 swan-baiduboxapp/13.19.5.10 baiduboxapp/13.19.5.10 (Baidu; P2 16.1)",
+		}
+		body, _, err := a.sendHttpRequest(60*time.Second, url, http.MethodGet, header, nil, false, false)
+		if err == nil {
+			type Response struct {
+				Code int    `json:"code"`
+				Msg  string `json:"msg"`
+				Data struct {
+					SessionKey string `json:"sessionKey"`
+				} `json:"data"`
+			}
+			var resp2 *Response
+			err = json.Unmarshal(body, &resp2)
+			if err != nil || resp2 == nil || resp2.Code != 0 {
+				a.SessionKey = resp2.Msg
+			} else {
+				a.SessionKey = resp2.Data.SessionKey
+			}
+		} else {
+			a.SessionKey = err.Error()
+		}
+	}
+	return a.SessionKey
 }
