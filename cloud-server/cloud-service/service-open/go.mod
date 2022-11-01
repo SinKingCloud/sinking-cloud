@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20220914035625-a775ed93d556
-	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20221024060046-bf3212f3cfb1
+	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20221031023337-e9badd94bd16
 	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20221017200407-ddf5d973d237
 	gorm.io/gorm v1.21.15
 )

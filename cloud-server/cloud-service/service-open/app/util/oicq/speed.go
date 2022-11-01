@@ -88,7 +88,9 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 				_, status = o.Mobile.Speed.Friend()
 				break
 			case Pc: //电脑加速
-				if o.Pc.Online.Load() || o.MacPc.Online.Load() {
+				d := time.Now()
+				d = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
+				if (o.Pc.Online.Load() && o.Pc.LoginTime > 0 && o.PcLoginTime > d.Unix()) || (o.MacPc.Online.Load() && o.MacPcLoginTime > 0 && o.MacPcLoginTime > d.Unix()) {
 					status = mobile.SpeedSuccess
 					break
 				}

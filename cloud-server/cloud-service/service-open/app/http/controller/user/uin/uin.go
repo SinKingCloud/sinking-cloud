@@ -367,16 +367,58 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	}
 	if err != nil {
 		log2.Println(uinInfo.Uin, "登陆错误", resp, err)
-		c.Error("登陆发生错误,请联系管理员")
+		c.Error("登陆发生错误,请刷新页面重试")
 		return
 	}
-	if resp.Success {
-		token := cli.Mobile.GenToken()
-		q, e := strconv.ParseInt(uinInfo.Uin, 10, 64)
+	response := func(uinInfo *model.AppUin, resp *client.LoginResponse) (code int32, message interface{}, data interface{}) {
+		if resp.Success {
+			return 200, "更新状态成功", nil
+		} else if resp.Error == client.SliderNeededError {
+			return 400, "请验证滑动验证码", resp.VerifyUrl //需要滑动验证码
+		} else if resp.Error == client.PhoneVerifyNeededError {
+			return 399, "当前登录存在安全风险,请验证手机号后登陆", nil //需要发送验证码
+		} else if resp.Error == client.SMSOrVerifyNeededError || resp.Error == client.UnsafeDeviceError || (resp.Error == client.SMSNeededError && resp.SMSPhone != "") {
+			if resp.VerifyUrl != "" {
+				resp.VerifyUrl = web_uin.GetLoginQrCode(resp.VerifyUrl)
+			}
+			return 398, "请选择一种方式验证设备锁", sinking_web.H{
+				"phone":  resp.SMSPhone,
+				"qrcode": resp.VerifyUrl,
+			}
+		} else if resp.Error == client.UnknownLoginError {
+			msg := "账号被冻结,请解冻后在更新状态"
+			if resp.ErrorMessage != "" {
+				msg = resp.ErrorMessage
+			}
+			return 500, msg, nil
+		} else if resp.Error == client.TooManySMSRequestError {
+			return 500, "获取验证码频繁,请稍后重试", nil
+		} else if resp.Error == client.SMSNeededError {
+			return 500, "登陆环境异常,请稍后重试", nil
+		} else if resp.Error == client.OtherLoginError {
+			log2.Println(uinInfo.Uin, "登陆异常", resp, err)
+			if resp.ErrorMessage == "" {
+				resp.ErrorMessage = "登陆异常,请刷新页面重试"
+			}
+			return 500, resp.ErrorMessage, nil
+		} else {
+			log2.Println(uinInfo.Uin, "登陆失败", resp, err)
+			if resp.ErrorMessage == "" {
+				resp.ErrorMessage = "登陆失败,请刷新页面重试"
+			}
+			return 500, resp.ErrorMessage, nil
+		}
+	}
+	delIns := func(uin string) {
+		q, e := strconv.ParseInt(uin, 10, 64)
 		if e == nil {
 			oicq.DelOicqInstance(q) //删除实例
 			oicq.DelTempOicqInstance(q)
 		}
+	}
+	code, message, data := response(uinInfo, resp)
+	if code == 200 {
+		token := cli.Mobile.GenToken()
 		if web_uin.SaveLoginToken(uinInfo, token) == nil {
 			go func(uinInfo *model.AppUin) {
 				//写入QQ操作记录
@@ -389,46 +431,11 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 					Title:   "更新状态",
 					Content: "更新账号状态",
 				})
+				delIns(uinInfo.Uin)
 			}(uinInfo)
-			c.Return(200, "更新状态成功", nil)
-		} else {
-			c.Return(500, "登陆成功,保存状态失败,请联系管理员", nil)
 		}
-	} else if resp.Error == client.SliderNeededError {
-		c.Return(400, "请验证滑动验证码", resp.VerifyUrl) //需要滑动验证码
-	} else if resp.Error == client.PhoneVerifyNeededError {
-		c.Return(399, "当前登录存在安全风险,请验证手机号后登陆", nil) //需要发送验证码
-	} else if resp.Error == client.SMSOrVerifyNeededError || resp.Error == client.UnsafeDeviceError || (resp.Error == client.SMSNeededError && resp.SMSPhone != "") {
-		if resp.VerifyUrl != "" {
-			resp.VerifyUrl = web_uin.GetLoginQrCode(resp.VerifyUrl)
-		}
-		c.Return(398, "请选择一种方式验证设备锁", sinking_web.H{
-			"phone":  resp.SMSPhone,
-			"qrcode": resp.VerifyUrl,
-		})
-	} else if resp.Error == client.UnknownLoginError {
-		msg := "账号被冻结,请解冻后在更新状态"
-		if resp.ErrorMessage != "" {
-			msg = resp.ErrorMessage
-		}
-		c.Return(500, msg, nil)
-	} else if resp.Error == client.TooManySMSRequestError {
-		c.Return(500, "获取验证码频繁,请稍后重试", nil)
-	} else if resp.Error == client.SMSNeededError {
-		c.Return(500, "登陆环境异常,请稍后重试", nil)
-	} else if resp.Error == client.OtherLoginError {
-		log2.Println(uinInfo.Uin, "登陆异常", resp, err)
-		if resp.ErrorMessage == "" {
-			resp.ErrorMessage = "登陆异常,请联系管理员"
-		}
-		c.Return(500, resp.ErrorMessage, nil)
-	} else {
-		log2.Println(uinInfo.Uin, "登陆失败", resp, err)
-		if resp.ErrorMessage == "" {
-			resp.ErrorMessage = "登陆失败,请联系管理员"
-		}
-		c.Return(500, resp.ErrorMessage, nil)
 	}
+	c.Return(code, message, data)
 }
 
 // Sms 短信验证
@@ -643,7 +650,7 @@ func (ControllerUin) Job(c *sinking_server.Context) {
 	if util.Cache.Lock(key, constant.LockTimeUserUinJob) {
 		go func(uinInfo *uin.AppUinJob) {
 			producer.NewUinJobProducer().Build(uinInfo).Send()
-			//写入记录
+			// 写入记录
 			_ = log.GetIns().Create(&model.AppUinLog{
 				UserId:  uinInfo.UserId,
 				AppId:   uinInfo.AppId,
@@ -691,7 +698,7 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
 	}
-	//QQ信息
+	// QQ信息
 	tempUinInfo := map[string]interface{}{
 		"app_id":      uinInfo.AppId,
 		"server_key":  uinInfo.ServerKey,
@@ -718,7 +725,7 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 		tempUinInfo["activate_day"] = uinLevelInfo.ActivateDay
 		tempUinInfo["today_day"] = uinLevelInfo.TodayDay
 	}
-	//任务状态
+	// 任务状态
 	jobStatus := map[string]string{}
 	_ = json.Unmarshal([]byte(uinLevelInfo.SpeedInfo), &jobStatus)
 	stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", uinLevelInfo.UpdateTime.String(), time.Local)
@@ -732,7 +739,7 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 			jobStatus[k] = "0"
 		}
 	}
-	//设置信息
+	// 设置信息
 	var tempSetting map[string]string
 	err = json.Unmarshal([]byte(uinInfo.Setting), &tempSetting)
 	if err != nil {
@@ -754,7 +761,7 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 // Activity 活动列表
 func (ControllerUin) Activity(c *sinking_server.Context) {
 	appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
-	//首次购买活动
+	// 首次购买活动
 	firstBuy := 0
 	firstBuyOpen := 0
 	if appConfig[constant.AppUinFirstBuyGift] != "" {
@@ -764,7 +771,7 @@ func (ControllerUin) Activity(c *sinking_server.Context) {
 			firstBuyOpen = 1
 		}
 	}
-	//开通赠送活动
+	// 开通赠送活动
 	buyOpen := 0
 	if appConfig[constant.AppUinBuyActivityOpen] == "1" {
 		buyOpen = 1

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -43,7 +42,7 @@ func GetLoginQrCode(verifyUrl string) string {
 			}
 		}(resp.Body)
 	}
-	bytes, err := ioutil.ReadAll(resp.Body)
+	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return ""
 	}

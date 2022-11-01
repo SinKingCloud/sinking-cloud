@@ -106,7 +106,9 @@ func startDoHeartbeat() {
 				go func(release chan *Oicq) {
 					for task := range release {
 						//判断是否加速完成,未加速完成重新挂机
-						if task.Mobile != nil {
+						d := time.Now()
+						d = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
+						if task.Mobile != nil && task.PcLoginTime > d.Unix() {
 							e, status := task.Mobile.Speed.Info()
 							if e == nil && status != nil {
 								if status.IPCQQOnline != "1" {
@@ -185,7 +187,9 @@ func startDoHeartbeat() {
 				go func(release chan *Oicq) {
 					for task := range release {
 						//判断是否加速完成,未加速完成重新挂机
-						if task.Mobile != nil {
+						d := time.Now()
+						d = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
+						if task.Mobile != nil && task.MacPcLoginTime > d.Unix() {
 							e, status := task.Mobile.Speed.Info()
 							if e == nil && status != nil {
 								if status.IPCQQOnline != "1" {
