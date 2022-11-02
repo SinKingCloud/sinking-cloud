@@ -193,6 +193,7 @@ func startDoHeartbeat() {
 							e, status := task.Mobile.Speed.Info()
 							if e == nil && status != nil {
 								if status.IPCQQOnline != "1" {
+									task.MacPc.ForceOnline(false)
 									task.MacPc.Release()
 									e1 := task.MacPc.TokenLogin(task.LoginToken)
 									if e1 == nil {
