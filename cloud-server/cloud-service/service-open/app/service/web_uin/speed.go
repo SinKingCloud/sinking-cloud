@@ -4,62 +4,94 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/oicq"
 )
 
+type JobName string
+
+const (
+	Mobile      JobName = "mobile"
+	Pc          JobName = "pc"
+	Online      JobName = "online"
+	Ws          JobName = "ws"
+	MobileClock JobName = "mobile_clock"
+	ZoneClock   JobName = "zone_clock"
+	Login       JobName = "login"
+	Friend      JobName = "friend"
+	Word        JobName = "word"
+	Vip         JobName = "vip"
+	BigVip      JobName = "big_vip"
+	Hz          JobName = "hz"
+	Lz          JobName = "lz"
+	Ld          JobName = "ld"
+	GameCenter  JobName = "game_center"
+	Yy          JobName = "yy"
+	QQGame      JobName = "qq_game"
+	Sweet       JobName = "sweet"
+	Video       JobName = "video"
+	WeiYun      JobName = "weiyun"
+)
+
+type JobType string
+
+const (
+	Speed JobType = "speed"
+	Sign  JobType = "sign"
+)
+
 // Setting 功能设置
-var Setting = map[string]string{
-	"mobile":       "1",
-	"pc":           "1",
-	"online":       "1",
-	"ws":           "1",
-	"mobile_clock": "1",
-	"zone_clock":   "1",
-	"login":        "1",
-	"friend":       "1",
-	"word":         "1",
-	"vip":          "1",
-	"big_vip":      "1",
-	"hz":           "1",
-	"lz":           "1",
-	"ld":           "1",
-	"game_center":  "1",
-	"yy":           "1",
-	"qq_game":      "1",
-	"sweet":        "1",
-	"video":        "1",
-	"weiyun":       "1",
+var Setting = map[JobName]string{
+	Mobile:      "1",
+	Pc:          "1",
+	Online:      "1",
+	Ws:          "1",
+	MobileClock: "1",
+	ZoneClock:   "1",
+	Login:       "1",
+	Friend:      "1",
+	Word:        "1",
+	Vip:         "1",
+	BigVip:      "1",
+	Hz:          "1",
+	Lz:          "1",
+	Ld:          "1",
+	GameCenter:  "1",
+	Yy:          "1",
+	QQGame:      "1",
+	Sweet:       "1",
+	Video:       "1",
+	WeiYun:      "1",
 }
 
 // JobMap 映射表
-var JobMap = map[string]map[string]oicq.Job{
-	"speed": {
-		"mobile":       oicq.None,
-		"pc":           oicq.Pc,
-		"online":       oicq.None,
-		"ws":           oicq.Ws,
-		"mobile_clock": oicq.MobileClock,
-		"zone_clock":   oicq.ZoneClock,
-		"login":        oicq.None,
-		"friend":       oicq.Friend,
-		"word":         oicq.Word,
+var JobMap = map[JobType]map[JobName]oicq.Job{
+	Speed: {
+		Mobile:      oicq.None,
+		Pc:          oicq.Pc,
+		Online:      oicq.None,
+		Ws:          oicq.Ws,
+		MobileClock: oicq.MobileClock,
+		ZoneClock:   oicq.ZoneClock,
+		Login:       oicq.None,
+		Friend:      oicq.Friend,
+		Word:        oicq.Word,
 	},
-	"sign": {
-		"vip":         oicq.Vip,
-		"big_vip":     oicq.BigVip,
-		"hz":          oicq.Hz,
-		"lz":          oicq.Lz,
-		"ld":          oicq.Ld,
-		"game_center": oicq.GameCenter,
-		"yy":          oicq.Music,
-		"qq_game":     oicq.QQGame,
-		"sweet":       oicq.Sweet,
-		"video":       oicq.Video,
-		"weiyun":      oicq.WeiYun,
+	Sign: {
+		Vip:        oicq.Vip,
+		BigVip:     oicq.BigVip,
+		Hz:         oicq.Hz,
+		Lz:         oicq.Lz,
+		Ld:         oicq.Ld,
+		GameCenter: oicq.GameCenter,
+		Yy:         oicq.Music,
+		QQGame:     oicq.QQGame,
+		Sweet:      oicq.Sweet,
+		Video:      oicq.Video,
+		WeiYun:     oicq.WeiYun,
 	},
 }
 
 // Project 项目列表
-var Project = map[string]map[string]map[string]string{
-	"speed": {
-		"mobile": {
+var Project = map[JobType]map[JobName]map[string]string{
+	Speed: {
+		Mobile: {
 			"sort":     "1",
 			"type":     "speed",
 			"name":     "手机在线",
@@ -67,7 +99,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/sq.png",
 			"edit":     "true",
 		},
-		"pc": {
+		Pc: {
 			"sort":     "2",
 			"type":     "speed",
 			"name":     "电脑在线",
@@ -75,7 +107,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/pc.png",
 			"edit":     "true",
 		},
-		"online": {
+		Online: {
 			"sort":     "3",
 			"type":     "speed",
 			"name":     "非隐身在线",
@@ -83,7 +115,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ys.png",
 			"edit":     "false",
 		},
-		"ws": {
+		Ws: {
 			"sort":     "6",
 			"type":     "speed",
 			"name":     "微视观看",
@@ -91,7 +123,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ws.png",
 			"edit":     "true",
 		},
-		"word": {
+		Word: {
 			"sort":     "7",
 			"type":     "speed",
 			"name":     "小世界加速",
@@ -99,7 +131,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/xsj.png",
 			"edit":     "true",
 		},
-		"mobile_clock": {
+		MobileClock: {
 			"sort":     "11",
 			"type":     "speed",
 			"name":     "登陆打卡",
@@ -107,7 +139,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/dk.png",
 			"edit":     "true",
 		},
-		"zone_clock": {
+		ZoneClock: {
 			"sort":     "12",
 			"type":     "speed",
 			"name":     "发布说说",
@@ -115,7 +147,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ss.png",
 			"edit":     "true",
 		},
-		"login": {
+		Login: {
 			"sort":     "13",
 			"type":     "speed",
 			"name":     "连续登录",
@@ -123,7 +155,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/dl.png",
 			"edit":     "false",
 		},
-		"friend": {
+		Friend: {
 			"sort":     "14",
 			"type":     "speed",
 			"name":     "好友加速",
@@ -132,8 +164,8 @@ var Project = map[string]map[string]map[string]string{
 			"edit":     "true",
 		},
 	},
-	"sign": {
-		"vip": {
+	Sign: {
+		Vip: {
 			"sort":     "15",
 			"type":     "sign",
 			"name":     "会员成长",
@@ -141,7 +173,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/vip.png",
 			"edit":     "true",
 		},
-		"big_vip": {
+		BigVip: {
 			"sort":     "16",
 			"type":     "sign",
 			"name":     "大会员成长",
@@ -149,7 +181,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/big_vip.png",
 			"edit":     "true",
 		},
-		"hz": {
+		Hz: {
 			"sort":     "17",
 			"type":     "sign",
 			"name":     "黄钻成长",
@@ -157,7 +189,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/hz.png",
 			"edit":     "true",
 		},
-		"lz": {
+		Lz: {
 			"sort":     "18",
 			"type":     "sign",
 			"name":     "蓝钻成长",
@@ -165,7 +197,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/lz.png",
 			"edit":     "true",
 		},
-		"ld": {
+		Ld: {
 			"sort":     "19",
 			"type":     "sign",
 			"name":     "乐斗签到",
@@ -173,7 +205,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ld.png",
 			"edit":     "true",
 		},
-		"game_center": {
+		GameCenter: {
 			"sort":     "20",
 			"type":     "sign",
 			"name":     "游戏中心",
@@ -181,7 +213,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/game_center.png",
 			"edit":     "true",
 		},
-		"yy": {
+		Yy: {
 			"sort":     "21",
 			"type":     "sign",
 			"name":     "音乐签到",
@@ -189,7 +221,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/yq.png",
 			"edit":     "true",
 		},
-		"qq_game": {
+		QQGame: {
 			"sort":     "22",
 			"type":     "sign",
 			"name":     "QQ游戏",
@@ -197,7 +229,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/dr.png",
 			"edit":     "true",
 		},
-		"sweet": {
+		Sweet: {
 			"sort":     "23",
 			"type":     "sign",
 			"name":     "情侣空间",
@@ -205,7 +237,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ql.png",
 			"edit":     "true",
 		},
-		"video": {
+		Video: {
 			"sort":     "24",
 			"type":     "sign",
 			"name":     "腾讯视频",
@@ -213,7 +245,7 @@ var Project = map[string]map[string]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/sp.png",
 			"edit":     "true",
 		},
-		"weiyun": {
+		WeiYun: {
 			"sort":     "25",
 			"type":     "sign",
 			"name":     "微云签到",

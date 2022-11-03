@@ -594,8 +594,8 @@ func (ControllerUin) Delete(c *sinking_server.Context) {
 // Setting 功能设置
 func (ControllerUin) Setting(c *sinking_server.Context) {
 	type Form struct {
-		Uin     string            `json:"uin" validate:"required,numeric" label:"QQ账号"`
-		Setting map[string]string `json:"setting" validate:"required,min=1" label:"设置项"`
+		Uin     string                     `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Setting map[web_uin.JobName]string `json:"setting" validate:"required,min=1" label:"设置项"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorJson(form); !ok {
@@ -726,35 +726,50 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 		tempUinInfo["today_day"] = uinLevelInfo.TodayDay
 	}
 	// 任务状态
-	jobStatus := map[string]string{}
+	jobStatus := make(map[web_uin.JobName]string)
 	_ = json.Unmarshal([]byte(uinLevelInfo.SpeedInfo), &jobStatus)
 	stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", uinLevelInfo.UpdateTime.String(), time.Local)
 	todayUnix := str.NewTimeTool().GetZeroTime(time.Now()).Unix()
-	for k, _ := range web_uin.Setting {
-		if todayUnix > stamp.Unix() {
-			jobStatus[k] = "0"
-			continue
-		}
-		if jobStatus[k] == "" {
-			jobStatus[k] = "0"
+	newJobStatus := make(map[web_uin.JobName]string)
+	for k, v := range web_uin.JobMap {
+		for k1 := range v {
+			days := 0
+			if k == web_uin.Speed {
+				days = uinInfo.PlayerDay
+			} else {
+				days = uinInfo.SignDay
+			}
+			if days <= 0 {
+				newJobStatus[k1] = "3"
+			} else {
+				if todayUnix > stamp.Unix() || jobStatus[k1] == "" {
+					newJobStatus[k1] = "0"
+					continue
+				} else {
+					newJobStatus[k1] = jobStatus[k1]
+				}
+			}
 		}
 	}
 	// 设置信息
-	var tempSetting map[string]string
+	var tempSetting map[web_uin.JobName]string
+	newSetting := make(map[web_uin.JobName]string)
 	err = json.Unmarshal([]byte(uinInfo.Setting), &tempSetting)
 	if err != nil {
-		tempSetting = web_uin.Setting
+		newSetting = web_uin.Setting
 	} else {
 		for k, v := range web_uin.Setting {
-			if tempSetting[k] == "" {
-				tempSetting[k] = v
+			if tempSetting[k] != "" {
+				newSetting[k] = tempSetting[k]
+			} else {
+				newSetting[k] = v
 			}
 		}
 	}
 	c.SuccessWithData("获取成功", sinking_web.H{
 		"uin":        tempUinInfo,
-		"setting":    tempSetting,
-		"job_status": jobStatus,
+		"setting":    newSetting,
+		"job_status": newJobStatus,
 	})
 }
 

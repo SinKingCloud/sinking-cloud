@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("3573338960")
+	//	list, _ := uin2.GetIns().SelectByUin("2710911512")
 	//	for _, v := range list {
 	//		if v.UinStatus == 0 {
 	//			l.run(v)
@@ -172,6 +172,18 @@ func (l *uinJob) run(uin *uin2.AppUinJob) {
 	if uin == nil {
 		return
 	}
+	var userJob map[web_uin.JobName]string
+	err := json.Unmarshal([]byte(uin.Setting), &userJob)
+	if err == nil && userJob != nil {
+		var jobs []web_uin.JobName
+		for k, v := range web_uin.Setting {
+			if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
+				jobs = append(jobs, k)
+			}
+		}
+		//更改状态为已提交
+		_ = web_uin.SetUinJobStatus(uin.Uin, jobs, 2)
+	}
 	authThreadWait.Wait() //等待协程池处理完毕
 	for i := 0; i < 30; i++ {
 		serverLock.RLock()
@@ -195,28 +207,28 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 	}
 	serverIdLock.Unlock()
 	var jobs []oicq.Job
-	var userJob map[string]string
+	var userJob map[web_uin.JobName]string
 	err := json.Unmarshal([]byte(uin.Setting), &userJob)
 	if err != nil || userJob == nil {
 		jobs = []oicq.Job{}
 	}
 	isCost := false
-	for k := range web_uin.Setting {
+	for k, v := range web_uin.Setting {
 		//类型判断
 		num := oicq.None
-		if value, ok := web_uin.JobMap["speed"][k]; ok {
+		if value, ok := web_uin.JobMap[web_uin.Speed][k]; ok {
 			if uin.PlayerDay > 0 {
 				isCost = true
 				//判断是否开启项目
-				if userJob[k] != "0" {
+				if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
 					num = value
 				}
 			}
-		} else if value, ok = web_uin.JobMap["sign"][k]; ok {
+		} else if value, ok = web_uin.JobMap[web_uin.Sign][k]; ok {
 			if uin.SignDay > 0 {
 				isCost = true
 				//判断是否开启项目
-				if userJob[k] != "0" {
+				if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
 					num = value
 				}
 			}
@@ -308,8 +320,8 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		if e == nil {
 			jobs = l.getUnDoJobs(jobs, s, isSys)
 			if len(jobs) <= 0 {
-				//保存挂机状态
-				_ = web_uin.SetUinSpeedStatus(uin.Uin, s)
+				//保存加速状态
+				l.saveJobStatus(uin, s)
 			}
 		}
 	}
@@ -331,11 +343,29 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 	if resCookie[oicq.Ws] != "" && (wsCookie == "" || resCookie[oicq.Ws] != wsCookie) {
 		_ = web_uin.SetUinCookies(uin.Uin, "h5.weishi.qq.com", resCookie[oicq.Ws])
 	}
-	//保存挂机状态
+	//保存加速状态
 	if e, s := cli.Mobile.Speed.Info(); e == nil {
-		_ = web_uin.SetUinSpeedStatus(uin.Uin, s)
+		l.saveJobStatus(uin, s)
 	}
 	return false, nil, cli.LoginToken
+}
+
+// saveJobStatus 保存加速状态
+func (l *uinJob) saveJobStatus(uin *uin2.AppUinJob, status *client.SpeedStatus) {
+	//把所有状态改为已加速
+	var userJob map[web_uin.JobName]string
+	err2 := json.Unmarshal([]byte(uin.Setting), &userJob)
+	if err2 == nil && userJob != nil {
+		var jobs []web_uin.JobName
+		for k, v := range web_uin.Setting {
+			if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
+				jobs = append(jobs, k)
+			}
+		}
+		_ = web_uin.SetUinJobStatus(uin.Uin, jobs, 2)
+	}
+	//更改加速状态
+	_ = web_uin.SetUinSpeedStatus(uin.Uin, status)
 }
 
 // getUnDoJobs 获取未执行的任务

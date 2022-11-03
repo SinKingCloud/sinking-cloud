@@ -9,7 +9,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
 	cookie2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/cookie"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/log"
-	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin_info"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/oicq"
@@ -49,15 +48,15 @@ func ServerUinDelete(u int) error {
 }
 
 // ChangeSetting 更改设置
-func ChangeSetting(uinId int, newSetting map[string]string) error {
+func ChangeSetting(uinId int, newSetting map[JobName]string) error {
 	uinInfo, err := uin.GetIns().FindById(uinId)
 	if err != nil || uinInfo == nil {
 		return errors.New("未查询到QQ信息")
 	}
-	var set map[string]string
+	var set map[JobName]string
 	err = json.Unmarshal([]byte(uinInfo.Setting), &set)
 	if err != nil {
-		set = make(map[string]string)
+		set = make(map[JobName]string)
 	}
 	for k := range Setting {
 		if newSetting[k] != "" && set[k] != newSetting[k] {
@@ -132,48 +131,68 @@ func GetUinLevelInfo(uinId int) (*model.AppUinInfo, error) {
 	if err != nil || uinInfo == nil {
 		return nil, errors.New("未查询到QQ信息")
 	}
-	refresh := false
 	uinLevelInfo, e := uin_info.GetIns().FindByUin(uinInfo.Uin)
 	//失效时刷新
+	refresh := false
+	//重置任务状态
+	reset := false
 	if (e != nil || uinLevelInfo == nil) && uinInfo.UinStatus == uin.Normal {
 		refresh = true
 	}
-	//上次刷新在昨天时或者大于十分钟时刷新一次数据
+	if uinLevelInfo == nil {
+		reset = true
+	}
+	//上次刷新在昨天时或者大于60分钟时刷新一次数据
 	if !refresh && e == nil && uinLevelInfo != nil {
 		stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", uinLevelInfo.UpdateTime.String(), time.Local)
 		todayUnix := str.NewTimeTool().GetZeroTime(time.Now()).Unix()
-		if stamp.Unix() < todayUnix || stamp.Unix() <= time.Now().Unix()-600 {
+		if stamp.Unix() < todayUnix || stamp.Unix() <= time.Now().Unix()-3600 {
 			refresh = true
 		}
-	}
-	//刷新QQ等级信息
-	if refresh {
-		server, e2 := server2.GetIns().FindById(uinInfo.ServerId)
-		if e2 == nil && server != nil {
-			_, err2 := GetUinSpeedStatus(uinInfo.Uin, false)
-			if err2 == nil {
-				uinLevelInfo, e = uin_info.GetIns().FindByUin(uinInfo.Uin)
-			}
+		if stamp.Unix() < todayUnix {
+			reset = true
 		}
+	}
+	//刷新QQ信息
+	if refresh {
+		_, _ = GetUinInfo(uinInfo.Uin)
+	}
+	//刷新任务信息
+	if reset {
+		var jobs []JobName
+		for k := range Setting {
+			jobs = append(jobs, k)
+		}
+		_ = SetUinJobStatus(uinInfo.Uin, jobs, 0)
+	}
+	//重新获取信息
+	if refresh || reset {
+		uinLevelInfo, e = uin_info.GetIns().FindByUin(uinInfo.Uin)
 	}
 	return uinLevelInfo, e
 }
 
-// GetUinSpeedStatus 获取加速任务状态
-func GetUinSpeedStatus(uin string, isSync bool) (status *client.SpeedStatus, err error) {
+// GetUinInfo 获取QQ详情
+func GetUinInfo(uin string) (status *client.SpeedStatus, err error) {
 	cli, err := GetOicqIns(uin, false)
 	if err != nil {
 		return nil, err
 	}
 	err, status = cli.Mobile.Speed.Info()
 	if err == nil && status != nil {
-		if isSync {
-			go func() {
-				_ = SetUinSpeedStatus(uin, status)
-			}()
-		} else {
-			_ = SetUinSpeedStatus(uin, status)
+		//qq信息
+		level, e := strconv.Atoi(status.IQQLevel)
+		if e != nil {
+			level = 0
 		}
+		info := &model.AppUinInfo{
+			Uin:         uin,
+			NickName:    status.SNickName,
+			Level:       level,
+			ActivateDay: status.ITotalActiveDay,
+			TodayDay:    status.IRealDays,
+		}
+		_ = uin_info.GetIns().Save(info, nil)
 	}
 	return status, err
 }
@@ -213,10 +232,19 @@ func SetUinSpeedStatus(uin string, status *client.SpeedStatus) error {
 		"friend":       status.IAddFriend,
 		"word":         status.ISmallWorld,
 	}
-	for k := range Setting {
-		if speedInfo[k] == "" {
-			speedInfo[k] = "1"
-		}
+	return uin_info.GetIns().Save(info, speedInfo)
+}
+
+// SetUinJobStatus 设置任务状态
+// status 0:未加速/1:已加速/2:已提交/3:已过期
+func SetUinJobStatus(uin string, jobs []JobName, status int) error {
+	info := &model.AppUinInfo{
+		Uin: uin,
+	}
+	//加速状态
+	speedInfo := make(map[string]string)
+	for _, v := range jobs {
+		speedInfo[string(v)] = strconv.Itoa(status)
 	}
 	return uin_info.GetIns().Save(info, speedInfo)
 }

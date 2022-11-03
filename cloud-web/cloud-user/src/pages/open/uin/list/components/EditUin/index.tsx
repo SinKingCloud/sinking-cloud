@@ -206,7 +206,8 @@ const EditUin: React.FC<EditUinProps> = (props) => {
                   ]}>
                     <List.Item.Meta
                       // @ts-ignore
-                      avatar={<Badge color={info?.job_status[item?.key] == "1" ? "green" : "red"} dot>
+                      avatar={<Badge  color={info?.job_status[item?.key] == "1" ? "green" : (info?.job_status[item?.key] == "2" ? "blue" : "red")}
+                        dot>
                         <Avatar src={
                           // @ts-ignore
                           item?.logo} style={{borderRadius: "0px"}}/>
@@ -216,7 +217,7 @@ const EditUin: React.FC<EditUinProps> = (props) => {
                         <Tag color={"red"}>天数不足</Tag>}
                         {days > 0 && <Tag color={"success"}>剩余:{days}天</Tag>}</>}
                       // @ts-ignore
-                      description={<><InfoCircleOutlined style={{fontSize:"12px"}}/>&nbsp;<span style={{fontSize: "10px"}}>{item?.describe}</span></>}
+                      description={<><InfoCircleOutlined style={{fontSize: "12px"}}/>&nbsp;<span style={{fontSize: "10px"}}>{item?.describe}</span></>}
                     />
                   </List.Item>
                 </>

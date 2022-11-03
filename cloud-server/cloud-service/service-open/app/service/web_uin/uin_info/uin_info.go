@@ -7,6 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
+	"strconv"
 	"time"
 )
 
@@ -37,15 +38,19 @@ func (s *service) Save(data *model.AppUinInfo, speedInfo map[string]string) (err
 		if data.ActivateDay != "" {
 			d["activate_day"] = data.ActivateDay
 		}
-		if data.TodayDay != "" {
-			d["today_day"] = data.TodayDay
-		}
 		if data.Level > 0 {
 			d["level"] = data.Level
 		}
 		//获取QQ信息
 		info, e := s.FindByUin(data.Uin)
 		if e != nil || info == nil {
+			if data.TodayDay != "" {
+				todayDay1, e1 := strconv.ParseFloat(info.TodayDay, 32)
+				todayDay2, e2 := strconv.ParseFloat(data.TodayDay, 32)
+				if e1 != nil || todayDay1 < 0 || (e2 == nil && todayDay1 <= todayDay2) {
+					d["today_day"] = data.TodayDay
+				}
+			}
 			if speedInfo != nil {
 				bytes, e1 := json.Marshal(speedInfo)
 				if e1 == nil {
@@ -62,12 +67,11 @@ func (s *service) Save(data *model.AppUinInfo, speedInfo map[string]string) (err
 			//存在
 			stamp, e2 := time.ParseInLocation("2006-01-02 15:04:05", info.UpdateTime.String(), time.Local)
 			if e2 == nil && stamp.Unix() > str.NewTimeTool().GetZeroTime(time.Now()).Unix() {
-				//今日执行过的就判断是否已经加速项目
 				var status map[string]string
 				e1 := json.Unmarshal([]byte(info.SpeedInfo), &status)
 				if e1 == nil {
-					for k, v := range status {
-						if v != "1" && speedInfo[k] != "" {
+					for k := range status {
+						if speedInfo[k] != "" {
 							status[k] = speedInfo[k]
 						}
 					}
