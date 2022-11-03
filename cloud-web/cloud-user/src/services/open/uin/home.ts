@@ -23,6 +23,17 @@ export async function getSelfInfo(params?: {}, options?: { [key: string]: any })
   });
 }
 
+/** 活动信息 GET /open/user/uin/activity */
+export async function getActivityInfo(params?: {}, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/activity', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
 /** 开通等级 POST /open/user/uin/shop */
 export async function shopLevel(body: any, options?: { [key: string]: any }) {
   return request<API.Response>('/open/user/uin/shop', {

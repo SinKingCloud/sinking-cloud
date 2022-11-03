@@ -1,13 +1,27 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {PageContainer, RouteContext} from '@ant-design/pro-layout';
-import {Button, Col, Descriptions, Empty, message, Modal, Row, Skeleton, Statistic, Tag, Tooltip} from 'antd';
+import {
+  Button,
+  Col,
+  Collapse,
+  Descriptions,
+  List,
+  message,
+  Modal,
+  Popover,
+  Row,
+  Skeleton,
+  Statistic, Table,
+  Tag,
+  Tooltip
+} from 'antd';
 import styles from './style.less';
 import {
   AreaChartOutlined,
   ArrowUpOutlined,
   BarChartOutlined,
   ExclamationCircleOutlined,
-  LineChartOutlined,
+  LineChartOutlined, NotificationOutlined, QuestionCircleOutlined,
   StockOutlined
 } from "@ant-design/icons";
 import {getParams} from "@/util/page";
@@ -16,6 +30,10 @@ import {getLevelList} from "@/services/open/uin/uin";
 import ProCard, {StatisticCard} from "@ant-design/pro-card";
 import RcResizeObserver from 'rc-resize-observer';
 import {getSelfInfo, getUinCount, shopLevel} from "@/services/open/uin/home";
+import {getNoticeList} from "@/services/common/notice";
+import {ago} from "@/util/time";
+import NoticeInfo from "@/components/Other/Notice/NoticeInfo";
+import ProDescriptions from '@ant-design/pro-descriptions';
 
 
 export default (): React.ReactNode => {
@@ -30,13 +48,40 @@ export default (): React.ReactNode => {
     setTabStatus({...tabStatus, tabActiveKey});
   };
   /**
+   * 获取公告信息
+   */
+  const [noticeLoading, setNoticeLoading] = useState(true);
+  const [noticeData, setNoticeData] = useState<any>([]);
+  const getNoticeData = async () => {
+    setNoticeLoading(true);
+    let d = await getNoticeList({page: 1, page_size: 7, place: 'open.uin.home'});
+    if (d?.code == 200) {
+      setNoticeData(d?.data?.list);
+    }
+    setNoticeLoading(false);
+  };
+  /**
+   * 查看公告
+   */
+  const [noticeId, setNoticeId] = useState(0);
+  const [noticeVisible, setNoticeVisible] = useState(false);
+  const showNoticeInfoModal = (id: number) => {
+    setNoticeId(id);
+    setNoticeVisible(true);
+  }
+  const hideNoticeInfoModal = () => {
+    setNoticeId(0);
+    setNoticeVisible(false);
+  }
+  /**
    * 初始化数据
    */
   const [pageLoading, setPageLoading] = useState(true);
-  const [selfInfo, setSelfInfo] = useState({});
-  const [uinCount, setUinCount] = useState({});
+  const [selfInfo, setSelfInfo] = useState<any>({});
+  const [uinCount, setUinCount] = useState<any>({});
   const init = async () => {
     setPageLoading(true);
+    getNoticeData();
     await getSelfInfo().then((r) => {
       if (r.code == 200) {
         setSelfInfo(r.data);
@@ -226,6 +271,7 @@ export default (): React.ReactNode => {
       ]}
     >
       <div className={styles.main}>
+        <NoticeInfo id={noticeId} visible={noticeVisible} onClose={hideNoticeInfoModal}/>
         {tabStatus.tabActiveKey == "detail" && (
           <Row gutter={8} style={{paddingBottom: "20px"}}>
             <Col xs={{span: 24, offset: 0}} lg={{span: 16, offset: 0}}>
@@ -283,20 +329,128 @@ export default (): React.ReactNode => {
                 </Col>
               </Row>
               <Row gutter={8}>
-                <Col xs={{span: 24, offset: 0}} lg={{span: 12, offset: 0}}>
+                <Col xs={{span: 24, offset: 0}} lg={{span: 14, offset: 0}}>
                   <Row gutter={8} style={{paddingBottom: "20px"}}>
                     <Col xs={{span: 24, offset: 0}} lg={{span: 24, offset: 0}}>
-                      <ProCard title="能力概览" bordered headerBordered={true}>
-                        <Empty/>
+                      <ProCard title="产品价格" bordered headerBordered={true}>
+                        <ProDescriptions
+                          style={{marginTop: "-10px", marginBottom: "-10px"}}
+                          loading={pageLoading}
+                          column={{xs: 1, sm: 1, md: 1}}
+                        >
+                          <ProDescriptions.Item label="账户余额">{selfInfo?.money + '元' || "获取失败"}</ProDescriptions.Item>
+                          <ProDescriptions.Item label="折扣等级">{selfInfo?.level?.name || "获取失败"}</ProDescriptions.Item>
+                          <ProDescriptions.Item label="到期时间">
+                            <Popover title={"折扣说明"}
+                                     content={<div style={{fontSize: "10px"}}>折扣等级会每月初根据您站点月销<br/>情况自动评估,也可以直接购买<br/>提升等级,详情请访问官网
+                                     </div>}>
+                              {selfInfo?.expire || "获取失败"} &nbsp;<QuestionCircleOutlined/>
+                            </Popover>
+                          </ProDescriptions.Item>
+                          <ProDescriptions.Item>
+                            <Table style={{maxWidth: "95%"}} dataSource={[
+                              {
+                                key: '1',
+                                name: '全套',
+                                month: selfInfo?.level?.month_price || 0,
+                                quarter: selfInfo?.level?.quarter_price || 0,
+                                half: selfInfo?.level?.half_price || 0,
+                                year: selfInfo?.level?.year_price || 0,
+                                forever: selfInfo?.level?.forever_price || 0,
+                              },
+                              {
+                                key: '2',
+                                name: '加速',
+                                age: 42,
+                                month: selfInfo?.level?.player_month_price || 0,
+                                quarter: selfInfo?.level?.player_quarter_price || 0,
+                                half: selfInfo?.level?.player_half_price || 0,
+                                year: selfInfo?.level?.player_year_price || 0,
+                                forever: selfInfo?.level?.player_forever_price || 0,
+                              },
+                              {
+                                key: '3',
+                                name: '扩展',
+                                month: selfInfo?.level?.sign_month_price || 0,
+                                quarter: selfInfo?.level?.sign_quarter_price || 0,
+                                half: selfInfo?.level?.sign_half_price || 0,
+                                year: selfInfo?.level?.sign_year_price || 0,
+                                forever: selfInfo?.level?.sign_forever_price || 0,
+                              },
+                            ]} columns={[
+                              {
+                                title: '名称',
+                                dataIndex: 'name',
+                                key: 'name',
+                                fixed: 'left',
+                                width: 50,
+                              },
+                              {
+                                title: '月度',
+                                dataIndex: 'month',
+                                key: 'month',
+                                width: 50,
+                              },
+                              {
+                                title: '季度',
+                                dataIndex: 'quarter',
+                                key: 'quarter',
+                                width: 50,
+                              },
+                              {
+                                title: '半年',
+                                dataIndex: 'half',
+                                key: 'half',
+                                width: 50,
+                              },
+                              {
+                                title: '一年',
+                                dataIndex: 'year',
+                                key: 'year',
+                                width: 50,
+                              },
+                              {
+                                title: '永久',
+                                dataIndex: 'forever',
+                                key: 'forever',
+                                width: 50,
+                              },
+                            ]} pagination={false} bordered={true} scroll={{y: 500}} size={"small"}/>
+                          </ProDescriptions.Item>
+                        </ProDescriptions>
                       </ProCard>
+
                     </Col>
                   </Row>
                 </Col>
-                <Col xs={{span: 24, offset: 0}} lg={{span: 12, offset: 0}}>
+                <Col xs={{span: 24, offset: 0}} lg={{span: 10, offset: 0}}>
                   <Row gutter={8} style={{paddingBottom: "20px"}}>
                     <Col xs={{span: 24, offset: 0}} lg={{span: 24, offset: 0}}>
-                      <ProCard title="系统公告" bordered headerBordered={true}>
-                        <Empty/>
+                      <ProCard title="使用帮助" bordered headerBordered={true}>
+                        <Collapse accordion style={{margin: "-25px"}}>
+                          <Collapse.Panel header="开启登录保护挂机教程" key="1">
+                            <p>开启登录保护代练流程如下：
+                              <br/>
+                              1、打开Q设置-{'>'}账号安全-{'>'}登录设备管理-{'>'}开启登录保护
+                              <br/>
+                              2、开启后在挂机管理页面点击“一键补挂”按钮，进行一次补挂</p>
+                          </Collapse.Panel>
+                          <Collapse.Panel header="[代练时间] 配置使用说明" key="2">
+                            <p>默认每日代练开始时间为凌晨00:30，您可以使用此项配置进行自定义，系统会在您设置的时间点开始代练，代练任务结束后自动下线。</p>
+                          </Collapse.Panel>
+                          <Collapse.Panel header="[代练地区] 配置使用说明" key="3">
+                            <p>此项配置请选择您当前所在的地区，或代练号码经常登录的地区即可，我们会在您选择的地区进行登录代练。</p>
+                          </Collapse.Panel>
+                          <Collapse.Panel header="关于禁止养号、禁止挂机违规用途号码的说明" key="4">
+                            <p>本站为正规等级代练平台，仅接受个人正常聊天使用的号码进行代练，不是个人正常使用的号码请勿下单。
+                              <br/><br/>
+                              不能下单的号码类型枚举：批量注册的、批量购买的、批量养等级的、现在及未来会对外出售\出租的、公司业务使用的、游戏业务使用的，各类工作室使用的、涉及违法的(涉黄/诈骗/赌博等等)
+                              <br/><br/>
+                              包括且不限于以上类型，系统严禁养号、严禁挂机违规用途号码，不是个人正常聊天使用的号码都不能下单，望理解与配合，感谢大家支持。
+                              <br/><br/>
+                              代练以上违规号码将永久拉黑账号，终止并冻结账号下所有已下单号码的代练服务，必要时会将违规挂号账户所有信息移交至公安平台。</p>
+                          </Collapse.Panel>
+                        </Collapse>
                       </ProCard>
                     </Col>
                   </Row>
@@ -306,8 +460,32 @@ export default (): React.ReactNode => {
             <Col xs={{span: 24, offset: 0}} lg={{span: 8, offset: 0}}>
               <Row gutter={8} style={{paddingBottom: "20px"}}>
                 <Col xs={{span: 24, offset: 0}} lg={{span: 24, offset: 0}}>
-                  <ProCard title="更新日志" bordered headerBordered={true}>
-                    <Empty/>
+                  <ProCard title="系统公告" bordered headerBordered={true}
+                           loading={noticeLoading}
+                           bodyStyle={{padding: "0 20px 0 20px"}}>
+                    <List
+                      loading={noticeLoading}
+                      itemLayout="horizontal"
+                      dataSource={noticeData}
+                      renderItem={(item: any) => (
+                        <Skeleton avatar title={false} loading={noticeLoading} key={item?.id} active>
+                          <List.Item
+                            actions={[<a key="list-loadmore-edit" onClick={() => {
+                              showNoticeInfoModal(item?.id || 0);
+                            }}>查看</a>]}
+                            key={item?.id}
+                          >
+                            <List.Item.Meta
+                              key={"notice-" + item?.id}
+                              avatar={<NotificationOutlined style={{fontSize: "20px", lineHeight: "50px"}}/>}
+                              title={item?.title}
+                              description={<span
+                                style={{fontSize: "10px"}}>发布于 {ago(item?.create_time)} ,共 {item?.look_num} 次浏览</span>}
+                            />
+                          </List.Item>
+                        </Skeleton>
+                      )}
+                    />
                   </ProCard>
                 </Col>
               </Row>
