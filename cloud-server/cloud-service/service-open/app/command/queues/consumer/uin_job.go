@@ -362,7 +362,7 @@ func (l *uinJob) saveJobStatus(uin *uin2.AppUinJob, status *client.SpeedStatus) 
 				jobs = append(jobs, k)
 			}
 		}
-		_ = web_uin.SetUinJobStatus(uin.Uin, jobs, 2)
+		_ = web_uin.SetUinJobStatus(uin.Uin, jobs, 1)
 	}
 	//更改加速状态
 	_ = web_uin.SetUinSpeedStatus(uin.Uin, status)

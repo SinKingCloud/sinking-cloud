@@ -81,6 +81,7 @@ func (s *service) Save(data *model.AppUinInfo, speedInfo map[string]string) (err
 				}
 				job = status
 			} else {
+				d["today_day"] = data.TodayDay
 				job = speedInfo
 			}
 			if job != nil {
