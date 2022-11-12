@@ -186,12 +186,26 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 							}
 						}
 					}
-					//执行加速操作
-					_, _ = cli.Speed.DailySign()
-					_, _ = cli.Speed.WebFeedCloud()
-					_, _ = cli.Speed.QZone()
-					_, _, _ = cli.Speed.WeiShi("")
-					_, _ = cli.Speed.Friend()
+					//获取加速项目
+					e4, status := cli.Speed.Info()
+					if e4 == nil && status != nil {
+						//执行加速操作
+						if status.IDailySign != "1" {
+							_, _ = cli.Speed.DailySign()
+						}
+						if status.ISmallWorld != "1" {
+							_, _ = cli.Speed.WebFeedCloud()
+						}
+						if status.IQzoneState != "1" {
+							_, _ = cli.Speed.QZone()
+						}
+						if status.WeishiVideoview != "1" {
+							_, _, _ = cli.Speed.WeiShi("")
+						}
+						if status.IAddFriend != "1" {
+							_, _ = cli.Speed.Friend()
+						}
+					}
 					cli.LoginOut()
 				}
 				break
