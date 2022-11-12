@@ -10,8 +10,8 @@ application:
   addr: 127.0.0.1 #应用地址
   port: 1004 #应用端口
   timeout:
-    read: 60 #超时读(s)
-    write: 60 #超时写(s)
+    read: 600 #超时读(s)
+    write: 600 #超时写(s)
   useService:
     cloud-service:
       - service-user #引用用户服务

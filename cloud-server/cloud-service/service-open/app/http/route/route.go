@@ -47,6 +47,7 @@ func loadApiRoute(s *sinking_web.Engine) {
 	uinGroup.GET("/servers", sinking_server.HandleFunc((&uin.ControllerServer{}).List)) //地区列表
 	uinGroup.GET("/project", sinking_server.HandleFunc(handleUin.Project))              //功能列表
 	uinGroup.GET("/activity", sinking_server.HandleFunc(handleUin.Activity))            //活动列表
+	uinGroup.POST("/test", sinking_server.HandleFunc(handleUin.Test))                   //测试加速
 	uinSetGroup := uinGroup.Group("/operate")
 	uinSetGroup.POST("/info", sinking_server.HandleFunc(handleUin.Info))               //挂机QQ详情
 	uinSetGroup.POST("/login", sinking_server.HandleFunc(handleUin.Login))             //登陆挂机QQ
@@ -88,6 +89,7 @@ func loadUserRoute(s *sinking_web.Engine) {
 	uinGroup.GET("/project", sinking_server.HandleFunc(handleUin.Project))   //功能列表
 	uinGroup.GET("/activity", sinking_server.HandleFunc(handleUin.Activity)) //活动列表
 	uinGroup.POST("/buy", sinking_server.HandleFunc(handleUin.Buy))          //业务下单
+	uinGroup.POST("/test", sinking_server.HandleFunc(handleUin.Test))        //测试加速
 	uinSetGroup := uinGroup.Group("/operate")
 	uinSetGroup.POST("/info", sinking_server.HandleFunc(handleUin.Info))               //挂机QQ详情
 	uinSetGroup.POST("/login", sinking_server.HandleFunc(handleUin.Login))             //登陆挂机QQ

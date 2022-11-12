@@ -4,9 +4,10 @@ go 1.19
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20220914035625-a775ed93d556
-	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20221103032232-2771c4a470e6
-	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20221017200407-ddf5d973d237
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20221105060954-78362716b4ba
+	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20221112034348-03991f61ea9e
+	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20221112050848-090edb174213
+	golang.org/x/net v0.0.0-20221002022538-bcab6841153b
 	gorm.io/gorm v1.21.15
 )
 
@@ -54,7 +55,6 @@ require (
 	github.com/tuotoo/qrcode v0.0.0-20220425170535-52ccc2bebf5d // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
-	golang.org/x/net v0.0.0-20221002022538-bcab6841153b // indirect
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde // indirect
 	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261 // indirect
 	golang.org/x/text v0.3.7 // indirect

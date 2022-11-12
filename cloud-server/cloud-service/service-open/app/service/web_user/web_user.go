@@ -75,3 +75,8 @@ const (
 	Normal = iota //正常
 	Error         //封禁
 )
+
+const (
+	RealAuthError   = iota //未实名
+	RealAuthSuccess        //已实名
+)

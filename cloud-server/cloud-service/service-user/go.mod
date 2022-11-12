@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20220914035625-a775ed93d556
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20221105060954-78362716b4ba
 	gorm.io/gorm v1.21.15
 )
 

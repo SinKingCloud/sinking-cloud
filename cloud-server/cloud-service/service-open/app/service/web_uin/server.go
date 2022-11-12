@@ -36,7 +36,7 @@ func GetOicqIns(u string, newIns bool) (*oicq.Oicq, error) {
 	}
 	var proxy *oicq.Proxy
 	_ = json.Unmarshal([]byte(severInfo.Proxy), &proxy)
-	return GetOicqInsWithOption(uinInfo, proxy, newIns, uinInfo.Device)
+	return GetOicqInsWithOption(uinInfo, proxy, newIns)
 }
 
 // GetOicqInsById 获取QQ操作实例
@@ -51,16 +51,16 @@ func GetOicqInsById(id int, newIns bool) (*oicq.Oicq, error) {
 	}
 	var proxy *oicq.Proxy
 	_ = json.Unmarshal([]byte(severInfo.Proxy), &proxy)
-	return GetOicqInsWithOption(uinInfo, proxy, newIns, uinInfo.Device)
+	return GetOicqInsWithOption(uinInfo, proxy, newIns)
 }
 
 // GetOicqInsWithOption 获取QQ操作实例
-func GetOicqInsWithOption(uinInfo *model.AppUin, proxy *oicq.Proxy, newIns bool, device int) (*oicq.Oicq, error) {
+func GetOicqInsWithOption(uinInfo *model.AppUin, proxy *oicq.Proxy, newIns bool) (*oicq.Oicq, error) {
 	q, err := strconv.ParseInt(uinInfo.Uin, 10, 64)
 	if err != nil {
 		return nil, errors.New("QQ格式错误")
 	}
-	return oicq.GetOicqInstance(q, utils.ByteToByte16(utils.Hex2Bin(uinInfo.Password)), device, proxy, utils.Hex2Bin(uinInfo.Token), newIns), nil
+	return oicq.GetOicqInstance(q, utils.ByteToByte16(utils.Hex2Bin(uinInfo.Password)), proxy, uinInfo.Proto, uinInfo.Device, utils.Hex2Bin(uinInfo.Token), newIns), nil
 }
 
 // ChangeServer 更改挂机地区

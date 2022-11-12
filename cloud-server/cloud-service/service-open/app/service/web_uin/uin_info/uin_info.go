@@ -73,10 +73,8 @@ func (s *service) Save(data *model.AppUinInfo, speedInfo map[string]string) (err
 				var status map[string]string
 				e1 := json.Unmarshal([]byte(info.SpeedInfo), &status)
 				if e1 == nil {
-					for k := range status {
-						if speedInfo[k] != "" {
-							status[k] = speedInfo[k]
-						}
+					for k := range speedInfo {
+						status[k] = speedInfo[k]
 					}
 				}
 				job = status

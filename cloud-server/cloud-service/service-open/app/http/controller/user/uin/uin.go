@@ -21,6 +21,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/server"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"github.com/SinKingCloud/sinking-oicq/binary-mobile/client"
+	client2 "github.com/SinKingCloud/sinking-oicq/binary-pc/client"
 	"gorm.io/gorm"
 	log2 "log"
 	"math/rand"
@@ -96,6 +97,112 @@ func (ControllerUin) List(c *sinking_server.Context) {
 		rpc.WebUserLog.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), web_user_log.EventShow, "查看挂机", "查看挂机列表")
 		c.SuccessWithData("获取挂机列表成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
+}
+
+// Test 测试加速
+func (ControllerUin) Test(c *sinking_server.Context) {
+	type Form struct {
+		ServerKey string `json:"server_key" validate:"required,max=10" label:"挂机地区"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	s, err := web_uin.GetServer(form.ServerKey)
+	if err != nil || s == nil {
+		c.Error("未获取到可用节点,请更换挂机节点")
+		return
+	}
+	appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
+	if appConfig[constant.AppUinSpeedTest] != "1" {
+		c.Error("系统已关闭测试功能")
+		return
+	}
+	qps := 0
+	if appConfig[constant.AppUinSpeedQps] != "" {
+		num, e := strconv.Atoi(appConfig[constant.AppUinSpeedQps])
+		if e == nil {
+			qps = num
+		}
+	}
+	num := 0
+	if appConfig[constant.AppUinSpeedNum] != "" {
+		n, e := strconv.Atoi(appConfig[constant.AppUinSpeedNum])
+		if e == nil {
+			num = n
+		}
+	}
+	var proxy *oicq.Proxy
+	_ = json.Unmarshal([]byte(s.Proxy), &proxy)
+	if proxy == nil {
+		c.Error("该挂机节点不可用")
+		return
+	}
+	key := "SpeedTestU_" + strconv.Itoa(c.GetWebUserInfo().Id)
+	if qps > 0 {
+		n, exists := util.Cache.Get(key)
+		if exists {
+			num, e := strconv.Atoi(n)
+			if e == nil && num >= qps {
+				c.Error("并发超过系统最大限制")
+				return
+			}
+		}
+	}
+	util.Cache.Inc(key)
+	util.Cache.SetExpire(key, int64(120*1000))
+	cli := client2.NewClientEmpty().UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd)
+	e, u := cli.FetchQrCode()
+	if e != nil || u == "" {
+		c.Error("获取二维码失败")
+		return
+	}
+	go func(cli *client2.QQClient, key string, num int) {
+		defer cli.Release()
+		defer util.Cache.Dec(key)
+		for i := 0; i < 60; i++ {
+			e1, q := cli.FetchQrCodeStatus()
+			if e1 != nil {
+				break
+			}
+			if q == client2.ScanCodeSuccess {
+				//上线登陆
+				e2, l := cli.Login(true)
+				if e2 != nil {
+					break
+				}
+				if l.Status == client2.LoginSuccess {
+					key2 := "SpeedTestQ_" + strconv.FormatInt(cli.Uin, 10)
+					util.Cache.Inc(key2)
+					util.Cache.SetExpire(key2, (str.NewTimeTool().GetZeroTime(time.Now()).Unix()+86400-time.Now().Unix())*1000)
+					if num > 0 {
+						n, exists := util.Cache.Get(key2)
+						if exists {
+							n1, ne := strconv.Atoi(n)
+							if ne == nil && n1 > num {
+								cli.LoginOut()
+								break
+							}
+						}
+					}
+					//执行加速操作
+					_, _ = cli.Speed.DailySign()
+					_, _ = cli.Speed.WebFeedCloud()
+					_, _ = cli.Speed.QZone()
+					_, _, _ = cli.Speed.WeiShi("")
+					_, _ = cli.Speed.Friend()
+					cli.LoginOut()
+				}
+				break
+			}
+			if q == client2.ScanCodeExpire || q == client2.ScanCodeError {
+				break
+			}
+			time.Sleep(1 * time.Second)
+		}
+	}(cli, key, num)
+	c.SuccessWithData("获取二维码成功,请在60s内扫描二维码", u)
 }
 
 // Buy 下单
@@ -289,6 +396,10 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
+	if c.GetWebUserInfo().RealAuth != web_user.RealAuthSuccess {
+		c.Error("该对接账户未完成实名认证,请完成实名认证")
+		return
+	}
 	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
 	if err != nil || uinInfo == nil {
 		c.Error("未查询到QQ信息,请先添加QQ")
@@ -303,17 +414,15 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("未查询到挂机地区信息,请更换挂机地区")
 		return
 	}
-	if uinInfo.UinStatus == int(uin.StatusUinNormal) {
-		c.Error("您的账号状态正常,无需更新")
-		return
-	}
+	uinInfo.Proto = oicq.GetOicqProtoCode(client.Pad) //强制使用pad协议
 	cli, err := web_uin.GetOicqInsById(uinInfo.Id, true)
 	if err != nil {
 		c.Error("连接服务器失败")
 		return
 	}
+	ins := cli.Mobile
 	if form.Step == "get_sms" {
-		if cli.Mobile.RequestSMS() {
+		if ins.RequestSMS() {
 			c.Return(200, "获取验证码成功,请提交验证码", nil)
 		} else {
 			c.Return(500, "获取验证码失败,请稍后重试", nil)
@@ -323,9 +432,19 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	var resp *client.LoginResponse
 	request := func(uinInfo *model.AppUin, fun func() (*client.LoginResponse, error)) (resp *client.LoginResponse, err error) {
 		resp, err = fun()
+		if err != nil {
+			log2.Println(uinInfo.Uin, "登陆错误-1", resp, err)
+			time.Sleep(200 * time.Millisecond)
+			_ = ins.Connect()
+			resp, err = fun()
+			if err != nil {
+				log2.Println(uinInfo.Uin, "登陆错误-2", resp, err)
+			}
+		}
 		//设备异常,生成新的设备信息
 		if err == nil && resp.Error == client.DeviceVersionError {
-			if uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{"device": 100000 + rand.Intn(899999)}) == nil {
+			field := "device"
+			if uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{field: 100000 + rand.Intn(899999)}) == nil {
 				q, e := strconv.ParseInt(uinInfo.Uin, 10, 64)
 				if e == nil {
 					oicq.DelOicqInstance(q) //删除实例
@@ -334,7 +453,20 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 					if err != nil {
 						return nil, err
 					}
-					return fun()
+					ins = cli.Mobile
+					resp, err = fun()
+					if err != nil {
+						for i := 0; i < 2; i++ {
+							log2.Println(uinInfo.Uin, "登陆错误-3", i, resp, err)
+							time.Sleep(200 * time.Millisecond)
+							_ = ins.Connect()
+							resp, err = fun()
+							if err == nil {
+								break
+							}
+						}
+					}
+					return resp, err
 				}
 			}
 		}
@@ -343,7 +475,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	switch form.Step {
 	case "normal":
 		resp, err = request(uinInfo, func() (*client.LoginResponse, error) {
-			return cli.Login()
+			return ins.Login()
 		})
 		break
 	case "captcha":
@@ -352,7 +484,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			return
 		}
 		resp, err = request(uinInfo, func() (*client.LoginResponse, error) {
-			return cli.Mobile.SubmitTicket(form.Ticket)
+			return ins.SubmitTicket(form.Ticket)
 		})
 		break
 	case "sms":
@@ -361,13 +493,13 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			return
 		}
 		resp, err = request(uinInfo, func() (*client.LoginResponse, error) {
-			return cli.Mobile.SubmitSMS(form.Code)
+			return ins.SubmitSMS(form.Code)
 		})
 		break
 	}
 	if err != nil {
 		log2.Println(uinInfo.Uin, "登陆错误", resp, err)
-		c.Error("登陆发生错误,请刷新页面重试")
+		c.Error("登陆发生错误,请重试")
 		return
 	}
 	response := func(uinInfo *model.AppUin, resp *client.LoginResponse) (code int32, message interface{}, data interface{}) {
@@ -379,7 +511,10 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			return 399, "当前登录存在安全风险,请验证手机号后登陆", nil //需要发送验证码
 		} else if resp.Error == client.SMSOrVerifyNeededError || resp.Error == client.UnsafeDeviceError || (resp.Error == client.SMSNeededError && resp.SMSPhone != "") {
 			if resp.VerifyUrl != "" {
-				resp.VerifyUrl = web_uin.GetLoginQrCode(resp.VerifyUrl)
+				resp.VerifyUrl, err = ins.GetQrCodeAuthToken(resp.VerifyUrl)
+				if err == nil {
+					resp.VerifyUrl = "https://accounts.qq.com/safe/scanresult?str_url=" + resp.VerifyUrl + "&envfrom=&verify_id=&verify_scene=&uin=" + uinInfo.Uin
+				}
 			}
 			return 398, "请选择一种方式验证设备锁", sinking_web.H{
 				"phone":  resp.SMSPhone,
@@ -398,13 +533,13 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		} else if resp.Error == client.OtherLoginError {
 			log2.Println(uinInfo.Uin, "登陆异常", resp, err)
 			if resp.ErrorMessage == "" {
-				resp.ErrorMessage = "登陆异常,请刷新页面重试"
+				resp.ErrorMessage = "登陆异常,请重试"
 			}
 			return 500, resp.ErrorMessage, nil
 		} else {
 			log2.Println(uinInfo.Uin, "登陆失败", resp, err)
 			if resp.ErrorMessage == "" {
-				resp.ErrorMessage = "登陆失败,请刷新页面重试"
+				resp.ErrorMessage = "登陆失败,请重试"
 			}
 			return 500, resp.ErrorMessage, nil
 		}
@@ -418,7 +553,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	}
 	code, message, data := response(uinInfo, resp)
 	if code == 200 {
-		token := cli.Mobile.GenToken()
+		token := ins.GenToken()
 		if web_uin.SaveLoginToken(uinInfo, token) == nil {
 			go func(uinInfo *model.AppUin) {
 				//写入QQ操作记录
@@ -431,8 +566,9 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 					Title:   "更新状态",
 					Content: "更新账号状态",
 				})
-				delIns(uinInfo.Uin)
 			}(uinInfo)
+			delIns(uinInfo.Uin)
+			code, message, data = 200, "更新状态成功", nil
 		}
 	}
 	c.Return(code, message, data)
@@ -475,24 +611,23 @@ func (ControllerUin) Sms(c *sinking_server.Context) {
 		c.Error("连接服务器失败")
 		return
 	}
-
+	ins := cli.Mobile
 	key := "UinLoginSms" + uinInfo.Uin
 	d := make(map[string]string)
 	stars, exists := util.Cache.Get(key)
 	if exists && stars != "" {
 		d = str.NewStrTool().ToMap(stars)
 	}
-
 	data := make(map[string]interface{})
 	switch form.Step {
 	case "1":
-		e := cli.Mobile.SubmitEnvVerifyStepCheckTicket(form.Ticket, form.Rand)
+		e := ins.SubmitEnvVerifyStepCheckTicket(form.Ticket, form.Rand)
 		if e == nil {
-			e = cli.Mobile.SubmitEnvVerifyStepCheckRisk(form.Rand)
+			e = ins.SubmitEnvVerifyStepCheckRisk(form.Rand)
 			if e == nil {
-				e = cli.Mobile.SubmitEnvVerifyStepQueryVerifyMethod(form.Rand)
+				e = ins.SubmitEnvVerifyStepQueryVerifyMethod(form.Rand)
 				if e == nil {
-					e2, area, phone := cli.Mobile.SubmitEnvVerifyStepQueryPhone(form.Rand)
+					e2, area, phone := ins.SubmitEnvVerifyStepQueryPhone(form.Rand)
 					e = e2
 					if e == nil {
 						data["area"] = area
@@ -520,9 +655,9 @@ func (ControllerUin) Sms(c *sinking_server.Context) {
 			c.Error("手机号不能为空")
 			return
 		} else {
-			e := cli.Mobile.SubmitEnvVerifyStepCheckPhone(form.Rand, form.Phone, d["area"])
+			e := ins.SubmitEnvVerifyStepCheckPhone(form.Rand, form.Phone, d["area"])
 			if e == nil {
-				e2, sendTo, sendSms := cli.Mobile.SubmitEnvVerifyStepGetSms(form.Rand, d["phone"], d["area"])
+				e2, sendTo, sendSms := ins.SubmitEnvVerifyStepGetSms(form.Rand, d["phone"], d["area"])
 				e = e2
 				if e2 == nil {
 					data["to"] = sendTo
@@ -541,12 +676,12 @@ func (ControllerUin) Sms(c *sinking_server.Context) {
 			c.Error("缺失参数,请重新验证")
 			return
 		}
-		e, k := cli.Mobile.SubmitEnvVerifyStepCheckSms(form.Rand, d["phone"], d["area"])
+		e, k := ins.SubmitEnvVerifyStepCheckSms(form.Rand, d["phone"], d["area"])
 		if e != nil {
 			c.Error("验证失败,请检查是否已发送短信")
 			return
 		}
-		e = cli.Mobile.SubmitEnvVerifyStepAuthPassWord(form.Rand, d["phone"], k)
+		e = ins.SubmitEnvVerifyStepAuthPassWord(form.Rand, d["phone"], k)
 		if e != nil {
 			c.Error("上报结果失败,请联系管理员")
 			return

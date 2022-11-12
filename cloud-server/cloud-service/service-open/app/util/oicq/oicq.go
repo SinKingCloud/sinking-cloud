@@ -12,17 +12,12 @@ import (
 )
 
 type Oicq struct {
-	Mobile *mobile.QQClient
+	Mobile     *mobile.QQClient
+	LoginToken []byte
 
 	Pc          *pc.QQClient
 	PcLoginTime int64
 	PcHeartTime int64
-
-	MacPc          *mobile.QQClient
-	MacPcLoginTime int64
-	MacPcHeartTime int64
-
-	LoginToken []byte
 }
 
 type Proxy struct {
@@ -33,11 +28,10 @@ type Proxy struct {
 }
 
 // NewOicq 实例化OICQ
-func NewOicq(uin int64, password [16]byte, device int, proxy *Proxy, loginToken []byte, proto mobile.ClientProtocol) *Oicq {
+func NewOicq(uin int64, password [16]byte, proxy *Proxy, device int, loginToken []byte, proto mobile.ClientProtocol) *Oicq {
 	oicq := &Oicq{
 		Mobile: mobile.NewClientMd5(uin, password).UseDevice(getMobileDevice(uin, device, proto)),
 		Pc:     pc.NewClientMd5(uin, password[:]).UseDevice(getPcDevice(uin)),
-		MacPc:  mobile.NewClientMd5(uin, password).UseDevice(getMobileDevice(uin, device, mobile.MacOS)),
 	}
 	if loginToken != nil && len(loginToken) > 0 {
 		oicq.LoginToken = loginToken
@@ -69,8 +63,10 @@ func getMobileDevice(uin int64, deviceId int, proto mobile.ClientProtocol) *mobi
 	device.WifiBSSID = md5Twice[:]
 	uuid := md52Lower[20:28]
 	device.WifiSSID = []byte(md52Lower[29:32] + uuid + md5Lower[8:16])
-	device.IMEI = strconv.FormatInt(395650000000000+uin*6, 10)
+	device.IMEI = strconv.FormatInt(395650000000000+uin*6+int64(deviceId), 10)
 	device.AndroidId = []byte(uuid + md5Lower[8:16])
+	device.QImei = []byte(md52Lower[8:16] + md52Lower[17:25])
+	device.QImei36 = []byte("5aac" + md52Lower)
 	device.Protocol = proto
 	return device
 }
@@ -87,7 +83,7 @@ func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
 		if o.LoginToken == nil || len(o.LoginToken) <= 0 || o.TokenLogin() != nil {
 			loginStatus, err := o.Login()
 			if err != nil {
-				return ErrLoginError, nil
+				return err, nil
 			}
 			if !loginStatus.Success {
 				return nil, loginStatus
@@ -103,7 +99,12 @@ func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
 func (o *Oicq) Login() (*mobile.LoginResponse, error) {
 	resp, e := o.Mobile.Login()
 	if e == nil && resp.Success {
-		o.LoginToken = o.Mobile.GenToken()
+		e = o.Mobile.Init(false, false)
+		if e == nil {
+			o.LoginToken = o.Mobile.GenToken()
+		} else {
+			resp.Success = false
+		}
 	}
 	return resp, e
 }
@@ -111,6 +112,9 @@ func (o *Oicq) Login() (*mobile.LoginResponse, error) {
 // TokenLogin token登陆QQ
 func (o *Oicq) TokenLogin() error {
 	e := o.Mobile.TokenLogin(o.LoginToken)
+	if e == nil {
+		e = o.Mobile.Init(true, false)
+	}
 	if e == nil {
 		o.LoginToken = o.Mobile.GenToken()
 	}

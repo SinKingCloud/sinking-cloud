@@ -68,6 +68,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 				Uin:       uin,
 				Password:  pwd,
 				UinStatus: 1,
+				Proto:     0,
 				Device:    0,
 				SignDay:   0,
 				PlayerDay: 0,

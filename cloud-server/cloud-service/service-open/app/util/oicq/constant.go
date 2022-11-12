@@ -3,8 +3,7 @@ package oicq
 import "errors"
 
 var (
-	ErrNotLogin   = errors.New("account is not login")
-	ErrLoginError = errors.New("account is login error")
+	ErrNotLogin = errors.New("account is not login")
 )
 
 type Job int //挂机项目
@@ -14,7 +13,6 @@ const (
 	Pc                     //Pc加速
 	Ws                     //微视加速
 	Word                   //小世界加速
-	Game                   //游戏加速
 	MobileClock            //手Q打卡
 	ZoneClock              //空间打卡
 	Friend                 //加好友加速

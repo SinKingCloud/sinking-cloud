@@ -17,23 +17,46 @@ var (
 	oicqMapTemp = sync.Map{} // map[int64]*Oicq
 	heart       = atomic.Bool{}
 	releasePc   = make(chan *Oicq)
-	releaseMac  = make(chan *Oicq)
 	reConnPc    = make(chan *Oicq)
-	reConnMac   = make(chan *Oicq)
 )
 
+// GetOicqProto 获取协议类型
+func GetOicqProto(proto int) mobile.ClientProtocol {
+	protos := mobile.Pad
+	if proto == 0 {
+		protos = mobile.IPad
+	} else if proto == 1 {
+		protos = mobile.AndroidPhone
+	} else if proto == 2 {
+		protos = mobile.Pad
+	}
+	return protos
+}
+
+// GetOicqProtoCode 获取协议类型标识
+func GetOicqProtoCode(proto mobile.ClientProtocol) int {
+	if proto == mobile.IPad {
+		return 0
+	} else if proto == mobile.AndroidPhone {
+		return 1
+	} else {
+		return 2
+	}
+}
+
 // GetOicqInstance 获取QQ操作实例
-func GetOicqInstance(uin int64, password [16]byte, device int, proxy *Proxy, loginToken []byte, temp bool) *Oicq {
+func GetOicqInstance(uin int64, password [16]byte, proxy *Proxy, proto int, device int, loginToken []byte, temp bool) *Oicq {
 	var data any
 	var ok bool
-	proto := mobile.IPad
+	protos := mobile.Pad
 	if temp {
 		data, ok = oicqMapTemp.Load(uin)
 	} else {
+		protos = GetOicqProto(proto)
 		data, ok = oicqMap.Load(uin)
 	}
 	if !ok {
-		oicq := NewOicq(uin, password, device, proxy, loginToken, proto)
+		oicq := NewOicq(uin, password, proxy, device, loginToken, protos)
 		if temp {
 			oicqMapTemp.Store(uin, oicq)
 		} else {
@@ -51,15 +74,12 @@ func GetOicqInstance(uin int64, password [16]byte, device int, proxy *Proxy, log
 				proxy.Pwd != oicq.Mobile.Proxy.Pwd) {
 			oicq.Mobile.Disconnect()
 			oicq.Pc.Disconnect()
-			oicq.MacPc.Disconnect()
 			oicq.Mobile.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd)
 			oicq.Pc.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd)
-			oicq.MacPc.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd)
 		}
 		//检查是否更改密码
 		if utils.Bin2HexTo(oicq.Mobile.PasswordMd5[:]) != utils.Bin2HexTo(password[:]) {
 			oicq.Mobile.PasswordMd5 = password
-			oicq.MacPc.PasswordMd5 = password
 		}
 		return oicq
 	}
@@ -71,7 +91,6 @@ func DelOicqInstance(uin int64) {
 	if ok {
 		data.(*Oicq).Mobile.Release()
 		data.(*Oicq).Pc.Release()
-		data.(*Oicq).MacPc.Release()
 		oicqMap.Delete(uin)
 	}
 }
@@ -82,7 +101,6 @@ func DelTempOicqInstance(uin int64) {
 	if ok {
 		data.(*Oicq).Mobile.Release()
 		data.(*Oicq).Pc.Release()
-		data.(*Oicq).MacPc.Release()
 		oicqMapTemp.Delete(uin)
 	}
 }
@@ -112,7 +130,7 @@ func startDoHeartbeat() {
 							e, status := task.Mobile.Speed.Info()
 							if e == nil && status != nil {
 								if status.IPCQQOnline != "1" {
-									if task.Mobile.TokenLogin(task.LoginToken) == nil {
+									if task.TokenLogin() == nil {
 										task.Pc.ForceOnline(false)
 										task.Pc.Release()
 										var e2 error
@@ -142,8 +160,8 @@ func startDoHeartbeat() {
 														if l.Status == pc.LoginSuccess {
 															//关闭数据接收
 															task.Pc.NetLoop(false)
-															task.Pc.ForceOnline(true)  //强制在线,不间断发送心跳
 															task.Pc.Online.Store(true) //设置为在线状态
+															task.Pc.ForceOnline(true)  //强制在线,不间断发送心跳
 														}
 														break
 													} else if state == pc.ScanCodeError {
@@ -162,15 +180,18 @@ func startDoHeartbeat() {
 												time.Sleep(500 * time.Millisecond)
 												if task.Pc.Online.Load() {
 													log.Println(task.Mobile.Uin, "pc未加速重新登陆成功")
-													task.Mobile.Release()
-													continue
 												} else {
 													log.Println(task.Mobile.Uin, "pc未加速重新登陆失败")
+													e = errors.New("pc未加速重新登陆失败")
 												}
 											} else {
 												log.Println(task.Mobile.Uin, "pc未加速重新授权登陆失败", e)
+												e = errors.New("pc未加速重新授权登陆失败")
 											}
 											task.Mobile.Release()
+											if e == nil {
+												continue
+											}
 										}
 									}
 								}
@@ -184,66 +205,10 @@ func startDoHeartbeat() {
 						task.PcHeartTime = 0
 					}
 				}(releasePc)
-				go func(release chan *Oicq) {
-					for task := range release {
-						//判断是否加速完成,未加速完成重新挂机
-						d := time.Now()
-						d = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
-						if task.Mobile != nil && task.MacPcLoginTime > d.Unix() {
-							e, status := task.Mobile.Speed.Info()
-							if e == nil && status != nil {
-								if status.IPCQQOnline != "1" {
-									task.MacPc.ForceOnline(false)
-									task.MacPc.Release()
-									e1 := task.MacPc.TokenLogin(task.LoginToken)
-									if e1 == nil {
-										task.MacPcLoginTime = time.Now().Unix()
-										task.MacPc.NetLoop(false)     //关闭数据包接收
-										task.MacPc.ForceOnline(true)  //强制在线,不间断发送心跳
-										task.MacPc.Online.Store(true) //设置为在线状态
-										log.Println(task.Mobile.Uin, "mac未加速使用token重新登陆成功")
-										continue
-									} else {
-										log.Println(task.Mobile.Uin, "mac未加速使用token重新登陆失败")
-									}
-								}
-							}
-						}
-						task.MacPc.Release()
-						task.MacPc.Online.Store(false)
-						log.Println("mac pc下线", task.MacPc.Uin, "登陆时间", task.MacPcLoginTime)
-						task.MacPcLoginTime = 0
-						task.MacPcHeartTime = 0
-					}
-				}(releaseMac)
-				//重连
 				go func(tasks chan *Oicq) {
 					for task := range tasks {
 						r := false
-						for i1 := 0; i1 < 3; i1++ {
-							if task.MacPc.QuickReconnect() == nil {
-								r = true
-								task.MacPc.NetLoop(false) //关闭数据监听
-								break
-							} else {
-								time.Sleep(500 * time.Millisecond)
-							}
-						}
-						//重连成功则重新设置在线状态
-						if r {
-							log.Println("mac重连成功", task.MacPc.Uin)
-							task.MacPc.Online.Store(true)
-						} else {
-							log.Println("mac重连失败", task.MacPc.Uin)
-							task.MacPc.Online.Store(false)
-							task.MacPcHeartTime = 0
-							task.MacPcLoginTime = 0
-						}
-					}
-				}(reConnMac)
-				go func(tasks chan *Oicq) {
-					for task := range tasks {
-						r := false
+						task.Pc.ForceOnline(false)
 						for i1 := 0; i1 < 3; i1++ {
 							if task.Pc.QuickReconnect() == nil {
 								r = true
@@ -257,29 +222,12 @@ func startDoHeartbeat() {
 						if r {
 							log.Println("pc重连成功", task.Pc.Uin)
 							task.Pc.Online.Store(true)
+							task.Pc.ForceOnline(true)
 						} else {
-							log.Println("pc重连失败", task.Pc.Uin, "开始切换mac协议")
-							//继续使用mac协议挂机
-							task.MacPc.Release()     //关闭连接
-							task.MacPc.NetLoop(true) //打开数据包接收
-							e1 := task.MacPc.TokenLogin(task.LoginToken)
-							r2 := false
-							if e1 == nil {
-								log.Println(task.Mobile.Uin, "mac token 重连成功")
-								r2 = true
-							} else {
-								log.Println(task.Mobile.Uin, "mac token 重连失败", e1)
-							}
-							if r2 {
-								task.MacPcLoginTime = time.Now().Unix()
-								task.MacPc.NetLoop(false)     //关闭数据包接收
-								task.MacPc.ForceOnline(true)  //强制在线,不间断发送心跳
-								task.MacPc.Online.Store(true) //设置为在线状态
-							} else {
-								task.Pc.Online.Store(false)
-								task.PcHeartTime = 0
-								task.PcLoginTime = 0
-							}
+							log.Println("pc重连失败", task.Pc.Uin)
+							task.Pc.Online.Store(false)
+							task.PcHeartTime = 0
+							task.PcLoginTime = 0
 						}
 					}
 				}(reConnPc)
@@ -307,27 +255,6 @@ func startDoHeartbeat() {
 				for i := 0; i < threadNum; i++ {
 					go func(tasks chan *Oicq) {
 						for task := range tasks {
-							//检测mac pc
-							if task.MacPcLoginTime > 0 || task.MacPc.Online.Load() {
-								//pc登陆满3小时下线
-								if task.MacPcLoginTime > 0 && task.MacPcLoginTime+3600*3 < time.Now().Unix() {
-									releaseMac <- task
-									task.MacPcLoginTime = time.Now().Unix()
-								}
-								e := task.MacPc.DoHeartbeat(false)
-								//心跳失败，重连(最大重试3次)
-								if e != nil {
-									log.Println("mac连接丢失", task.MacPc.Uin, e, "开始重新连接")
-									reConnMac <- task
-									task.MacPc.Online.Store(false)
-								} else {
-									log.Println("mac 心跳", task.MacPc.Uin, e, "上次心跳时间", task.MacPcHeartTime)
-									task.MacPcHeartTime = time.Now().Unix()
-								}
-							} else {
-								task.MacPcHeartTime = 0
-								task.MacPcLoginTime = 0
-							}
 							//发送pc心跳
 							if task.PcLoginTime > 0 || task.Pc.Online.Load() {
 								//pc登陆满3小时下线
@@ -341,6 +268,7 @@ func startDoHeartbeat() {
 								if e != nil {
 									log.Println("pc连接丢失", task.Pc.Uin, e, "开始重新连接")
 									reConnPc <- task
+									task.Pc.ForceOnline(false)
 									task.Pc.Online.Store(false)
 								} else {
 									log.Println("发送心跳", task.Pc.Uin, e, "上次心跳时间", task.PcHeartTime)

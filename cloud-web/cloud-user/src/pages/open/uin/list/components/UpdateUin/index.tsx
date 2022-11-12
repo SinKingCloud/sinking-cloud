@@ -182,6 +182,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
       setIsQrCodeModalVisible(false);
       //登陆成功
       message.success(r?.message || "更新状态成功");
+      form?.resetFields();
       onOk?.();
     } else if (r?.code == 400) {
       captchaLogin(r?.data);
@@ -347,14 +348,18 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
                      label="挂机密码">
             <Input placeholder="留空则使用上次更新的密码"/>
           </Form.Item>
-          <Form.Item name={"sms"} hidden={step != "sms"} label="短信验证码">
-            <Input placeholder="请输入短信验证码" type={"number"} onChange={(e) => {
-              form?.setFieldsValue({sms: e.target.value})
-            }} style={{maxWidth: "155px"}}/>
-            <Button type="primary" style={{marginLeft: "10px"}} size={"small"} ghost loading={getSmsLoading}
-                    onClick={getSms}>
-              获取
-            </Button>
+          <Form.Item hidden={step != "sms"} label="短信验证码" style={{marginBottom: 0}}>
+            <Form.Item name={"sms"} style={{display: 'inline-block', width: 'calc(70% - 8px)'}}>
+              <Input placeholder="请输入短信验证码" type={"number"} onChange={(e) => {
+                form?.setFieldsValue({sms: e.target.value})
+              }} style={{maxWidth: "155px"}}/>
+            </Form.Item>
+            <Form.Item style={{display: 'inline-block', width: 'calc(30% - 8px)', margin: '0 8px'}}>
+              <Button type="primary" style={{marginLeft: "10px"}} size={"small"} ghost loading={getSmsLoading}
+                      onClick={getSms}>
+                获取
+              </Button>
+            </Form.Item>
           </Form.Item>
           <div hidden={qrCode == "" || step != "sms"}
                style={{float: "right", marginTop: "-10px", marginBottom: "-10px"}}>

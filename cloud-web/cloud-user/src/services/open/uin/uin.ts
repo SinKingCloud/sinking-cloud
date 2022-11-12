@@ -157,6 +157,7 @@ export async function uinBuy(body: any, options?: { [key: string]: any }) {
 export async function uinLogin(body: any, options?: { [key: string]: any }) {
   return request<API.Response>('/open/user/uin/operate/login', {
     method: 'POST',
+    timeout: 600000,
     headers: {
       'Content-Type': 'application/json',
     },
@@ -169,6 +170,7 @@ export async function uinLogin(body: any, options?: { [key: string]: any }) {
 export async function uinSms(body: any, options?: { [key: string]: any }) {
   return request<API.Response>('/open/user/uin/operate/sms', {
     method: 'POST',
+    timeout: 600000,
     headers: {
       'Content-Type': 'application/json',
     },

@@ -114,6 +114,8 @@ func SaveLoginToken(uinInfo *model.AppUin, token []byte) error {
 	data := make(map[string]interface{})
 	data["server_id"] = uinInfo.ServerId
 	data["server_key"] = uinInfo.ServerKey
+	data["timing"] = uinInfo.Timing
+	data["proto"] = uinInfo.Proto
 	data["token"] = utils.Bin2HexTo(token)
 	data["uin_status"] = int(uin.StatusUinNormal)
 	data["password"] = uinInfo.Password

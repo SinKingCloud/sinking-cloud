@@ -41,24 +41,10 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("2710911512")
+	//	list, _ := uin2.GetIns().SelectByUin("2710911512") //44422323
 	//	for _, v := range list {
-	//		if v.UinStatus == 0 {
-	//			l.run(v)
-	//			break
-	//		}
-	//	}
-	//}()
-	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("1178710004")
-	//	uin := list[0]
-	//	for i := 0; i < 100; i++ {
-	//		go func() {
-	//			for i1 := 0; i1 < 100000; i1++ {
-	//				uin.Uin = strconv.Itoa(rand.Intn(999999))
-	//				l.run(uin)
-	//			}
-	//		}()
+	//		l.run(v)
+	//		break
 	//	}
 	//}()
 	err := uinJobIns.ListenReceiveMsgDo(constant.UinJobTopic, "", func(mqMsg queue.MqMsg) {
@@ -288,7 +274,7 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 	if err != nil || uinInfo == nil {
 		return false, nil, nil
 	}
-	cli, err := web_uin.GetOicqInsWithOption(uinInfo, proxy, false, uinInfo.Device)
+	cli, err := web_uin.GetOicqInsWithOption(uinInfo, proxy, false)
 	if err != nil {
 		log.Println("获取挂机实例失败", uin)
 		return false, nil, nil
@@ -303,9 +289,11 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 	err, loginResponse := cli.AutoLogin()
 	log.Println("挂机登陆结果", uin.Uin, err, loginResponse)
 	if err != nil {
+		l.saveJobStatus(uin, 0, nil)
 		return false, nil, nil
 	}
 	if !loginResponse.Success {
+		l.saveJobStatus(uin, 0, nil)
 		return true, nil, nil
 	}
 	defer cli.Mobile.Release()
@@ -321,11 +309,11 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 			jobs = l.getUnDoJobs(jobs, s, isSys)
 			if len(jobs) <= 0 {
 				//保存加速状态
-				l.saveJobStatus(uin, s)
+				l.saveJobStatus(uin, 1, s)
 			}
 		}
 	}
-	//jobs = []oicq.Job{oicq.Pc}
+	//jobs = []oicq.Job{oicq.Word}
 	log.Println("获取挂机任务", uin.Uin, jobs)
 	if len(jobs) <= 0 {
 		return false, nil, cli.LoginToken
@@ -345,13 +333,13 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 	}
 	//保存加速状态
 	if e, s := cli.Mobile.Speed.Info(); e == nil {
-		l.saveJobStatus(uin, s)
+		l.saveJobStatus(uin, 1, s)
 	}
 	return false, nil, cli.LoginToken
 }
 
 // saveJobStatus 保存加速状态
-func (l *uinJob) saveJobStatus(uin *uin2.AppUinJob, status *client.SpeedStatus) {
+func (l *uinJob) saveJobStatus(uin *uin2.AppUinJob, status int, speedStatus *client.SpeedStatus) {
 	//把所有状态改为已加速
 	var userJob map[web_uin.JobName]string
 	err2 := json.Unmarshal([]byte(uin.Setting), &userJob)
@@ -362,10 +350,12 @@ func (l *uinJob) saveJobStatus(uin *uin2.AppUinJob, status *client.SpeedStatus) 
 				jobs = append(jobs, k)
 			}
 		}
-		_ = web_uin.SetUinJobStatus(uin.Uin, jobs, 1)
+		_ = web_uin.SetUinJobStatus(uin.Uin, jobs, status)
 	}
 	//更改加速状态
-	_ = web_uin.SetUinSpeedStatus(uin.Uin, status)
+	if speedStatus != nil {
+		_ = web_uin.SetUinSpeedStatus(uin.Uin, speedStatus)
+	}
 }
 
 // getUnDoJobs 获取未执行的任务
