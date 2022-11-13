@@ -81,7 +81,9 @@ func (l *uinJob) autoStartThread() {
 			authThreadWaitLock.RLock()
 			authThreadWait.Add(1)
 			authThreadWaitLock.RUnlock()
+			taskWaitLock.RLock()
 			taskWait.Wait() //等待协程内所有任务执行完毕
+			taskWaitLock.RUnlock()
 			//查询所有挂机服务器
 			list, err := server2.GetIns().SelectAllServer()
 			if err == nil {
@@ -92,7 +94,7 @@ func (l *uinJob) autoStartThread() {
 			authThreadWaitLock.RLock()
 			authThreadWait.Done()
 			authThreadWaitLock.RUnlock()
-			time.Sleep(12 * time.Hour) //每12小时根据账号数量更新协程池
+			time.Sleep(24 * time.Hour) //每12小时根据账号数量更新协程池
 		}
 	}(l)
 }

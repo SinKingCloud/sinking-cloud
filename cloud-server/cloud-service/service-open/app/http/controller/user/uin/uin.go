@@ -410,7 +410,8 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
 		return
 	}
-	if c.GetWebUserInfo().RealAuth != web_user.RealAuthSuccess {
+	user := web_user.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, false)
+	if user.RealAuth != web_user.RealAuthSuccess {
 		c.Error("该对接账户未完成实名认证,请完成实名认证")
 		return
 	}
