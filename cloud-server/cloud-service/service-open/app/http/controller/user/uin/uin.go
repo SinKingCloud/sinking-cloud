@@ -951,7 +951,12 @@ func (ControllerUin) Activity(c *sinking_server.Context) {
 		}
 		return d
 	}
+	testOpen := 0
+	if appConfig[constant.AppUinSpeedTest] == "1" {
+		testOpen = 1
+	}
 	c.SuccessWithData("获取成功", sinking_web.H{
+		"test_speed":         testOpen,                                         //测试扫码加速
 		"first_buy_open":     firstBuyOpen,                                     //首次购买活动开关
 		"first_buy_multiple": firstBuy,                                         //首次购买到账倍数
 		"buy_open":           buyOpen,                                          //购买赠送活动开关

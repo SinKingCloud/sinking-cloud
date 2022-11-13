@@ -120,7 +120,7 @@ func OutLogin(types string, u *model.SystemUser, u2 *model.WebUser) {
 // GetJwtToken 生成jwtToken
 func GetJwtToken(types string, u *model.SystemUser, u2 *model.WebUser, ip string) (s string, e error) {
 	//生成token
-	token := str.NewStringTool(time.Now().String()).Md5()
+	token := str.NewStringTool(strconv.FormatInt(time.Now().UnixMilli(), 10)).Md5()
 	loginTime := str.DateTime(time.Now())
 	jwtLoginToken, _ := json.Marshal(map[string]string{types: token})
 	fun := func(types string, newToken string, oldToken string) string {
