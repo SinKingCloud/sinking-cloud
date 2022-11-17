@@ -64,10 +64,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 				}
 				break
 			case Word: //小世界加速
-				_, status = o.Mobile.Speed.WebFeedCloud()
-				if status != mobile.SpeedSuccess {
-					_, status = o.Mobile.Speed.FeedCloud()
-				}
+				_, status = o.Mobile.Speed.FeedCloud()
 				break
 			case MobileClock: //打卡加速
 				_, status = o.Mobile.Speed.DailySign()

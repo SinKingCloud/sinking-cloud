@@ -193,9 +193,6 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 						if status.IDailySign != "1" {
 							_, _ = cli.Speed.DailySign()
 						}
-						if status.ISmallWorld != "1" {
-							_, _ = cli.Speed.WebFeedCloud()
-						}
 						if status.IQzoneState != "1" {
 							_, _ = cli.Speed.QZone()
 						}
