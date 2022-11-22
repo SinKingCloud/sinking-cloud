@@ -105,15 +105,6 @@ func DelTempOicqInstance(uin int64) {
 	}
 }
 
-// GenToken 生成token
-func GenToken(uin int64) ([]byte, error) {
-	data, ok := oicqMap.Load(uin)
-	if ok {
-		return data.(*Oicq).Mobile.GenToken(), nil
-	}
-	return nil, errors.New("QQ不存在")
-}
-
 // startDoHeartbeat 开启自动心跳
 func startDoHeartbeat() {
 	if !heart.Load() {

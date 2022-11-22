@@ -62,6 +62,7 @@ func (s *service) Save(data *model.AppUinInfo, speedInfo map[string]string) (err
 			var job map[string]string
 			//存在
 			stamp, e2 := time.ParseInLocation("2006-01-02 15:04:05", info.UpdateTime.String(), time.Local)
+			refresh := false
 			if e2 == nil && stamp.Unix() > str.NewTimeTool().GetZeroTime(time.Now()).Unix() {
 				if data.TodayDay != "" {
 					todayDay1, err1 := strconv.ParseFloat(info.TodayDay, 32)
@@ -70,24 +71,28 @@ func (s *service) Save(data *model.AppUinInfo, speedInfo map[string]string) (err
 						d["today_day"] = data.TodayDay
 					}
 				}
-				var status map[string]string
-				e1 := json.Unmarshal([]byte(info.SpeedInfo), &status)
-				if e1 == nil {
-					for k := range speedInfo {
-						status[k] = speedInfo[k]
-					}
-				}
-				job = status
+				refresh = true
 			} else {
 				d["today_day"] = data.TodayDay
-				job = speedInfo
+			}
+			if speedInfo != nil {
+				if refresh {
+					status := make(map[string]string)
+					_ = json.Unmarshal([]byte(info.SpeedInfo), &status)
+					if status != nil {
+						for k := range speedInfo {
+							status[k] = speedInfo[k]
+						}
+					}
+					job = status
+				} else {
+					job = speedInfo
+				}
 			}
 			if job != nil {
 				bytes, e1 := json.Marshal(job)
 				if e1 == nil {
-					t := string(bytes)
-					d["speed_info"] = t
-					data.SpeedInfo = t
+					d["speed_info"] = string(bytes)
 				}
 			}
 			err = s.UpdateByUin(data.Uin, d)
