@@ -9,13 +9,13 @@ type JobName string
 const (
 	Mobile      JobName = "mobile"
 	Pc          JobName = "pc"
-	Online      JobName = "online"
 	Ws          JobName = "ws"
 	MobileClock JobName = "mobile_clock"
 	ZoneClock   JobName = "zone_clock"
 	Login       JobName = "login"
 	Friend      JobName = "friend"
 	Word        JobName = "word"
+	Dress       JobName = "dress"
 	Vip         JobName = "vip"
 	BigVip      JobName = "big_vip"
 	Hz          JobName = "hz"
@@ -40,13 +40,13 @@ const (
 var Setting = map[JobName]string{
 	Mobile:      "1",
 	Pc:          "1",
-	Online:      "1",
 	Ws:          "1",
 	MobileClock: "1",
 	ZoneClock:   "1",
 	Login:       "1",
 	Friend:      "1",
 	Word:        "1",
+	Dress:       "1",
 	Vip:         "1",
 	BigVip:      "1",
 	Hz:          "1",
@@ -65,13 +65,13 @@ var JobMap = map[JobType]map[JobName]oicq.Job{
 	Speed: {
 		Mobile:      oicq.None,
 		Pc:          oicq.Pc,
-		Online:      oicq.None,
 		Ws:          oicq.Ws,
 		MobileClock: oicq.MobileClock,
 		ZoneClock:   oicq.ZoneClock,
 		Login:       oicq.None,
 		Friend:      oicq.Friend,
 		Word:        oicq.Word,
+		Dress:       oicq.Dress,
 	},
 	Sign: {
 		Vip:        oicq.Vip,
@@ -107,13 +107,13 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/pc.png",
 			"edit":     "true",
 		},
-		Online: {
+		Dress: {
 			"sort":     "3",
 			"type":     "speed",
-			"name":     "非隐身在线",
-			"describe": "非隐身时长满2小时加速0.2天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ys.png",
-			"edit":     "false",
+			"name":     "装扮签到",
+			"describe": "装扮商城签到加速0.5天",
+			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/dress.png",
+			"edit":     "true",
 		},
 		Ws: {
 			"sort":     "6",
@@ -126,7 +126,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 		Word: {
 			"sort":     "7",
 			"type":     "speed",
-			"name":     "小世界加速",
+			"name":     "发小世界",
 			"describe": "每日发布动态加速0.5天",
 			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/xsj.png",
 			"edit":     "true",

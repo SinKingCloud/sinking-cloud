@@ -16,6 +16,7 @@ const (
 	MobileClock            //手Q打卡
 	ZoneClock              //空间打卡
 	Friend                 //加好友加速
+	Dress                  //装扮加速
 
 	Vip        //会员签到
 	BigVip     //大会员签到

@@ -5,8 +5,8 @@ go 1.19
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20221105060954-78362716b4ba
-	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20221117141659-158aa3bb34af
-	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20221112054344-7bf5b9f1083e
+	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20221122034609-f67314083cfb
+	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20221122034609-f67314083cfb
 	golang.org/x/net v0.0.0-20221002022538-bcab6841153b
 	gorm.io/gorm v1.21.15
 )

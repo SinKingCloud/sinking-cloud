@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("2927677446") //44422323
+	//	list, _ := uin2.GetIns().SelectByUin("2831924533") //44422323
 	//	for _, v := range list {
 	//		l.run(v)
 	//		break
@@ -200,7 +200,6 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 	if err != nil || userJob == nil {
 		jobs = []oicq.Job{}
 	}
-
 	isCost := false
 	for k, v := range web_uin.Setting {
 		//类型判断
@@ -384,6 +383,9 @@ func (l *uinJob) getUnDoJobs(jobs []oicq.Job, status *client.SpeedStatus, isSys 
 			break
 		case oicq.Friend:
 			isCheck = status.IAddFriend != "1"
+			break
+		case oicq.Dress:
+			isCheck = status.IDress != "1"
 			break
 		default:
 			isCheck = !isSys //用户提交则补挂签到
