@@ -429,7 +429,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("未查询到挂机地区信息,请更换挂机地区")
 		return
 	}
-	uinInfo.Proto = oicq.GetOicqProtoCode(client.Pad) //强制使用pad协议
+	uinInfo.Proto = oicq.GetOicqProtoCode(client.AndroidPad) //强制使用pad协议
 	cli, err := web_uin.GetOicqInsById(uinInfo.Id, true)
 	if err != nil {
 		c.Error("连接服务器失败")

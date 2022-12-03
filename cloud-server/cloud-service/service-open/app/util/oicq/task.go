@@ -22,13 +22,13 @@ var (
 
 // GetOicqProto 获取协议类型
 func GetOicqProto(proto int) mobile.ClientProtocol {
-	protos := mobile.Pad
+	protos := mobile.AndroidPad
 	if proto == 0 {
 		protos = mobile.IPad
 	} else if proto == 1 {
 		protos = mobile.AndroidPhone
 	} else if proto == 2 {
-		protos = mobile.Pad
+		protos = mobile.AndroidPad
 	}
 	return protos
 }
@@ -48,7 +48,7 @@ func GetOicqProtoCode(proto mobile.ClientProtocol) int {
 func GetOicqInstance(uin int64, password [16]byte, proxy *Proxy, proto int, device int, loginToken []byte, temp bool) *Oicq {
 	var data any
 	var ok bool
-	protos := mobile.Pad
+	protos := mobile.AndroidPad
 	if temp {
 		data, ok = oicqMapTemp.Load(uin)
 	} else {
