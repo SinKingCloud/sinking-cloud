@@ -96,7 +96,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "speed",
 			"name":     "手机在线",
 			"describe": "手机在线满6小时加速1天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/sq.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/sq.png",
 			"edit":     "true",
 		},
 		Pc: {
@@ -104,7 +104,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "speed",
 			"name":     "电脑在线",
 			"describe": "电脑在线2小时加速0.5天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/pc.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/pc.png",
 			"edit":     "true",
 		},
 		Dress: {
@@ -112,7 +112,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "speed",
 			"name":     "装扮签到",
 			"describe": "装扮商城签到加速0.5天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/dress.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/dress.png",
 			"edit":     "true",
 		},
 		Ws: {
@@ -120,7 +120,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "speed",
 			"name":     "微视观看",
 			"describe": "微视看视频满30分钟，加速0.5天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ws.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/ws.png",
 			"edit":     "true",
 		},
 		Word: {
@@ -128,7 +128,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "speed",
 			"name":     "发小世界",
 			"describe": "每日发布动态加速0.5天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/xsj.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/xsj.png",
 			"edit":     "true",
 		},
 		MobileClock: {
@@ -136,7 +136,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "speed",
 			"name":     "登陆打卡",
 			"describe": "手机签到打卡加速0.5天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/dk.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/dk.png",
 			"edit":     "true",
 		},
 		ZoneClock: {
@@ -144,7 +144,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "speed",
 			"name":     "发布说说",
 			"describe": "发布说说签到打卡加速0.5天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ss.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/ss.png",
 			"edit":     "true",
 		},
 		Login: {
@@ -152,7 +152,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "speed",
 			"name":     "连续登录",
 			"describe": "连续登录手机加速0.5天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/dl.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/dl.png",
 			"edit":     "false",
 		},
 		Friend: {
@@ -160,7 +160,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "speed",
 			"name":     "好友加速",
 			"describe": "每日添加一位好友加速0.5天",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/hy.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/hy.png",
 			"edit":     "true",
 		},
 	},
@@ -170,7 +170,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "sign",
 			"name":     "会员成长",
 			"describe": "SVIP6级年费以上用户，每月SVIP成长值840点左右",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/vip.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/vip.png",
 			"edit":     "true",
 		},
 		BigVip: {
@@ -178,7 +178,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "sign",
 			"name":     "大会员成长",
 			"describe": "大会员签到/访客/点赞/师徒/分享，每日25点成长值",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/big_vip.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/big_vip.png",
 			"edit":     "true",
 		},
 		Hz: {
@@ -186,7 +186,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "sign",
 			"name":     "黄钻成长",
 			"describe": "黄钻每日完成三次打卡任务，每日获得15点成长值",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/hz.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/hz.png",
 			"edit":     "true",
 		},
 		Lz: {
@@ -194,7 +194,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "sign",
 			"name":     "蓝钻成长",
 			"describe": "蓝钻每日领取两次成长值4+4，每日获得8点成长值",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/lz.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/lz.png",
 			"edit":     "true",
 		},
 		Ld: {
@@ -202,7 +202,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "sign",
 			"name":     "乐斗签到",
 			"describe": "自动完成QQ空间Q宠大乐斗每日签到、领取礼包等",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ld.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/ld.png",
 			"edit":     "true",
 		},
 		GameCenter: {
@@ -210,7 +210,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "sign",
 			"name":     "游戏中心",
 			"describe": "每日完成手Q游戏中心日常任务获得游戏币和活跃值",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/game_center.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/game_center.png",
 			"edit":     "true",
 		},
 		Yy: {
@@ -218,7 +218,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "sign",
 			"name":     "音乐签到",
 			"describe": "每日完成QQ音乐签到和刷歌时长",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/yq.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/yq.png",
 			"edit":     "true",
 		},
 		QQGame: {
@@ -226,7 +226,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "sign",
 			"name":     "QQ游戏",
 			"describe": "QQ游戏,道聚城,精品页游签到领取礼包",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/dr.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/dr.png",
 			"edit":     "true",
 		},
 		Sweet: {
@@ -234,7 +234,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "sign",
 			"name":     "情侣空间",
 			"describe": "每日情侣空间签到发表状态",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/ql.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/ql.png",
 			"edit":     "true",
 		},
 		Video: {
@@ -242,7 +242,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "sign",
 			"name":     "腾讯视频",
 			"describe": "腾讯视频会员每日签到领取V力值",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/sp.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/sp.png",
 			"edit":     "true",
 		},
 		WeiYun: {
@@ -250,7 +250,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"type":     "sign",
 			"name":     "微云签到",
 			"describe": "微云每日签到领取积分",
-			"logo":     "https://cdn.yunhuoke.cn/app/uin/img/xy.png",
+			"logo":     "https://cdn.clwl.online/app/uin/img/xy.png",
 			"edit":     "true",
 		},
 	},

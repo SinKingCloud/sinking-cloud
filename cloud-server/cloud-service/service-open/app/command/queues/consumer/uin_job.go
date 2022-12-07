@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("2733317343") //44422323
+	//	list, _ := uin2.GetIns().SelectByUin("3111769641") //44422323
 	//	for _, v := range list {
 	//		l.run(v)
 	//		break
@@ -315,8 +315,8 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 			}
 		}
 	}
-	//jobs = []oicq.Job{oicq.Word}
 	log.Println("获取挂机任务", uin.Uin, jobs)
+	//jobs = []oicq.Job{oicq.Pc, oicq.Word}
 	if len(jobs) <= 0 {
 		return false, nil, cli.LoginToken
 	}

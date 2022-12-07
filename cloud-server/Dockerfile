@@ -9,8 +9,8 @@ ENV CGO_ENABLED 0
 ENV GOPROXY=https://goproxy.cn
 ENV GO111MODULE=on
 ENV GOPRIVATE=github.com/SinKingCloud
-RUN git config --global http.proxy socks5://admin:123456@199.180.103.139:8787
-RUN git config --global https.proxy socks5://admin:123456@199.180.103.139:8787
+RUN git config --global http.proxy socks5://admin:123456@50.93.205.91:8787
+RUN git config --global https.proxy socks5://admin:123456@50.93.205.91:8787
 RUN git config --global url."https://SinKingCloud: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@github.com".insteadOf "https://github.com"
 RUN apt install apt-transport-https
 

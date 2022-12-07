@@ -22,8 +22,9 @@ const isDev = process.env.NODE_ENV === 'development';
 Settings = Object.assign(Settings, {
   title: '云开放平台',
   logo: '/logo.svg',
-  api: isDev ? 'http://127.0.0.1:1000' : 'https://gateway.open-api.cn',
-  base: '/',
+  api: isDev ? 'http://127.0.0.1:1000' : 'https://gateway.clwl.online',
+  base: '/admin/',
+  publicPath: '/admin/',
 });
 
 export default Settings;

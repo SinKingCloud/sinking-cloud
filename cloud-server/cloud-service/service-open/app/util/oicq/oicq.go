@@ -2,6 +2,7 @@ package oicq
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	mobile "github.com/SinKingCloud/sinking-oicq/binary-mobile/client"
@@ -18,6 +19,9 @@ type Oicq struct {
 	Pc          *pc.QQClient
 	PcLoginTime int64
 	PcHeartTime int64
+
+	DeviceId int
+	Password [16]byte
 }
 
 type Proxy struct {
@@ -30,8 +34,10 @@ type Proxy struct {
 // NewOicq 实例化OICQ
 func NewOicq(uin int64, password [16]byte, proxy *Proxy, device int, loginToken []byte, proto mobile.ClientProtocol) *Oicq {
 	oicq := &Oicq{
-		Mobile: mobile.NewClientMd5(uin, password).UseDevice(getMobileDevice(uin, device, proto)),
-		Pc:     pc.NewClientMd5(uin, password[:]).UseDevice(getPcDevice(uin)),
+		Mobile:   mobile.NewClientMd5(uin, password).UseDevice(GetMobileDevice(uin, device, proto)),
+		Pc:       pc.NewClientMd5(uin, password[:]).UseDevice(GetPcDevice(uin)),
+		DeviceId: device,
+		Password: password,
 	}
 	if loginToken != nil && len(loginToken) > 0 {
 		oicq.LoginToken = loginToken
@@ -43,8 +49,8 @@ func NewOicq(uin int64, password [16]byte, proxy *Proxy, device int, loginToken 
 	return oicq
 }
 
-// getMobileDevice 获取手机设备信息
-func getMobileDevice(uin int64, deviceId int, proto mobile.ClientProtocol) *mobile.DeviceInfo {
+// GetMobileDevice 获取手机设备信息
+func GetMobileDevice(uin int64, deviceId int, proto mobile.ClientProtocol) *mobile.DeviceInfo {
 	device := mobile.SystemDeviceInfo
 	s := str.NewStringTool("SK-" + strconv.Itoa(deviceId) + strconv.FormatInt(uin, 10)).Md5()
 	md5Lower := strings.ToLower(s)
@@ -71,7 +77,7 @@ func getMobileDevice(uin int64, deviceId int, proto mobile.ClientProtocol) *mobi
 	return device
 }
 
-func getPcDevice(uin int64) *pc.DeviceInfo {
+func GetPcDevice(uin int64) *pc.DeviceInfo {
 	device := pc.SystemDeviceInfo
 	device.Name = []byte("PC-SK" + strconv.FormatInt(uin, 10))
 	return device
@@ -81,12 +87,14 @@ func getPcDevice(uin int64) *pc.DeviceInfo {
 func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
 	if !o.Mobile.Online.Load() {
 		if o.LoginToken == nil || len(o.LoginToken) <= 0 || o.TokenLogin() != nil {
+			//尝试使用pad进行密码登陆
+			var err error
 			loginStatus, err := o.Login()
 			if err != nil {
 				return err, nil
 			}
 			if !loginStatus.Success {
-				return nil, loginStatus
+				return errors.New("登陆失败"), loginStatus
 			}
 		}
 	}

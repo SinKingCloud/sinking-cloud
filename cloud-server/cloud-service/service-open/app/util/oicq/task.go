@@ -48,15 +48,13 @@ func GetOicqProtoCode(proto mobile.ClientProtocol) int {
 func GetOicqInstance(uin int64, password [16]byte, proxy *Proxy, proto int, device int, loginToken []byte, temp bool) *Oicq {
 	var data any
 	var ok bool
-	protos := mobile.AndroidPad
 	if temp {
 		data, ok = oicqMapTemp.Load(uin)
 	} else {
-		protos = GetOicqProto(proto)
 		data, ok = oicqMap.Load(uin)
 	}
 	if !ok {
-		oicq := NewOicq(uin, password, proxy, device, loginToken, protos)
+		oicq := NewOicq(uin, password, proxy, device, loginToken, GetOicqProto(proto))
 		if temp {
 			oicqMapTemp.Store(uin, oicq)
 		} else {

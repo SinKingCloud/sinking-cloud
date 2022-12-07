@@ -334,7 +334,7 @@ const UpdateUin: React.FC<UpdateUinProps> = (props) => {
                formRef?.current?.resetFields();
                onCancel?.();
              }} confirmLoading={confirmLoading}>
-        <Script url={"https://cdn.yunhuoke.cn/app/uin/captcha/captcha.js"}/>
+        <Script url={"https://cdn.clwl.online/app/uin/captcha/captcha.js"}/>
         <Alert message={<>
           <div>请使用验证码验证或手机扫码验证设备锁</div>
           <div hidden={uinPhone == ""}>当前密保手机:{uinPhone}</div>
