@@ -2,7 +2,6 @@ package oicq
 
 import (
 	"crypto/md5"
-	"errors"
 	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	mobile "github.com/SinKingCloud/sinking-oicq/binary-mobile/client"
@@ -94,7 +93,7 @@ func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
 				return err, nil
 			}
 			if !loginStatus.Success {
-				return errors.New("登陆失败"), loginStatus
+				return nil, loginStatus
 			}
 		}
 	}
