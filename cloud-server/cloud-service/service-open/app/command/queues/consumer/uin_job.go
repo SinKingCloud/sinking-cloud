@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("3111769641") //44422323
+	//	list, _ := uin2.GetIns().SelectByUin("1369930401") //44422323
 	//	for _, v := range list {
 	//		l.run(v)
 	//		break

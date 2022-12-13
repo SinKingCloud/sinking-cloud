@@ -42,9 +42,9 @@ WORKDIR /data/sinking/cloud-service/service-open
 RUN go mod tidy
 RUN go build
 #################构建爬虫服务####################
-WORKDIR /data/sinking/cloud-service/service-spider
-RUN go mod tidy
-RUN go build
+#WORKDIR /data/sinking/cloud-service/service-spider
+#RUN go mod tidy
+#RUN go build
 
 #################网关服务镜像####################
 FROM alpine as cloud-gateway

@@ -6,8 +6,10 @@ const (
 	AppUinSpeedTest       = "speed.test"        //系统云端挂机允许扫码测试
 	AppUinSpeedQps        = "speed.qps"         //系统云端挂机扫码测试qps限制
 	AppUinSpeedNum        = "speed.num"         //系统云端挂机扫码测试次数限制
+	AppUinExperienceOpen  = "experience.open"   //系统云端挂机体验活动开关
+	AppUinExperienceDays  = "experience.days"   //系统云端挂机体验活动赠送天数
 	AppUinFirstBuyGift    = "first.buy.gift"    //系统云端挂机首次购买赠送天数
-	AppUinBuyActivityOpen = "buy.activity.open" //赠送天数活动开关
+	AppUinBuyActivityOpen = "buy.activity.open" //系统云端挂机赠送天数活动开关
 	AppUinBuyMonthGift    = "buy.month.gift"    //系统云端挂机购买1月赠送天数
 	AppUinBuyQuarterGift  = "buy.quarter.gift"  //系统云端挂机购买3月赠送天数
 	AppUinBuyHalfGift     = "buy.half.gift"     //系统云端挂机购买6月赠送天数

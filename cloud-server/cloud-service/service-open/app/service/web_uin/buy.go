@@ -17,6 +17,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_user"
 	"gorm.io/gorm"
 	"strconv"
+	"time"
 )
 
 // Buy 业务下单
@@ -49,7 +50,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 			return errors.New("账户余额不足,请充值")
 		}
 		//扣款
-		if price > 0 && !rpc.WebUser.Money(userId, 0, fmt.Sprintf("%.2f", price)) {
+		if price > 0 && !rpc.WebUser.Money(user.Id, 0, fmt.Sprintf("%.2f", price)) {
 			return errors.New("扣款失败，请联系管理员")
 		}
 	}
@@ -102,7 +103,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 			data["app_id"] = appId
 		}
 		//判断是否首次下单,首次下单赠送天数
-		if log.GetIns().Count(map[string]string{"user_id": strconv.Itoa(userId), "uin": uinInfo.Uin}) <= 0 {
+		if log.GetIns().Count(map[string]string{"user_id": strconv.Itoa(user.Id), "uin": uinInfo.Uin}) <= 0 {
 			appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
 			if appConfig[constant.AppUinFirstBuyGift] != "" {
 				n, e := strconv.Atoi(appConfig[constant.AppUinFirstBuyGift])
@@ -137,7 +138,7 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 	}
 	if orderErr != nil {
 		if cost && price > 0 {
-			rpc.WebUser.Money(userId, 1, fmt.Sprintf("%.2f", price))
+			rpc.WebUser.Money(user.Id, 1, fmt.Sprintf("%.2f", price))
 		}
 		return orderErr
 	}
@@ -184,5 +185,116 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 		//清理用户缓存
 		web_user.GetIns().Clear(user.Id)
 	}()
+	return nil
+}
+
+// Experience 体验挂机
+func Experience(userId int, appId int, serverKey string, uin string, pwd string) error {
+	key := constant.LockUinBuy + strconv.Itoa(userId) + "_" + uin
+	//上锁，避免同时下单太多
+	if !util.Cache.Lock(key, constant.LockTimeUinBuy) {
+		return errors.New("系统繁忙,请稍后下单")
+	}
+	defer util.Cache.UnLock(key) //释放并发锁
+	appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
+	if appConfig[constant.AppUinExperienceOpen] != "1" {
+		return errors.New("体验活动未开启")
+	}
+	user := web_user.GetIns().GetCurrentUserInfo(userId, false)
+	if user == nil {
+		return errors.New("获取用户信息失败")
+	}
+	if appId != 0 {
+		app, err := web_app.GetIns().FindByIdWithCache(appId, false)
+		if err != nil || app == nil || app.UserId != user.Id {
+			return errors.New("未获取到应用信息")
+		}
+	}
+	//判断是否体验或者下单过
+	if log.GetIns().Count(map[string]string{"user_id": strconv.Itoa(user.Id), "uin": uin}) > 0 {
+		return errors.New("该账号已体验过。不可重复体验")
+	}
+	uinInfo, err := uin2.GetIns().FindByUserIdWithUin(user.Id, uin)
+	if err != nil || uinInfo == nil {
+		server, err2 := GetServer(serverKey)
+		if err2 != nil || server == nil {
+			err = errors.New("未获取到可用节点,请更换挂机节点")
+		} else {
+			//写入qq记录
+			uinLog := &model.AppUin{
+				UserId:    user.Id,
+				AppId:     appId,
+				ServerId:  server.Id,
+				ServerKey: server.Key,
+				Uin:       uin,
+				Password:  pwd,
+				UinStatus: 1,
+				Proto:     0,
+				Device:    0,
+				SignDay:   0,
+				PlayerDay: 0,
+				RunDay:    0,
+				Setting:   str.NewJsonTool(Setting).ToString(),
+				Timing:    30,
+				Status:    0,
+			}
+			err = uin2.GetIns().Create(uinLog)
+			if err == nil {
+				_ = server2.GetIns().UpdateById(server.Id, map[string]interface{}{
+					"uin_num": gorm.Expr("`uin_num`+1"),
+				})
+				uinInfo, err = uin2.GetIns().FindByUserIdWithUin(user.Id, uin)
+			}
+		}
+	}
+	//写入qq记录失败
+	if err != nil || uinInfo == nil {
+		return errors.New("申请体验失败,请联系管理员(-1)")
+	}
+	data := make(map[string]interface{})
+	//应用ID变动
+	if appId != 0 && appId != uinInfo.AppId {
+		data["app_id"] = appId
+	}
+	//密码变动
+	if pwd != "" && pwd != uinInfo.Password {
+		_ = ChangePassword(uinInfo.Id, pwd)
+	}
+	//挂机地点变动
+	if serverKey != "" && serverKey != uinInfo.ServerKey {
+		_ = ChangeServer(uinInfo.Id, serverKey)
+	}
+	num := 1
+	if appConfig[constant.AppUinExperienceDays] != "" {
+		n, e := strconv.Atoi(appConfig[constant.AppUinExperienceDays])
+		if e == nil {
+			num = n
+		}
+	}
+	data["player_day"] = gorm.Expr("`player_day`+" + strconv.Itoa(num))
+	data["sign_day"] = gorm.Expr("`sign_day`+" + strconv.Itoa(num))
+	data["update_time"] = str.DateTime(time.Now())
+	//开启事务
+	db := util.Database.Db.Begin()
+	if db.Model(&model.AppUin{}).Where("`id` = ? ", uinInfo.Id).Updates(data).Error != nil {
+		db.Rollback()
+		return errors.New("申请体验失败，请联系管理员(-2)")
+	}
+	//写入日志
+	if db.Create(&model.AppUinLog{
+		UserId:  user.Id,
+		AppId:   appId,
+		UinId:   uinInfo.Id,
+		Uin:     uinInfo.Uin,
+		Type:    log.Buy,
+		Title:   "在线下单",
+		Content: "领取" + strconv.Itoa(num) + "天全套体验套装",
+	}).Error != nil {
+		db.Rollback()
+		return errors.New("申请体验失败，请联系管理员(-3)")
+	}
+	if db.Commit().Error != nil {
+		return errors.New("申请体验失败，请联系管理员(-4)")
+	}
 	return nil
 }

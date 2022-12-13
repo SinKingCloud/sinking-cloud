@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-//Database 数据库连接
+// Database 数据库连接
 type Database struct {
 	Db      *gorm.DB
 	DbError error
@@ -37,7 +37,7 @@ func NewMysql(host string, port string, user string, pwd string, database string
 		return &Database{Db: Db, DbError: errors.New("set sql run config failed")}
 	}
 	sqlDB.SetMaxIdleConns(1000)
-	sqlDB.SetMaxOpenConns(100000)
-	sqlDB.SetConnMaxLifetime(10 * time.Minute)
+	sqlDB.SetMaxOpenConns(10000)
+	sqlDB.SetConnMaxLifetime(1 * time.Minute)
 	return &Database{Db: Db, DbError: DbError}
 }

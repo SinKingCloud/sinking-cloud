@@ -219,6 +219,49 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 	c.SuccessWithData("获取二维码成功,请在60s内扫描二维码", u)
 }
 
+// Experience 领取体验
+func (ControllerUin) Experience(c *sinking_server.Context) {
+	type Form struct {
+		Uin       string `json:"uin" validate:"required,numeric,min=5,max=10" label:"QQ账号"`
+		ServerKey string `json:"server_key" validate:"omitempty,max=10" label:"挂机地区"`
+		AppId     int    `json:"app_id" validate:"omitempty,numeric,gte=0" label:"应用ID"`
+		Pwd       string `json:"pwd" validate:"omitempty,len=32" label:"QQ密码"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	//判断是否新添加
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		//新开通
+		if form.Pwd == "" || len(form.Pwd) != 32 {
+			c.Error("QQ密码格式不正确")
+			return
+		}
+		if form.ServerKey == "" {
+			c.Error("挂机地区不能为空")
+			return
+		}
+	}
+	//判断是否携带APPID
+	if form.AppId == 0 {
+		appInfo := server.GetAppInfo(c)
+		if appInfo != nil {
+			form.AppId = appInfo.Id
+		}
+	}
+	u := c.GetWebUserInfo()
+	//领取
+	err = web_uin.Experience(u.Id, form.AppId, form.ServerKey, form.Uin, form.Pwd)
+	if err != nil {
+		c.Error(err.Error())
+	} else {
+		c.Success("领取体验套装成功")
+	}
+}
+
 // Buy 下单
 func (ControllerUin) Buy(c *sinking_server.Context) {
 	type Form struct {
@@ -969,12 +1012,20 @@ func (ControllerUin) Activity(c *sinking_server.Context) {
 		}
 		return d
 	}
+	//扫码加速活动
 	testOpen := 0
 	if appConfig[constant.AppUinSpeedTest] == "1" {
 		testOpen = 1
 	}
+	//领取体验套装活动
+	experienceOpen := 0
+	if appConfig[constant.AppUinExperienceOpen] == "1" {
+		experienceOpen = 1
+	}
 	c.SuccessWithData("获取成功", sinking_web.H{
 		"test_speed":         testOpen,                                         //测试扫码加速
+		"experience_open":    experienceOpen,                                   //领取体验套装活动
+		"experience_days":    fun(appConfig[constant.AppUinExperienceDays], 0), //领取体验套装活动天数
 		"first_buy_open":     firstBuyOpen,                                     //首次购买活动开关
 		"first_buy_multiple": firstBuy,                                         //首次购买到账倍数
 		"buy_open":           buyOpen,                                          //购买赠送活动开关
