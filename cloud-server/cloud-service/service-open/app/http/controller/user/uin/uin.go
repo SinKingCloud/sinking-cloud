@@ -232,8 +232,9 @@ func (ControllerUin) Experience(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
+	u := c.GetWebUserInfo()
 	//判断是否新添加
-	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(u.Id, form.Uin)
 	if err != nil || uinInfo == nil {
 		//新开通
 		if form.Pwd == "" || len(form.Pwd) != 32 {
@@ -252,7 +253,6 @@ func (ControllerUin) Experience(c *sinking_server.Context) {
 			form.AppId = appInfo.Id
 		}
 	}
-	u := c.GetWebUserInfo()
 	//领取
 	err = web_uin.Experience(u.Id, form.AppId, form.ServerKey, form.Uin, form.Pwd)
 	if err != nil {
@@ -483,13 +483,8 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			uinInfo.Proto = proto
 		}
 	}
-	//根据QQ更换协议
-	suffix := "0"
-	if len(uinInfo.Uin) >= len(suffix) && uinInfo.Uin[len(uinInfo.Uin)-len(suffix):] == suffix {
-		changeProto(client.IPad)
-	} else {
-		changeProto(client.AndroidPad)
-	}
+	//更换协议
+	changeProto(client.AndroidPad)
 	//获取单例
 	cli, err := web_uin.GetOicqInsById(uinInfo.Id, true)
 	if err != nil {

@@ -38,7 +38,7 @@ func (s *service) SelectServers(where map[string]string, page int, pageSize int)
 	if where["status"] != "" {
 		query.Where("`status` = ?", where["status"])
 	}
-	err = query.Group("`key`").Count(&total).Limit(pageSize).Offset(offset).Scan(&list).Error
+	err = query.Group("`key`").Group("`name`").Group("`status`").Count(&total).Limit(pageSize).Offset(offset).Scan(&list).Error
 	return
 }
 

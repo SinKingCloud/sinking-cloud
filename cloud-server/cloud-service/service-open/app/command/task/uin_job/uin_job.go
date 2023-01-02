@@ -18,31 +18,6 @@ import (
 func Run() {
 	go player()      //执行挂机任务
 	go countUinNum() //执行同步数量任务
-	//test()
-}
-
-func test() {
-	//fmt.Println("开始查询")
-	//fmt.Println(uin2.GetIns().UpdateByServerId(54, map[string]interface{}{
-	//	"server_key": "xj",
-	//}))
-	//list, err := server.GetIns().SelectAllServer()
-	//if err == nil {
-	//	for _, ins := range list {
-	//		proxy := &oicq.Proxy{
-	//			Addr: ins.Proxy,
-	//			Port: "8787",
-	//			User: "sinking-oicq",
-	//			Pwd:  "sinking-oicq",
-	//		}
-	//		bytes, e := json.Marshal(&proxy)
-	//		if e == nil {
-	//			fmt.Println(server.GetIns().UpdateById(ins.Id, map[string]interface{}{
-	//				"proxy": string(bytes),
-	//			}))
-	//		}
-	//	}
-	//}
 }
 
 // player 轮询挂机
@@ -86,7 +61,7 @@ func send(minute int64) {
 		//查询当前时间需要代挂的QQ
 		for {
 			if util.Cache.Lock(lock, constant.LockTimeUinJob) {
-				list, err := uin2.GetIns().SelectAllUinJob(1000, minute, str.NewTimeTool().GetZeroTime(time.Now()).Format("2006-01-02 15:04:05"))
+				list, err := uin2.GetIns().SelectAllUinJob(500, minute, str.NewTimeTool().GetZeroTime(time.Now()).Format("2006-01-02 15:04:05"))
 				if err == nil && len(list) > 0 {
 					//需更改状态id
 					var ids []int
@@ -176,7 +151,7 @@ func check(t time.Time) {
 		//查询当前时间需要补挂的QQ
 		for {
 			if util.Cache.Lock(lock, constant.LockTimeUinCheckJob) {
-				list, err := uin2.GetIns().SelectUinCheckJob(1000, start, end)
+				list, err := uin2.GetIns().SelectUinCheckJob(500, start, end)
 				if err == nil && len(list) > 0 {
 					var ids []int //需要更改得ids
 					//避免重复挂机

@@ -38,6 +38,6 @@ func NewMysql(host string, port string, user string, pwd string, database string
 	}
 	sqlDB.SetMaxIdleConns(1000)
 	sqlDB.SetMaxOpenConns(10000)
-	sqlDB.SetConnMaxLifetime(1 * time.Minute)
+	sqlDB.SetConnMaxLifetime(10 * time.Minute)
 	return &Database{Db: Db, DbError: DbError}
 }
