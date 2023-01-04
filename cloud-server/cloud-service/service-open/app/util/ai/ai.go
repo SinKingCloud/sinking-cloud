@@ -184,6 +184,9 @@ func (a *ai) SendNormalRequest(u string, post *string) (body []byte, err error) 
 	url := "https://ai.baidu.com" + u
 	method := http.MethodGet
 	data := strings.NewReader(*post)
+	if post != nil {
+		method = http.MethodPost
+	}
 	respBytes, _, err := a.sendHttpRequest(600*time.Second, url, method, header, data, false, false)
 	return respBytes, err
 }

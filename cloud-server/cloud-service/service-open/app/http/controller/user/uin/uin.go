@@ -526,17 +526,6 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 					}
 					ins = cli.Mobile
 					resp, err = fun()
-					if err != nil {
-						for i := 0; i < 2; i++ {
-							log2.Println(uinInfo.Uin, "登陆错误-3", i, resp, err)
-							time.Sleep(200 * time.Millisecond)
-							_ = ins.Connect()
-							resp, err = fun()
-							if err == nil {
-								break
-							}
-						}
-					}
 					return resp, err
 				}
 			}
@@ -637,8 +626,9 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 					Title:   "更新状态",
 					Content: "更新账号状态",
 				})
+				_ = ins.Init(true, false)
+				delIns(uinInfo.Uin)
 			}(uinInfo)
-			delIns(uinInfo.Uin)
 			code, message, data = 200, "更新状态成功", nil
 		}
 	}

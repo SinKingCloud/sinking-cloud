@@ -1,6 +1,7 @@
 package oicq
 
 import (
+	"errors"
 	mobile "github.com/SinKingCloud/sinking-oicq/binary-mobile/client"
 	"github.com/SinKingCloud/sinking-oicq/binary-mobile/utils"
 	pc "github.com/SinKingCloud/sinking-oicq/binary-pc/client"
@@ -23,6 +24,10 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 	for _, v := range jobs {
 		status := mobile.SpeedError
 		cookie := ""
+		//不执行的项目
+		if v == Word {
+			continue
+		}
 		utils.Try(func() {
 			switch v {
 			case Vip: //会员签到
@@ -64,7 +69,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 				}
 				break
 			case Word: //小世界加速
-				_, status = o.Mobile.Speed.FeedCloud()
+				_, status = o.Mobile.Speed.WebFeedCloud()
 				break
 			case MobileClock: //打卡加速
 				_, status = o.Mobile.Speed.DailySign()
@@ -91,6 +96,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					status = mobile.SpeedSuccess
 					break
 				}
+				o.Pc.NetLoop(true)
 				o.Pc.ForceOnline(false)
 				o.Pc.Release()
 				var e error
@@ -141,12 +147,20 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 						time.Sleep(500 * time.Millisecond)
 						if o.Pc.Online.Load() {
 							status = mobile.SpeedSuccess
+						} else {
+							e = errors.New("登陆失败")
+							log.Println(o.Mobile.Uin, "pc登陆失败")
 						}
 					} else {
+						e = errors.New("pc授权登陆")
 						log.Println(o.Mobile.Uin, "pc授权登陆", e)
 					}
 				} else {
-					log.Println(o.Mobile.Uin, "pc获取二维码失败", e, url, "开始使用mac协议")
+					e = errors.New("pc获取二维码失败")
+					log.Println(o.Mobile.Uin, "pc获取二维码失败", e, url)
+				}
+				if e != nil {
+					o.Pc.Release()
 				}
 				break
 			}

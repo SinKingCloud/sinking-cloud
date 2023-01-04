@@ -86,7 +86,7 @@ func GetPcDevice(uin int64) *pc.DeviceInfo {
 func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
 	if !o.Mobile.Online.Load() {
 		if o.LoginToken == nil || len(o.LoginToken) <= 0 || o.TokenLogin() != nil {
-			//尝试使用pad进行密码登陆
+			//尝试使用密码登陆
 			var err error
 			loginStatus, err := o.Login()
 			if err != nil {
@@ -106,7 +106,7 @@ func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
 func (o *Oicq) Login() (*mobile.LoginResponse, error) {
 	resp, e := o.Mobile.Login()
 	if e == nil && resp.Success {
-		e = o.Mobile.Init(false, false)
+		e = o.Mobile.Init(true, false)
 		if e == nil {
 			o.LoginToken = o.Mobile.GenToken()
 		} else {
@@ -120,7 +120,10 @@ func (o *Oicq) Login() (*mobile.LoginResponse, error) {
 func (o *Oicq) TokenLogin() error {
 	e := o.Mobile.TokenLogin(o.LoginToken)
 	if e == nil {
-		e = o.Mobile.Init(true, false)
+		e2 := o.Mobile.Init(true, false)
+		if e2 != nil {
+			fmt.Println("token上线失败", o.Mobile.Uin, e)
+		}
 	}
 	if e == nil {
 		o.LoginToken = o.Mobile.GenToken()

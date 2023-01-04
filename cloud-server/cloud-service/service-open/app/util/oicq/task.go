@@ -120,6 +120,7 @@ func startDoHeartbeat() {
 							if e == nil && status != nil {
 								if status.IPCQQOnline != "1" {
 									if task.TokenLogin() == nil {
+										task.Pc.NetLoop(true)
 										task.Pc.ForceOnline(false)
 										task.Pc.Release()
 										var e2 error
@@ -183,6 +184,7 @@ func startDoHeartbeat() {
 											}
 										}
 									}
+									task.Mobile.Release()
 								}
 							}
 						}
@@ -214,6 +216,7 @@ func startDoHeartbeat() {
 							task.Pc.ForceOnline(true)
 						} else {
 							log.Println("pc重连失败", task.Pc.Uin)
+							task.Pc.Online.Store(false)
 							task.Pc.Online.Store(false)
 							task.PcHeartTime = 0
 							task.PcLoginTime = 0
