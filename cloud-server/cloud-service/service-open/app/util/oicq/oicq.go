@@ -122,7 +122,14 @@ func (o *Oicq) TokenLogin() error {
 	if e == nil {
 		e2 := o.Mobile.Init(true, false)
 		if e2 != nil {
-			fmt.Println("token上线失败", o.Mobile.Uin, e)
+			//重置设备
+			o.Mobile.Disconnect()
+			o.Mobile.UseDevice(GetMobileDevice(o.Mobile.Uin, 100000+rand.Intn(899999), o.Mobile.Proto()))
+			e3 := o.Mobile.TokenLogin(o.LoginToken)
+			if e3 != nil || o.Mobile.Init(true, false) != nil {
+				o.Mobile.Disconnect()
+				o.Mobile.UseDevice(GetMobileDevice(o.Mobile.Uin, o.DeviceId, o.Mobile.Proto()))
+			}
 		}
 	}
 	if e == nil {

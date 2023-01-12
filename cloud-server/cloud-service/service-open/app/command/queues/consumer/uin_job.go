@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("398666577") //44422323
+	//	list, _ := uin2.GetIns().SelectByUin("3463718721") //44422323
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
