@@ -86,7 +86,7 @@ func (ControllerUser) List(c *sinking_server.Context) {
 // Update 修改信息
 func (ControllerUser) Update(c *sinking_server.Context) {
 	type Form struct {
-		Ids      []int  `json:"ids" default:"" validate:"required,min=1,unique" label:"ID列表"`
+		Ids      []int  `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
 		RoleId   string `json:"role_id" default:"" validate:"omitempty,numeric" label:"角色ID"`
 		Password string `json:"password" default:"" validate:"omitempty,max=20" label:"用户密码"`
 		Avatar   string `json:"avatar" default:"" validate:"omitempty,uri" label:"用户头像"`

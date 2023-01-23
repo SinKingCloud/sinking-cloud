@@ -173,7 +173,7 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 					break
 				}
 				if l.Status == client2.LoginSuccess {
-					cli.NetLoop(false)
+					cli.Release()
 					key2 := "SpeedTestQ_" + strconv.FormatInt(cli.Uin, 10)
 					util.Cache.Inc(key2)
 					util.Cache.SetExpire(key2, (str.NewTimeTool().GetZeroTime(time.Now()).Unix()+86400-time.Now().Unix())*1000)
@@ -182,7 +182,6 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 						if exists {
 							n1, ne := strconv.Atoi(n)
 							if ne == nil && n1 > num {
-								cli.LoginOut()
 								break
 							}
 						}
@@ -207,8 +206,6 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 							_, _ = cli.Speed.Friend()
 						}
 					}
-					cli.NetLoop(true)
-					cli.LoginOut()
 				}
 				break
 			}

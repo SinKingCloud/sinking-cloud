@@ -111,20 +111,26 @@ func send(minute int64) {
 					}
 					//更改等级挂机天数
 					if len(idsPlayer) > 0 {
-						_ = uin2.GetIns().UpdateByIds(idsPlayer, map[string]interface{}{
-							"player_day": gorm.Expr("`player_day`-1"),
+						splitIds(idsPlayer, 500, func(tempIds []int) {
+							_ = uin2.GetIns().UpdateByIds(tempIds, map[string]interface{}{
+								"player_day": gorm.Expr("`player_day`-1"),
+							})
 						})
 					}
 					//更改扩展挂机天数
 					if len(idsSign) > 0 {
-						_ = uin2.GetIns().UpdateByIds(idsSign, map[string]interface{}{
-							"sign_day": gorm.Expr("`sign_day`-1"),
+						splitIds(idsSign, 500, func(tempIds []int) {
+							_ = uin2.GetIns().UpdateByIds(tempIds, map[string]interface{}{
+								"sign_day": gorm.Expr("`sign_day`-1"),
+							})
 						})
 					}
 					//更改代挂状态
 					if len(ids) > 0 {
-						_ = uin2.GetIns().UpdateByIds(ids, map[string]interface{}{
-							"run_time": str.DateTime(time.Now()),
+						splitIds(ids, 500, func(tempIds []int) {
+							_ = uin2.GetIns().UpdateByIds(tempIds, map[string]interface{}{
+								"run_time": str.DateTime(time.Now()),
+							})
 						})
 					}
 					util.Cache.UnLock(lock)
@@ -139,6 +145,25 @@ func send(minute int64) {
 	}, func(i interface{}) {
 		log.Println("定时任务执行错误,位置", minute, "详情", i)
 	})
+}
+
+// splitIds 分片数组
+func splitIds(ids []int, slice int, callback func(tempIds []int)) {
+	if slice <= 0 || slice > 1000 {
+		slice = 500
+	}
+	index := 0
+	num := len(ids)
+	var tempIds []int
+	for k, v := range ids {
+		index++
+		tempIds = append(tempIds, v)
+		if index >= slice || k+1 == num {
+			callback(tempIds)
+			index = 0
+			tempIds = []int{}
+		}
+	}
 }
 
 // check 补挂
@@ -179,8 +204,10 @@ func check(t time.Time) {
 					}
 					//更改代挂状态
 					if len(ids) > 0 {
-						_ = uin2.GetIns().UpdateByIds(ids, map[string]interface{}{
-							"check_time": str.DateTime(str.NewTimeTool().GetZeroTime(time.Now())),
+						splitIds(ids, 500, func(tempIds []int) {
+							_ = uin2.GetIns().UpdateByIds(tempIds, map[string]interface{}{
+								"check_time": str.DateTime(str.NewTimeTool().GetZeroTime(time.Now())),
+							})
 						})
 					}
 					util.Cache.UnLock(lock)

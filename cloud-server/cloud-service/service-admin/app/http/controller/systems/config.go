@@ -74,7 +74,7 @@ func (ControllerConfig) List(c *sinking_server.Context) {
 // Update 修改信息
 func (ControllerConfig) Update(c *sinking_server.Context) {
 	type Form struct {
-		Ids      []int  `json:"ids" default:"" validate:"required,min=1,unique" label:"ID列表"`
+		Ids      []int  `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
 		Pid      string `json:"pid" default:"" validate:"required,numeric" label:"父级ID"`
 		Name     string `json:"name" default:"" validate:"omitempty,max=20" label:"名称"`
 		Describe string `json:"describe" default:"" validate:"omitempty,max=100" label:"描述"`
@@ -156,7 +156,7 @@ func (ControllerConfig) Create(c *sinking_server.Context) {
 // Delete 删除信息
 func (ControllerConfig) Delete(c *sinking_server.Context) {
 	type Form struct {
-		Ids []int `json:"ids" default:"" validate:"required,min=1,unique" label:"ID列表"`
+		Ids []int `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorJson(form); !ok {

@@ -101,8 +101,8 @@ func (ControllerPerson) Phone(c *sinking_server.Context) {
 		c.Error("短信验证码校验失败")
 		return
 	}
-	tempUser, _ := user.GetIns().FindByPhone(form.Phone)
-	if tempUser != nil {
+	num, err := user.GetIns().CountByPhone(form.Phone)
+	if err != nil || num > 0 {
 		c.Error("该手机号已被他人占用")
 		return
 	}

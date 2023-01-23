@@ -234,6 +234,7 @@ func SetUinSpeedStatus(uin string, status *client.SpeedStatus) error {
 		"friend":       status.IAddFriend,
 		"word":         status.ISmallWorld,
 		"dress":        status.IDress,
+		"qbox":         status.IQBox,
 	}
 	return uin_info.GetIns().Save(info, speedInfo)
 }

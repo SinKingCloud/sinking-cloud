@@ -53,7 +53,7 @@ func (ControllerMenu) List(c *sinking_server.Context) {
 // Update 修改菜单数据
 func (ControllerMenu) Update(c *sinking_server.Context) {
 	type Form struct {
-		Ids      []int  `json:"ids" default:"" validate:"required,min=1,unique" label:"ID列表"`
+		Ids      []int  `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
 		Title    string `json:"title" default:"" validate:"omitempty,max=100" label:"标题"`
 		Key      string `json:"key" default:"" validate:"omitempty,max=50" label:"标识"`
 		Path     string `json:"path" default:"" validate:"omitempty,max=50" label:"目录"`
@@ -138,7 +138,7 @@ func (ControllerMenu) Create(c *sinking_server.Context) {
 // Delete 添加菜单信息
 func (ControllerMenu) Delete(c *sinking_server.Context) {
 	type Form struct {
-		Ids []int `json:"ids" default:"" validate:"required,min=1,unique" label:"ID列表"`
+		Ids []int `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorJson(form); !ok {

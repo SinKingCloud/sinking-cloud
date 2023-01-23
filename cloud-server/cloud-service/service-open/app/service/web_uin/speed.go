@@ -16,6 +16,7 @@ const (
 	Friend      JobName = "friend"
 	Word        JobName = "word"
 	Dress       JobName = "dress"
+	QBox        JobName = "qbox"
 	Vip         JobName = "vip"
 	BigVip      JobName = "big_vip"
 	Hz          JobName = "hz"
@@ -47,6 +48,7 @@ var Setting = map[JobName]string{
 	Friend:      "1",
 	Word:        "0",
 	Dress:       "1",
+	QBox:        "1",
 	Vip:         "1",
 	BigVip:      "1",
 	Hz:          "1",
@@ -72,6 +74,7 @@ var JobMap = map[JobType]map[JobName]oicq.Job{
 		Friend:      oicq.Friend,
 		Word:        oicq.Word,
 		Dress:       oicq.Dress,
+		QBox:        oicq.QBox,
 	},
 	Sign: {
 		Vip:        oicq.Vip,
@@ -161,6 +164,14 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"name":     "好友加速",
 			"describe": "每日添加一位好友加速0.5天",
 			"logo":     "https://cdn.clwl.online/app/uin/img/hy.png",
+			"edit":     "true",
+		},
+		QBox: {
+			"sort":     "14",
+			"type":     "speed",
+			"name":     "Qbox加速",
+			"describe": "每日拆开好友礼物加速0.5天",
+			"logo":     "https://cdn.clwl.online/app/uin/img/lw.png",
 			"edit":     "true",
 		},
 	},

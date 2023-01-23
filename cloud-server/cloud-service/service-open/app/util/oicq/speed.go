@@ -7,9 +7,15 @@ import (
 	pc "github.com/SinKingCloud/sinking-oicq/binary-pc/client"
 	"log"
 	"runtime/debug"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
+)
+
+var (
+	qboxUin  int64 //qbox加速
+	qboxLock = &sync.RWMutex{}
 )
 
 // ActiveProject 执行项目
@@ -152,8 +158,8 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 							log.Println(o.Mobile.Uin, "pc登陆失败")
 						}
 					} else {
-						e = errors.New("pc授权登陆")
-						log.Println(o.Mobile.Uin, "pc授权登陆", e)
+						e = errors.New("pc授权登陆失败")
+						log.Println(o.Mobile.Uin, e)
 					}
 				} else {
 					e = errors.New("pc获取二维码失败")
@@ -162,6 +168,37 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 				if e != nil {
 					o.Pc.Release()
 				}
+				break
+			case QBox:
+				//QBox加速
+				var uin int64
+				qboxLock.RLock()
+				uin = qboxUin
+				if qboxUin != 0 {
+					qboxUin = 0
+				} else {
+					qboxUin = o.Mobile.Uin
+				}
+				qboxLock.RUnlock()
+				if uin != 0 {
+					data, ok := oicqMap.Load(uin)
+					if !ok || data == nil {
+						break
+					}
+					cliA := data.(*Oicq) //账号A
+					cliB := o
+					_, _ = cliA.Mobile.Speed.QBoxResourceConf()
+					_, _ = cliB.Mobile.Speed.QBoxResourceConf()
+					//a赠送b礼物
+					_, _ = cliA.Mobile.Speed.QBoxSendGift(strconv.FormatInt(cliB.Mobile.Uin, 10), 10)
+					//b拆开礼物
+					_, _ = cliB.Mobile.Speed.QBoxOpenGift()
+					//b赠送a礼物
+					_, _ = cliB.Mobile.Speed.QBoxSendGift(strconv.FormatInt(cliA.Mobile.Uin, 10), 10)
+					//a拆开礼物
+					_, _ = cliA.Mobile.Speed.QBoxOpenGift()
+				}
+				status = mobile.SpeedSuccess
 				break
 			}
 		}, func(i interface{}) {

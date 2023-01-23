@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("3463718721") //44422323
+	//	list, _ := uin2.GetIns().SelectByUin("3283973103") //44422323
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -318,7 +318,7 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		}
 	}
 	log.Println("获取挂机任务", uin.Uin, jobs)
-	//jobs = []oicq.Job{oicq.Pc}
+	//jobs = []oicq.Job{oicq.Word}
 	if len(jobs) <= 0 {
 		return false, nil, cli.LoginToken
 	}
@@ -388,6 +388,9 @@ func (l *uinJob) getUnDoJobs(jobs []oicq.Job, status *client.SpeedStatus, isSys 
 			break
 		case oicq.Dress:
 			isCheck = status.IDress != "1"
+			break
+		case oicq.QBox:
+			isCheck = status.IQBox != "1"
 			break
 		default:
 			isCheck = !isSys //用户提交则补挂签到

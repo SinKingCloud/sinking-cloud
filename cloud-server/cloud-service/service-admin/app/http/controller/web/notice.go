@@ -80,7 +80,7 @@ func (ControllerNotice) Info(c *sinking_server.Context) {
 // Update 修改信息
 func (ControllerNotice) Update(c *sinking_server.Context) {
 	type Form struct {
-		Ids     []int  `json:"ids" default:"" validate:"required,min=1,unique" label:"ID列表"`
+		Ids     []int  `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
 		Place   string `json:"place" default:"" validate:"omitempty,max=20" label:"位置"`
 		Title   string `json:"title" default:"" validate:"omitempty,max=100" label:"名称"`
 		Content string `json:"content" default:"" validate:"omitempty" label:"内容"`
@@ -150,7 +150,7 @@ func (ControllerNotice) Create(c *sinking_server.Context) {
 // Delete 删除信息
 func (ControllerNotice) Delete(c *sinking_server.Context) {
 	type Form struct {
-		Ids []int `json:"ids" default:"" validate:"required,min=1,unique" label:"ID列表"`
+		Ids []int `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorJson(form); !ok {
