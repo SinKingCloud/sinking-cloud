@@ -295,6 +295,22 @@ func startDoHeartbeat() {
 				log.Println("当前挂机实例数量", num, "临时实例数量", num2)
 			}
 		}()
+		//删除临时实例
+		go func() {
+			for true {
+				oicqMapTemp.Range(func(key, value any) bool {
+					ins := value.(*Oicq)
+					if ins.LoginTime+10*60 < time.Now().Unix() {
+						//超时未操作，删除实例
+						ins.Mobile.Release()
+						ins.Pc.Release()
+						oicqMapTemp.Delete(key)
+					}
+					return true
+				})
+				time.Sleep(1 * time.Minute)
+			}
+		}()
 	}
 }
 

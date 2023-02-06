@@ -490,6 +490,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("连接服务器失败")
 		return
 	}
+	cli.LoginTime = time.Now().Unix()
 	ins := cli.Mobile
 	if form.Step == "get_sms" {
 		if ins.RequestSMS() {

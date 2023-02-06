@@ -9,11 +9,13 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Oicq struct {
 	Mobile     *mobile.QQClient
 	LoginToken []byte
+	LoginTime  int64
 
 	Pc          *pc.QQClient
 	PcLoginTime int64
@@ -97,6 +99,7 @@ func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
 			}
 		}
 	}
+	o.LoginTime = time.Now().Unix()
 	return nil, &mobile.LoginResponse{
 		Success: true,
 	}
@@ -109,6 +112,7 @@ func (o *Oicq) Login() (*mobile.LoginResponse, error) {
 		e = o.Mobile.Init(true, false)
 		if e == nil {
 			o.LoginToken = o.Mobile.GenToken()
+			o.LoginTime = time.Now().Unix()
 		} else {
 			resp.Success = false
 		}
@@ -134,6 +138,7 @@ func (o *Oicq) TokenLogin() error {
 	}
 	if e == nil {
 		o.LoginToken = o.Mobile.GenToken()
+		o.LoginTime = time.Now().Unix()
 	}
 	return e
 }

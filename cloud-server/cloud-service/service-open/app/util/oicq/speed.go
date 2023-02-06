@@ -31,7 +31,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 		status := mobile.SpeedError
 		cookie := ""
 		//不执行的项目
-		if v == Word {
+		if v == Word || v == QBox {
 			continue
 		}
 		utils.Try(func() {
