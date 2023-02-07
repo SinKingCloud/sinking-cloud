@@ -177,7 +177,7 @@ func check(t time.Time) {
 		//查询当前时间需要补挂的QQ
 		for {
 			if util.Cache.Lock(lock, constant.LockTimeUinCheckJob) {
-				list, err := uin2.GetIns().SelectUinCheckJob(10000, start, end)
+				list, err := uin2.GetIns().SelectUinCheckJob(5000, start, end)
 				if err == nil && len(list) > 0 {
 					var ids []int //需要更改得ids
 					//避免重复挂机

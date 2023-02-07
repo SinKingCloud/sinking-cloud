@@ -7,15 +7,9 @@ import (
 	pc "github.com/SinKingCloud/sinking-oicq/binary-pc/client"
 	"log"
 	"runtime/debug"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
-)
-
-var (
-	qboxUin  int64 //qbox加速
-	qboxLock = &sync.RWMutex{}
 )
 
 // ActiveProject 执行项目
@@ -31,7 +25,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 		status := mobile.SpeedError
 		cookie := ""
 		//不执行的项目
-		if v == Word || v == QBox {
+		if v == Word {
 			continue
 		}
 		utils.Try(func() {
@@ -102,103 +96,74 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					status = mobile.SpeedSuccess
 					break
 				}
-				o.Pc.NetLoop(true)
-				o.Pc.ForceOnline(false)
-				o.Pc.Release()
-				var e error
-				url := ""
-				for i := 0; i < 3; i++ {
-					e, url = o.Pc.FetchQrCode()
-					if e == nil && strings.Contains(url, "&f=") {
-						break
+				utils.Try(func() {
+					o.Pc.NetLoop(true)
+					o.Pc.ForceOnline(false)
+					o.Pc.Release()
+					var e error
+					url := ""
+					for i := 0; i < 3; i++ {
+						e, url = o.Pc.FetchQrCode()
+						if e == nil && strings.Contains(url, "&f=") {
+							break
+						}
 					}
-				}
-				if e == nil && len(url) > 32 {
-					wg := &sync.WaitGroup{}
-					wg.Add(1)
-					go func(wg *sync.WaitGroup) {
-						for i1 := 0; i1 < 30; i1++ {
-							e2, state := o.Pc.FetchQrCodeStatus()
-							if e2 != nil {
-								break
-							}
-							if state == pc.ScanCodeSuccess {
-								//登陆PC
-								e3, l := o.Pc.Login(true)
-								if e3 != nil {
+					if e == nil && len(url) > 32 {
+						wg := &sync.WaitGroup{}
+						wg.Add(1)
+						go func(wg *sync.WaitGroup) {
+							for i1 := 0; i1 < 30; i1++ {
+								e2, state := o.Pc.FetchQrCodeStatus()
+								if e2 != nil {
 									break
 								}
-								o.PcLoginTime = time.Now().Unix()
-								if l.Status == pc.LoginSuccess {
-									//关闭数据接收
-									o.Pc.NetLoop(false)
-									o.Pc.Online.Store(true) //设置为在线状态
-									o.Pc.ForceOnline(true)  //强制在线,不间断发送心跳
-									status = mobile.SpeedSuccess
+								if state == pc.ScanCodeSuccess {
+									//登陆PC
+									e3, l := o.Pc.Login(true)
+									if e3 != nil {
+										break
+									}
+									o.PcLoginTime = time.Now().Unix()
+									if l.Status == pc.LoginSuccess {
+										//关闭数据接收
+										o.Pc.NetLoop(false)
+										o.Pc.Online.Store(true) //设置为在线状态
+										o.Pc.ForceOnline(true)  //强制在线,不间断发送心跳
+										status = mobile.SpeedSuccess
+									}
+									break
+								} else if state == pc.ScanCodeError {
+									break
 								}
-								break
-							} else if state == pc.ScanCodeError {
-								break
+								time.Sleep(1000 * time.Millisecond)
 							}
-							time.Sleep(1000 * time.Millisecond)
-						}
-						wg.Done()
-					}(wg)
-					//执行扫码操作
-					time.Sleep(500 * time.Millisecond)
-					_, e = o.Mobile.QrCodeAllow(utils.GetBetween(url, "p?k=", "&f="))
-					if e == nil {
-						//等待登陆结果
-						wg.Wait()
+							wg.Done()
+						}(wg)
+						//执行扫码操作
 						time.Sleep(500 * time.Millisecond)
-						if o.Pc.Online.Load() {
-							status = mobile.SpeedSuccess
+						_, e = o.Mobile.QrCodeAllow(utils.GetBetween(url, "p?k=", "&f="))
+						if e == nil {
+							//等待登陆结果
+							wg.Wait()
+							time.Sleep(500 * time.Millisecond)
+							if o.Pc.Online.Load() {
+								status = mobile.SpeedSuccess
+							} else {
+								e = errors.New("登陆失败")
+								log.Println(o.Mobile.Uin, "pc登陆失败")
+							}
 						} else {
-							e = errors.New("登陆失败")
-							log.Println(o.Mobile.Uin, "pc登陆失败")
+							e = errors.New("pc授权登陆失败")
+							log.Println(o.Mobile.Uin, e)
 						}
 					} else {
-						e = errors.New("pc授权登陆失败")
-						log.Println(o.Mobile.Uin, e)
+						e = errors.New("pc获取二维码失败")
+						log.Println(o.Mobile.Uin, "pc获取二维码失败", e, url)
 					}
-				} else {
-					e = errors.New("pc获取二维码失败")
-					log.Println(o.Mobile.Uin, "pc获取二维码失败", e, url)
-				}
-				if e != nil {
-					o.Pc.Release()
-				}
-				break
-			case QBox:
-				//QBox加速
-				var uin int64
-				qboxLock.RLock()
-				uin = qboxUin
-				if qboxUin != 0 {
-					qboxUin = 0
-				} else {
-					qboxUin = o.Mobile.Uin
-				}
-				qboxLock.RUnlock()
-				if uin != 0 {
-					data, ok := oicqMap.Load(uin)
-					if !ok || data == nil {
-						break
+					if e != nil {
+						o.Pc.Release()
 					}
-					cliA := data.(*Oicq) //账号A
-					cliB := o
-					_, _ = cliA.Mobile.Speed.QBoxResourceConf()
-					_, _ = cliB.Mobile.Speed.QBoxResourceConf()
-					//a赠送b礼物
-					_, _ = cliA.Mobile.Speed.QBoxSendGift(strconv.FormatInt(cliB.Mobile.Uin, 10), 10)
-					//b拆开礼物
-					_, _ = cliB.Mobile.Speed.QBoxOpenGift()
-					//b赠送a礼物
-					_, _ = cliB.Mobile.Speed.QBoxSendGift(strconv.FormatInt(cliA.Mobile.Uin, 10), 10)
-					//a拆开礼物
-					_, _ = cliA.Mobile.Speed.QBoxOpenGift()
-				}
-				status = mobile.SpeedSuccess
+				}, nil)
 				break
 			}
 		}, func(i interface{}) {

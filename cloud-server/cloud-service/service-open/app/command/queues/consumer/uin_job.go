@@ -389,9 +389,6 @@ func (l *uinJob) getUnDoJobs(jobs []oicq.Job, status *client.SpeedStatus, isSys 
 		case oicq.Dress:
 			isCheck = status.IDress != "1"
 			break
-		case oicq.QBox:
-			isCheck = status.IQBox != "1"
-			break
 		default:
 			isCheck = !isSys //用户提交则补挂签到
 			break
