@@ -5,7 +5,7 @@ const (
 	LockTimeUinServer = 1 * 60 * 1000    //QQ添加锁
 
 	LockUinJob     = "LockUinJob_"  //挂机任务锁
-	LockTimeUinJob = 60 * 60 * 1000 //挂机任务锁最大时间
+	LockTimeUinJob = 10 * 60 * 1000 //挂机任务锁最大时间
 
 	LockUinCheckJob     = "LockUinCheckJob_" //挂机检测任务锁
 	LockTimeUinCheckJob = 10 * 60 * 1000     //挂机检测任务锁最大时间

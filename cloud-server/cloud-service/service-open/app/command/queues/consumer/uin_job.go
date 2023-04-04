@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("3054168159") //44422323
+	//	list, _ := uin2.GetIns().SelectByUin("2861059418") //44422323
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -283,7 +283,10 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		log.Println("获取挂机实例失败", uin)
 		return false, nil, nil
 	}
-	defer cli.Mobile.Release()
+	defer func(cli *oicq.Oicq) {
+		cli.Mobile.Release()
+		cli.Mobile.Disconnect()
+	}(cli)
 	//查询cookie项
 	cookies := make(map[oicq.Job]string)
 	err, wsCookie := web_uin.GetUinCookies(uin.Uin, "h5.weishi.qq.com", true)

@@ -166,6 +166,19 @@ export async function uinLogin(body: any, options?: { [key: string]: any }) {
   });
 }
 
+/** 扫码验证 POST /open/user/uin/operate/qr_login */
+export async function uinQrLogin(body: any, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/operate/qr_login', {
+    method: 'POST',
+    timeout: 600000,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 短信验证 POST /open/user/uin/operate/sms */
 export async function uinSms(body: any, options?: { [key: string]: any }) {
   return request<API.Response>('/open/user/uin/operate/sms', {

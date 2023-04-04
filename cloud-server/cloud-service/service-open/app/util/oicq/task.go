@@ -29,6 +29,8 @@ func GetOicqProto(proto int) mobile.ClientProtocol {
 		protos = mobile.AndroidPhone
 	} else if proto == 2 {
 		protos = mobile.AndroidPad
+	} else if proto == 3 {
+		protos = mobile.MacOS
 	}
 	return protos
 }
@@ -39,8 +41,10 @@ func GetOicqProtoCode(proto mobile.ClientProtocol) int {
 		return 0
 	} else if proto == mobile.AndroidPhone {
 		return 1
-	} else {
+	} else if proto == mobile.AndroidPad {
 		return 2
+	} else {
+		return 3
 	}
 }
 
@@ -88,7 +92,9 @@ func DelOicqInstance(uin int64) {
 	data, ok := oicqMap.Load(uin)
 	if ok {
 		data.(*Oicq).Mobile.Release()
+		data.(*Oicq).Mobile.Disconnect()
 		data.(*Oicq).Pc.Release()
+		data.(*Oicq).Pc.Disconnect()
 		oicqMap.Delete(uin)
 	}
 }
@@ -98,7 +104,9 @@ func DelTempOicqInstance(uin int64) {
 	data, ok := oicqMapTemp.Load(uin)
 	if ok {
 		data.(*Oicq).Mobile.Release()
+		data.(*Oicq).Mobile.Disconnect()
 		data.(*Oicq).Pc.Release()
+		data.(*Oicq).Pc.Disconnect()
 		oicqMapTemp.Delete(uin)
 	}
 }
@@ -123,6 +131,7 @@ func startDoHeartbeat() {
 										task.Pc.NetLoop(true)
 										task.Pc.ForceOnline(false)
 										task.Pc.Release()
+										task.Pc.Disconnect()
 										var e2 error
 										url := ""
 										for i1 := 0; i1 < 3; i1++ {
@@ -179,17 +188,21 @@ func startDoHeartbeat() {
 												e = errors.New("pc未加速重新授权登陆失败")
 											}
 											task.Mobile.Release()
+											task.Mobile.Disconnect()
 											if e == nil {
 												continue
 											}
 										}
 									}
 									task.Mobile.Release()
+									task.Mobile.Disconnect()
 								}
 							}
 						}
+						task.Pc.NetLoop(false)
 						task.Pc.ForceOnline(false)
 						task.Pc.Release()
+						task.Pc.Disconnect()
 						task.Pc.Online.Store(false)
 						log.Println("pc下线", task.Pc.Uin, "登陆时间", task.PcLoginTime)
 						task.PcLoginTime = 0
@@ -199,6 +212,7 @@ func startDoHeartbeat() {
 				go func(tasks chan *Oicq) {
 					for task := range tasks {
 						r := false
+						task.Pc.NetLoop(true)
 						task.Pc.ForceOnline(false)
 						for i1 := 0; i1 < 3; i1++ {
 							if task.Pc.QuickReconnect() == nil {
@@ -210,6 +224,7 @@ func startDoHeartbeat() {
 							}
 						}
 						//重连成功则重新设置在线状态
+						task.Pc.NetLoop(false)
 						if r {
 							log.Println("pc重连成功", task.Pc.Uin)
 							task.Pc.Online.Store(true)
@@ -217,7 +232,7 @@ func startDoHeartbeat() {
 						} else {
 							log.Println("pc重连失败", task.Pc.Uin)
 							task.Pc.Online.Store(false)
-							task.Pc.Online.Store(false)
+							task.Pc.ForceOnline(false)
 							task.PcHeartTime = 0
 							task.PcLoginTime = 0
 						}
@@ -303,7 +318,9 @@ func startDoHeartbeat() {
 					if ins.LoginTime+10*60 < time.Now().Unix() {
 						//超时未操作，删除实例
 						ins.Mobile.Release()
+						ins.Mobile.Disconnect()
 						ins.Pc.Release()
+						ins.Pc.Disconnect()
 						oicqMapTemp.Delete(key)
 					}
 					return true

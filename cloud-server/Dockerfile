@@ -5,7 +5,7 @@ MAINTAINER sinkingcloud 1178710004@qq.com
 
 #修改环境变量
 ENV GO111MODULE on
-ENV CGO_ENABLED 0
+ENV CGO_ENABLED=0
 ENV GOPROXY=https://goproxy.cn
 ENV GO111MODULE=on
 ENV GOPRIVATE=github.com/SinKingCloud

@@ -21,8 +21,9 @@ type Oicq struct {
 	PcLoginTime int64
 	PcHeartTime int64
 
-	DeviceId int
-	Password [16]byte
+	DeviceId   int
+	Password   [16]byte
+	QrLoginSig []byte
 }
 
 type Proxy struct {

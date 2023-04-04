@@ -11,6 +11,7 @@ import EditUin from "@/pages/open/uin/list/components/EditUin";
 // @ts-ignore
 import CryptoJS from 'crypto-js';
 import Buy from "@/pages/open/uin/list/components/Buy";
+import QrLogin from "@/pages/open/uin/list/components/QrLogin";
 
 export default (): React.ReactNode => {
   /**
@@ -292,7 +293,14 @@ export default (): React.ReactNode => {
             <a style={{fontSize: "small"}} onClick={() => {
               showUinModal(record?.uin);
             }}>
-              更新挂机
+              密码更新
+            </a>
+          </Menu.Item>
+          <Menu.Item key={"qrlogin"} hidden={hide}>
+            <a style={{fontSize: "small"}} onClick={() => {
+              showUinQrLoginModal(record?.uin);
+            }}>
+              扫码更新
             </a>
           </Menu.Item>
           <Menu.Item key={"buy"}>
@@ -338,7 +346,7 @@ export default (): React.ReactNode => {
     },
   ];
   /**
-   * 挂机账号添加更新
+   * 挂机账号更新(密码更新)
    */
   const [uinVisible, setUinVisible] = useState(false);
   const [uin, setUin] = useState("");
@@ -351,6 +359,21 @@ export default (): React.ReactNode => {
     setUin("");
     setUinVisible(false);
   }
+  /**
+   * 挂机账号更新(扫码更新)
+   */
+  const [uinQrLoginVisible, setUinQrLoginVisible] = useState(false);
+  const [qrLoginUin, setQrLoginUin] = useState("");
+  const showUinQrLoginModal = (uin: string = "") => {
+    setQrLoginUin(uin);
+    setUinQrLoginVisible(true);
+  }
+  const hideUinQrLoginModal = () => {
+    setQrLoginUin("");
+    setUinQrLoginVisible(false);
+  }
+
+
   /**
    * 挂机信息
    */
@@ -386,6 +409,13 @@ export default (): React.ReactNode => {
         actionRef?.current?.reload?.();
       }} onCancel={() => {
         hideUinModal();
+      }}/>
+      <QrLogin visible={uinQrLoginVisible} uin={qrLoginUin} onOk={() => {
+        hideUinQrLoginModal();
+        // @ts-ignore
+        actionRef?.current?.reload?.();
+      }} onCancel={() => {
+        hideUinQrLoginModal();
       }}/>
       <EditUin visible={uinInfoVisible} uin={uin1} onCancel={() => {
         hideUinInfoModal();

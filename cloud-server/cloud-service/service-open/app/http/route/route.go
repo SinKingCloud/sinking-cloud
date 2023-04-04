@@ -52,6 +52,7 @@ func loadApiRoute(s *sinking_web.Engine) {
 	uinSetGroup := uinGroup.Group("/operate")
 	uinSetGroup.POST("/info", sinking_server.HandleFunc(handleUin.Info))               //挂机QQ详情
 	uinSetGroup.POST("/login", sinking_server.HandleFunc(handleUin.Login))             //登陆挂机QQ
+	uinSetGroup.POST("/qr_login", sinking_server.HandleFunc(handleUin.QrLogin))        //扫码验证
 	uinSetGroup.POST("/sms", sinking_server.HandleFunc(handleUin.Sms))                 //短信验证
 	uinSetGroup.POST("/delete", sinking_server.HandleFunc(handleUin.Delete))           //删除挂机QQ
 	uinSetGroup.POST("/run", sinking_server.HandleFunc(handleUin.Job))                 //执行挂机任务
@@ -95,6 +96,7 @@ func loadUserRoute(s *sinking_web.Engine) {
 	uinSetGroup := uinGroup.Group("/operate")
 	uinSetGroup.POST("/info", sinking_server.HandleFunc(handleUin.Info))               //挂机QQ详情
 	uinSetGroup.POST("/login", sinking_server.HandleFunc(handleUin.Login))             //登陆挂机QQ
+	uinSetGroup.POST("/qr_login", sinking_server.HandleFunc(handleUin.QrLogin))        //扫码验证
 	uinSetGroup.POST("/sms", sinking_server.HandleFunc(handleUin.Sms))                 //短信验证
 	uinSetGroup.POST("/delete", sinking_server.HandleFunc(handleUin.Delete))           //删除挂机QQ
 	uinSetGroup.POST("/run", sinking_server.HandleFunc(handleUin.Job))                 //执行挂机任务

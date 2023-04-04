@@ -69,7 +69,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 				}
 				break
 			case Word: //小世界加速
-				_, status = o.Mobile.Speed.WebFeedCloud()
+				_, status = o.Mobile.Speed.FeedCloud()
 				break
 			case MobileClock: //打卡加速
 				_, status = o.Mobile.Speed.DailySign()
@@ -100,6 +100,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					o.Pc.NetLoop(true)
 					o.Pc.ForceOnline(false)
 					o.Pc.Release()
+					o.Pc.Disconnect()
 					var e error
 					url := ""
 					for i := 0; i < 3; i++ {
@@ -162,8 +163,13 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					}
 					if e != nil {
 						o.Pc.Release()
+						o.Pc.Disconnect()
 					}
-				}, nil)
+				}, func(i interface{}) {
+					log.Println(o.Mobile.Uin, "pc登陆错误", i)
+					o.Pc.Release()
+					o.Pc.Disconnect()
+				})
 				break
 			}
 		}, func(i interface{}) {

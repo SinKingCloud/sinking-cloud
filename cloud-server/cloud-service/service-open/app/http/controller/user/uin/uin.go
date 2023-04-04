@@ -1,6 +1,7 @@
 package uin
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
@@ -22,6 +23,7 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"github.com/SinKingCloud/sinking-oicq/binary-mobile/client"
 	client2 "github.com/SinKingCloud/sinking-oicq/binary-pc/client"
+	"github.com/tuotoo/qrcode"
 	"gorm.io/gorm"
 	log2 "log"
 	"math/rand"
@@ -160,6 +162,7 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 	}
 	go func(cli *client2.QQClient, key string, num int) {
 		defer cli.Release()
+		defer cli.Disconnect()
 		defer util.Cache.Dec(key)
 		for i := 0; i < 60; i++ {
 			e1, q := cli.FetchQrCodeStatus()
@@ -503,6 +506,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	var resp *client.LoginResponse
 	request := func(uinInfo *model.AppUin, fun func() (*client.LoginResponse, error)) (resp *client.LoginResponse, err error) {
 		resp, err = fun()
+		log2.Println(uinInfo.Uin, resp, err)
 		if err != nil {
 			log2.Println(uinInfo.Uin, "登陆错误-1", resp, err)
 			time.Sleep(200 * time.Millisecond)
@@ -559,7 +563,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	}
 	if err != nil {
 		log2.Println(uinInfo.Uin, "登陆错误", resp, err)
-		c.Error("登陆发生错误,请重试")
+		c.Error("登陆发生错误,请使用扫码登陆重试")
 		return
 	}
 	response := func(uinInfo *model.AppUin, resp *client.LoginResponse) (code int32, message interface{}, data interface{}) {
@@ -624,7 +628,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 					Uin:     uinInfo.Uin,
 					Type:    log.Login,
 					Title:   "更新状态",
-					Content: "更新账号状态",
+					Content: "密码更新账号状态",
 				})
 				_ = ins.Init(true, false)
 				delIns(uinInfo.Uin)
@@ -633,6 +637,155 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		}
 	}
 	c.Return(code, message, data)
+}
+
+// QrLogin 扫码登陆
+func (ControllerUin) QrLogin(c *sinking_server.Context) {
+	type Form struct {
+		Uin  string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Step string `json:"step" validate:"required,oneof=code query" label:"验证步骤"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	if uin.GetIns().Count(map[string]string{"uin": form.Uin, "status": strconv.Itoa(uin.Error)}) > 0 {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
+	user := web_user.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, false)
+	if user.RealAuth != web_user.RealAuthSuccess {
+		c.Error("该对接账户未完成实名认证,请完成实名认证")
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
+	srv, err := server2.GetIns().FindById(uinInfo.ServerId)
+	if err != nil || srv == nil || srv.Status != server2.Normal {
+		c.Error("未查询到挂机地区信息,请更换挂机地区")
+		return
+	}
+	key := "QrLogin_" + strconv.Itoa(user.Id) + "_" + form.Uin
+	n, exists := util.Cache.Get(key)
+	if exists {
+		num, e := strconv.Atoi(n)
+		if e == nil && num >= 1 {
+			c.Error("请求频繁.请稍后重试")
+			return
+		}
+	}
+	util.Cache.Inc(key)
+	util.Cache.SetExpire(key, int64(1000))
+	if form.Step == "code" {
+		changeProto := func(protos client.ClientProtocol) {
+			//判断是否切换协议
+			proto := oicq.GetOicqProtoCode(protos)
+			if uinInfo.Proto != proto {
+				err = uin.GetIns().UpdateByUin(uinInfo.Uin, map[string]interface{}{"proto": proto})
+				if err != nil {
+					return
+				}
+				uinInfo.Proto = proto
+			}
+		}
+		//更换协议
+		changeProto(client.AndroidPad)
+	}
+	//获取单例
+	cli, err := web_uin.GetOicqInsById(uinInfo.Id, true)
+	cli.LoginTime = time.Now().Unix()
+	if err != nil {
+		c.Error("连接服务器失败")
+		return
+	}
+	if form.Step == "code" {
+		rsp, e := cli.Mobile.FetchQRCode()
+		if e != nil || rsp.ImageData == nil {
+			c.Error("获取二维码失败")
+			return
+		}
+		decode, e := qrcode.Decode(bytes.NewReader(rsp.ImageData))
+		if e != nil || decode.Content == "" || rsp.Sig == nil {
+			c.Error("解析二维码失败")
+			return
+		}
+		cli.QrLoginSig = rsp.Sig
+		c.SuccessWithData("获取二维码成功", decode.Content)
+		return
+	} else {
+		if cli.QrLoginSig == nil {
+			c.Error("获取状态失败,请先拉取二维码")
+			return
+		}
+		s, e := cli.Mobile.QueryQRCodeStatus(cli.QrLoginSig)
+		if e != nil {
+			c.Error("获取状态失败,请重新拉取二维码")
+			return
+		}
+		switch s.State {
+		case client.QRCodeCanceled:
+			c.SuccessWithData("获取状态成功", sinking_web.H{"status": 500, "message": "扫码被用户取消"})
+			return
+		case client.QRCodeTimeout:
+			c.SuccessWithData("获取状态成功", sinking_web.H{"status": 501, "message": "二维码过期"})
+			return
+		case client.QRCodeWaitingForConfirm:
+			c.SuccessWithData("获取状态成功", sinking_web.H{"status": 502, "message": "扫码成功, 请在手机端确认登录"})
+			return
+		case client.QRCodeImageFetch, client.QRCodeWaitingForScan:
+			c.SuccessWithData("获取状态成功", sinking_web.H{"status": 503, "message": "等待扫码, 请在手机端确认登录"})
+			return
+		case client.QRCodeConfirmed:
+			res, e := cli.Mobile.QRCodeLogin(s.LoginInfo)
+			if e != nil {
+				c.SuccessWithData("获取状态成功", sinking_web.H{"status": 504, "message": "扫码成功,发起登陆请求失败"})
+				return
+			}
+			if !res.Success {
+				c.SuccessWithData("获取状态成功", sinking_web.H{"status": 505, "message": res.ErrorMessage})
+				return
+			}
+			if strconv.FormatInt(cli.Mobile.Uin, 10) != uinInfo.Uin {
+				cli.QrLoginSig = nil
+				c.SuccessWithData("获取状态成功", sinking_web.H{"status": 506, "message": "登陆账号不匹配"})
+				return
+			}
+			token := cli.Mobile.GenToken()
+			if web_uin.SaveLoginToken(uinInfo, token) == nil {
+				go func(uinInfo *model.AppUin) {
+					//写入QQ操作记录
+					_ = log.GetIns().Create(&model.AppUinLog{
+						UserId:  uinInfo.UserId,
+						AppId:   uinInfo.AppId,
+						UinId:   uinInfo.Id,
+						Uin:     uinInfo.Uin,
+						Type:    log.Login,
+						Title:   "更新状态",
+						Content: "扫码更新账号状态",
+					})
+					_ = cli.Mobile.Init(true, false)
+					q, e := strconv.ParseInt(uinInfo.Uin, 10, 64)
+					if e == nil {
+						cli.QrLoginSig = nil
+						oicq.DelOicqInstance(q)
+						oicq.DelTempOicqInstance(q)
+					}
+				}(uinInfo)
+			}
+			c.SuccessWithData("获取状态成功", sinking_web.H{"status": 200, "message": "更新状态成功"})
+			return
+		}
+		c.Error("获取状态失败,请重新拉取二维码")
+		return
+	}
 }
 
 // Sms 短信验证
