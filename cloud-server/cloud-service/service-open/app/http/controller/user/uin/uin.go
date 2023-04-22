@@ -697,7 +697,7 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 			}
 		}
 		//更换协议
-		changeProto(client.AndroidPad)
+		changeProto(client.IPad)
 	}
 	//获取单例
 	cli, err := web_uin.GetOicqInsById(uinInfo.Id, true)
@@ -750,7 +750,19 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 				return
 			}
 			if !res.Success {
-				c.SuccessWithData("获取状态成功", sinking_web.H{"status": 505, "message": res.ErrorMessage})
+				//设备异常,生成新的设备信息
+				if res.Error == client.DeviceVersionError {
+					if uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{"device": 100000 + rand.Intn(899999)}) == nil {
+						q, e := strconv.ParseInt(uinInfo.Uin, 10, 64)
+						if e == nil {
+							oicq.DelOicqInstance(q) //删除实例
+							oicq.DelTempOicqInstance(q)
+						}
+					}
+					c.SuccessWithData("获取状态成功", sinking_web.H{"status": 505, "message": "登陆失败,请获取二维码重试"})
+				} else {
+					c.SuccessWithData("获取状态成功", sinking_web.H{"status": 505, "message": res.ErrorMessage})
+				}
 				return
 			}
 			if strconv.FormatInt(cli.Mobile.Uin, 10) != uinInfo.Uin {

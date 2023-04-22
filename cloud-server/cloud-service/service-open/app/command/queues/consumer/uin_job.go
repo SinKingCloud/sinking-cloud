@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("2861059418") //44422323
+	//	list, _ := uin2.GetIns().SelectByUin("1716136156") //44422323
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -321,7 +321,7 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		}
 	}
 	log.Println("获取挂机任务", uin.Uin, jobs)
-	//jobs = []oicq.Job{oicq.Word}
+	//jobs = []oicq.Job{oicq.Pc}
 	if len(jobs) <= 0 {
 		return false, nil, cli.LoginToken
 	}
@@ -350,15 +350,13 @@ func (l *uinJob) saveJobStatus(uin *uin2.AppUinJob, status int, speedStatus *cli
 	//把所有状态改为已加速
 	var userJob map[web_uin.JobName]string
 	err2 := json.Unmarshal([]byte(uin.Setting), &userJob)
-	if err2 == nil && userJob != nil {
-		var jobs []web_uin.JobName
-		for k, v := range web_uin.Setting {
-			if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
-				jobs = append(jobs, k)
-			}
+	var jobs []web_uin.JobName
+	for k, v := range web_uin.Setting {
+		if err2 != nil || userJob == nil || (userJob[k] == "" && v == "1") || userJob[k] != "0" {
+			jobs = append(jobs, k)
 		}
-		_ = web_uin.SetUinJobStatus(uin.Uin, jobs, status)
 	}
+	_ = web_uin.SetUinJobStatus(uin.Uin, jobs, status)
 	//更改加速状态
 	if speedStatus != nil {
 		_ = web_uin.SetUinSpeedStatus(uin.Uin, speedStatus)

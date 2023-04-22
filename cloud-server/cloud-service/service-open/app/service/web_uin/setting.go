@@ -182,19 +182,7 @@ func GetUinInfo(uin string) (status *client.SpeedStatus, err error) {
 	}
 	err, status = cli.Mobile.Speed.Info()
 	if err == nil && status != nil {
-		//qq信息
-		level, e := strconv.Atoi(status.IQQLevel)
-		if e != nil {
-			level = 0
-		}
-		info := &model.AppUinInfo{
-			Uin:         uin,
-			NickName:    status.SNickName,
-			Level:       level,
-			ActivateDay: status.ITotalActiveDay,
-			TodayDay:    status.IRealDays,
-		}
-		_ = uin_info.GetIns().Save(info, nil)
+		_ = SetUinSpeedStatus(uin, status)
 	}
 	return status, err
 }

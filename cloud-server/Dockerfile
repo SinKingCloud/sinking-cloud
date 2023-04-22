@@ -1,10 +1,10 @@
-FROM golang:1.19 as sinking-builder
+FROM golang:1.20 as sinking-builder
 
 #作者
 MAINTAINER sinkingcloud 1178710004@qq.com
 
 #修改环境变量
-ENV GO111MODULE on
+ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 ENV GOPROXY=https://goproxy.cn
 ENV GO111MODULE=on
@@ -93,6 +93,7 @@ ENTRYPOINT  ["./service-auth"]
 
 #################开放服务镜像####################
 FROM alpine as service-open
+#RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 RUN echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/main' > /etc/apk/repositories && echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/community' >>/etc/apk/repositories && apk update && apk add tzdata && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 WORKDIR /data/sinking
 COPY --from=sinking-builder /data/sinking/cloud-service/service-open/service-open .

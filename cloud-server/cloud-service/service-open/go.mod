@@ -1,12 +1,12 @@
 module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open
 
-go 1.19
+go 1.20
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20221105060954-78362716b4ba
-	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20230404014955-4eee1ab13014
-	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20230321131820-bb0d84dc4f09
+	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20230422072013-dc712e865699
+	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20230411174011-f1f44a765790
 	golang.org/x/net v0.0.0-20221002022538-bcab6841153b
 	gorm.io/gorm v1.21.15
 )
