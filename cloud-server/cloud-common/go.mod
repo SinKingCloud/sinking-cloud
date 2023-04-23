@@ -9,6 +9,7 @@ require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1520
 	github.com/aliyun/aliyun-oss-go-sdk v2.2.1+incompatible
 	github.com/apache/rocketmq-client-go/v2 v2.1.0
+	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 	github.com/go-pay/gopay v1.5.74
 	github.com/go-playground/locales v0.14.0
 	github.com/go-playground/universal-translator v0.18.0
@@ -22,7 +23,6 @@ require (
 )
 
 require (
-	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394 // indirect
 	github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
@@ -53,9 +53,9 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	golang.org/x/image v0.0.0-20190802002840-cff245a6509b // indirect
+	golang.org/x/image v0.1.0 // indirect
 	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
