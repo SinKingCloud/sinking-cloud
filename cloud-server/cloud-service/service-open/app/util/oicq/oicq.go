@@ -125,17 +125,7 @@ func (o *Oicq) Login() (*mobile.LoginResponse, error) {
 func (o *Oicq) TokenLogin() error {
 	e := o.Mobile.TokenLogin(o.LoginToken)
 	if e == nil {
-		e2 := o.Mobile.Init(true, false)
-		if e2 != nil {
-			//重置设备
-			o.Mobile.Disconnect()
-			o.Mobile.UseDevice(GetMobileDevice(o.Mobile.Uin, 100000+rand.Intn(899999), o.Mobile.Proto()))
-			e3 := o.Mobile.TokenLogin(o.LoginToken)
-			if e3 != nil || o.Mobile.Init(true, false) != nil {
-				o.Mobile.Disconnect()
-				o.Mobile.UseDevice(GetMobileDevice(o.Mobile.Uin, o.DeviceId, o.Mobile.Proto()))
-			}
-		}
+		e = o.Mobile.Init(true, false)
 	}
 	if e == nil {
 		o.LoginToken = o.Mobile.GenToken()
