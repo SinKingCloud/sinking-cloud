@@ -125,7 +125,11 @@ func (o *Oicq) Login() (*mobile.LoginResponse, error) {
 func (o *Oicq) TokenLogin() error {
 	e := o.Mobile.TokenLogin(o.LoginToken)
 	if e == nil {
-		e = o.Mobile.Init(true, false)
+		e2 := o.Mobile.Init(true, false)
+		if e2 != nil {
+			//尝试密码登陆
+			_, _ = o.Login()
+		}
 	}
 	if e == nil {
 		o.LoginToken = o.Mobile.GenToken()
