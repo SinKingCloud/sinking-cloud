@@ -2,9 +2,11 @@ package oicq
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	mobile "github.com/SinKingCloud/sinking-oicq/binary-mobile/client"
+	"github.com/SinKingCloud/sinking-oicq/binary-mobile/utils"
 	pc "github.com/SinKingCloud/sinking-oicq/binary-pc/client"
 	"math/rand"
 	"strconv"
@@ -123,17 +125,22 @@ func (o *Oicq) Login() (*mobile.LoginResponse, error) {
 
 // TokenLogin token登陆QQ
 func (o *Oicq) TokenLogin() error {
-	e := o.Mobile.TokenLogin(o.LoginToken)
-	if e == nil {
-		e2 := o.Mobile.Init(true, false)
-		if e2 != nil {
-			//尝试密码登陆
-			_, _ = o.Login()
+	var e error
+	utils.Try(func() {
+		e = o.Mobile.TokenLogin(o.LoginToken)
+		if e == nil {
+			e2 := o.Mobile.Init(true, false)
+			if e2 != nil {
+				//尝试密码登陆
+				_, _ = o.Login()
+			}
 		}
-	}
-	if e == nil {
-		o.LoginToken = o.Mobile.GenToken()
-		o.LoginTime = time.Now().Unix()
-	}
+		if e == nil {
+			o.LoginToken = o.Mobile.GenToken()
+			o.LoginTime = time.Now().Unix()
+		}
+	}, func(i interface{}) {
+		e = errors.New("login error")
+	})
 	return e
 }

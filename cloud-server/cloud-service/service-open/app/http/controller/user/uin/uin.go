@@ -1134,6 +1134,29 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 	})
 }
 
+// LevelInfo 账号等级信息
+func (ControllerUin) LevelInfo(c *sinking_server.Context) {
+	type Form struct {
+		Uin string `json:"uin" validate:"required,numeric,min=10001,max=9999999999" label:"QQ账号"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	u, err := strconv.ParseInt(form.Uin, 10, 64)
+	if err != nil {
+		c.Error("获取信息失败")
+		return
+	}
+	info := web_uin.GetGuestUinInfo(u)
+	if info == nil {
+		c.Error("获取信息失败")
+		return
+	}
+	c.SuccessWithData("获取信息成功", info)
+}
+
 // Activity 活动列表
 func (ControllerUin) Activity(c *sinking_server.Context) {
 	appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)

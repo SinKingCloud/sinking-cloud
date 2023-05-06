@@ -61,6 +61,8 @@ func loadApiRoute(s *sinking_web.Engine) {
 	uinSetGroup.POST("/server", sinking_server.HandleFunc(handleUin.ChangeServer))     //修改挂机地区
 	uinSetGroup.POST("/timing", sinking_server.HandleFunc(handleUin.ChangeTiming))     //修改挂机时间
 	uinSetGroup.POST("/status", sinking_server.HandleFunc(handleUin.ChangeStatus))     //修改挂机状态
+	uinToolGroup := uinGroup.Group("/tool")
+	uinToolGroup.POST("/info", sinking_server.HandleFunc(handleUin.LevelInfo)) //获取QQ信息
 
 	//全站登陆API
 	oauthGroup := g.Group("/oauth")
@@ -105,6 +107,8 @@ func loadUserRoute(s *sinking_web.Engine) {
 	uinSetGroup.POST("/server", sinking_server.HandleFunc(handleUin.ChangeServer))     //修改挂机地区
 	uinSetGroup.POST("/timing", sinking_server.HandleFunc(handleUin.ChangeTiming))     //修改挂机时间
 	uinSetGroup.POST("/status", sinking_server.HandleFunc(handleUin.ChangeStatus))     //修改挂机状态
+	uinToolGroup := uinGroup.Group("/tool")
+	uinToolGroup.POST("/info", sinking_server.HandleFunc(handleUin.LevelInfo)) //获取QQ信息
 	handleServer := &uin.ControllerServer{}
 	uinGroup.GET("/servers", sinking_server.HandleFunc(handleServer.List)) //地区列表
 	handleLevel := &uin.ControllerLevel{}

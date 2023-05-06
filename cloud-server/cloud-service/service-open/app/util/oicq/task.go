@@ -16,6 +16,7 @@ var (
 	oicqMap     = sync.Map{} // map[int64]*Oicq
 	oicqMapTemp = sync.Map{} // map[int64]*Oicq
 	heart       = atomic.Bool{}
+	heartPc     = make(chan *Oicq)
 	releasePc   = make(chan *Oicq)
 	reConnPc    = make(chan *Oicq)
 )
@@ -116,8 +117,8 @@ func startDoHeartbeat() {
 	if !heart.Load() {
 		heart.Store(true)
 		go func() {
-			//下线
 			for i := 0; i < 50; i++ {
+				//下线
 				go func(release chan *Oicq) {
 					for task := range release {
 						//判断是否加速完成,未加速完成重新挂机
@@ -209,6 +210,7 @@ func startDoHeartbeat() {
 						task.PcHeartTime = 0
 					}
 				}(releasePc)
+				//重连
 				go func(tasks chan *Oicq) {
 					for task := range tasks {
 						r := false
@@ -238,64 +240,44 @@ func startDoHeartbeat() {
 						}
 					}
 				}(reConnPc)
+				//心跳
+				go func(tasks chan *Oicq) {
+					for task := range tasks {
+						//发送pc心跳
+						if task.PcLoginTime > 0 || task.Pc.Online.Load() {
+							//pc登陆满3小时下线
+							if task.PcLoginTime > 0 && task.PcLoginTime+3600*3 < time.Now().Unix() {
+								releasePc <- task
+								task.PcLoginTime = time.Now().Unix()
+							}
+							//执行心跳
+							e := task.Pc.DoHeartbeat(false)
+							//心跳失败，重连(最大重试3次)
+							if e != nil {
+								log.Println("pc连接丢失", task.Pc.Uin, e, "开始重新连接")
+								reConnPc <- task
+								task.Pc.ForceOnline(false)
+								task.Pc.Online.Store(false)
+							} else {
+								log.Println("发送心跳", task.Pc.Uin, e, "上次心跳时间", task.PcHeartTime)
+								task.PcHeartTime = time.Now().Unix()
+							}
+						} else {
+							task.PcHeartTime = 0
+							task.PcLoginTime = 0
+						}
+					}
+				}(heartPc)
 			}
 		}()
 		//心跳
 		go func() {
 			for true {
-				//根据实例数量分配协程,每100个实例分配一个协程
-				threadNum := 0
-				oicqMap.Range(func(key, value any) bool {
-					threadNum++
-					return true
-				})
-				threadNum = threadNum / 100
-				if threadNum == 0 {
-					threadNum = 1
-				}
-				if threadNum >= 300 {
-					threadNum = 300
-				}
-				//新建协程
-				tasks := make(chan *Oicq)
-				log.Println("协程开始，数量", threadNum)
-				for i := 0; i < threadNum; i++ {
-					go func(tasks chan *Oicq) {
-						for task := range tasks {
-							//发送pc心跳
-							if task.PcLoginTime > 0 || task.Pc.Online.Load() {
-								//pc登陆满3小时下线
-								if task.PcLoginTime > 0 && task.PcLoginTime+3600*3 < time.Now().Unix() {
-									releasePc <- task
-									task.PcLoginTime = time.Now().Unix()
-								}
-								//执行心跳
-								e := task.Pc.DoHeartbeat(false)
-								//心跳失败，重连(最大重试3次)
-								if e != nil {
-									log.Println("pc连接丢失", task.Pc.Uin, e, "开始重新连接")
-									reConnPc <- task
-									task.Pc.ForceOnline(false)
-									task.Pc.Online.Store(false)
-								} else {
-									log.Println("发送心跳", task.Pc.Uin, e, "上次心跳时间", task.PcHeartTime)
-									task.PcHeartTime = time.Now().Unix()
-								}
-							} else {
-								task.PcHeartTime = 0
-								task.PcLoginTime = 0
-							}
-						}
-						log.Println("协程关闭", time.Now().Unix())
-					}(tasks)
-				}
 				//发送数据到通道
 				oicqMap.Range(func(key, value any) bool {
-					tasks <- value.(*Oicq)
+					heartPc <- value.(*Oicq)
 					return true
 				})
-				//关闭通道
-				close(tasks)
 				time.Sleep(1 * time.Minute) //心跳周期1m
 				num := 0
 				oicqMap.Range(func(key, value any) bool {
