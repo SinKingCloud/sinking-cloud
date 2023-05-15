@@ -43,6 +43,8 @@ func Init() {
 	loadErrorHandle(r)
 	//加载全局中间件
 	loadCommonMiddleware(r)
+	//加载debug
+	loadDebug(r)
 	//加载路由
 	loadRoute(r)
 	//启动http server

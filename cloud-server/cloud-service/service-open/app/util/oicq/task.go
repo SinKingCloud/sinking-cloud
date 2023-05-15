@@ -1,9 +1,12 @@
 package oicq
 
 import (
+	"errors"
 	mobile "github.com/SinKingCloud/sinking-oicq/binary-mobile/client"
 	"github.com/SinKingCloud/sinking-oicq/binary-mobile/utils"
+	pc "github.com/SinKingCloud/sinking-oicq/binary-pc/client"
 	"log"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -119,84 +122,84 @@ func startDoHeartbeat() {
 				go func(release chan *Oicq) {
 					for task := range release {
 						//判断是否加速完成,未加速完成重新挂机
-						//d := time.Now()
-						//d = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
-						//if task.Mobile != nil && task.PcLoginTime > d.Unix() {
-						//	e, status := task.Mobile.Speed.Info()
-						//	if e == nil && status != nil {
-						//		if status.IPCQQOnline != "1" {
-						//			if task.TokenLogin() == nil {
-						//				task.Pc.NetLoop(true)
-						//				task.Pc.ForceOnline(false)
-						//				task.Pc.Release()
-						//				task.Pc.Disconnect()
-						//				var e2 error
-						//				url := ""
-						//				for i1 := 0; i1 < 3; i1++ {
-						//					e2, url = task.Pc.FetchQrCode()
-						//					if e == nil && strings.Contains(url, "&f=") {
-						//						break
-						//					}
-						//				}
-						//				if e2 == nil && len(url) > 32 {
-						//					wg := &sync.WaitGroup{}
-						//					wg.Add(1)
-						//					go func(wg *sync.WaitGroup, task *Oicq) {
-						//						for i1 := 0; i1 < 30; i1++ {
-						//							e3, state := task.Pc.FetchQrCodeStatus()
-						//							if e3 != nil {
-						//								break
-						//							}
-						//							if state == pc.ScanCodeSuccess {
-						//								//登陆PC
-						//								e4, l := task.Pc.Login(true)
-						//								if e4 != nil {
-						//									break
-						//								}
-						//								task.PcLoginTime = time.Now().Unix()
-						//								if l.Status == pc.LoginSuccess {
-						//									//关闭数据接收
-						//									task.Pc.NetLoop(false)
-						//									task.Pc.Online.Store(true) //设置为在线状态
-						//									task.Pc.ForceOnline(true)  //强制在线,不间断发送心跳
-						//								}
-						//								break
-						//							} else if state == pc.ScanCodeError {
-						//								break
-						//							}
-						//							time.Sleep(1000 * time.Millisecond)
-						//						}
-						//						wg.Done()
-						//					}(wg, task)
-						//					//执行扫码操作
-						//					time.Sleep(500 * time.Millisecond)
-						//					_, e = task.Mobile.QrCodeAllow(utils.GetBetween(url, "p?k=", "&f="))
-						//					//等待登陆结果
-						//					if e == nil {
-						//						wg.Wait()
-						//						time.Sleep(500 * time.Millisecond)
-						//						if task.Pc.Online.Load() {
-						//							log.Println(task.Mobile.Uin, "pc未加速重新登陆成功")
-						//						} else {
-						//							log.Println(task.Mobile.Uin, "pc未加速重新登陆失败")
-						//							e = errors.New("pc未加速重新登陆失败")
-						//						}
-						//					} else {
-						//						log.Println(task.Mobile.Uin, "pc未加速重新授权登陆失败", e)
-						//						e = errors.New("pc未加速重新授权登陆失败")
-						//					}
-						//					task.Mobile.Release()
-						//					task.Mobile.Disconnect()
-						//					if e == nil {
-						//						continue
-						//					}
-						//				}
-						//			}
-						//			task.Mobile.Release()
-						//			task.Mobile.Disconnect()
-						//		}
-						//	}
-						//}
+						d := time.Now()
+						d = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
+						if task.Mobile != nil && task.PcLoginTime > d.Unix() {
+							e, status := task.Mobile.Speed.Info()
+							if e == nil && status != nil {
+								if status.IPCQQOnline != "1" {
+									if task.TokenLogin() == nil {
+										task.Pc.NetLoop(true)
+										task.Pc.ForceOnline(false)
+										task.Pc.Release()
+										task.Pc.Disconnect()
+										var e2 error
+										url := ""
+										for i1 := 0; i1 < 3; i1++ {
+											e2, url = task.Pc.FetchQrCode()
+											if e == nil && strings.Contains(url, "&f=") {
+												break
+											}
+										}
+										if e2 == nil && len(url) > 32 {
+											wg := &sync.WaitGroup{}
+											wg.Add(1)
+											go func(wg *sync.WaitGroup, task *Oicq) {
+												for i1 := 0; i1 < 30; i1++ {
+													e3, state := task.Pc.FetchQrCodeStatus()
+													if e3 != nil {
+														break
+													}
+													if state == pc.ScanCodeSuccess {
+														//登陆PC
+														e4, l := task.Pc.Login(true)
+														if e4 != nil {
+															break
+														}
+														task.PcLoginTime = time.Now().Unix()
+														if l.Status == pc.LoginSuccess {
+															//关闭数据接收
+															task.Pc.NetLoop(false)
+															task.Pc.Online.Store(true) //设置为在线状态
+															task.Pc.ForceOnline(true)  //强制在线,不间断发送心跳
+														}
+														break
+													} else if state == pc.ScanCodeError {
+														break
+													}
+													time.Sleep(1000 * time.Millisecond)
+												}
+												wg.Done()
+											}(wg, task)
+											//执行扫码操作
+											time.Sleep(500 * time.Millisecond)
+											_, e = task.Mobile.QrCodeAllow(utils.GetBetween(url, "p?k=", "&f="))
+											//等待登陆结果
+											if e == nil {
+												wg.Wait()
+												time.Sleep(500 * time.Millisecond)
+												if task.Pc.Online.Load() {
+													log.Println(task.Mobile.Uin, "pc未加速重新登陆成功")
+												} else {
+													log.Println(task.Mobile.Uin, "pc未加速重新登陆失败")
+													e = errors.New("pc未加速重新登陆失败")
+												}
+											} else {
+												log.Println(task.Mobile.Uin, "pc未加速重新授权登陆失败", e)
+												e = errors.New("pc未加速重新授权登陆失败")
+											}
+											task.Mobile.Release()
+											task.Mobile.Disconnect()
+											if e == nil {
+												continue
+											}
+										}
+									}
+									task.Mobile.Release()
+									task.Mobile.Disconnect()
+								}
+							}
+						}
 						task.Pc.NetLoop(false)
 						task.Pc.ForceOnline(false)
 						task.Pc.Release()

@@ -98,7 +98,6 @@ WORKDIR /data/sinking
 COPY --from=sinking-builder /data/sinking/cloud-service/service-open/service-open .
 COPY --from=sinking-builder /data/sinking/cloud-service/service-open/config/ ./config/
 EXPOSE 1004
-EXPOSE 6060
 ENTRYPOINT  ["./service-open"]
 
 #################爬虫服务镜像####################
