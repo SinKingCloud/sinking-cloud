@@ -9,8 +9,8 @@ ENV CGO_ENABLED=0
 ENV GOPROXY=https://goproxy.cn
 ENV GO111MODULE=on
 ENV GOPRIVATE=github.com/SinKingCloud
-RUN git config --global http.proxy socks5://admin:123456@50.93.205.91:8787
-RUN git config --global https.proxy socks5://admin:123456@50.93.205.91:8787
+RUN git config --global http.proxy socks5://admin:123456@155.94.205.173:8786
+RUN git config --global https.proxy socks5://admin:123456@155.94.205.173:8786
 RUN git config --global url."https://SinKingCloud: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@github.com".insteadOf "https://github.com"
 RUN apt install apt-transport-https
 
@@ -93,12 +93,12 @@ ENTRYPOINT  ["./service-auth"]
 
 #################开放服务镜像####################
 FROM alpine as service-open
-#RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 RUN echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/main' > /etc/apk/repositories && echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/community' >>/etc/apk/repositories && apk update && apk add tzdata && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 WORKDIR /data/sinking
 COPY --from=sinking-builder /data/sinking/cloud-service/service-open/service-open .
 COPY --from=sinking-builder /data/sinking/cloud-service/service-open/config/ ./config/
 EXPOSE 1004
+EXPOSE 6060
 ENTRYPOINT  ["./service-open"]
 
 #################爬虫服务镜像####################

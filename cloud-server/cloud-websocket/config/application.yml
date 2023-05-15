@@ -16,6 +16,6 @@ application:
 
 #注册中心
 register:
-  server: 111.180.196.126:1817 #注册中心地址
+  server: 111.180.205.222:1817 #注册中心地址
   tokenKey: sinking-server-token #通信token名
   tokenValue: 97cb316ec237b3937307d94c38d21785 #通信token值

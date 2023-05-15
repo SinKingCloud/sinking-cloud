@@ -14,4 +14,6 @@ const (
 	AppUinBuyQuarterGift  = "buy.quarter.gift"  //系统云端挂机购买3月赠送天数
 	AppUinBuyHalfGift     = "buy.half.gift"     //系统云端挂机购买6月赠送天数
 	AppUinBuyYearGift     = "buy.year.gift"     //系统云端挂机购买12月赠送天数
+	AppUinUpdateLevel     = "uin.update.level"  //系统云端挂机最低允许挂机等级
+	AppUinUpdateDays      = "uin.update.days"   //系统云端挂机最低允许挂机天数
 )

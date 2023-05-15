@@ -1,6 +1,8 @@
 package oicq
 
-import "errors"
+import (
+	"errors"
+)
 
 // GetCookies 根据域名获取sKey pSKey
 func (o *Oicq) GetCookies(domain string) (string, string) {

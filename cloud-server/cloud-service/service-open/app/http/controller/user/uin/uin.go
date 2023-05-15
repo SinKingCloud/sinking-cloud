@@ -469,6 +469,31 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
+	if form.Step == "normal" {
+		appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
+		minLevel := 0
+		if appConfig[constant.AppUinUpdateLevel] != "" {
+			num, e := strconv.Atoi(appConfig[constant.AppUinUpdateLevel])
+			if e == nil {
+				minLevel = num
+			}
+		}
+		if minLevel > 0 {
+			minDays := 0
+			if appConfig[constant.AppUinUpdateDays] != "" {
+				num, e := strconv.Atoi(appConfig[constant.AppUinUpdateDays])
+				if e == nil {
+					minDays = num
+				}
+			}
+			u, _ := strconv.ParseInt(uinInfo.Uin, 10, 64)
+			levelInfo := web_uin.GetGuestUinInfo(u)
+			if levelInfo != nil && levelInfo.Level <= minLevel && uinInfo.PlayerDay < minDays && uinInfo.SignDay < minDays {
+				c.Error("您的剩余挂机天数低于" + strconv.Itoa(minDays) + "天。请续费至高于" + strconv.Itoa(minDays) + "天再更新状态")
+				return
+			}
+		}
+	}
 	srv, err := server2.GetIns().FindById(uinInfo.ServerId)
 	if err != nil || srv == nil || srv.Status != server2.Normal {
 		c.Error("未查询到挂机地区信息,请更换挂机地区")
@@ -707,6 +732,29 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 		return
 	}
 	if form.Step == "code" {
+		appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
+		minLevel := 0
+		if appConfig[constant.AppUinUpdateLevel] != "" {
+			num, e := strconv.Atoi(appConfig[constant.AppUinUpdateLevel])
+			if e == nil {
+				minLevel = num
+			}
+		}
+		if minLevel > 0 {
+			minDays := 0
+			if appConfig[constant.AppUinUpdateDays] != "" {
+				num, e := strconv.Atoi(appConfig[constant.AppUinUpdateDays])
+				if e == nil {
+					minDays = num
+				}
+			}
+			u, _ := strconv.ParseInt(uinInfo.Uin, 10, 64)
+			levelInfo := web_uin.GetGuestUinInfo(u)
+			if levelInfo != nil && levelInfo.Level <= minLevel && uinInfo.PlayerDay < minDays && uinInfo.SignDay < minDays {
+				c.Error("您的剩余挂机天数低于" + strconv.Itoa(minDays) + "天。请续费至高于" + strconv.Itoa(minDays) + "天再更新状态")
+				return
+			}
+		}
 		rsp, e := cli.Mobile.FetchQRCode()
 		if e != nil || rsp.ImageData == nil {
 			c.Error("获取二维码失败")
@@ -1137,7 +1185,7 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 // LevelInfo 账号等级信息
 func (ControllerUin) LevelInfo(c *sinking_server.Context) {
 	type Form struct {
-		Uin string `json:"uin" validate:"required,numeric,min=10001,max=9999999999" label:"QQ账号"`
+		Uin string `json:"uin" validate:"required,numeric" label:"QQ账号"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorJson(form); !ok {
@@ -1145,7 +1193,7 @@ func (ControllerUin) LevelInfo(c *sinking_server.Context) {
 		return
 	}
 	u, err := strconv.ParseInt(form.Uin, 10, 64)
-	if err != nil {
+	if err != nil || u <= 10000 || u >= 9999999999 {
 		c.Error("获取信息失败")
 		return
 	}

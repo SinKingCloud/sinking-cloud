@@ -215,7 +215,7 @@ func GetGuestUinInfo(uin int64) *UinInfo {
 	iconArr := map[int]string{64: "https://imgcache.qq.com/xydata/qqVipLevel/item/3/crown.png",
 		16: "https://imgcache.qq.com/xydata/qqVipLevel/item/3/sun.png",
 		4:  "https://imgcache.qq.com/xydata/qqVipLevel/item/3/moon.png",
-		1:  "https://imgcache.qq.com/xydata/qqVipLevel/item/3/star.pn"}
+		1:  "https://imgcache.qq.com/xydata/qqVipLevel/item/3/star.png"}
 	keys := []int{64, 16, 4, 1}
 	tmp := level
 	crownNum := 1
