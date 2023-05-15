@@ -175,8 +175,8 @@ func startDoHeartbeat() {
 											time.Sleep(500 * time.Millisecond)
 											_, e = task.Mobile.QrCodeAllow(utils.GetBetween(url, "p?k=", "&f="))
 											//等待登陆结果
-											wg.Wait()
 											if e == nil {
+												wg.Wait()
 												time.Sleep(500 * time.Millisecond)
 												if task.Pc.Online.Load() {
 													log.Println(task.Mobile.Uin, "pc未加速重新登陆成功")
