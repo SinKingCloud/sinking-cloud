@@ -22,6 +22,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 		res = map[Job]mobile.SpeedCode{}
 	}
 	for _, v := range jobs {
+		o.LoginTime = time.Now().Unix()
 		status := mobile.SpeedError
 		cookie := ""
 		//不执行的项目

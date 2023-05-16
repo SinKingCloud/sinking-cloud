@@ -121,6 +121,7 @@ func startDoHeartbeat() {
 				//下线
 				go func(release chan *Oicq) {
 					for task := range release {
+						task.LoginTime = time.Now().Unix()
 						//判断是否加速完成,未加速完成重新挂机
 						d := time.Now()
 						d = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
@@ -213,6 +214,7 @@ func startDoHeartbeat() {
 				//重连
 				go func(tasks chan *Oicq) {
 					for task := range tasks {
+						task.LoginTime = time.Now().Unix()
 						r := false
 						task.Pc.NetLoop(true)
 						task.Pc.ForceOnline(false)
@@ -243,6 +245,7 @@ func startDoHeartbeat() {
 				//心跳
 				go func(tasks chan *Oicq) {
 					for task := range tasks {
+						task.LoginTime = time.Now().Unix()
 						//发送pc心跳
 						if task.PcLoginTime > 0 || task.Pc.Online.Load() {
 							//pc登陆满3小时下线
@@ -304,6 +307,17 @@ func startDoHeartbeat() {
 						ins.Pc.Release()
 						ins.Pc.Disconnect()
 						oicqMapTemp.Delete(key)
+					}
+					return true
+				})
+				oicqMap.Range(func(key, value any) bool {
+					ins := value.(*Oicq)
+					if ins.LoginTime+10*60 < time.Now().Unix() {
+						//超时未操作，断开实例
+						ins.Mobile.Release()
+						ins.Mobile.Disconnect()
+						ins.Pc.Release()
+						ins.Pc.Disconnect()
 					}
 					return true
 				})
