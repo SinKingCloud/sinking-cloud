@@ -310,7 +310,8 @@ func startDoHeartbeat() {
 				})
 				oicqMap.Range(func(key, value any) bool {
 					ins := value.(*Oicq)
-					if ins.LoginTime+10*60 < time.Now().Unix() {
+					if ins.LoginTime > 0 && ins.LoginTime+10*60 < time.Now().Unix() {
+						ins.LoginTime = 0
 						ins.Mobile.Release()
 						ins.Mobile.Disconnect()
 					}
