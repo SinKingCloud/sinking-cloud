@@ -256,9 +256,9 @@ func startDoHeartbeat() {
 							//心跳失败，重连(最大重试3次)
 							if e != nil {
 								log.Println("pc连接丢失", task.Pc.Uin, e, "开始重新连接")
-								reConnPc <- task
 								task.Pc.ForceOnline(false)
 								task.Pc.Online.Store(false)
+								reConnPc <- task
 							} else {
 								log.Println("发送心跳", task.Pc.Uin, e, "上次心跳时间", task.PcHeartTime)
 								task.PcHeartTime = time.Now().Unix()
@@ -274,6 +274,7 @@ func startDoHeartbeat() {
 		//心跳
 		go func() {
 			for true {
+				log.Println("开始发送心跳")
 				//发送数据到通道
 				oicqMap.Range(func(key, value any) bool {
 					heartPc <- value.(*Oicq)
@@ -296,6 +297,7 @@ func startDoHeartbeat() {
 		//删除临时实例
 		go func() {
 			for true {
+				log.Println("开始删除实例")
 				oicqMapTemp.Range(func(key, value any) bool {
 					ins := value.(*Oicq)
 					if ins.LoginTime+10*60 < time.Now().Unix() {
@@ -305,6 +307,7 @@ func startDoHeartbeat() {
 						ins.Pc.Release()
 						ins.Pc.Disconnect()
 						oicqMapTemp.Delete(key)
+						log.Println("删除临时实例", key)
 					}
 					return true
 				})
@@ -314,6 +317,7 @@ func startDoHeartbeat() {
 						ins.LoginTime = 0
 						ins.Mobile.Release()
 						ins.Mobile.Disconnect()
+						log.Println("断开实例", key)
 					}
 					return true
 				})
