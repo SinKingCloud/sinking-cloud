@@ -144,11 +144,11 @@ func GetUinLevelInfo(uinId int) (*model.AppUinInfo, error) {
 	if uinLevelInfo == nil {
 		reset = true
 	}
-	//上次刷新在昨天时或者大于120分钟时刷新一次数据
+	//上次刷新在昨天时或者大于60分钟时刷新一次数据
 	if !refresh && e == nil && uinLevelInfo != nil {
 		stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", uinLevelInfo.UpdateTime.String(), time.Local)
 		todayUnix := str.NewTimeTool().GetZeroTime(time.Now()).Unix()
-		if stamp.Unix() < todayUnix || stamp.Unix() <= time.Now().Unix()-7200 {
+		if stamp.Unix() < todayUnix || stamp.Unix() <= time.Now().Unix()-3600 {
 			refresh = true
 		}
 		if stamp.Unix() < todayUnix {

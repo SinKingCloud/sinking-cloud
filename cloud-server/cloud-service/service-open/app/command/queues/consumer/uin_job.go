@@ -255,7 +255,7 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 			//第一次挂机
 			fail, _, token = l.speedJob(proxy, uin, jobs, true, isSys)
 			//6.5小时后补挂一次
-			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*9 {
+			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*17 {
 				data["check_time"] = str.DateTime(time.Now().Add(6.5 * 3600 * time.Second))
 			}
 		}
