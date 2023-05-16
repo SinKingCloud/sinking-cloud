@@ -89,6 +89,7 @@ func GetPcDevice(uin int64) *pc.DeviceInfo {
 
 // AutoLogin 自动登录
 func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
+	o.LoginTime = time.Now().Unix()
 	if !o.Mobile.Online.Load() {
 		if o.LoginToken == nil || len(o.LoginToken) <= 0 || o.TokenLogin() != nil {
 			//尝试使用密码登陆
@@ -102,7 +103,6 @@ func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
 			}
 		}
 	}
-	o.LoginTime = time.Now().Unix()
 	return nil, &mobile.LoginResponse{
 		Success: true,
 	}
@@ -110,12 +110,12 @@ func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
 
 // Login 登陆QQ
 func (o *Oicq) Login() (*mobile.LoginResponse, error) {
+	o.LoginTime = time.Now().Unix()
 	resp, e := o.Mobile.Login()
 	if e == nil && resp.Success {
 		e = o.Mobile.Init(true, false)
 		if e == nil {
 			o.LoginToken = o.Mobile.GenToken()
-			o.LoginTime = time.Now().Unix()
 		} else {
 			resp.Success = false
 		}
@@ -125,6 +125,7 @@ func (o *Oicq) Login() (*mobile.LoginResponse, error) {
 
 // TokenLogin token登陆QQ
 func (o *Oicq) TokenLogin() error {
+	o.LoginTime = time.Now().Unix()
 	var e error
 	utils.Try(func() {
 		e = o.Mobile.TokenLogin(o.LoginToken)
@@ -137,7 +138,6 @@ func (o *Oicq) TokenLogin() error {
 		}
 		if e == nil {
 			o.LoginToken = o.Mobile.GenToken()
-			o.LoginTime = time.Now().Unix()
 		}
 	}, func(i interface{}) {
 		e = errors.New("login error")
