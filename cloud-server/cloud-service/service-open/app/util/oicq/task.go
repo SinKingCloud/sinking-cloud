@@ -119,7 +119,7 @@ func startDoHeartbeat() {
 		go func() {
 			for i := 0; i < 50; i++ {
 				//下线
-				go func(release chan *Oicq) {
+				go func(release chan *Oicq, id int) {
 					for task := range release {
 						//判断是否加速完成,未加速完成重新挂机
 						d := time.Now()
@@ -180,13 +180,13 @@ func startDoHeartbeat() {
 												wg.Wait()
 												time.Sleep(500 * time.Millisecond)
 												if task.Pc.Online.Load() {
-													log.Println(task.Mobile.Uin, "pc未加速重新登陆成功")
+													log.Println(task.Mobile.Uin, "pc未加速重新登陆成功[id:", id, "]")
 												} else {
-													log.Println(task.Mobile.Uin, "pc未加速重新登陆失败")
+													log.Println(task.Mobile.Uin, "pc未加速重新登陆失败[id:", id, "]")
 													e = errors.New("pc未加速重新登陆失败")
 												}
 											} else {
-												log.Println(task.Mobile.Uin, "pc未加速重新授权登陆失败", e)
+												log.Println(task.Mobile.Uin, "pc未加速重新授权登陆失败[id:", id, "]", e)
 												e = errors.New("pc未加速重新授权登陆失败")
 											}
 											task.Mobile.Release()
@@ -206,13 +206,13 @@ func startDoHeartbeat() {
 						task.Pc.Release()
 						task.Pc.Disconnect()
 						task.Pc.Online.Store(false)
-						log.Println("pc下线", task.Pc.Uin, "登陆时间", task.PcLoginTime)
+						log.Println("pc下线[id:", id, "]", task.Pc.Uin, "登陆时间", task.PcLoginTime)
 						task.PcLoginTime = 0
 						task.PcHeartTime = 0
 					}
-				}(releasePc)
+				}(releasePc, i)
 				//重连
-				go func(tasks chan *Oicq) {
+				go func(tasks chan *Oicq, id int) {
 					for task := range tasks {
 						r := false
 						task.Pc.NetLoop(true)
@@ -229,20 +229,20 @@ func startDoHeartbeat() {
 						//重连成功则重新设置在线状态
 						task.Pc.NetLoop(false)
 						if r {
-							log.Println("pc重连成功", task.Pc.Uin)
+							log.Println("pc重连成功[id:", id, "]", task.Pc.Uin)
 							task.Pc.Online.Store(true)
 							task.Pc.ForceOnline(true)
 						} else {
-							log.Println("pc重连失败", task.Pc.Uin)
+							log.Println("pc重连失败[id:", id, "]", task.Pc.Uin)
 							task.Pc.Online.Store(false)
 							task.Pc.ForceOnline(false)
 							task.PcHeartTime = 0
 							task.PcLoginTime = 0
 						}
 					}
-				}(reConnPc)
+				}(reConnPc, i)
 				//心跳
-				go func(tasks chan *Oicq) {
+				go func(tasks chan *Oicq, id int) {
 					for task := range tasks {
 						//发送pc心跳
 						if task.PcLoginTime > 0 || task.Pc.Online.Load() {
@@ -255,12 +255,12 @@ func startDoHeartbeat() {
 							e := task.Pc.DoHeartbeat(false)
 							//心跳失败，重连(最大重试3次)
 							if e != nil {
-								log.Println("pc连接丢失", task.Pc.Uin, e, "开始重新连接")
+								log.Println("pc连接丢失[id:", id, "]", task.Pc.Uin, e, "开始重新连接")
 								task.Pc.ForceOnline(false)
 								task.Pc.Online.Store(false)
 								reConnPc <- task
 							} else {
-								log.Println("发送心跳", task.Pc.Uin, e, "上次心跳时间", task.PcHeartTime)
+								log.Println("发送心跳[id:", id, "]", task.Pc.Uin, e, "上次心跳时间", task.PcHeartTime)
 								task.PcHeartTime = time.Now().Unix()
 							}
 						} else {
@@ -268,7 +268,7 @@ func startDoHeartbeat() {
 							task.PcLoginTime = 0
 						}
 					}
-				}(heartPc)
+				}(heartPc, i)
 			}
 		}()
 		//心跳
