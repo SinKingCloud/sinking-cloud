@@ -16,9 +16,9 @@ var (
 	oicqMap     = sync.Map{} // map[int64]*Oicq
 	oicqMapTemp = sync.Map{} // map[int64]*Oicq
 	heart       = atomic.Bool{}
-	heartPc     = make(chan *Oicq)
-	releasePc   = make(chan *Oicq)
-	reConnPc    = make(chan *Oicq)
+	heartPc     = make(chan *Oicq, 100000)
+	releasePc   = make(chan *Oicq, 100000)
+	reConnPc    = make(chan *Oicq, 100000)
 )
 
 // GetOicqProto 获取协议类型
