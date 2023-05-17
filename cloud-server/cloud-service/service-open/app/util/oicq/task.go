@@ -225,7 +225,6 @@ func startDoHeartbeat() {
 						for i1 := 0; i1 < 3; i1++ {
 							if task.Pc.QuickReconnect() == nil {
 								r = true
-								task.Pc.NetLoop(false) //关闭数据监听
 								break
 							} else {
 								time.Sleep(500 * time.Millisecond)
