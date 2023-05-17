@@ -161,9 +161,12 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 		return
 	}
 	go func(cli *client2.QQClient, key string, num int) {
-		defer cli.Release()
-		defer cli.Disconnect()
-		defer util.Cache.Dec(key)
+		defer func(cli *client2.QQClient) {
+			cli.Release()
+			cli.Disconnect()
+			util.Cache.Dec(key)
+			cli = nil
+		}(cli)
 		for i := 0; i < 60; i++ {
 			e1, q := cli.FetchQrCodeStatus()
 			if e1 != nil {
@@ -177,6 +180,7 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 				}
 				if l.Status == client2.LoginSuccess {
 					cli.Release()
+					cli.Disconnect()
 					key2 := "SpeedTestQ_" + strconv.FormatInt(cli.Uin, 10)
 					util.Cache.Inc(key2)
 					util.Cache.SetExpire(key2, (str.NewTimeTool().GetZeroTime(time.Now()).Unix()+86400-time.Now().Unix())*1000)
