@@ -122,9 +122,7 @@ func startDoHeartbeat() {
 				go func(release chan *Oicq, id int) {
 					for task := range release {
 						//判断是否加速完成,未加速完成重新挂机
-						d := time.Now()
-						d = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
-						if task.Mobile != nil && task.PcLoginTime > d.Unix() {
+						if task.Mobile != nil {
 							e, status := task.Mobile.Speed.Info()
 							if e == nil && status != nil {
 								if status.IPCQQOnline != "1" {
@@ -214,6 +212,13 @@ func startDoHeartbeat() {
 				//重连
 				go func(tasks chan *Oicq, id int) {
 					for task := range tasks {
+						if task.PcReConnTime > 5 {
+							log.Println("连接超限[id:", id, "]", task.Pc.Uin, "重试次数", task.PcReConnTime, "开始发送至下线队列")
+							task.PcReConnTime = 0
+							task.PcLoginTime = 0
+							releasePc <- task
+							continue
+						}
 						r := false
 						task.Pc.NetLoop(true)
 						task.Pc.ForceOnline(false)
@@ -232,6 +237,7 @@ func startDoHeartbeat() {
 							log.Println("pc重连成功[id:", id, "]", task.Pc.Uin)
 							task.Pc.Online.Store(true)
 							task.Pc.ForceOnline(true)
+							task.PcReConnTime++
 						} else {
 							log.Println("pc重连失败[id:", id, "]", task.Pc.Uin)
 							task.Pc.Online.Store(false)
@@ -262,6 +268,7 @@ func startDoHeartbeat() {
 							} else {
 								log.Println("发送心跳[id:", id, "]", task.Pc.Uin, e, "上次心跳时间", task.PcHeartTime)
 								task.PcHeartTime = time.Now().Unix()
+								task.PcReConnTime = 0
 							}
 						} else {
 							task.PcHeartTime = 0

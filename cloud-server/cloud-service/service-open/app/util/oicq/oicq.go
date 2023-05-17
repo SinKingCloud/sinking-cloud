@@ -19,9 +19,10 @@ type Oicq struct {
 	LoginToken []byte
 	LoginTime  int64
 
-	Pc          *pc.QQClient
-	PcLoginTime int64
-	PcHeartTime int64
+	Pc           *pc.QQClient
+	PcLoginTime  int64
+	PcHeartTime  int64
+	PcReConnTime int
 
 	DeviceId   int
 	Password   [16]byte
