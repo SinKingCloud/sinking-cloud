@@ -223,7 +223,7 @@ func startDoHeartbeat() {
 						task.Pc.NetLoop(true)
 						task.Pc.ForceOnline(false)
 						for i1 := 0; i1 < 3; i1++ {
-							if task.Pc.QuickReconnect() == nil {
+							if task.Pc.QuickReconnect() == nil && task.Pc.DoHeartbeat(false) == nil {
 								r = true
 								break
 							} else {
