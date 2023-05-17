@@ -16,7 +16,7 @@ var (
 	oicqMap     = sync.Map{} // map[int64]*Oicq
 	oicqMapTemp = sync.Map{} // map[int64]*Oicq
 	heart       = atomic.Bool{}
-	heartPc     = make(chan *Oicq, 10000)
+	heartPc     = make(chan *Oicq, 100000)
 	releasePc   = make(chan *Oicq, 100000)
 	reConnPc    = make(chan *Oicq, 100000)
 )
