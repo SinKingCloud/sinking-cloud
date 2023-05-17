@@ -40,26 +40,26 @@ func (l *uinJob) Listen() {
 		uinJobIns = sinking.GetRocketConsumerServer(constant.UinJobGroup, false)
 	}
 	l.autoStartThread()
-	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("2903033707") //44422323
-	//	for _, v := range list {
-	//		if v.PlayerDay > 0 {
-	//			l.run(v)
-	//			break
-	//		}
-	//	}
-	//}()
-	err := uinJobIns.ListenReceiveMsgDo(constant.UinJobTopic, "", func(mqMsg queue.MqMsg) {
-		s := &uin2.AppUinJob{}
-		err := json.Unmarshal(mqMsg.Body, s)
-		if err == nil {
-			l.run(s)
+	go func() {
+		list, _ := uin2.GetIns().SelectByUin("1697226985") //44422323
+		for _, v := range list {
+			if v.PlayerDay > 0 {
+				l.run(v)
+				break
+			}
 		}
-	})
-	if err != nil {
-		util.Log.Println(err)
-		return
-	}
+	}()
+	//err := uinJobIns.ListenReceiveMsgDo(constant.UinJobTopic, "", func(mqMsg queue.MqMsg) {
+	//	s := &uin2.AppUinJob{}
+	//	err := json.Unmarshal(mqMsg.Body, s)
+	//	if err == nil {
+	//		l.run(s)
+	//	}
+	//})
+	//if err != nil {
+	//	util.Log.Println(err)
+	//	return
+	//}
 }
 
 var (
