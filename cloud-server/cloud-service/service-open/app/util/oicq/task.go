@@ -130,8 +130,6 @@ func startDoHeartbeat() {
 									if task.TokenLogin() == nil {
 										task.Pc.NetLoop(true)
 										task.Pc.ForceOnline(false)
-										task.Pc.Release()
-										task.Pc.Disconnect()
 										var e2 error
 										url := ""
 										for i1 := 0; i1 < 3; i1++ {
@@ -250,7 +248,7 @@ func startDoHeartbeat() {
 				go func(tasks chan *Oicq, id int) {
 					for task := range tasks {
 						//发送pc心跳
-						if task.PcLoginTime > 0 || task.Pc.Online.Load() {
+						if task.PcLoginTime > 0 && task.Pc.Online.Load() {
 							//pc登陆满3小时下线
 							if task.PcLoginTime > 0 && task.PcLoginTime+3600*3 < time.Now().Unix() {
 								releasePc <- task
@@ -266,12 +264,10 @@ func startDoHeartbeat() {
 								reConnPc <- task
 							} else {
 								log.Println("发送心跳[id:", id, "]", task.Pc.Uin, e, "上次心跳时间", task.PcHeartTime)
+								task.Pc.NetLoop(false)
 								task.PcHeartTime = time.Now().Unix()
 								task.PcReConnTime = 0
 							}
-						} else {
-							task.PcHeartTime = 0
-							task.PcLoginTime = 0
 						}
 					}
 				}(heartPc, i)
