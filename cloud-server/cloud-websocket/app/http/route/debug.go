@@ -24,4 +24,25 @@ func loadDebug(s *sinking_web.Engine) {
 	r.GET("/trace", func(c *sinking_web.Context) {
 		pprof.Trace(c.Writer, c.Request)
 	})
+	r.GET("/goroutine", func(c *sinking_web.Context) {
+		pprof.Handler("goroutine").ServeHTTP(c.Writer, c.Request)
+	})
+	r.GET("/allocs", func(c *sinking_web.Context) {
+		pprof.Handler("allocs").ServeHTTP(c.Writer, c.Request)
+	})
+	r.GET("/block", func(c *sinking_web.Context) {
+		pprof.Handler("block").ServeHTTP(c.Writer, c.Request)
+	})
+	r.GET("/heap", func(c *sinking_web.Context) {
+		pprof.Handler("heap").ServeHTTP(c.Writer, c.Request)
+	})
+	r.GET("/mutex", func(c *sinking_web.Context) {
+		pprof.Handler("mutex").ServeHTTP(c.Writer, c.Request)
+	})
+	r.GET("/threadcreate", func(c *sinking_web.Context) {
+		pprof.Handler("threadcreate").ServeHTTP(c.Writer, c.Request)
+	})
+	r.GET("/threadcreate", func(c *sinking_web.Context) {
+		pprof.Handler("threadcreate").ServeHTTP(c.Writer, c.Request)
+	})
 }
