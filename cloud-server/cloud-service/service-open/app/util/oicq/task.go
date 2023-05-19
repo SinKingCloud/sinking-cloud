@@ -192,6 +192,7 @@ func startDoHeartbeat() {
 												log.Println(task.Mobile.Uin, "pc未加速重新授权登陆失败[id:", id, "]", e)
 												e = errors.New("pc未加速重新授权登陆失败")
 											}
+											task.Pc.NetLoop(false)
 											task.Mobile.Release()
 											task.Mobile.Disconnect()
 											if e == nil {
