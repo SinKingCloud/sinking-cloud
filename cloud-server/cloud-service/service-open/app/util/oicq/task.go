@@ -142,6 +142,7 @@ func startDoHeartbeat() {
 											wg := &sync.WaitGroup{}
 											wg.Add(1)
 											go func(wg *sync.WaitGroup, task *Oicq) {
+												succ := false
 												for i1 := 0; i1 < 30; i1++ {
 													e3, state := task.Pc.FetchQrCodeStatus()
 													if e3 != nil {
@@ -155,6 +156,7 @@ func startDoHeartbeat() {
 														}
 														task.PcLoginTime = time.Now().Unix()
 														if l.Status == pc.LoginSuccess {
+															succ = true
 															//关闭数据接收
 															task.Pc.NetLoop(false)
 															task.Pc.Online.Store(true) //设置为在线状态
@@ -165,6 +167,11 @@ func startDoHeartbeat() {
 														break
 													}
 													time.Sleep(1000 * time.Millisecond)
+												}
+												task.Pc.NetLoop(false)
+												if !succ {
+													task.Pc.Release()
+													task.Pc.Disconnect()
 												}
 												wg.Done()
 											}(wg, task)

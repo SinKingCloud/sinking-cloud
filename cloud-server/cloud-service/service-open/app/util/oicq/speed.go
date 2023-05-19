@@ -139,6 +139,11 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 								}
 								time.Sleep(1000 * time.Millisecond)
 							}
+							o.Pc.NetLoop(false)
+							if status != mobile.SpeedSuccess {
+								o.Pc.Release()
+								o.Pc.Disconnect()
+							}
 							wg.Done()
 						}(wg)
 						//执行扫码操作
