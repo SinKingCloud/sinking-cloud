@@ -165,6 +165,8 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					if e != nil {
 						o.Pc.Release()
 						o.Pc.Disconnect()
+					} else {
+						o.Pc.NetLoop(false)
 					}
 				}, func(i interface{}) {
 					log.Println(o.Mobile.Uin, "pc登陆错误", i)
