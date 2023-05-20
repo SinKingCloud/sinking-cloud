@@ -147,8 +147,10 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 							wg.Done()
 						}(wg)
 						//执行扫码操作
+						//o.Mobile.NetLoop(true)
 						time.Sleep(500 * time.Millisecond)
 						_, e = o.Mobile.QrCodeAllow(utils.GetBetween(url, "p?k=", "&f="))
+						//o.Mobile.NetLoop(false)
 						if e == nil {
 							//等待登陆结果
 							wg.Wait()
