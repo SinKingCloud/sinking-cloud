@@ -308,16 +308,15 @@ func startDoHeartbeat() {
 				utils.Try(func() {
 					log.Println("开始发送心跳")
 					//发送数据到通道
+					num := 0
 					oicqMap.Range(func(key, value any) bool {
 						utils.Try(func() {
-							heartPc <- value.(*Oicq)
+							if value != nil {
+								heartPc <- value.(*Oicq)
+							}
 						}, func(i interface{}) {
 							log.Println("获取挂机实例出错", i)
 						})
-						return true
-					})
-					num := 0
-					oicqMap.Range(func(key, value any) bool {
 						num++
 						return true
 					})
@@ -340,15 +339,17 @@ func startDoHeartbeat() {
 					log.Println("开始删除实例")
 					oicqMapTemp.Range(func(key, value any) bool {
 						utils.Try(func() {
-							ins := value.(*Oicq)
-							if ins.LoginTime+10*60 < time.Now().Unix() {
-								//超时未操作，删除实例
-								ins.Mobile.Release()
-								ins.Mobile.Disconnect()
-								ins.Pc.Release()
-								ins.Pc.Disconnect()
-								oicqMapTemp.Delete(key)
-								log.Println("删除临时实例", key)
+							if value != nil {
+								ins := value.(*Oicq)
+								if ins.LoginTime+10*60 < time.Now().Unix() {
+									//超时未操作，删除实例
+									ins.Mobile.Release()
+									ins.Mobile.Disconnect()
+									ins.Pc.Release()
+									ins.Pc.Disconnect()
+									oicqMapTemp.Delete(key)
+									log.Println("删除临时实例", key)
+								}
 							}
 						}, func(i interface{}) {
 							log.Println("删除临时实例失败", key)
@@ -357,12 +358,14 @@ func startDoHeartbeat() {
 					})
 					oicqMap.Range(func(key, value any) bool {
 						utils.Try(func() {
-							ins := value.(*Oicq)
-							if ins.LoginTime > 0 && ins.LoginTime+10*60 < time.Now().Unix() {
-								ins.LoginTime = 0
-								ins.Mobile.Release()
-								ins.Mobile.Disconnect()
-								log.Println("断开实例", key)
+							if value != nil {
+								ins := value.(*Oicq)
+								if ins.LoginTime > 0 && ins.LoginTime+10*60 < time.Now().Unix() {
+									ins.LoginTime = 0
+									ins.Mobile.Release()
+									ins.Mobile.Disconnect()
+									log.Println("断开实例", key)
+								}
 							}
 						}, func(i interface{}) {
 							log.Println("删除挂机实例失败", key)
