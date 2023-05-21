@@ -175,6 +175,8 @@ func startDoHeartbeat() {
 														task.Pc.Release()
 														task.Pc.Disconnect()
 													}
+													task.Mobile.Release()
+													task.Mobile.Disconnect()
 													wg.Done()
 												}(wg, task)
 												//执行扫码操作
