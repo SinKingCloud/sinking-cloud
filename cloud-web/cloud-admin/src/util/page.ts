@@ -4,17 +4,18 @@
  * @param sort 排序参数
  */
 import {getControls} from "@/services/page/menu";
+import defaultSettings from "../../config/defaultSettings";
 
 export function getParams(params: any, sort: any): any {
   function getOrder(obj: any): any {
-    for (let key in obj) {
-      let temp = {
-        order_by_field: key
-      };
+    for (const key in obj) {
+      const temp = {};
       if (obj[key] == "ascend") {
-        temp["order_by_type"] = "asc"
+        // @ts-ignore
+        temp.order_by_type = "asc"
       } else {
-        temp["order_by_type"] = "desc"
+        // @ts-ignore
+        temp.order_by_type = "desc"
       }
       return temp;
     }
@@ -32,11 +33,12 @@ export function getParams(params: any, sort: any): any {
  * 获取页面控件
  */
 export async function getPageControls(path: string = ""): Promise<any> {
+  // eslint-disable-next-line no-param-reassign
   path = path == "" ? location.pathname : path;
-  let key = path.replaceAll("/", ".").substring(1);
-  let response = await getControls({key: key});
+  const key = path.replaceAll("/", ".").substring(defaultSettings.base.length);
+  const response = await getControls({key: key});
   if (response.code == 200) {
-    let data = {};
+    const data = {};
     response.data.forEach((k: any) => {
       data[k.key] = k;
     })

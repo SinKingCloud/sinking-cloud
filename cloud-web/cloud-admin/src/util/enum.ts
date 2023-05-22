@@ -13,7 +13,7 @@ export enum Enums {
  * @param key 标识key
  */
 export async function getEnums(key: any = []): Promise<any> {
-  let response = await getEnum({keys: implode("|", key)});
+  const response = await getEnum({keys: implode("|", key)});
   if (response.code == 200) {
     return response?.data || {};
   }
