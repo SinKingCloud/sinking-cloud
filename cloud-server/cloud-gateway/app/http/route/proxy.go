@@ -20,10 +20,14 @@ func InitProxyRouter(route *sinking_web.Engine) {
 		temp := v.(map[string]interface{})
 		for k1, v1 := range temp {
 			tempV1 := v1.(map[string]interface{})
-			groupName := tempV1["group"]
-			name := tempV1["name"]
-			protocol := tempV1["protocol"]
-			login := tempV1["login"]
+			groupName := tempV1["group"]   //服务组
+			name := tempV1["name"]         //服务名
+			protocol := tempV1["protocol"] //使用协议
+			login := tempV1["login"]       //验证状态
+			mode := 0                      //轮询算法0:随机/1:轮询/2:单机
+			if tempV1["mode"] != nil {
+				mode = int(tempV1["mode"].(float64))
+			}
 			tempGroup := route.Group(strings.Replace(k, "/*", "", -1))
 			tempGroup2 := tempGroup.Group(strings.Replace(k1, "/*", "", -1))
 			if login == "user" {
@@ -40,7 +44,7 @@ func InitProxyRouter(route *sinking_web.Engine) {
 			tempGroup2.ANY(strings.Replace(k1, strings.Replace(k1, "/*", "", -1), "", -1), sinking_server.HandleFunc(func(s *sinking_server.Context) {
 				s.Set(constant.ServerGroupName, groupName.(string))
 				s.Set(constant.ServerName, name.(string))
-				url, exists := util.Consul.GetService(groupName.(string), name.(string))
+				url, exists := util.Consul.GetService(groupName.(string), name.(string), mode)
 				if exists {
 					s.Set(constant.ServerAddr, url.Addr)
 					s.Proxy(prefix+url.Addr, func(r *http.Request) *http.Request {

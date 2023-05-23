@@ -95,7 +95,7 @@ func DelOicqInstance(uin int64) {
 	oicqMapLock.RLock()
 	defer oicqMapLock.RUnlock()
 	data, ok := oicqMap.Load(uin)
-	if ok {
+	if ok && data != nil {
 		data.(*Oicq).Mobile.Release()
 		data.(*Oicq).Mobile.Disconnect()
 		data.(*Oicq).Pc.Release()
