@@ -212,6 +212,9 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 						if status.IAddFriend != "1" {
 							_, _ = cli.Speed.Friend()
 						}
+						if status.ISmallWorld != "1" {
+							_, _ = cli.Speed.WebFeedCloud()
+						}
 					}
 				}
 				break
