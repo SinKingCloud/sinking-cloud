@@ -294,7 +294,6 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		cookies[oicq.Ws] = wsCookie
 	}
 	//登陆手机
-	//cli.Mobile.NetLoop(true)
 	err, loginResponse := cli.AutoLogin()
 	log.Println("挂机登陆结果", uin.Uin, err, loginResponse)
 	if err != nil {
@@ -305,7 +304,6 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		l.saveJobStatus(uin, 0, nil)
 		return true, nil, nil
 	}
-	//cli.Mobile.NetLoop(false) //关闭数据读取
 	//保存相关cookie
 	cookie := cli.Mobile.GetAllCookies()
 	for k, v := range cookie {

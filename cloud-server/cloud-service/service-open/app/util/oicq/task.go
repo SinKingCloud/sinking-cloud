@@ -353,7 +353,7 @@ func startDoHeartbeat() {
 			for true {
 				utils.Try(func() {
 					log.Println("开始删除实例")
-					oicqMapLock.RLock()
+					oicqMapTempLock.RLock()
 					oicqMapTemp.Range(func(key, value any) bool {
 						utils.Try(func() {
 							if value != nil {
@@ -373,8 +373,8 @@ func startDoHeartbeat() {
 						})
 						return true
 					})
-					oicqMapLock.RUnlock()
-					oicqMapTempLock.RLock()
+					oicqMapTempLock.RUnlock()
+					oicqMapLock.RLock()
 					oicqMap.Range(func(key, value any) bool {
 						utils.Try(func() {
 							if value != nil {
@@ -391,7 +391,7 @@ func startDoHeartbeat() {
 						})
 						return true
 					})
-					oicqMapTempLock.RUnlock()
+					oicqMapLock.RUnlock()
 				}, func(i interface{}) {
 					log.Println("删除实例出错", i)
 					oicqMapLock.RUnlock()
