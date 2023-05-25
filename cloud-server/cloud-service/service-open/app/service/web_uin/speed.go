@@ -45,7 +45,7 @@ var Setting = map[JobName]string{
 	ZoneClock:   "1",
 	Login:       "1",
 	Friend:      "1",
-	Word:        "0",
+	Word:        "1",
 	Dress:       "1",
 	Vip:         "1",
 	BigVip:      "1",
