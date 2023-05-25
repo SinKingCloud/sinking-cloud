@@ -25,10 +25,6 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 		o.LoginTime = time.Now().Unix()
 		status := mobile.SpeedError
 		cookie := ""
-		//不执行的项目
-		if v == Word {
-			continue
-		}
 		utils.Try(func() {
 			switch v {
 			case Vip: //会员签到
@@ -70,7 +66,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 				}
 				break
 			case Word: //小世界加速
-				_, status = o.Mobile.Speed.FeedCloud()
+				_, status = o.Mobile.Speed.WebFeedCloud()
 				break
 			case MobileClock: //打卡加速
 				_, status = o.Mobile.Speed.DailySign()
