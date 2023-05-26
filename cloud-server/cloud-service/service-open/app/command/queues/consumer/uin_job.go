@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("497050825") //3466510976 2328245768旧 2174259517新 23:15查看状态
+	//	list, _ := uin2.GetIns().SelectByUin("3370375029")
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -309,7 +309,6 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		l.saveJobStatus(uin, 0, nil)
 		return true, nil, nil
 	}
-	//cli.Mobile.Speed.VisitLevelPage()
 	//保存相关cookie
 	cookie := cli.Mobile.GetAllCookies()
 	for k, v := range cookie {
