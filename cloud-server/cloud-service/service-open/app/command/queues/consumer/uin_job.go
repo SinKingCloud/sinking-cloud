@@ -63,8 +63,8 @@ func (l *uinJob) Listen() {
 }
 
 var (
-	servers    = make(map[int]chan interface{}, 100000) //服务器列表
-	serverLock = &sync.RWMutex{}                        //并发锁
+	servers    = make(map[int]chan interface{}) //服务器列表
+	serverLock = &sync.RWMutex{}                //并发锁
 
 	serverIds    = make(map[int]*oicq.Proxy) //服务器列表
 	serverIdLock = &sync.RWMutex{}           //并发锁
