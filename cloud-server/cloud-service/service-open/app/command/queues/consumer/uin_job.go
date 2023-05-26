@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("2174259517") //3466510976 2328245768旧 2174259517新 23:15查看状态
+	//	list, _ := uin2.GetIns().SelectByUin("497050825") //3466510976 2328245768旧 2174259517新 23:15查看状态
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -63,8 +63,8 @@ func (l *uinJob) Listen() {
 }
 
 var (
-	servers    = make(map[int]chan interface{}) //服务器列表
-	serverLock = &sync.RWMutex{}                //并发锁
+	servers    = make(map[int]chan interface{}, 100000) //服务器列表
+	serverLock = &sync.RWMutex{}                        //并发锁
 
 	serverIds    = make(map[int]*oicq.Proxy) //服务器列表
 	serverIdLock = &sync.RWMutex{}           //并发锁
@@ -96,7 +96,7 @@ func (l *uinJob) autoStartThread() {
 			authThreadWaitLock.RLock()
 			authThreadWait.Done()
 			authThreadWaitLock.RUnlock()
-			time.Sleep(24 * time.Hour) //每12小时根据账号数量更新协程池
+			time.Sleep(24 * time.Hour) //每24小时根据账号数量更新协程池
 		}
 	}(l)
 }
@@ -162,29 +162,34 @@ func (l *uinJob) run(uin *uin2.AppUinJob) {
 	if uin == nil {
 		return
 	}
-	var userJob map[web_uin.JobName]string
-	err := json.Unmarshal([]byte(uin.Setting), &userJob)
-	if err == nil && userJob != nil {
-		var jobs []web_uin.JobName
-		for k, v := range web_uin.Setting {
-			if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
-				jobs = append(jobs, k)
+	sinking_web.Try(func() {
+		var userJob map[web_uin.JobName]string
+		err := json.Unmarshal([]byte(uin.Setting), &userJob)
+		if err == nil && userJob != nil {
+			var jobs []web_uin.JobName
+			for k, v := range web_uin.Setting {
+				if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
+					jobs = append(jobs, k)
+				}
 			}
+			//更改状态为已提交
+			_ = web_uin.SetUinJobStatus(uin.Uin, jobs, 2)
 		}
-		//更改状态为已提交
-		_ = web_uin.SetUinJobStatus(uin.Uin, jobs, 2)
-	}
-	authThreadWait.Wait() //等待协程池处理完毕
-	for i := 0; i < 30; i++ {
-		serverLock.RLock()
-		if d, ok := servers[uin.ServerId]; ok && d != nil {
-			d <- uin
+		authThreadWait.Wait() //等待协程池处理完毕
+		for i := 0; i < 30; i++ {
+			serverLock.RLock()
+			if d, ok := servers[uin.ServerId]; ok && d != nil {
+				d <- uin
+				serverLock.RUnlock()
+				break
+			}
 			serverLock.RUnlock()
-			break
+			time.Sleep(time.Second)
 		}
+	}, func(i interface{}) {
 		serverLock.RUnlock()
-		time.Sleep(time.Second)
-	}
+		log.Println("执行失败", uin)
+	})
 }
 
 // speed 执行任务
@@ -304,6 +309,7 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		l.saveJobStatus(uin, 0, nil)
 		return true, nil, nil
 	}
+	//cli.Mobile.Speed.VisitLevelPage()
 	//保存相关cookie
 	cookie := cli.Mobile.GetAllCookies()
 	for k, v := range cookie {

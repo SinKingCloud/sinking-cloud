@@ -23,8 +23,10 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"github.com/SinKingCloud/sinking-oicq/binary-mobile/client"
 	client2 "github.com/SinKingCloud/sinking-oicq/binary-pc/client"
-	"github.com/tuotoo/qrcode"
+	"github.com/makiuchi-d/gozxing"
+	"github.com/makiuchi-d/gozxing/qrcode"
 	"gorm.io/gorm"
+	"image/png"
 	log2 "log"
 	"math/rand"
 	"strconv"
@@ -764,16 +766,27 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 		}
 		rsp, e := cli.Mobile.FetchQRCode()
 		if e != nil || rsp.ImageData == nil {
-			c.Error("获取二维码失败")
+			c.Error("获取二维码失败(-1)")
 			return
 		}
-		decode, e := qrcode.Decode(bytes.NewReader(rsp.ImageData))
-		if e != nil || decode.Content == "" || rsp.Sig == nil {
-			c.Error("解析二维码失败")
+		imgObj, err := png.Decode(bytes.NewReader(rsp.ImageData))
+		if err != nil {
+			c.Error("解析二维码失败(-2)")
+			return
+		}
+		bmp, err := gozxing.NewBinaryBitmapFromImage(imgObj)
+		if err != nil {
+			c.Error("解析二维码失败(-3)")
+			return
+		}
+		qrReader := qrcode.NewQRCodeReader()
+		result, err := qrReader.Decode(bmp, nil)
+		if err != nil || result == nil || result.GetText() == "" {
+			c.Error("解析二维码失败(-4)")
 			return
 		}
 		cli.QrLoginSig = rsp.Sig
-		c.SuccessWithData("获取二维码成功", decode.Content)
+		c.SuccessWithData("获取二维码成功", result.GetText())
 		return
 	} else {
 		if cli.QrLoginSig == nil {
