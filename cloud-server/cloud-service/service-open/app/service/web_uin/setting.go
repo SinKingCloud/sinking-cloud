@@ -12,6 +12,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/uin_info"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/util/oicq"
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"github.com/SinKingCloud/sinking-oicq/binary-mobile/client"
 	"github.com/SinKingCloud/sinking-oicq/binary-mobile/utils"
 	"strconv"
@@ -176,14 +177,20 @@ func GetUinLevelInfo(uinId int) (*model.AppUinInfo, error) {
 
 // GetUinInfo 获取QQ详情
 func GetUinInfo(uin string) (status *client.SpeedStatus, err error) {
-	cli, err := GetOicqIns(uin, false)
-	if err != nil {
-		return nil, err
-	}
-	err, status = cli.Mobile.Speed.Info()
-	if err == nil && status != nil {
-		_ = SetUinSpeedStatus(uin, status)
-	}
+	sinking_web.Try(func() {
+		cli, e := GetOicqIns(uin, false)
+		if e != nil {
+			err = errors.New("获取挂机实例失败")
+			return
+		}
+		err, status = cli.Mobile.Speed.Info()
+		if err == nil && status != nil {
+			_ = SetUinSpeedStatus(uin, status)
+		}
+	}, func(i interface{}) {
+		status = nil
+		err = errors.New("获取账号详情失败")
+	})
 	return status, err
 }
 
