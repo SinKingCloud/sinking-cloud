@@ -50,11 +50,15 @@ func (l *uinJob) Listen() {
 	//	}
 	//}()
 	err := uinJobIns.ListenReceiveMsgDo(constant.UinJobTopic, "", func(mqMsg queue.MqMsg) {
-		s := &uin2.AppUinJob{}
-		err := json.Unmarshal(mqMsg.Body, s)
-		if err == nil {
-			l.run(s)
-		}
+		sinking_web.Try(func() {
+			s := &uin2.AppUinJob{}
+			err := json.Unmarshal(mqMsg.Body, s)
+			if err == nil && s != nil {
+				l.run(s)
+			}
+		}, func(i interface{}) {
+			log.Println("获取MQ出错", string(mqMsg.Body), i)
+		})
 	})
 	if err != nil {
 		util.Log.Println(err)
@@ -146,7 +150,7 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 				sinking_web.Try(func() {
 					l.speed(param.(*uin2.AppUinJob))
 				}, func(i interface{}) {
-					util.Log.Println(param, i, string(debug.Stack()))
+					log.Println("执行出错", param, "错误", i)
 				})
 				taskWaitLock.RLock()
 				taskWait.Done()
@@ -194,86 +198,90 @@ func (l *uinJob) run(uin *uin2.AppUinJob) {
 
 // speed 执行任务
 func (l *uinJob) speed(uin *uin2.AppUinJob) {
-	log.Println("执行挂机", uin)
-	serverIdLock.Lock()
-	var proxy *oicq.Proxy
-	if d, ok := serverIds[uin.ServerId]; ok && d != nil {
-		proxy = d
-	}
-	serverIdLock.Unlock()
-	var jobs []oicq.Job
-	var userJob map[web_uin.JobName]string
-	err := json.Unmarshal([]byte(uin.Setting), &userJob)
-	if err != nil || userJob == nil {
-		jobs = []oicq.Job{}
-	}
-	isCost := false
-	for k, v := range web_uin.Setting {
-		//类型判断
-		num := oicq.None
-		if value, ok := web_uin.JobMap[web_uin.Speed][k]; ok {
-			if uin.PlayerDay > 0 {
-				isCost = true
-				//判断是否开启项目
-				if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
-					num = value
+	sinking_web.Try(func() {
+		log.Println("执行挂机", uin)
+		serverIdLock.Lock()
+		var proxy *oicq.Proxy
+		if d, ok := serverIds[uin.ServerId]; ok && d != nil {
+			proxy = d
+		}
+		serverIdLock.Unlock()
+		var jobs []oicq.Job
+		var userJob map[web_uin.JobName]string
+		err := json.Unmarshal([]byte(uin.Setting), &userJob)
+		if err != nil || userJob == nil {
+			jobs = []oicq.Job{}
+		}
+		isCost := false
+		for k, v := range web_uin.Setting {
+			//类型判断
+			num := oicq.None
+			if value, ok := web_uin.JobMap[web_uin.Speed][k]; ok {
+				if uin.PlayerDay > 0 {
+					isCost = true
+					//判断是否开启项目
+					if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
+						num = value
+					}
+				}
+			} else if value, ok = web_uin.JobMap[web_uin.Sign][k]; ok {
+				if uin.SignDay > 0 {
+					isCost = true
+					//判断是否开启项目
+					if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
+						num = value
+					}
 				}
 			}
-		} else if value, ok = web_uin.JobMap[web_uin.Sign][k]; ok {
-			if uin.SignDay > 0 {
-				isCost = true
-				//判断是否开启项目
-				if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
-					num = value
+			if num != oicq.None {
+				jobs = append(jobs, num)
+			}
+		}
+		data := map[string]interface{}{"run_time": str.DateTime(time.Now())}
+		stamp, e := time.ParseInLocation("2006-01-02 15:04:05", uin.RunTime.String(), time.Local)
+		if e != nil {
+			stamp = str.NewTimeTool().GetZeroTime(time.Now())
+		}
+		stamp2, e := time.ParseInLocation("2006-01-02 15:04:05", uin.CheckTime.String(), time.Local)
+		if e != nil {
+			stamp2 = str.NewTimeTool().GetZeroTime(time.Now())
+		}
+		isCheck := true //是否是检测任务
+		if isCost && stamp.Unix() < str.NewTimeTool().GetZeroTime(time.Now()).Unix() {
+			data["run_day"] = gorm.Expr("`run_day`+1")
+			isCheck = false
+		}
+		isSys := true //是否系统执行
+		if isCheck && (stamp2.Unix() <= str.NewTimeTool().GetZeroTime(time.Now()).Unix() || time.Now().Unix() < stamp.Unix() || time.Now().Unix() > stamp2.Unix()) {
+			isSys = false
+		}
+		if len(jobs) > 0 {
+			var fail bool
+			var token []byte
+			if isCheck {
+				//第二次挂机
+				fail, _, token = l.speedJob(proxy, uin, jobs, false, isSys)
+			} else {
+				//第一次挂机
+				fail, _, token = l.speedJob(proxy, uin, jobs, true, isSys)
+				//6.5小时后补挂一次
+				if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*17 {
+					data["check_time"] = str.DateTime(time.Now().Add(6.5 * 3600 * time.Second))
 				}
 			}
-		}
-		if num != oicq.None {
-			jobs = append(jobs, num)
-		}
-	}
-	data := map[string]interface{}{"run_time": str.DateTime(time.Now())}
-	stamp, e := time.ParseInLocation("2006-01-02 15:04:05", uin.RunTime.String(), time.Local)
-	if e != nil {
-		stamp = str.NewTimeTool().GetZeroTime(time.Now())
-	}
-	stamp2, e := time.ParseInLocation("2006-01-02 15:04:05", uin.CheckTime.String(), time.Local)
-	if e != nil {
-		stamp2 = str.NewTimeTool().GetZeroTime(time.Now())
-	}
-	isCheck := true //是否是检测任务
-	if isCost && stamp.Unix() < str.NewTimeTool().GetZeroTime(time.Now()).Unix() {
-		data["run_day"] = gorm.Expr("`run_day`+1")
-		isCheck = false
-	}
-	isSys := true //是否系统执行
-	if isCheck && (stamp2.Unix() <= str.NewTimeTool().GetZeroTime(time.Now()).Unix() || time.Now().Unix() < stamp.Unix() || time.Now().Unix() > stamp2.Unix()) {
-		isSys = false
-	}
-	if len(jobs) > 0 {
-		var fail bool
-		var token []byte
-		if isCheck {
-			//第二次挂机
-			fail, _, token = l.speedJob(proxy, uin, jobs, false, isSys)
-		} else {
-			//第一次挂机
-			fail, _, token = l.speedJob(proxy, uin, jobs, true, isSys)
-			//6.5小时后补挂一次
-			if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*17 {
-				data["check_time"] = str.DateTime(time.Now().Add(6.5 * 3600 * time.Second))
+			if token != nil && len(token) > 0 {
+				data["token"] = utils.Bin2HexTo(token)
+			}
+			if fail {
+				data["uin_status"] = uin2.StatusUinError //设置异常状态
+			} else {
+				data["uin_status"] = uin2.StatusUinNormal //设置正常状态
 			}
 		}
-		if token != nil && len(token) > 0 {
-			data["token"] = utils.Bin2HexTo(token)
-		}
-		if fail {
-			data["uin_status"] = uin2.StatusUinError //设置异常状态
-		} else {
-			data["uin_status"] = uin2.StatusUinNormal //设置正常状态
-		}
-	}
-	_ = uin2.GetIns().UpdateByUin(uin.Uin, data)
+		_ = uin2.GetIns().UpdateByUin(uin.Uin, data)
+	}, func(i interface{}) {
+		log.Println("执行任务出错", uin, "错误", i)
+	})
 }
 
 // speedJob 加速项目
