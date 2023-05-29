@@ -109,7 +109,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					if e == nil && len(url) > 32 {
 						wg := &sync.WaitGroup{}
 						wg.Add(1)
-						go func(wg *sync.WaitGroup) {
+						go func(wg *sync.WaitGroup, o *Oicq, status mobile.SpeedCode) {
 							for i1 := 0; i1 < 30; i1++ {
 								e2, state := o.Pc.FetchQrCodeStatus()
 								if e2 != nil {
@@ -141,7 +141,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 								o.Pc.Disconnect()
 							}
 							wg.Done()
-						}(wg)
+						}(wg, o, status)
 						//执行扫码操作
 						time.Sleep(500 * time.Millisecond)
 						_, e = o.Mobile.QrCodeAllow(utils.GetBetween(url, "p?k=", "&f="))

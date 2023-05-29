@@ -6,6 +6,7 @@ import (
 	"github.com/SinKingCloud/sinking-oicq/binary-mobile/utils"
 	pc "github.com/SinKingCloud/sinking-oicq/binary-pc/client"
 	"log"
+	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -122,6 +123,9 @@ func DelTempOicqInstance(uin int64) {
 func startDoHeartbeat() {
 	if !heart.Load() {
 		heart.Store(true)
+		log.Println("CPU核心数", runtime.NumCPU())
+		mobile.SetHttpLimitRate(float64(runtime.NumCPU())*10, float64(runtime.NumCPU())*10)
+		pc.SetHttpLimitRate(float64(runtime.NumCPU())*10, float64(runtime.NumCPU())*10)
 		go func() {
 			for i := 0; i < 50; i++ {
 				//下线

@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("3370375029")
+	//	list, _ := uin2.GetIns().SelectByUin("930259386")
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -247,7 +247,7 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 		isCheck = false
 	}
 	isSys := true //是否系统执行
-	if isCheck && (stamp2.Unix() <= str.NewTimeTool().GetZeroTime(time.Now()).Unix() || time.Now().Unix() < stamp.Unix()) {
+	if isCheck && (stamp2.Unix() <= str.NewTimeTool().GetZeroTime(time.Now()).Unix() || time.Now().Unix() < stamp.Unix() || time.Now().Unix() > stamp2.Unix()) {
 		isSys = false
 	}
 	if len(jobs) > 0 {
@@ -326,7 +326,7 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		}
 	}
 	log.Println("获取挂机任务", uin.Uin, jobs)
-	//jobs = []oicq.Job{oicq.Word}
+	//jobs = []oicq.Job{oicq.Pc}
 	if len(jobs) <= 0 {
 		return false, nil, cli.LoginToken
 	}
