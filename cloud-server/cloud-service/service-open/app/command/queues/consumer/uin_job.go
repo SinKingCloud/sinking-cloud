@@ -55,6 +55,8 @@ func (l *uinJob) Listen() {
 			err := json.Unmarshal(mqMsg.Body, s)
 			if err == nil && s != nil {
 				l.run(s)
+			} else {
+				log.Println("MqToObject出错", string(mqMsg.Body), err, s)
 			}
 		}, func(i interface{}) {
 			log.Println("获取MQ出错", string(mqMsg.Body), i)
