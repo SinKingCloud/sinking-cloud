@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("2728502825")
+	//	list, _ := uin2.GetIns().SelectByUin("970838070")
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -401,9 +401,6 @@ func (l *uinJob) getUnDoJobs(jobs []oicq.Job, status *client.SpeedStatus, isSys 
 			break
 		case oicq.Friend:
 			isCheck = status.IAddFriend != "1"
-			break
-		case oicq.Dress:
-			isCheck = status.IDress != "1"
 			break
 		default:
 			isCheck = !isSys //用户提交则补挂签到

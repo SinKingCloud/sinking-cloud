@@ -208,9 +208,6 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 						if status.WeishiVideoview != "1" {
 							_, _, _ = cli.Speed.WeiShi("")
 						}
-						if status.IDress != "1" {
-							_, _ = cli.Speed.Dress()
-						}
 						if status.IAddFriend != "1" {
 							_, _ = cli.Speed.Friend()
 						}

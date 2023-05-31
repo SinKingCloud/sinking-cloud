@@ -83,9 +83,6 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 			case Friend: //加好友加速
 				_, status = o.Mobile.Speed.Friend()
 				break
-			case Dress: //装扮加速
-				_, status = o.Mobile.Speed.Dress()
-				break
 			case Pc: //电脑加速
 				d := time.Now()
 				d = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())

@@ -46,7 +46,6 @@ var Setting = map[JobName]string{
 	Login:       "1",
 	Friend:      "1",
 	Word:        "1",
-	Dress:       "1",
 	Vip:         "1",
 	BigVip:      "1",
 	Hz:          "1",
@@ -71,7 +70,6 @@ var JobMap = map[JobType]map[JobName]oicq.Job{
 		Login:       oicq.None,
 		Friend:      oicq.Friend,
 		Word:        oicq.Word,
-		Dress:       oicq.Dress,
 	},
 	Sign: {
 		Vip:        oicq.Vip,
@@ -105,14 +103,6 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"name":     "电脑在线",
 			"describe": "电脑在线2小时加速0.5天",
 			"logo":     "https://cdn.clwl.online/app/uin/img/pc.png",
-			"edit":     "true",
-		},
-		Dress: {
-			"sort":     "3",
-			"type":     "speed",
-			"name":     "装扮签到",
-			"describe": "装扮商城签到加速0.5天",
-			"logo":     "https://cdn.clwl.online/app/uin/img/dress.png",
 			"edit":     "true",
 		},
 		Ws: {
