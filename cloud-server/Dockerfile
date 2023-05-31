@@ -1,4 +1,4 @@
-FROM golang:1.20.4 as sinking-builder
+FROM golang:1.20 as sinking-builder
 
 #作者
 MAINTAINER sinkingcloud 1178710004@qq.com
