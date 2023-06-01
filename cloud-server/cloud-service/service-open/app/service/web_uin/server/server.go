@@ -80,9 +80,48 @@ func (s *service) ServerDec(key string, second int) int {
 	return util.Cache.Dec(key)
 }
 
+// ServerReset 地区重置
+func (s *service) ServerReset(key string) bool {
+	key = constant.LockUinServer + "num_" + key
+	return util.Cache.Delete(key)
+}
+
+// ServerJobNumInc 地区并发任务自增
+func (s *service) ServerJobNumInc(key string) int {
+	key = constant.CacheNameWithUinServerJob + key
+	defer util.Cache.SetExpire(key, int64(constant.CacheTimeWithCacheNameUinServerJob))
+	return util.Cache.Inc(key)
+}
+
+// ServerJobNumDec 地区并发任务自减
+func (s *service) ServerJobNumDec(key string) int {
+	key = constant.CacheNameWithUinServerJob + key
+	defer util.Cache.SetExpire(key, int64(constant.CacheTimeWithCacheNameUinServerJob))
+	return util.Cache.Dec(key)
+}
+
+// ServerJobReset 地区并发任务重置
+func (s *service) ServerJobReset(key string) bool {
+	key = constant.CacheNameWithUinServerJob + key
+	return util.Cache.Delete(key)
+}
+
 // ServerNum 获取计数器
 func (s *service) ServerNum(key string) int {
 	str, exists := util.Cache.Get(constant.LockUinServer + "num_" + key)
+	if exists && str != "" {
+		num, err := strconv.Atoi(str)
+		if err == nil {
+			return num
+		}
+		return 0
+	}
+	return 0
+}
+
+// ServerJobNum 获取地区任务数量
+func (s *service) ServerJobNum(key string) int {
+	str, exists := util.Cache.Get(constant.CacheNameWithUinServerJob + key)
 	if exists && str != "" {
 		num, err := strconv.Atoi(str)
 		if err == nil {

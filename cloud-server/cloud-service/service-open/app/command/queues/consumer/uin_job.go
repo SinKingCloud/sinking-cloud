@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("424528461")
+	//	list, _ := uin2.GetIns().SelectByUin("3283973103")
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -126,6 +126,7 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 		return
 	}
 	log.Println("创建协程池", server.Id, "数量", threadNum)
+	server2.GetIns().ServerJobReset(strconv.Itoa(server.Id))
 	var proxy *oicq.Proxy
 	_ = json.Unmarshal([]byte(server.Proxy), &proxy)
 	serverIdLock.RLock()
@@ -202,6 +203,22 @@ func (l *uinJob) run(uin *uin2.AppUinJob) {
 func (l *uinJob) speed(uin *uin2.AppUinJob) {
 	sinking_web.Try(func() {
 		log.Println("执行挂机", uin)
+		//单个代理最大100并发,防止并发过大代理死掉
+		serverId := strconv.Itoa(uin.ServerId)
+		for true {
+			if server2.GetIns().ServerJobNum(serverId) > 100 {
+				time.Sleep(100 * time.Millisecond)
+			} else {
+				break
+			}
+		}
+		if server2.GetIns().ServerJobNumInc(serverId) > 0 {
+			defer func(serverId string) {
+				if server2.GetIns().ServerJobNum(serverId) > 0 {
+					server2.GetIns().ServerJobNumDec(serverId)
+				}
+			}(serverId)
+		}
 		serverIdLock.Lock()
 		var proxy *oicq.Proxy
 		if d, ok := serverIds[uin.ServerId]; ok && d != nil {
@@ -289,6 +306,7 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 // speedJob 加速项目
 func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Job, isFirst bool, isSys bool) (bool, map[int]client.SpeedStatus, []byte) {
 	log.Println("开始挂机", uin)
+	//读取代理并发
 	uinInfo, err := uin2.GetIns().FindById(uin.Id)
 	if err != nil || uinInfo == nil {
 		return false, nil, nil

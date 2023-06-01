@@ -68,6 +68,9 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 			case Word: //小世界加速
 				_, status = o.Mobile.Speed.WebFeedCloud()
 				break
+			case Dress: //装扮加速
+				_, status = o.Mobile.Speed.Dress()
+				break
 			case MobileClock: //打卡加速
 				_, status = o.Mobile.Speed.DailySign()
 				if status == mobile.SpeedCookieExpire {

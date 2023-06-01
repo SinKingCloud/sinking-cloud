@@ -30,4 +30,7 @@ const (
 
 	CacheNameWithRbac = "Rbac_"    //rbac权限信息缓存
 	CacheTimeWithRbac = 600 * 1000 //默认rbac权限信息缓存时间
+
+	CacheNameWithUinServerJob          = "UinServerJobNum_" //挂机代理并发
+	CacheTimeWithCacheNameUinServerJob = 3600 * 1000        //挂机代理并发缓存时间
 )

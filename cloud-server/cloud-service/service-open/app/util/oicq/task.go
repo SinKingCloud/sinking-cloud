@@ -130,7 +130,8 @@ func startDoHeartbeat() {
 			for i := 0; i < 50; i++ {
 				//下线
 				go func(release chan *Oicq, id int) {
-					for task := range release {
+					for obj := range release {
+						task := obj
 						isContinue := false
 						utils.Try(func() {
 							//判断是否加速完成,未加速完成重新挂机
@@ -241,8 +242,9 @@ func startDoHeartbeat() {
 				}(releasePc, i)
 				//重连
 				go func(tasks chan *Oicq, id int) {
-					for task := range tasks {
+					for obj := range tasks {
 						utils.Try(func() {
+							task := obj
 							if task == nil || task.Mobile == nil || task.Pc == nil {
 								return
 							}
@@ -277,6 +279,7 @@ func startDoHeartbeat() {
 								task.Pc.ForceOnline(false)
 								task.PcHeartTime = 0
 								task.PcLoginTime = 0
+								task.PcReConnTime = 0
 							}
 						}, func(i interface{}) {
 							log.Println("pc重连出错[id:", id, "]", i)
@@ -285,7 +288,8 @@ func startDoHeartbeat() {
 				}(reConnPc, i)
 				//心跳
 				go func(tasks chan *Oicq, id int) {
-					for task := range tasks {
+					for obj := range tasks {
+						task := obj
 						utils.Try(func() {
 							//发送pc心跳
 							if task != nil && task.Pc != nil && task.PcLoginTime > 0 && task.Pc.Online.Load() {
