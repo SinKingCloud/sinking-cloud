@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"encoding/json"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/job"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
@@ -39,32 +40,32 @@ func (l *uinJob) Listen() {
 		uinJobIns = sinking.GetRocketConsumerServer(constant.UinJobGroup, false)
 	}
 	l.autoStartThread()
-	go func() {
-		list, _ := uin2.GetIns().SelectByUin("2594349365")
-		for _, v := range list {
-			if v.PlayerDay > 0 {
-				l.run(v)
-				break
-			}
-		}
-	}()
-	//err := uinJobIns.ListenReceiveMsgDo(constant.UinJobTopic, "", func(mqMsg queue.MqMsg) {
-	//	sinking_web.Try(func() {
-	//		s := &uin2.AppUinJob{}
-	//		err := json.Unmarshal(mqMsg.Body, s)
-	//		if err == nil && s != nil {
-	//			l.run(s)
-	//		} else {
-	//			log.Println("MqToObject出错", string(mqMsg.Body), err, s)
+	//go func() {
+	//	list, _ := uin2.GetIns().SelectByUin("2594349365")
+	//	for _, v := range list {
+	//		if v.PlayerDay > 0 {
+	//			l.run(v)
+	//			break
 	//		}
-	//	}, func(i interface{}) {
-	//		log.Println("获取MQ出错", string(mqMsg.Body), i)
-	//	})
-	//})
-	//if err != nil {
-	//	util.Log.Println(err)
-	//	return
-	//}
+	//	}
+	//}()
+	err := uinJobIns.ListenReceiveMsgDo(constant.UinJobTopic, "", func(mqMsg queue.MqMsg) {
+		sinking_web.Try(func() {
+			s := &uin2.AppUinJob{}
+			err := json.Unmarshal(mqMsg.Body, s)
+			if err == nil && s != nil {
+				l.run(s)
+			} else {
+				log.Println("MqToObject出错", string(mqMsg.Body), err, s)
+			}
+		}, func(i interface{}) {
+			log.Println("获取MQ出错", string(mqMsg.Body), i)
+		})
+	})
+	if err != nil {
+		util.Log.Println(err)
+		return
+	}
 }
 
 var (
