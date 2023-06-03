@@ -68,9 +68,6 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 			case Word: //小世界加速
 				_, status = o.Mobile.Speed.WebFeedCloud()
 				break
-			case Dress: //装扮加速
-				_, status = o.Mobile.Speed.Dress()
-				break
 			case MobileClock: //打卡加速
 				_, status = o.Mobile.Speed.DailySign()
 				if status == mobile.SpeedCookieExpire {
@@ -152,16 +149,16 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 							if o.Pc.Online.Load() {
 								status = mobile.SpeedSuccess
 							} else {
-								e = errors.New("登陆失败")
 								log.Println(o.Mobile.Uin, "pc登陆失败")
+								e = errors.New("登陆失败")
 							}
 						} else {
+							log.Println(o.Mobile.Uin, "pc授权登陆失败", e)
 							e = errors.New("pc授权登陆失败")
-							log.Println(o.Mobile.Uin, e)
 						}
 					} else {
-						e = errors.New("pc获取二维码失败")
 						log.Println(o.Mobile.Uin, "pc获取二维码失败", e, url)
+						e = errors.New("pc获取二维码失败")
 					}
 					if e != nil {
 						o.Pc.Release()

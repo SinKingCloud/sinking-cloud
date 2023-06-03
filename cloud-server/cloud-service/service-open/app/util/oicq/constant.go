@@ -6,6 +6,10 @@ var (
 	ErrNotLogin = errors.New("account is not login")
 )
 
+const (
+	SpeedUseProxy = false //加速是否使用代理
+)
+
 type Job int //挂机项目
 
 const (
@@ -16,7 +20,6 @@ const (
 	MobileClock            //手Q打卡
 	ZoneClock              //空间打卡
 	Friend                 //加好友加速
-	Dress                  //装扮加速
 
 	Vip        //会员签到
 	BigVip     //大会员签到

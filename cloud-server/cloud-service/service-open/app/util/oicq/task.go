@@ -80,8 +80,8 @@ func GetOicqInstance(uin int64, password [16]byte, proxy *Proxy, proto int, devi
 				proxy.Pwd != oicq.Mobile.Proxy.Pwd) {
 			oicq.Mobile.Disconnect()
 			oicq.Pc.Disconnect()
-			oicq.Mobile.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd)
-			oicq.Pc.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd)
+			oicq.Mobile.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd, SpeedUseProxy)
+			oicq.Pc.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd, SpeedUseProxy)
 		}
 		//检查是否更改密码
 		if utils.Bin2HexTo(oicq.Mobile.PasswordMd5[:]) != utils.Bin2HexTo(password[:]) {
@@ -277,6 +277,8 @@ func startDoHeartbeat() {
 								log.Println("pc重连失败[id:", id, "]", task.Pc.Uin)
 								task.Pc.Online.Store(false)
 								task.Pc.ForceOnline(false)
+								task.Pc.Release()
+								task.Pc.Disconnect()
 								task.PcHeartTime = 0
 								task.PcLoginTime = 0
 								task.PcReConnTime = 0

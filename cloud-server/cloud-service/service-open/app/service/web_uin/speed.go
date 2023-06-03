@@ -15,7 +15,6 @@ const (
 	Login       JobName = "login"
 	Friend      JobName = "friend"
 	Word        JobName = "word"
-	Dress       JobName = "dress"
 	Vip         JobName = "vip"
 	BigVip      JobName = "big_vip"
 	Hz          JobName = "hz"
@@ -46,7 +45,6 @@ var Setting = map[JobName]string{
 	Login:       "1",
 	Friend:      "1",
 	Word:        "1",
-	Dress:       "1",
 	Vip:         "1",
 	BigVip:      "1",
 	Hz:          "1",
@@ -71,7 +69,6 @@ var JobMap = map[JobType]map[JobName]oicq.Job{
 		Login:       oicq.None,
 		Friend:      oicq.Friend,
 		Word:        oicq.Word,
-		Dress:       oicq.Dress,
 	},
 	Sign: {
 		Vip:        oicq.Vip,
@@ -121,14 +118,6 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"name":     "发小世界",
 			"describe": "每日发布动态加速0.5天",
 			"logo":     "https://cdn.clwl.online/app/uin/img/xsj.png",
-			"edit":     "true",
-		},
-		Dress: {
-			"sort":     "3",
-			"type":     "speed",
-			"name":     "装扮签到",
-			"describe": "装扮商城签到加速0.5天",
-			"logo":     "https://cdn.clwl.online/app/uin/img/dress.png",
 			"edit":     "true",
 		},
 		MobileClock: {

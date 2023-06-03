@@ -156,7 +156,7 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 	}
 	util.Cache.Inc(key)
 	util.Cache.SetExpire(key, int64(120*1000))
-	cli := client2.NewClientEmpty().UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd)
+	cli := client2.NewClientEmpty().UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd, true)
 	e, u := cli.FetchQrCode()
 	if e != nil || u == "" {
 		c.Error("获取二维码失败")
@@ -210,9 +210,6 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 						}
 						if status.IAddFriend != "1" {
 							_, _ = cli.Speed.Friend()
-						}
-						if status.IDress != "1" {
-							_, _ = cli.Speed.Dress()
 						}
 						if status.ISmallWorld != "1" {
 							_, _, _ = cli.Speed.WebFeedCloud("")

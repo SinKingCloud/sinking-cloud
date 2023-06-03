@@ -48,8 +48,8 @@ func NewOicq(uin int64, password [16]byte, proxy *Proxy, device int, loginToken 
 		oicq.LoginToken = loginToken
 	}
 	if proxy != nil && proxy.Addr != "" && proxy.Port != "" {
-		oicq.Mobile.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd)
-		oicq.Pc.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd)
+		oicq.Mobile.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd, SpeedUseProxy)
+		oicq.Pc.UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd, SpeedUseProxy)
 	}
 	return oicq
 }
