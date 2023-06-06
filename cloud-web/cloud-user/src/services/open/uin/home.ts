@@ -45,3 +45,13 @@ export async function shopLevel(body: any, options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+export async function getAuthInfo(params?: {}, options?: { [key: string]: any }) {
+  return request<API.Response>('/open/user/uin/auth', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}

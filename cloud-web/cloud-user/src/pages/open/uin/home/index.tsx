@@ -28,7 +28,7 @@ import ProTable from "@ant-design/pro-table";
 import {getLevelList} from "@/services/open/uin/uin";
 import ProCard, {StatisticCard} from "@ant-design/pro-card";
 import RcResizeObserver from 'rc-resize-observer';
-import {getSelfInfo, getUinCount, shopLevel} from "@/services/open/uin/home";
+import {getAuthInfo, getSelfInfo, getUinCount, shopLevel} from "@/services/open/uin/home";
 import {getNoticeList} from "@/services/common/notice";
 import {ago} from "@/util/time";
 import NoticeInfo from "@/components/Other/Notice/NoticeInfo";
@@ -93,9 +93,31 @@ export default (): React.ReactNode => {
     });
     setPageLoading(false);
   }
+
+  /**
+   * 获取权限数据
+   */
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authData, setAuthData] = useState<any>({cookies: false, device_lock: false, qr_login: false});
+  const getAuthData = async () => {
+    setAuthLoading(true);
+    const d = await getAuthInfo();
+    if (d?.code == 200) {
+      setAuthData(d?.data);
+    }
+    setAuthLoading(false);
+  };
+  const onAuthBrnClick = () => {
+    message.info("请联系客服")
+  }
+  /**
+   * 初始化数据
+   */
   useEffect(() => {
-    init().then();
+    init();
+    getAuthData();
   }, []);
+
   const ref = useRef();
   /**
    * table表格渲染
@@ -339,8 +361,10 @@ export default (): React.ReactNode => {
                           labelStyle={{fontSize: "12px", lineHeight: "25px"}}
                           contentStyle={{fontSize: "12px", lineHeight: "25px"}}
                         >
-                          <ProDescriptions.Item label="账户余额">{selfInfo?.money + '元' || "获取失败"}</ProDescriptions.Item>
-                          <ProDescriptions.Item label="折扣等级">{selfInfo?.level?.name || "获取失败"}</ProDescriptions.Item>
+                          <ProDescriptions.Item
+                            label="账户余额">{selfInfo?.money + '元' || "获取失败"}</ProDescriptions.Item>
+                          <ProDescriptions.Item
+                            label="折扣等级">{selfInfo?.level?.name || "获取失败"}</ProDescriptions.Item>
                           <ProDescriptions.Item label="到期时间">
                             <Popover title={"折扣说明"}
                                      content={<div style={{fontSize: "10px"}}>折扣等级会每月初根据您站点月销<br/>情况自动评估,也可以直接购买<br/>提升等级,详情请访问官网
@@ -427,7 +451,7 @@ export default (): React.ReactNode => {
                 <Col xs={{span: 24, offset: 0}} lg={{span: 10, offset: 0}}>
                   <Row gutter={8} style={{paddingBottom: "20px"}}>
                     <Col xs={{span: 24, offset: 0}} lg={{span: 24, offset: 0}}>
-                      <ProCard title="产品权限" bordered headerBordered={true}>
+                      <ProCard title="产品权限" bordered headerBordered={true} loading={authLoading}>
                         <ProDescriptions
                           style={{marginTop: "-10px", marginBottom: "-15px"}}
                           loading={pageLoading}
@@ -435,19 +459,47 @@ export default (): React.ReactNode => {
                           labelStyle={{fontSize: "12px", lineHeight: "25px"}}
                           contentStyle={{justifyContent: "flex-end", fontSize: "12px", lineHeight: "25px"}}
                         >
-                          <ProDescriptions.Item label="主动扫码"
-                          >
-                            <Button type="primary" ghost size="small"
-                                    style={{fontSize: "10px", height: "20px", padding: "0px 5px"}}>开通</Button>
-
+                          <ProDescriptions.Item label="主动扫码">
+                            {!authData?.qr_login && <Button type="primary" ghost size="small"
+                                                            style={{
+                                                              fontSize: "10px",
+                                                              height: "20px",
+                                                              padding: "0px 5px"
+                                                            }} onClick={onAuthBrnClick}>开通</Button>}
+                            {(authData?.qr_login) && <Button disabled size="small"
+                                                             style={{
+                                                               fontSize: "10px",
+                                                               height: "20px",
+                                                               padding: "0px 5px"
+                                                             }}>已开通</Button>}
                           </ProDescriptions.Item>
                           <ProDescriptions.Item label="Cookie提取">
-                            <Button type="primary" ghost size="small"
-                                    style={{fontSize: "10px", height: "20px", padding: "0px 5px"}}>开通</Button>
+                            {!authData?.cookies && <Button type="primary" ghost size="small"
+                                                           style={{
+                                                             fontSize: "10px",
+                                                             height: "20px",
+                                                             padding: "0px 5px"
+                                                           }} onClick={onAuthBrnClick}>开通</Button>}
+                            {authData?.cookies && <Button disabled size="small"
+                                                          style={{
+                                                            fontSize: "10px",
+                                                            height: "20px",
+                                                            padding: "0px 5px"
+                                                          }}>已开通</Button>}
                           </ProDescriptions.Item>
                           <ProDescriptions.Item label="授权登录">
-                            <Button type="primary" ghost size="small"
-                                    style={{fontSize: "10px", height: "20px", padding: "0px 5px"}}>开通</Button>
+                            {!authData?.device_lock && <Button type="primary" ghost size="small"
+                                                               style={{
+                                                                 fontSize: "10px",
+                                                                 height: "20px",
+                                                                 padding: "0px 5px"
+                                                               }} onClick={onAuthBrnClick}>开通</Button>}
+                            {authData?.device_lock && <Button disabled size="small"
+                                                              style={{
+                                                                fontSize: "10px",
+                                                                height: "20px",
+                                                                padding: "0px 5px"
+                                                              }}>已开通</Button>}
                           </ProDescriptions.Item>
                         </ProDescriptions>
                       </ProCard>
