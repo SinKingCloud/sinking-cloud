@@ -24,7 +24,8 @@ const PageHeaderContent: FC<{ currentUser: Partial<any> }> = ({currentUser}) => 
   return (
     <div className={styles.pageHeaderContent}>
       <div className={styles.avatar}>
-        <Avatar size="large" src={currentUser?.avatar}/>
+        <Avatar size="large"
+                src={currentUser?.avatar || "https://aliyun_id_photo_bucket.oss.aliyuncs.com/default_handsome.jpg"}/>
       </div>
       <div className={styles.content}>
         <div className={styles.contentTitle}>

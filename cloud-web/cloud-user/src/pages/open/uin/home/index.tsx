@@ -3,7 +3,6 @@ import {PageContainer, RouteContext} from '@ant-design/pro-layout';
 import {
   Button,
   Col,
-  Collapse,
   Descriptions,
   List,
   message,
@@ -54,7 +53,7 @@ export default (): React.ReactNode => {
   const [noticeData, setNoticeData] = useState<any>([]);
   const getNoticeData = async () => {
     setNoticeLoading(true);
-    let d = await getNoticeList({page: 1, page_size: 7, place: 'open.uin.home'});
+    const d = await getNoticeList({page: 1, page_size: 7, place: 'open.uin.home'});
     if (d?.code == 200) {
       setNoticeData(d?.data?.list);
     }
@@ -337,6 +336,8 @@ export default (): React.ReactNode => {
                           style={{marginTop: "-10px", marginBottom: "-10px"}}
                           loading={pageLoading}
                           column={{xs: 1, sm: 1, md: 1}}
+                          labelStyle={{fontSize: "12px", lineHeight: "25px"}}
+                          contentStyle={{fontSize: "12px", lineHeight: "25px"}}
                         >
                           <ProDescriptions.Item label="账户余额">{selfInfo?.money + '元' || "获取失败"}</ProDescriptions.Item>
                           <ProDescriptions.Item label="折扣等级">{selfInfo?.level?.name || "获取失败"}</ProDescriptions.Item>
@@ -426,31 +427,29 @@ export default (): React.ReactNode => {
                 <Col xs={{span: 24, offset: 0}} lg={{span: 10, offset: 0}}>
                   <Row gutter={8} style={{paddingBottom: "20px"}}>
                     <Col xs={{span: 24, offset: 0}} lg={{span: 24, offset: 0}}>
-                      <ProCard title="使用帮助" bordered headerBordered={true}>
-                        <Collapse accordion style={{margin: "-25px"}}>
-                          <Collapse.Panel header="开启登录保护挂机教程" key="1">
-                            <p>开启登录保护代练流程如下：
-                              <br/>
-                              1、打开Q设置-{'>'}账号安全-{'>'}登录设备管理-{'>'}开启登录保护
-                              <br/>
-                              2、开启后在挂机管理页面点击“一键补挂”按钮，进行一次补挂</p>
-                          </Collapse.Panel>
-                          <Collapse.Panel header="[代练时间] 配置使用说明" key="2">
-                            <p>默认每日代练开始时间为凌晨00:30，您可以使用此项配置进行自定义，系统会在您设置的时间点开始代练，代练任务结束后自动下线。</p>
-                          </Collapse.Panel>
-                          <Collapse.Panel header="[代练地区] 配置使用说明" key="3">
-                            <p>此项配置请选择您当前所在的地区，或代练号码经常登录的地区即可，我们会在您选择的地区进行登录代练。</p>
-                          </Collapse.Panel>
-                          <Collapse.Panel header="关于禁止养号、禁止挂机违规用途号码的说明" key="4">
-                            <p>本站为正规等级代练平台，仅接受个人正常聊天使用的号码进行代练，不是个人正常使用的号码请勿下单。
-                              <br/><br/>
-                              不能下单的号码类型枚举：批量注册的、批量购买的、批量养等级的、现在及未来会对外出售\出租的、公司业务使用的、游戏业务使用的，各类工作室使用的、涉及违法的(涉黄/诈骗/赌博等等)
-                              <br/><br/>
-                              包括且不限于以上类型，系统严禁养号、严禁挂机违规用途号码，不是个人正常聊天使用的号码都不能下单，望理解与配合，感谢大家支持。
-                              <br/><br/>
-                              代练以上违规号码将永久拉黑账号，终止并冻结账号下所有已下单号码的代练服务，必要时会将违规挂号账户所有信息移交至公安平台。</p>
-                          </Collapse.Panel>
-                        </Collapse>
+                      <ProCard title="产品权限" bordered headerBordered={true}>
+                        <ProDescriptions
+                          style={{marginTop: "-10px", marginBottom: "-15px"}}
+                          loading={pageLoading}
+                          column={{xs: 1, sm: 1, md: 1}}
+                          labelStyle={{fontSize: "12px", lineHeight: "25px"}}
+                          contentStyle={{justifyContent: "flex-end", fontSize: "12px", lineHeight: "25px"}}
+                        >
+                          <ProDescriptions.Item label="主动扫码"
+                          >
+                            <Button type="primary" ghost size="small"
+                                    style={{fontSize: "10px", height: "20px", padding: "0px 5px"}}>开通</Button>
+
+                          </ProDescriptions.Item>
+                          <ProDescriptions.Item label="Cookie提取">
+                            <Button type="primary" ghost size="small"
+                                    style={{fontSize: "10px", height: "20px", padding: "0px 5px"}}>开通</Button>
+                          </ProDescriptions.Item>
+                          <ProDescriptions.Item label="授权登录">
+                            <Button type="primary" ghost size="small"
+                                    style={{fontSize: "10px", height: "20px", padding: "0px 5px"}}>开通</Button>
+                          </ProDescriptions.Item>
+                        </ProDescriptions>
                       </ProCard>
                     </Col>
                   </Row>
@@ -477,7 +476,7 @@ export default (): React.ReactNode => {
                           >
                             <List.Item.Meta
                               key={"notice-" + item?.id}
-                              avatar={<NotificationOutlined style={{fontSize: "20px", lineHeight: "50px"}}/>}
+                              avatar={<NotificationOutlined style={{fontSize: "15px", lineHeight: "50px"}}/>}
                               title={item?.title}
                               description={<span
                                 style={{fontSize: "10px"}}>发布于 {ago(item?.create_time)} ,共 {item?.look_num} 次浏览</span>}
