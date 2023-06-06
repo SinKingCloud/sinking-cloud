@@ -1202,7 +1202,8 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 // Heart 发送心跳
 func (ControllerUin) Heart(c *sinking_server.Context) {
 	type Form struct {
-		Uin string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Uin  string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Wait bool   `json:"wait" validate:"omitempty" label:"QQ账号"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorJson(form); !ok {
@@ -1220,6 +1221,10 @@ func (ControllerUin) Heart(c *sinking_server.Context) {
 	}
 	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
 		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
+	if uinInfo.UinStatus != uin.Normal {
+		c.Error("该QQ状态异常,请更新状态后重新执行")
 		return
 	}
 	userConfigs := app_config.GetIns().GetUserConfigs(uinInfo.UserId, false)
@@ -1252,7 +1257,7 @@ func (ControllerUin) Heart(c *sinking_server.Context) {
 		}
 	}
 	//3.发送心跳
-	if e := cli.Mobile.DoHeartbeat(true); e != nil {
+	if e := cli.Mobile.DoHeartbeat(form.Wait); e != nil {
 		c.Error("发送心跳失败")
 	} else {
 		c.Success("发送心跳成功")
@@ -1280,6 +1285,10 @@ func (ControllerUin) GetCookies(c *sinking_server.Context) {
 	}
 	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
 		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
+	if uinInfo.UinStatus != uin.Normal {
+		c.Error("该QQ状态异常,请更新状态后重新执行")
 		return
 	}
 	userConfigs := app_config.GetIns().GetUserConfigs(uinInfo.UserId, false)
@@ -1344,6 +1353,10 @@ func (ControllerUin) AllowQrCode(c *sinking_server.Context) {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
+	if uinInfo.UinStatus != uin.Normal {
+		c.Error("该QQ状态异常,请更新状态后重新执行")
+		return
+	}
 	userConfigs := app_config.GetIns().GetUserConfigs(uinInfo.UserId, false)
 	if userConfigs[constant.UserAuthQrLogin] != "1" {
 		c.Error("您的账户暂未开通此权限")
@@ -1404,6 +1417,10 @@ func (ControllerUin) AllowDeviceLock(c *sinking_server.Context) {
 	}
 	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
 		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
+	if uinInfo.UinStatus != uin.Normal {
+		c.Error("该QQ状态异常,请更新状态后重新执行")
 		return
 	}
 	userConfigs := app_config.GetIns().GetUserConfigs(uinInfo.UserId, false)
