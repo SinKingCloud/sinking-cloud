@@ -1199,6 +1199,251 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 	})
 }
 
+// Heart 发送心跳
+func (ControllerUin) Heart(c *sinking_server.Context) {
+	type Form struct {
+		Uin string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	if uinInfo.Status == uin.Error {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
+	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
+	userConfigs := app_config.GetIns().GetUserConfigs(uinInfo.UserId, false)
+	if userConfigs[constant.UserAuthCookies] != "1" && userConfigs[constant.UserAuthQrLogin] != "1" && userConfigs[constant.UserAuthDeviceLock] != "1" {
+		c.Error("您的账户暂未开通此权限")
+		return
+	}
+	//1.获取实例
+	cli, err := web_uin.GetOicqInsById(uinInfo.Id, true)
+	cli.LoginTime = time.Now().Unix()
+	if err != nil {
+		c.Error("连接服务器失败")
+		return
+	}
+	//2.判断是否在线
+	if !cli.Mobile.Online.Load() {
+		//不在线则登陆账号
+		e, l := cli.AutoLogin()
+		if e != nil {
+			c.Error("账号状态失效,请先更新状态")
+			return
+		}
+		if !l.Success {
+			if l.ErrorMessage != "" {
+				c.Error(l.ErrorMessage)
+			} else {
+				c.Error("登录账号失败")
+			}
+			return
+		}
+	}
+	//3.发送心跳
+	if e := cli.Mobile.DoHeartbeat(true); e != nil {
+		c.Error("发送心跳失败")
+	} else {
+		c.Success("发送心跳成功")
+	}
+}
+
+// GetCookies 获取cookies信息
+func (ControllerUin) GetCookies(c *sinking_server.Context) {
+	type Form struct {
+		Uin string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	if uinInfo.Status == uin.Error {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
+	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
+	userConfigs := app_config.GetIns().GetUserConfigs(uinInfo.UserId, false)
+	if userConfigs[constant.UserAuthCookies] != "1" {
+		c.Error("您的账户暂未开通此权限")
+		return
+	}
+	//1.获取实例
+	cli, err := web_uin.GetOicqInsById(uinInfo.Id, true)
+	cli.LoginTime = time.Now().Unix()
+	if err != nil {
+		c.Error("连接服务器失败")
+		return
+	}
+	//2.判断是否在线
+	if !cli.Mobile.Online.Load() {
+		//不在线则登陆账号
+		e, l := cli.AutoLogin()
+		if e != nil {
+			c.Error("账号状态失效,请先更新状态")
+			return
+		}
+		if !l.Success {
+			if l.ErrorMessage != "" {
+				c.Error(l.ErrorMessage)
+			} else {
+				c.Error("登录账号失败")
+			}
+			return
+		}
+	}
+	//3.获取cookies
+	clientKey := cli.Mobile.GetClientKey()
+	cookies := cli.Mobile.GetAllCookies()
+	c.SuccessWithData("获取cookies成功", sinking_web.H{
+		"client_key": clientKey,
+		"cookies":    cookies,
+	})
+}
+
+// AllowQrCode 授权登陆二维码
+func (ControllerUin) AllowQrCode(c *sinking_server.Context) {
+	type Form struct {
+		Uin string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Pk  string `json:"pk" validate:"required,min=10,max=64" label:"二维码PK"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	if uinInfo.Status == uin.Error {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
+	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
+	userConfigs := app_config.GetIns().GetUserConfigs(uinInfo.UserId, false)
+	if userConfigs[constant.UserAuthQrLogin] != "1" {
+		c.Error("您的账户暂未开通此权限")
+		return
+	}
+	//1.获取实例
+	cli, err := web_uin.GetOicqInsById(uinInfo.Id, true)
+	cli.LoginTime = time.Now().Unix()
+	if err != nil {
+		c.Error("连接服务器失败")
+		return
+	}
+	//2.判断是否在线
+	if !cli.Mobile.Online.Load() {
+		//不在线则登陆账号
+		e, l := cli.AutoLogin()
+		if e != nil {
+			c.Error("账号状态失效,请先更新状态")
+			return
+		}
+		if !l.Success {
+			if l.ErrorMessage != "" {
+				c.Error(l.ErrorMessage)
+			} else {
+				c.Error("登录账号失败")
+			}
+			return
+		}
+	}
+	//3.扫码授权
+	e := cli.QrLogin(form.Pk)
+	if e != nil {
+		c.Error("授权登录失败")
+		return
+	}
+	c.Success("授权登录成功")
+}
+
+// AllowDeviceLock 授权登陆设备锁
+func (ControllerUin) AllowDeviceLock(c *sinking_server.Context) {
+	type Form struct {
+		Uin       string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		VerifyUrl string `json:"verify_url" validate:"required,url" label:"验证链接"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorJson(form); !ok {
+		c.Error(msg)
+		return
+	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
+	if uinInfo.Status == uin.Error {
+		c.Error("该QQ已被系统锁定不可操作,请咨询管理员")
+		return
+	}
+	if uinInfo.PlayerDay <= 0 && uinInfo.SignDay <= 0 {
+		c.Error("该QQ未下单或已过期,无法操作")
+		return
+	}
+	userConfigs := app_config.GetIns().GetUserConfigs(uinInfo.UserId, false)
+	if userConfigs[constant.UserAuthDeviceLock] != "1" {
+		c.Error("您的账户暂未开通此权限")
+		return
+	}
+	//1.获取实例
+	cli, err := web_uin.GetOicqInsById(uinInfo.Id, true)
+	cli.LoginTime = time.Now().Unix()
+	if err != nil {
+		c.Error("连接服务器失败")
+		return
+	}
+	//2.判断是否在线
+	if !cli.Mobile.Online.Load() {
+		//不在线则登陆账号
+		e, l := cli.AutoLogin()
+		if e != nil {
+			c.Error("账号状态失效,请先更新状态")
+			return
+		}
+		if !l.Success {
+			if l.ErrorMessage != "" {
+				c.Error(l.ErrorMessage)
+			} else {
+				c.Error("登录账号失败")
+			}
+			return
+		}
+	}
+	//3.授权登陆
+	e := cli.AllowDeviceLock(form.VerifyUrl)
+	if e != nil {
+		c.Error("授权登录失败")
+		return
+	}
+	c.Success("授权登录成功")
+}
+
 // LevelInfo 账号等级信息
 func (ControllerUin) LevelInfo(c *sinking_server.Context) {
 	type Form struct {
@@ -1300,4 +1545,15 @@ func (ControllerUin) Count(c *sinking_server.Context) {
 	data["uin_num_today_normal"] = web_uin.GetTodayAddNum(u.Id, 0)
 	data["uin_num_today_un_normal"] = web_uin.GetTodayAddNum(u.Id, 1)
 	c.SuccessWithData("获取成功", data)
+}
+
+// Auth 权限信息
+func (ControllerUin) Auth(c *sinking_server.Context) {
+	user := web_user.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, false)
+	userConfigs := app_config.GetIns().GetUserConfigs(user.Id, false)
+	c.SuccessWithData("获取成功", sinking_web.H{
+		"qr_login":    userConfigs[constant.UserAuthQrLogin] == "1",
+		"device_lock": userConfigs[constant.UserAuthDeviceLock] == "1",
+		"cookies":     userConfigs[constant.UserAuthCookies] == "1",
+	})
 }
