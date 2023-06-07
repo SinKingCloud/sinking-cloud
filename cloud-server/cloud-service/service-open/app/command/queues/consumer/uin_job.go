@@ -380,53 +380,60 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 
 // saveJobStatus 保存加速状态
 func (l *uinJob) saveJobStatus(uin *uin2.AppUinJob, status int, speedStatus *client.SpeedStatus) {
-	//把所有状态改为已加速
-	var userJob map[web_uin.JobName]string
-	err2 := json.Unmarshal([]byte(uin.Setting), &userJob)
-	var jobs []web_uin.JobName
-	for k, v := range web_uin.Setting {
-		if err2 != nil || userJob == nil || (userJob[k] == "" && v == "1") || userJob[k] != "0" {
-			jobs = append(jobs, k)
+	sinking_web.Try(func() {
+		//把所有状态改为已加速
+		var userJob map[web_uin.JobName]string
+		err2 := json.Unmarshal([]byte(uin.Setting), &userJob)
+		var jobs []web_uin.JobName
+		for k, v := range web_uin.Setting {
+			if err2 != nil || userJob == nil || (userJob[k] == "" && v == "1") || userJob[k] != "0" {
+				jobs = append(jobs, k)
+			}
 		}
-	}
-	_ = web_uin.SetUinJobStatus(uin.Uin, jobs, status)
-	//更改加速状态
-	if speedStatus != nil {
-		_ = web_uin.SetUinSpeedStatus(uin.Uin, speedStatus)
-	}
+		_ = web_uin.SetUinJobStatus(uin.Uin, jobs, status)
+		//更改加速状态
+		if speedStatus != nil {
+			_ = web_uin.SetUinSpeedStatus(uin.Uin, speedStatus)
+		}
+	}, func(i interface{}) {
+		log.Println("保存加速状态错误", i)
+	})
 }
 
 // getUnDoJobs 获取未执行的任务
-func (l *uinJob) getUnDoJobs(jobs []oicq.Job, status *client.SpeedStatus, isSys bool) []oicq.Job {
-	var newJobs []oicq.Job
-	for _, v := range jobs {
-		isCheck := false
-		switch v {
-		case oicq.Pc:
-			isCheck = status.IPCQQOnline != "1"
-			break
-		case oicq.Ws:
-			isCheck = status.WeishiVideoview != "1"
-			break
-		case oicq.Word:
-			isCheck = status.ISmallWorld != "1"
-			break
-		case oicq.MobileClock:
-			isCheck = status.IDailySign != "1"
-			break
-		case oicq.ZoneClock:
-			isCheck = status.IQzoneState != "1"
-			break
-		case oicq.Friend:
-			isCheck = status.IAddFriend != "1"
-			break
-		default:
-			isCheck = !isSys //用户提交则补挂签到
-			break
+func (l *uinJob) getUnDoJobs(jobs []oicq.Job, status *client.SpeedStatus, isSys bool) (newJobs []oicq.Job) {
+	sinking_web.Try(func() {
+		for _, v := range jobs {
+			isCheck := false
+			switch v {
+			case oicq.Pc:
+				isCheck = status.IPCQQOnline != "1"
+				break
+			case oicq.Ws:
+				isCheck = status.WeishiVideoview != "1"
+				break
+			case oicq.Word:
+				isCheck = status.ISmallWorld != "1"
+				break
+			case oicq.MobileClock:
+				isCheck = status.IDailySign != "1"
+				break
+			case oicq.ZoneClock:
+				isCheck = status.IQzoneState != "1"
+				break
+			case oicq.Friend:
+				isCheck = status.IAddFriend != "1"
+				break
+			default:
+				isCheck = !isSys //用户提交则补挂签到
+				break
+			}
+			if isCheck {
+				newJobs = append(newJobs, v)
+			}
 		}
-		if isCheck {
-			newJobs = append(newJobs, v)
-		}
-	}
+	}, func(i interface{}) {
+		log.Println("获取未执行的任务错误", i)
+	})
 	return newJobs
 }

@@ -1157,26 +1157,30 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 	stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", uinLevelInfo.UpdateTime.String(), time.Local)
 	todayUnix := str.NewTimeTool().GetZeroTime(time.Now()).Unix()
 	newJobStatus := make(map[web_uin.JobName]string)
-	for k, v := range web_uin.JobMap {
-		for k1 := range v {
-			days := 0
-			if k == web_uin.Speed {
-				days = uinInfo.PlayerDay
-			} else {
-				days = uinInfo.SignDay
-			}
-			if days <= 0 {
-				newJobStatus[k1] = "3"
-			} else {
-				if todayUnix > stamp.Unix() || jobStatus[k1] == "" {
-					newJobStatus[k1] = "0"
-					continue
+	sinking_web.Try(func() {
+		for k, v := range web_uin.JobMap {
+			for k1 := range v {
+				days := 0
+				if k == web_uin.Speed {
+					days = uinInfo.PlayerDay
 				} else {
-					newJobStatus[k1] = jobStatus[k1]
+					days = uinInfo.SignDay
+				}
+				if days <= 0 {
+					newJobStatus[k1] = "3"
+				} else {
+					if jobStatus != nil {
+						if todayUnix > stamp.Unix() || jobStatus[k1] == "" {
+							newJobStatus[k1] = "0"
+							continue
+						} else {
+							newJobStatus[k1] = jobStatus[k1]
+						}
+					}
 				}
 			}
 		}
-	}
+	}, nil)
 	// 设置信息
 	var tempSetting map[web_uin.JobName]string
 	newSetting := make(map[web_uin.JobName]string)
