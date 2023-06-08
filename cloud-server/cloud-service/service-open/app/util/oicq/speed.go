@@ -175,7 +175,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					break
 				}
 			}, func(i interface{}) {
-				log.Println("执行挂机项目失败", o.Mobile.Uin, v, i, string(debug.Stack()))
+				log.Println("执行挂机项目失败", o.Mobile.Uin, v, i, debug.Stack())
 			})
 			res[v] = status
 			if cookie != "" {
@@ -183,7 +183,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 			}
 		}
 	}, func(i interface{}) {
-		log.Println("执行挂机任务出错", o.Mobile.Uin, i, string(debug.Stack()))
+		log.Println("执行挂机任务出错", o.Mobile.Uin, i, debug.Stack())
 	})
 	return res, cookies
 }

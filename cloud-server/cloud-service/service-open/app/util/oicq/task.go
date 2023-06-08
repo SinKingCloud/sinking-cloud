@@ -71,6 +71,9 @@ func GetOicqInstance(uin int64, password [16]byte, proxy *Proxy, proto int, devi
 		return oicq
 	} else {
 		oicq := data.(*Oicq)
+		if oicq.DeviceId != device {
+			oicq.Mobile = mobile.NewClientMd5(uin, password).UseDevice(GetMobileDevice(uin, device, GetOicqProto(proto)))
+		}
 		//检查是否更改代理
 		if proxy != nil &&
 			oicq.Mobile.Proxy != nil &&
@@ -97,10 +100,11 @@ func DelOicqInstance(uin int64) {
 	defer oicqMapLock.RUnlock()
 	data, ok := oicqMap.Load(uin)
 	if ok && data != nil {
-		data.(*Oicq).Mobile.Release()
-		data.(*Oicq).Mobile.Disconnect()
-		data.(*Oicq).Pc.Release()
-		data.(*Oicq).Pc.Disconnect()
+		ins := data.(*Oicq)
+		ins.Mobile.Release()
+		ins.Mobile.Disconnect()
+		ins.Pc.Release()
+		ins.Pc.Disconnect()
 		oicqMap.Store(uin, nil)
 	}
 }
@@ -111,10 +115,11 @@ func DelTempOicqInstance(uin int64) {
 	defer oicqMapTempLock.RLock()
 	data, ok := oicqMapTemp.Load(uin)
 	if ok {
-		data.(*Oicq).Mobile.Release()
-		data.(*Oicq).Mobile.Disconnect()
-		data.(*Oicq).Pc.Release()
-		data.(*Oicq).Pc.Disconnect()
+		ins := data.(*Oicq)
+		ins.Mobile.Release()
+		ins.Mobile.Disconnect()
+		ins.Pc.Release()
+		ins.Pc.Disconnect()
 		oicqMapTemp.Delete(uin)
 	}
 }
@@ -131,22 +136,21 @@ func startDoHeartbeat() {
 				//下线
 				go func(release chan *Oicq, id int) {
 					for obj := range release {
-						task := obj
 						isContinue := false
 						utils.Try(func() {
 							//判断是否加速完成,未加速完成重新挂机
-							if task != nil && task.Mobile != nil {
-								e, status := task.Mobile.Speed.Info()
+							if obj != nil && obj.Mobile != nil {
+								e, status := obj.Mobile.Speed.Info()
 								if e == nil && status != nil {
 									if status.IPCQQOnline != "1" {
-										task.LoginTime = time.Now().Unix()
-										if task.TokenLogin() == nil {
-											task.Pc.NetLoop(true)
-											task.Pc.ForceOnline(false)
+										obj.LoginTime = time.Now().Unix()
+										if obj.TokenLogin() == nil {
+											obj.Pc.NetLoop(true)
+											obj.Pc.ForceOnline(false)
 											var e2 error
 											url := ""
 											for i1 := 0; i1 < 3; i1++ {
-												e2, url = task.Pc.FetchQrCode()
+												e2, url = obj.Pc.FetchQrCode()
 												if e == nil && strings.Contains(url, "&f=") {
 													break
 												}
@@ -189,35 +193,35 @@ func startDoHeartbeat() {
 													task.Mobile.Release()
 													task.Mobile.Disconnect()
 													wg.Done()
-												}(wg, task)
+												}(wg, obj)
 												//执行扫码操作
 												time.Sleep(500 * time.Millisecond)
-												_, e = task.Mobile.QrCodeAllow(utils.GetBetween(url, "p?k=", "&f="))
+												_, e = obj.Mobile.QrCodeAllow(utils.GetBetween(url, "p?k=", "&f="))
 												//等待登陆结果
 												if e == nil {
 													wg.Wait()
 													time.Sleep(500 * time.Millisecond)
-													if task.Pc.Online.Load() {
-														log.Println(task.Mobile.Uin, "pc未加速重新登陆成功[id:", id, "]")
+													if obj.Pc.Online.Load() {
+														log.Println(obj.Mobile.Uin, "pc未加速重新登陆成功[id:", id, "]")
 													} else {
-														log.Println(task.Mobile.Uin, "pc未加速重新登陆失败[id:", id, "]")
+														log.Println(obj.Mobile.Uin, "pc未加速重新登陆失败[id:", id, "]")
 														e = errors.New("pc未加速重新登陆失败")
 													}
 												} else {
-													log.Println(task.Mobile.Uin, "pc未加速重新授权登陆失败[id:", id, "]", e)
+													log.Println(obj.Mobile.Uin, "pc未加速重新授权登陆失败[id:", id, "]", e)
 													e = errors.New("pc未加速重新授权登陆失败")
 												}
-												task.Pc.NetLoop(false)
-												task.Mobile.Release()
-												task.Mobile.Disconnect()
+												obj.Pc.NetLoop(false)
+												obj.Mobile.Release()
+												obj.Mobile.Disconnect()
 												if e == nil {
 													isContinue = true
 													return
 												}
 											}
 										}
-										task.Mobile.Release()
-										task.Mobile.Disconnect()
+										obj.Mobile.Release()
+										obj.Mobile.Disconnect()
 									}
 								}
 							} else {
@@ -230,21 +234,20 @@ func startDoHeartbeat() {
 						if isContinue {
 							continue
 						}
-						task.Pc.NetLoop(false)
-						task.Pc.ForceOnline(false)
-						task.Pc.Release()
-						task.Pc.Disconnect()
-						task.Pc.Online.Store(false)
-						log.Println("pc下线[id:", id, "]", task.Pc.Uin, "登陆时间", task.PcLoginTime)
-						task.PcLoginTime = 0
-						task.PcHeartTime = 0
+						obj.Pc.NetLoop(false)
+						obj.Pc.ForceOnline(false)
+						obj.Pc.Release()
+						obj.Pc.Disconnect()
+						obj.Pc.Online.Store(false)
+						log.Println("pc下线[id:", id, "]", obj.Pc.Uin, "登陆时间", obj.PcLoginTime)
+						obj.PcLoginTime = 0
+						obj.PcHeartTime = 0
 					}
 				}(releasePc, i)
 				//重连
 				go func(tasks chan *Oicq, id int) {
-					for obj := range tasks {
+					for task := range tasks {
 						utils.Try(func() {
-							task := obj
 							if task == nil || task.Mobile == nil || task.Pc == nil {
 								return
 							}
@@ -290,8 +293,7 @@ func startDoHeartbeat() {
 				}(reConnPc, i)
 				//心跳
 				go func(tasks chan *Oicq, id int) {
-					for obj := range tasks {
-						task := obj
+					for task := range tasks {
 						utils.Try(func() {
 							//发送pc心跳
 							if task != nil && task.Pc != nil && task.PcLoginTime > 0 && task.Pc.Online.Load() {
@@ -333,7 +335,8 @@ func startDoHeartbeat() {
 					oicqMap.Range(func(key, value any) bool {
 						utils.Try(func() {
 							if value != nil {
-								heartPc <- value.(*Oicq)
+								obj := value.(*Oicq)
+								heartPc <- obj
 							}
 						}, func(i interface{}) {
 							log.Println("获取挂机实例出错", i)

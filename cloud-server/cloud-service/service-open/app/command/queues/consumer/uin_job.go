@@ -41,7 +41,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("2594349365")
+	//	list, _ := uin2.GetIns().SelectByUin("283549280")
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -56,10 +56,10 @@ func (l *uinJob) Listen() {
 			if err == nil && s != nil {
 				l.run(s)
 			} else {
-				log.Println("MqToObject出错", string(mqMsg.Body), err, s)
+				log.Println("MqToObject出错", err, s)
 			}
 		}, func(i interface{}) {
-			log.Println("获取MQ出错", string(mqMsg.Body), i)
+			log.Println("获取MQ出错", i)
 		})
 	})
 	if err != nil {
@@ -140,7 +140,7 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 	//实例化
 	g := &sync.WaitGroup{}
 	g.Add(1)
-	go func(g *sync.WaitGroup) {
+	go func(g *sync.WaitGroup, l *uinJob) {
 		(&job.Task{Producer: func(channel chan interface{}) {
 			servers[server.Id] = channel
 			g.Add(-1)
@@ -160,7 +160,7 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 				taskWaitLock.RUnlock()
 			}
 		}, Thread: threadNum}).Run()
-	}(g)
+	}(g, l)
 	g.Wait()
 }
 
@@ -365,7 +365,7 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 	sinking_web.Try(func() {
 		r, resCookie = cli.ActiveProject(jobs, cookies)
 	}, func(i interface{}) {
-		log.Println("执行挂机项目出错", uin.Uin, jobs, cookies, i, string(debug.Stack()))
+		log.Println("执行挂机项目出错", uin.Uin, jobs, cookies, i, debug.Stack())
 	})
 	log.Println("执行挂机结果", uin.Uin, r, resCookie)
 	if resCookie[oicq.Ws] != "" && (wsCookie == "" || resCookie[oicq.Ws] != wsCookie) {
