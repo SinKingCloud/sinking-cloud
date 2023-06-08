@@ -170,20 +170,8 @@ func (l *uinJob) run(uin *uin2.AppUinJob) {
 		return
 	}
 	sinking_web.Try(func() {
-		var userJob map[web_uin.JobName]string
-		err := json.Unmarshal([]byte(uin.Setting), &userJob)
-		if err == nil && userJob != nil {
-			var jobs []web_uin.JobName
-			for k, v := range web_uin.Setting {
-				if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
-					jobs = append(jobs, k)
-				}
-			}
-			//更改状态为已提交
-			_ = web_uin.SetUinJobStatus(uin.Uin, jobs, 2)
-		}
 		authThreadWait.Wait() //等待协程池处理完毕
-		for i := 0; i < 30; i++ {
+		for i := 0; i < 600; i++ {
 			serverLock.RLock()
 			if d, ok := servers[uin.ServerId]; ok && d != nil {
 				d <- uin
@@ -218,6 +206,18 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 					server2.GetIns().ServerJobNumDec(serverId)
 				}
 			}(serverId)
+		}
+		var j map[web_uin.JobName]string
+		e := json.Unmarshal([]byte(uin.Setting), &j)
+		if e == nil && j != nil {
+			var jobs []web_uin.JobName
+			for k, v := range web_uin.Setting {
+				if (j[k] == "" && v == "1") || j[k] != "0" {
+					jobs = append(jobs, k)
+				}
+			}
+			//更改状态为已提交
+			_ = web_uin.SetUinJobStatus(uin.Uin, jobs, 2)
 		}
 		serverIdLock.Lock()
 		var proxy *oicq.Proxy
