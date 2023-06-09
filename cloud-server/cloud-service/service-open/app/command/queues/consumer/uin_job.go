@@ -18,6 +18,7 @@ import (
 	"github.com/SinKingCloud/sinking-oicq/binary-mobile/utils"
 	"gorm.io/gorm"
 	"log"
+	"runtime"
 	"runtime/debug"
 	"strconv"
 	"sync"
@@ -25,7 +26,14 @@ import (
 )
 
 // uinJobIns 消费者单例
-var uinJobIns queue.MqConsumer
+var (
+	uinJobIns queue.MqConsumer
+
+	TaskLimitRate  = oicq.NewLimitRate(float64(runtime.NumCPU())*5, float64(runtime.NumCPU())*5)
+	limitRate      = sync.Mutex{}
+	limitRateIndex = 0
+	limitRateMax   = runtime.NumCPU() * 10
+)
 
 func NewUinJob() *uinJob {
 	return &uinJob{}
@@ -190,8 +198,27 @@ func (l *uinJob) run(uin *uin2.AppUinJob) {
 // speed 执行任务
 func (l *uinJob) speed(uin *uin2.AppUinJob) {
 	sinking_web.Try(func() {
-		log.Println("执行挂机", uin)
-		//单个代理最大100并发,防止并发过大代理死掉
+		//开始限流
+		limitRate.Lock()
+		for true {
+			if limitRateIndex < limitRateMax {
+				limitRateIndex++
+				break
+			} else {
+				time.Sleep(100 * time.Millisecond)
+			}
+		}
+		defer func() {
+			limitRateIndex--
+		}()
+		limitRate.Unlock()
+		for true {
+			if TaskLimitRate.TryConsume() {
+				break
+			} else {
+				time.Sleep(100 * time.Millisecond)
+			}
+		}
 		serverId := strconv.Itoa(uin.ServerId)
 		for true {
 			if server2.GetIns().ServerJobNum(serverId) > 100 {
@@ -207,6 +234,8 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 				}
 			}(serverId)
 		}
+		//限流结束
+		log.Println("执行挂机", uin)
 		var j map[web_uin.JobName]string
 		e := json.Unmarshal([]byte(uin.Setting), &j)
 		if e == nil && j != nil {
