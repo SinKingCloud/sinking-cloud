@@ -32,7 +32,7 @@ var (
 	TaskLimitRate  = oicq.NewLimitRate(float64(runtime.NumCPU())*5, float64(runtime.NumCPU())*5)
 	limitRate      = sync.Mutex{}
 	limitRateIndex = 0
-	limitRateMax   = runtime.NumCPU() * 10
+	limitRateMax   = runtime.NumCPU() * 5
 )
 
 func NewUinJob() *uinJob {
@@ -124,9 +124,9 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 	if threadNum <= 0 {
 		threadNum = 1
 	}
-	//最大100协程
-	if threadNum >= 100 {
-		threadNum = 100
+	//最大60协程
+	if threadNum >= 60 {
+		threadNum = 60
 	}
 	//更新缓存信息
 	server, err := server2.GetIns().FindByIdWithCache(server.Id, false)
