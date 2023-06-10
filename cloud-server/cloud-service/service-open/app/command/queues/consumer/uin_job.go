@@ -124,9 +124,9 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 	if threadNum <= 0 {
 		threadNum = 1
 	}
-	//最大60协程
-	if threadNum >= 60 {
-		threadNum = 60
+	//最大100协程
+	if threadNum >= 100 {
+		threadNum = 100
 	}
 	//更新缓存信息
 	server, err := server2.GetIns().FindByIdWithCache(server.Id, false)
