@@ -5,8 +5,8 @@ go 1.20
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20221105060954-78362716b4ba
-	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20230615031122-4632e1ef4afa
-	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20230615031122-4632e1ef4afa
+	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20230615064026-ca8f05d8039a
+	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20230615064026-ca8f05d8039a
 	github.com/makiuchi-d/gozxing v0.1.1
 	golang.org/x/net v0.10.0
 	gorm.io/gorm v1.21.15
@@ -53,6 +53,8 @@ require (
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/txthinking/runnergroup v0.0.0-20210608031112-152c7c4432bf // indirect
+	github.com/txthinking/socks5 v0.0.0-20230325130024-4230056ae301 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/sync v0.2.0 // indirect

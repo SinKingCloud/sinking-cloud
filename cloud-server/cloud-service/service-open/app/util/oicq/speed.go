@@ -26,9 +26,6 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 			o.LoginTime = time.Now().Unix()
 			status := mobile.SpeedError
 			cookie := ""
-			if v == Pc {
-				continue
-			}
 			utils.Try(func() {
 				switch v {
 				case Vip: //会员签到
