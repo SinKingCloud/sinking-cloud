@@ -49,7 +49,7 @@ func (l *uinJob) Listen() {
 	}
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("283549280")
+	//	list, _ := uin2.GetIns().SelectByUin("3283973103")
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -124,9 +124,9 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 	if threadNum <= 0 {
 		threadNum = 1
 	}
-	//最大100协程
-	if threadNum >= 100 {
-		threadNum = 100
+	//最大60协程
+	if threadNum >= 60 {
+		threadNum = 60
 	}
 	//更新缓存信息
 	server, err := server2.GetIns().FindByIdWithCache(server.Id, false)

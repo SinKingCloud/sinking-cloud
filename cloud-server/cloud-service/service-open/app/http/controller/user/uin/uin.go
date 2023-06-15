@@ -156,7 +156,7 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 	}
 	util.Cache.Inc(key)
 	util.Cache.SetExpire(key, int64(120*1000))
-	cli := client2.NewClientEmpty().UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd, true)
+	cli := client2.NewClientEmpty().UseTcp(true).UseProxy(proxy.Addr, proxy.Port, proxy.User, proxy.Pwd, true)
 	e, u := cli.FetchQrCode()
 	if e != nil || u == "" {
 		c.Error("获取二维码失败")
