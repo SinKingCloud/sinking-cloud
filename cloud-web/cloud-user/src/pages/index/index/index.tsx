@@ -6,8 +6,10 @@ import {PageContainer} from '@ant-design/pro-layout';
 import styles from './style.less';
 
 // @ts-ignore
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Marquee from 'react-fast-marquee';
 import React, {useEffect, useState} from "react";
+// @ts-ignore
 import {useModel} from "@@/plugin-model/useModel";
 import ProCard from "@ant-design/pro-card";
 import {CodeSandboxOutlined, NotificationOutlined, PlusOutlined} from "@ant-design/icons";

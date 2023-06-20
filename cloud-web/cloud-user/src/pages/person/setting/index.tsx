@@ -4,6 +4,7 @@ import ProCard from "@ant-design/pro-card";
 import {Alert, Avatar, Button, Col, Form, Image, Input, message, Modal, Row, Space, Tag, Upload} from "antd";
 import ProForm, {ProFormText} from "@ant-design/pro-form";
 import {LockOutlined, SafetyOutlined, UploadOutlined} from "@ant-design/icons";
+// @ts-ignore
 import {useModel} from "@@/plugin-model/useModel";
 import {updateInfo, updatePassword, updatePhone} from "@/services/person/update";
 import {getUploadUrl} from "@/services/common/upload";
@@ -20,7 +21,7 @@ export default (): React.ReactNode => {
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
     if (userInfo) {
-      await setInitialState((s) => ({
+      await setInitialState((s: any) => ({
         ...s,
         currentUser: userInfo,
       }));
