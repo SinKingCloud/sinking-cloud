@@ -30,7 +30,7 @@ services:
     container_name: rocket-namesrv
     restart: always
     ports:
-      - 9876:9876
+      - "9876:9876"
     volumes:
       - ./rocket/logs:/home/rocketmq/logs
       - ./rocket/store:/home/rocketmq/store
@@ -44,8 +44,8 @@ services:
     container_name: rocket-broker
     restart: always
     ports:
-      - 10909:10909
-      - 10911:10911
+      - "10909:10909"
+      - "10911:10911"
     volumes:
       - ./rocket/logs:/home/rocketmq/logs
       - ./rocket/store:/home/rocketmq/store
@@ -62,7 +62,7 @@ services:
     container_name: rocket-console
     restart: always
     ports:
-      - 8180:8080
+      - "8180:8080"
     environment:
       TZ: Asia/Shanghai
       JAVA_OPTS: "-Drocketmq.namesrv.addr=rocket-namesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
@@ -73,7 +73,7 @@ services:
     container_name: redis
     restart: always
     ports:
-      - 6379:6379
+      - "6379:6379"
     environment:
       TZ: Asia/Shanghai
       LANG: en_US.UTF-8
@@ -90,11 +90,25 @@ services:
     container_name: sinking-consul
     restart: always
     ports:
-      - 1817:1817
+      - "1817:1817"
     environment:
       - TZ=Asia/Shanghai
     volumes:
       - ./sinking/sinking-consul/config/:/data/sinking-consul/config/
+
+  ######################### sinking-consul ############################
+  node:
+    image: node:16.14.0
+    container_name: node
+    restart: always
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - ../cloud-web/:/data/
+    command: npm config set registry https://registry.npm.taobao.org && yarn config set registry https://registry.npm.taobao.org && tail -F anything
 
   ################### sinking-cloud服务组(单机可使用容器名做注册地址,集群则注册地址必须使用外网IP) ############################
   service-gateway:
@@ -102,7 +116,7 @@ services:
     container_name: service-gateway
     restart: always
     ports:
-      - 1000:1000
+      - "1000:1000"
     environment:
       - TZ=Asia/Shanghai
       - ROCKETMQ_GO_LOG_LEVEL=error
@@ -119,7 +133,7 @@ services:
     container_name: service-auth
     restart: always
     ports:
-      - 1003:1003
+      - "1003:1003"
     environment:
       - TZ=Asia/Shanghai
       - ROCKETMQ_GO_LOG_LEVEL=error
@@ -136,7 +150,7 @@ services:
     container_name: service-websocket
     restart: always
     ports:
-      - 1005:1005
+      - "1005:1005"
     environment:
       - TZ=Asia/Shanghai
       - ROCKETMQ_GO_LOG_LEVEL=error
@@ -153,7 +167,7 @@ services:
     container_name: service-user
     restart: always
     ports:
-      - 1002:1002
+      - "1002:1002"
     environment:
       - TZ=Asia/Shanghai
       - ROCKETMQ_GO_LOG_LEVEL=error
@@ -170,7 +184,7 @@ services:
     container_name: service-admin
     restart: always
     ports:
-      - 1001:1001
+      - "1001:1001"
     environment:
       - TZ=Asia/Shanghai
       - ROCKETMQ_GO_LOG_LEVEL=error
@@ -187,7 +201,7 @@ services:
     container_name: service-open
     restart: always
     ports:
-      - 1004:1004
+      - "1004:1004"
     environment:
       - TZ=Asia/Shanghai
       - ROCKETMQ_GO_LOG_LEVEL=error
