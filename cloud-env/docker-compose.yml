@@ -108,7 +108,7 @@ services:
       - TZ=Asia/Shanghai
     volumes:
       - ../cloud-web/:/data/
-    command: npm config set registry https://registry.npm.taobao.org && yarn config set registry https://registry.npm.taobao.org && tail -F anything
+    command: tail -F anything
 
   ################### sinking-cloud服务组(单机可使用容器名做注册地址,集群则注册地址必须使用外网IP) ############################
   service-gateway:
