@@ -478,7 +478,7 @@ export default (): React.ReactNode => {
         // @ts-ignore
         columns={columns}
         defaultSize={"small"}
-        form={{layout: "vertical",autoFocusFirstInput: false}}
+        form={{layout: "vertical", autoFocusFirstInput: false}}
         headerTitle={'用户列表'}
         actionRef={actionRef}
         formRef={ref}

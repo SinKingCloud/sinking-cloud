@@ -458,6 +458,7 @@ export default (): React.ReactNode => {
           defaultCollapsed: true,
           labelWidth: 20,
         }}
+        scroll={{x: "auto"}}
         toolBarRender={() => [
           <Button key="primary" type="primary" onClick={() => {
             showBuyModal("-1");

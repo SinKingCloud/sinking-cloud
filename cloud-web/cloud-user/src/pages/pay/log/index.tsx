@@ -137,6 +137,7 @@ export default (): React.ReactNode => {
             total: data.data.total,
           };
         }}
+        scroll={{x: "auto"}}
         search={{
           defaultCollapsed: true,
           labelWidth: 20,

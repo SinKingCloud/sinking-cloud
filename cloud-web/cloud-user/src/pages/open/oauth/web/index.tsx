@@ -286,6 +286,7 @@ export default (): React.ReactNode => {
           defaultCollapsed: true,
           labelWidth: 'auto',
         }}
+        scroll={{x: "auto"}}
         toolBarRender={() => [
           <Button key="primary" type="primary" onClick={() => {
             setIsModalVisible(true)

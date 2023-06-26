@@ -21,7 +21,7 @@ export default (): React.ReactNode => {
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
     if (userInfo) {
-      await setInitialState((s) => ({
+      await setInitialState((s: any) => ({
         ...s,
         currentUser: userInfo,
       }));
@@ -137,6 +137,7 @@ export default (): React.ReactNode => {
                   autoComplete="off"
                   layout={"vertical"}
                   onFinish={(values) => {
+                    // eslint-disable-next-line no-param-reassign
                     values = {money: parseInt(values?.money), type: parseInt(values?.type)}
                     setPayBtnLoading(true);
                     recharge(values).then((r) => {
@@ -144,6 +145,7 @@ export default (): React.ReactNode => {
                         setPayBtnLoading(false);
                         message.error(r?.message || "请求错误")
                       } else {
+                        // eslint-disable-next-line @typescript-eslint/no-shadow
                         paySubmit({trade_no: r?.data}).then((r) => {
                           setPayBtnLoading(false);
                           if (r.code != 200) {
@@ -266,7 +268,7 @@ export default (): React.ReactNode => {
           <ProTable
             actionRef={ref}
             defaultSize={"small"}
-            form={{layout: "vertical",autoFocusFirstInput: false}}
+            form={{layout: "vertical", autoFocusFirstInput: false}}
             headerTitle={'充值记录'}
             rowKey={'id'}
             options={{
@@ -288,6 +290,7 @@ export default (): React.ReactNode => {
                 total: data.data.total,
               };
             }}
+            scroll={{x: "auto"}}
             pagination={{defaultPageSize: 10}}
             search={false}
           />
