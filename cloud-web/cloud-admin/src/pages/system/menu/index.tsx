@@ -343,6 +343,7 @@ export default (): React.ReactNode => {
             total: response.data.total,
           };
         }}
+        scroll={{x: "auto"}}
         toolBarRender={() => [
           <Button key="primary" type="primary" onClick={() => {
             form.setFieldsValue({pid: 0, type: 0})

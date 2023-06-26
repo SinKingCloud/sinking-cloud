@@ -376,6 +376,7 @@ export default (): React.ReactNode => {
           defaultCollapsed: true,
           labelWidth: 'auto',
         }}
+        scroll={{x: "auto"}}
         toolBarRender={() => [
           <Button key="add" type="primary" onClick={() => {
             setCheckedKeys([]);

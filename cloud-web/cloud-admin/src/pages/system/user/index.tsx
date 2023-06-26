@@ -49,7 +49,7 @@ export default (): React.ReactNode => {
    * 获取选中项
    */
   const getSelectedIds = () => {
-    let ids: any[] = [];
+    const ids: any[] = [];
     selectedRowsState.map((k: any) => {
       ids.push(k.id);
     });
@@ -76,8 +76,10 @@ export default (): React.ReactNode => {
       delete values.id;
     }
     // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (uploadFileList.length > 0) {
       // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       values.avatar = uploadFileList[0]?.url || ""
     } else {
       values.avatar = ""
@@ -318,6 +320,7 @@ export default (): React.ReactNode => {
               form.setFieldsValue(record);
               if (record?.avatar) {
                 // @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 setUploadFileList([{uid: '-1', name: 'image.png', status: 'done', url: record?.avatar}]);
               }
               setIsModalVisible(true);
@@ -504,6 +507,7 @@ export default (): React.ReactNode => {
           defaultCollapsed: true,
           labelWidth: 'auto',
         }}
+        scroll={{x: "auto"}}
         toolBarRender={() => [
           <Button key="primary" type="primary" onClick={() => {
             // @ts-ignore

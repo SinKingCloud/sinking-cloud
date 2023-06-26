@@ -356,6 +356,7 @@ export default (): React.ReactNode => {
           defaultCollapsed: true,
           labelWidth: 'auto',
         }}
+        scroll={{x: "auto"}}
         toolBarRender={() => [
           <Button type={"primary"} key="upload_button" onClick={() => {
             setIsModalUploadVisible(true);

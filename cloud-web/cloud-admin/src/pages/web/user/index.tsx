@@ -274,6 +274,7 @@ export default (): React.ReactNode => {
               form.setFieldsValue(record);
               if (record?.avatar) {
                 // @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 setUploadFileList([{uid: '-1', name: 'image.png', status: 'done', url: record?.avatar}]);
               }
               setIsModalVisible(true);
@@ -399,7 +400,7 @@ export default (): React.ReactNode => {
         setIsModalEditVisible(false);
         edit.resetFields();
       }}>
-        <Form form={edit} name="control-hooks"  onFinish={onEditFinish} labelAlign="right" labelCol={{span: 6}}
+        <Form form={edit} name="control-hooks" onFinish={onEditFinish} labelAlign="right" labelCol={{span: 6}}
               wrapperCol={{span: 16}}>
           <Form.Item name={"status"} label="状态">
             <Select placeholder="请选择用户状态">
@@ -414,7 +415,7 @@ export default (): React.ReactNode => {
         // @ts-ignore
         columns={columns}
         defaultSize={"small"}
-        form={{layout: "vertical",autoFocusFirstInput: false}}
+        form={{layout: "vertical", autoFocusFirstInput: false}}
         headerTitle={'用户列表'}
         actionRef={actionRef}
         formRef={ref}
@@ -424,6 +425,8 @@ export default (): React.ReactNode => {
           fullScreen: true,
           setting: true,
         }}
+
+        scroll={{x: "auto"}}
 
         rowSelection={{
           selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT, Table.SELECTION_NONE],
