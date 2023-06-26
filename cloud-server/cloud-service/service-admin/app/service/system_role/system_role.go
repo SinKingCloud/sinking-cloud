@@ -52,3 +52,9 @@ func (s *service) FindByIdWithCache(id int, refresh bool) (role *model.SystemRol
 	}
 	return
 }
+
+// ClearRoleCache 清理角色缓存(根据角色ID)
+func (s *service) ClearRoleCache(id int) bool {
+	key := constant.CacheNameWithSystemRole + strconv.Itoa(id)
+	return util.Cache.Delete(key)
+}

@@ -85,6 +85,9 @@ func (r ControllerRole) Update(c *sinking_server.Context) {
 	if form.Menus != "" {
 		data["menus"] = form.Menus
 		data["accesses"] = r.getRoleIdsBYMenuIds(form.Menus)
+		defer func() {
+			go r.resetAllRoleAccess()
+		}()
 	}
 	if form.Status != "" {
 		data["status"] = form.Status
@@ -127,7 +130,7 @@ func (r ControllerRole) Create(c *sinking_server.Context) {
 }
 
 // Delete 删除信息
-func (ControllerRole) Delete(c *sinking_server.Context) {
+func (r ControllerRole) Delete(c *sinking_server.Context) {
 	type Form struct {
 		Ids []int `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
 	}
@@ -142,6 +145,7 @@ func (ControllerRole) Delete(c *sinking_server.Context) {
 	}
 	err := system_role.GetIns().DeleteByIds(form.Ids)
 	if err == nil {
+		go r.resetAllRoleAccess()
 		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "删除角色", "删除角色记录")
 		c.Success("删除数据成功")
 	} else {
@@ -166,18 +170,23 @@ func (ControllerRole) getRoleIdsBYMenuIds(menus string) string {
 	return accessIds
 }
 
+// resetAllRoleAccess 刷新角色关联权限
+func (ControllerRole) resetAllRoleAccess() {
+	roles, err := system_role.GetIns().SelectAll()
+	if err == nil {
+		for _, v := range roles {
+			go func(v *model.SystemRole) {
+				_ = system_role.GetIns().UpdateById(v.Id, map[string]interface{}{"accesses": v.Menus})
+				system_menu.GetIns().ClearRoleMenuCache(v.Id)
+				system_role.GetIns().ClearRoleCache(v.Id)
+			}(v)
+		}
+	}
+}
+
 // ResetAllRoleAccess 刷新角色关联权限
 func (r ControllerRole) ResetAllRoleAccess(c *sinking_server.Context) {
-	go func() {
-		roles, err := system_role.GetIns().SelectAll()
-		if err == nil {
-			for _, v := range roles {
-				go func() {
-					_ = system_role.GetIns().UpdateById(v.Id, map[string]interface{}{"accesses": v.Menus})
-				}()
-			}
-		}
-	}()
+	go r.resetAllRoleAccess()
 	system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "刷新角色", "刷新角色权限")
 	c.Success("更新权限数据成功")
 }

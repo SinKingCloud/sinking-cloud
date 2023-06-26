@@ -67,3 +67,9 @@ func (s *service) SelectByIdsWithCache(roleId int, menuIds string, refresh bool)
 	}
 	return
 }
+
+// ClearRoleMenuCache 清理角色菜单缓存
+func (s *service) ClearRoleMenuCache(roleId int) bool {
+	key := constant.CacheNameWithRoleMenu + strconv.Itoa(roleId)
+	return util.Cache.Delete(key)
+}
