@@ -728,7 +728,7 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 			}
 		}
 		//更换协议
-		changeProto(client.IPad)
+		changeProto(client.AndroidPad)
 	}
 	//获取单例
 	cli, err := web_uin.GetOicqInsById(uinInfo.Id, true)
