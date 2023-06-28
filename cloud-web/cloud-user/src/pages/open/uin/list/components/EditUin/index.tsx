@@ -49,7 +49,7 @@ const EditUin: React.FC<EditUinProps> = (props) => {
         const getArr = (obj: any): any => {
           let temp = new Array();
           Object.keys(obj).forEach((k: any) => {
-            let tempObj = obj[k];
+            const tempObj = obj[k];
             tempObj.key = k;
             temp.push(tempObj);
           });
@@ -80,6 +80,7 @@ const EditUin: React.FC<EditUinProps> = (props) => {
   /**
    * 修改挂机地区
    */
+    // eslint-disable-next-line @typescript-eslint/no-shadow
   const changeArea = (uin: string, serverKey: string) => {
     Modal.confirm({
       title: '确定要更改挂机地区吗?',
@@ -103,6 +104,7 @@ const EditUin: React.FC<EditUinProps> = (props) => {
   /**
    * 修改挂机时间
    */
+    // eslint-disable-next-line @typescript-eslint/no-shadow
   const changeTiming = (uin: string, timing: string) => {
     Modal.confirm({
       title: '确定要修改挂机时间为' + timing + '吗?',
@@ -177,7 +179,7 @@ const EditUin: React.FC<EditUinProps> = (props) => {
               dataSource={speedArr}
               renderItem={item => {
                 // @ts-ignore
-                let days = info?.uin[item?.type == "speed" ? "player_day" : "sign_day"]
+                const days = info?.uin[item?.type == "speed" ? "player_day" : "sign_day"]
                 return <>
                   <List.Item actions={[
                     <>
@@ -188,7 +190,7 @@ const EditUin: React.FC<EditUinProps> = (props) => {
                           // @ts-ignore
                                 defaultChecked={(info?.setting[item?.key] || "0") == "1"}
                                 onChange={(checked) => {
-                                  let form = {
+                                  const form = {
                                     uin: uin,
                                     setting: {},
                                   };
