@@ -12,7 +12,7 @@ services:
       - "443:443"
       - "80:80"
     volumes: #映射目录
-      - ../www/:/www//local
+      - ../www/:/www/local
     command: #启动宝塔和ssh服务
       - bash
       - -c
