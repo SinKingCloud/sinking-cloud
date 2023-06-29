@@ -1,5 +1,26 @@
 version: "3"
 services:
+  ######################## btpanel #######################
+  btpanel:
+    image: sinkingcloud/btpanel:latest
+    container_name: btpanel
+    ports: #常用端口映射
+      - "22:22"
+      - "21:21"
+      - "888:888"
+      - "8888:8888"
+      - "443:443"
+      - "80:80"
+    volumes: #映射目录
+      - ../www/:/www//local
+    command: #启动宝塔和ssh服务
+      - bash
+      - -c
+      - |
+        echo "123456" | passwd --stdin root
+        bt 1
+        /usr/sbin/sshd -D
+
   ####################### mysql #######################
   mysql-5.7:
     image: mysql:5.7
