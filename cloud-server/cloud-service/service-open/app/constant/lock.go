@@ -11,7 +11,7 @@ const (
 	LockTimeUinCheckJob = 10 * 60 * 1000     //挂机检测任务锁最大时间
 
 	LockUserUinJob     = "LockUserUinJob_" //用户挂机任务锁
-	LockTimeUserUinJob = 5 * 60 * 1000     //用户挂机任务锁等待时间
+	LockTimeUserUinJob = 1 * 60 * 1000     //用户挂机任务锁等待时间
 
 	LockUserUinOperate     = "LockUserUinOperate_" //用户挂机操作锁
 	LockTimeUserUinOperate = 5 * 1000              //用户挂机操作锁等待时间

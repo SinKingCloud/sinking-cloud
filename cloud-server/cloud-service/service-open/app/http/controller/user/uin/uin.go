@@ -1105,7 +1105,7 @@ func (ControllerUin) Job(c *sinking_server.Context) {
 		})
 		c.Success("提交执行任务指令成功,即将开始挂机")
 	} else {
-		c.Error("提交过于频繁,请五分钟后在重试")
+		c.Error("提交过于频繁,请等待60s后重试")
 	}
 }
 
