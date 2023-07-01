@@ -6,6 +6,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"strconv"
+	"sync"
 )
 
 // systemUserService 单例对象
@@ -13,13 +14,16 @@ type systemUserService struct {
 }
 
 // systemUserObj 单例对象
-var systemUserObj *systemUserService
+var (
+	systemUserObj     *systemUserService
+	onceSystemUserObj sync.Once
+)
 
 // GetSystemUserServiceIns 获取单例
 func GetSystemUserServiceIns() *systemUserService {
-	if systemUserObj == nil {
+	onceSystemUserObj.Do(func() {
 		systemUserObj = &systemUserService{}
-	}
+	})
 	return systemUserObj
 }
 

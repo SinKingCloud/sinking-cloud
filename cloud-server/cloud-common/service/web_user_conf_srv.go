@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"sync"
 )
 
 // webUserConfService config_service
@@ -10,13 +11,16 @@ type webUserConfService struct {
 }
 
 // webUserConfigObj systemUserConfigObj对象
-var webUserConfigObj *webUserConfService
+var (
+	webUserConfigObj     *webUserConfService
+	onceWebUserConfigObj sync.Once
+)
 
 // GetWebUserConfSrvIns 获取单例
 func GetWebUserConfSrvIns() *webUserConfService {
-	if webUserConfigObj == nil {
+	onceWebUserConfigObj.Do(func() {
 		webUserConfigObj = &webUserConfService{}
-	}
+	})
 	return webUserConfigObj
 }
 

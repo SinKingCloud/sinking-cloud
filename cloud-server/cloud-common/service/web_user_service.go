@@ -8,6 +8,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"gorm.io/gorm"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -16,13 +17,16 @@ type webUserService struct {
 }
 
 // userObj 单例对象
-var webUserObj *webUserService
+var (
+	webUserObj     *webUserService
+	onceWebUserObj sync.Once
+)
 
 // GetWebUserServiceIns 获取单例
 func GetWebUserServiceIns() *webUserService {
-	if webUserObj == nil {
+	onceWebUserObj.Do(func() {
 		webUserObj = &webUserService{}
-	}
+	})
 	return webUserObj
 }
 

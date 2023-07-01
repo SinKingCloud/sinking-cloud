@@ -4,6 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"sync"
 	"time"
 )
 
@@ -12,13 +13,16 @@ type systemFileService struct {
 }
 
 // systemFileObj systemConfigObj对象
-var systemFileObj *systemFileService
+var (
+	systemFileObj     *systemFileService
+	onceSystemFileObj sync.Once
+)
 
 // GetSystemFileServiceIns 获取单例
 func GetSystemFileServiceIns() *systemFileService {
-	if systemFileObj == nil {
+	onceSystemFileObj.Do(func() {
 		systemFileObj = &systemFileService{}
-	}
+	})
 	return systemFileObj
 }
 

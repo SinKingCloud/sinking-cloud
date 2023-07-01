@@ -18,7 +18,6 @@ import (
 	"github.com/SinKingCloud/sinking-oicq/binary-mobile/utils"
 	"gorm.io/gorm"
 	"log"
-	"runtime"
 	"runtime/debug"
 	"strconv"
 	"sync"
@@ -27,12 +26,8 @@ import (
 
 // uinJobIns 消费者单例
 var (
-	uinJobIns queue.MqConsumer
-
-	TaskLimitRate  = oicq.NewLimitRate(float64(runtime.NumCPU())*5, float64(runtime.NumCPU())*5)
-	limitRate      = sync.Mutex{}
-	limitRateIndex = 0
-	limitRateMax   = runtime.NumCPU() * 5
+	uinJobIns     queue.MqConsumer
+	onceUinJobIns sync.Once
 )
 
 func NewUinJob() *uinJob {
@@ -44,9 +39,9 @@ type uinJob struct {
 }
 
 func (l *uinJob) Listen() {
-	if uinJobIns == nil {
+	onceUinJobIns.Do(func() {
 		uinJobIns = sinking.GetRocketConsumerServer(constant.UinJobGroup, false)
-	}
+	})
 	l.autoStartThread()
 	//go func() {
 	//	list, _ := uin2.GetIns().SelectByUin("1355469018")
@@ -199,26 +194,6 @@ func (l *uinJob) run(uin *uin2.AppUinJob) {
 func (l *uinJob) speed(uin *uin2.AppUinJob) {
 	sinking_web.Try(func() {
 		//开始限流
-		limitRate.Lock()
-		for true {
-			if limitRateIndex < limitRateMax {
-				limitRateIndex++
-				break
-			} else {
-				time.Sleep(100 * time.Millisecond)
-			}
-		}
-		defer func() {
-			limitRateIndex--
-		}()
-		limitRate.Unlock()
-		for true {
-			if TaskLimitRate.TryConsume() {
-				break
-			} else {
-				time.Sleep(100 * time.Millisecond)
-			}
-		}
 		serverId := strconv.Itoa(uin.ServerId)
 		for true {
 			if server2.GetIns().ServerJobNum(serverId) > 100 {

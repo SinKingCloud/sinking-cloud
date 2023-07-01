@@ -5,6 +5,7 @@ import (
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"sync"
 )
 
 // systemConfigService config_service
@@ -12,13 +13,16 @@ type systemConfigService struct {
 }
 
 // systemConfigObj systemConfigObj对象
-var systemConfigObj *systemConfigService
+var (
+	systemConfigObj     *systemConfigService
+	onceSystemConfigObj sync.Once
+)
 
 // GetSystemConfigServiceIns 获取单例
 func GetSystemConfigServiceIns() *systemConfigService {
-	if systemConfigObj == nil {
+	onceSystemConfigObj.Do(func() {
 		systemConfigObj = &systemConfigService{}
-	}
+	})
 	return systemConfigObj
 }
 

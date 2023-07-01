@@ -7,10 +7,14 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
+	"sync"
 )
 
 // logIns 消费者单例
-var logIns queue.MqConsumer
+var (
+	logIns     queue.MqConsumer
+	onceLogIns sync.Once
+)
 
 func NewLog() *log {
 	return &log{}
@@ -21,9 +25,9 @@ type log struct {
 }
 
 func (l *log) Listen() {
-	if logIns == nil {
+	onceLogIns.Do(func() {
 		logIns = sinking.GetRocketConsumerServer(queue3.SystemLogGroup, false)
-	}
+	})
 	err := logIns.ListenReceiveMsgDo(queue3.SystemLogTopic, "", func(mqMsg queue.MqMsg) {
 		s := &model.SystemLog{}
 		err := json.Unmarshal(mqMsg.Body, s)

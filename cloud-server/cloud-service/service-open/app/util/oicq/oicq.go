@@ -93,14 +93,8 @@ func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
 	o.LoginTime = time.Now().Unix()
 	if !o.Mobile.Online.Load() {
 		if o.LoginToken == nil || len(o.LoginToken) <= 0 || o.TokenLogin() != nil {
-			//尝试使用密码登陆
-			var err error
-			loginStatus, err := o.Login()
-			if err != nil {
-				return err, nil
-			}
-			if !loginStatus.Success {
-				return nil, loginStatus
+			return nil, &mobile.LoginResponse{
+				Success: false,
 			}
 		}
 	}

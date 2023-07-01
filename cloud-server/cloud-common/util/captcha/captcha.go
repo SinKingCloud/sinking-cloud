@@ -3,22 +3,25 @@ package captcha
 import (
 	"github.com/afocus/captcha"
 	"image/color"
+	"sync"
 )
 
-var c *captcha.Captcha
+var (
+	c    *captcha.Captcha
+	once sync.Once
+)
 
 // getIns 获取单例
 func getIns() *captcha.Captcha {
-	if c != nil {
-		return c
-	}
-	c = captcha.New()
-	if err := c.AddFontFromBytes(NewTtf()); err != nil {
-		panic(err.Error())
-	}
-	c.SetSize(256, 128)
-	c.SetDisturbance(64)
-	c.SetFrontColor(color.RGBA{R: 0, G: 81, B: 235, A: 255})
+	once.Do(func() {
+		c = captcha.New()
+		if err := c.AddFontFromBytes(NewTtf()); err != nil {
+			panic(err.Error())
+		}
+		c.SetSize(256, 128)
+		c.SetDisturbance(64)
+		c.SetFrontColor(color.RGBA{R: 0, G: 81, B: 235, A: 255})
+	})
 	return c
 }
 

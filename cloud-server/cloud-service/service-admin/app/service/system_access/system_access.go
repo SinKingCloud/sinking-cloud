@@ -5,6 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/constant"
+	"sync"
 )
 
 // service 单例对象
@@ -12,13 +13,16 @@ type service struct {
 }
 
 // obj 单例对象
-var obj *service
+var (
+	obj  *service
+	once sync.Once
+)
 
 // GetIns 获取单例
 func GetIns() *service {
-	if obj == nil {
+	once.Do(func() {
 		obj = &service{}
-	}
+	})
 	return obj
 }
 
