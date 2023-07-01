@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -24,14 +25,20 @@ func Run() {
 // player 轮询挂机
 func player() {
 	ch1 := make(chan interface{})
+	ch1Mutex := &sync.Mutex{}
 	go (&job.Task{Producer: func(channel chan interface{}) {
+		ch1Mutex.Lock()
 		ch1 = channel
+		ch1Mutex.Unlock()
 	}, Consumer: func(param interface{}) {
 		send(param.(int64))
 	}, Thread: 1}).Run()
 	ch2 := make(chan interface{})
+	ch2Mutex := &sync.Mutex{}
 	go (&job.Task{Producer: func(channel chan interface{}) {
+		ch2Mutex.Lock()
 		ch2 = channel
+		ch2Mutex.Unlock()
 	}, Consumer: func(param interface{}) {
 		check(param.(time.Time))
 	}, Thread: 1}).Run()
@@ -45,8 +52,12 @@ func player() {
 			minute := (nowTime.Unix() - zeroTime.Unix()) / 60
 			if oldMinute != minute {
 				oldMinute = minute
-				ch1 <- minute                                            //执行挂机任务
+				ch1Mutex.Lock()
+				ch1 <- minute //执行挂机任务
+				ch1Mutex.Unlock()
+				ch2Mutex.Lock()
 				ch2 <- zeroTime.Add(time.Minute * time.Duration(minute)) //执行检测任务
+				ch2Mutex.Unlock()
 			}
 			time.Sleep(5 * time.Second)
 		}, func(i interface{}) {
