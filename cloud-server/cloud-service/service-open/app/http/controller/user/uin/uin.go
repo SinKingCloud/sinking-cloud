@@ -540,8 +540,11 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		log2.Println(uinInfo.Uin, resp, err)
 		if err != nil {
 			log2.Println(uinInfo.Uin, "登陆错误-1", resp, err)
-			time.Sleep(200 * time.Millisecond)
+			ins.Release()
+			ins.Disconnect()
+			time.Sleep(100 * time.Millisecond)
 			_ = ins.Connect()
+			time.Sleep(100 * time.Millisecond)
 			resp, err = fun()
 			if err != nil {
 				log2.Println(uinInfo.Uin, "登陆错误-2", resp, err)

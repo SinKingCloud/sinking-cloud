@@ -392,6 +392,10 @@ github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230523073
 github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230523073932-20fd5a44495b/go.mod h1:yKxs0d0LCaraNwGjJaouWN5XIfmzMypgkb8S2ICemjc=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20221105060954-78362716b4ba h1:3qXwSyhU7d35sHBBp/JETK7GmdQHdxR446eUn2AfB9c=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20221105060954-78362716b4ba/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20230702071726-1a9e5ac7b9a5 h1:XVIaMxeExZGR90WF0QQNeZyX6C6MkIRYNu5M5coMdMI=
+github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20230702071726-1a9e5ac7b9a5/go.mod h1:wSrnZiPcvVMyENo8L6McMI3XNZxDflXAe0nL2u/kG7M=
+github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20230702071726-1a9e5ac7b9a5 h1:NQM305hnmbGkX3Ngpcc7HzQzbczG+bskl/ui9Fg/fmI=
+github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20230702071726-1a9e5ac7b9a5/go.mod h1:IX5ZsPelCNoXmv/OThx3xH+Y4/2ly3JW92ufqDzplXA=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868/go.mod h1:srphKZ1i+yGXxl/LpBS7ZIECTjCTPzZzAMtJWoG3sLo=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
