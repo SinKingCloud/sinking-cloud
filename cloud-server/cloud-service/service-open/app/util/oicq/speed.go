@@ -47,8 +47,9 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 				case WeiYun: //微云签到
 					_, status = o.Mobile.Speed.WeiYunSign()
 					break
-				case Music: //音乐签到
+				case QQMusic: //音乐加速
 					_, status = o.Mobile.Speed.QQMusicSign()
+					_, status = o.Mobile.Speed.Music()
 					break
 				case GameCenter: //游戏中心签到
 					_, status = o.Mobile.Speed.GameCenterSign()

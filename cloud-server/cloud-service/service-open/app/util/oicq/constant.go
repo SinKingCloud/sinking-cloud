@@ -20,6 +20,7 @@ const (
 	MobileClock            //手Q打卡
 	ZoneClock              //空间打卡
 	Friend                 //加好友加速
+	QQMusic                //音乐加速
 
 	Vip        //会员签到
 	BigVip     //大会员签到
@@ -27,7 +28,6 @@ const (
 	Lz         //蓝钻签到
 	Ld         //大乐斗签到
 	GameCenter //游戏中心签到
-	Music      //音乐签到
 	QQGame     //QQ游戏签到
 	Sweet      //情侣空间签到
 	Video      //腾讯视频签到

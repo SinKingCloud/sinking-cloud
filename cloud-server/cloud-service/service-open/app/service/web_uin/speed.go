@@ -15,13 +15,13 @@ const (
 	Login       JobName = "login"
 	Friend      JobName = "friend"
 	Word        JobName = "word"
+	QQMusic     JobName = "qq_music"
 	Vip         JobName = "vip"
 	BigVip      JobName = "big_vip"
 	Hz          JobName = "hz"
 	Lz          JobName = "lz"
 	Ld          JobName = "ld"
 	GameCenter  JobName = "game_center"
-	Yy          JobName = "yy"
 	QQGame      JobName = "qq_game"
 	Sweet       JobName = "sweet"
 	Video       JobName = "video"
@@ -45,13 +45,13 @@ var Setting = map[JobName]string{
 	Login:       "1",
 	Friend:      "1",
 	Word:        "1",
+	QQMusic:     "1",
 	Vip:         "1",
 	BigVip:      "1",
 	Hz:          "1",
 	Lz:          "1",
 	Ld:          "1",
 	GameCenter:  "1",
-	Yy:          "1",
 	QQGame:      "1",
 	Sweet:       "1",
 	Video:       "1",
@@ -69,6 +69,7 @@ var JobMap = map[JobType]map[JobName]oicq.Job{
 		Login:       oicq.None,
 		Friend:      oicq.Friend,
 		Word:        oicq.Word,
+		QQMusic:     oicq.QQMusic,
 	},
 	Sign: {
 		Vip:        oicq.Vip,
@@ -77,7 +78,6 @@ var JobMap = map[JobType]map[JobName]oicq.Job{
 		Lz:         oicq.Lz,
 		Ld:         oicq.Ld,
 		GameCenter: oicq.GameCenter,
-		Yy:         oicq.Music,
 		QQGame:     oicq.QQGame,
 		Sweet:      oicq.Sweet,
 		Video:      oicq.Video,
@@ -152,6 +152,14 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"logo":     "https://cdn.clwl.online/app/uin/img/hy.png",
 			"edit":     "true",
 		},
+		QQMusic: {
+			"sort":     "15",
+			"type":     "speed",
+			"name":     "音乐听歌",
+			"describe": "每日QQ音乐听歌30分钟加速0.5天",
+			"logo":     "https://cdn.clwl.online/app/uin/img/yq.png",
+			"edit":     "true",
+		},
 	},
 	Sign: {
 		Vip: {
@@ -200,14 +208,6 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"name":     "游戏中心",
 			"describe": "每日完成手Q游戏中心日常任务获得游戏币和活跃值",
 			"logo":     "https://cdn.clwl.online/app/uin/img/game_center.png",
-			"edit":     "true",
-		},
-		Yy: {
-			"sort":     "21",
-			"type":     "sign",
-			"name":     "音乐签到",
-			"describe": "每日完成QQ音乐签到和刷歌时长",
-			"logo":     "https://cdn.clwl.online/app/uin/img/yq.png",
 			"edit":     "true",
 		},
 		QQGame: {
