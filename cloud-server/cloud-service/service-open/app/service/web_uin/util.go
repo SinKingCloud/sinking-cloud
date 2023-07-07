@@ -2,9 +2,11 @@ package web_uin
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	cookie2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_uin/cookie"
 	"io"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -69,22 +71,25 @@ func GetLoginQrCode(verifyUrl string) string {
 }
 
 type UinInfo struct {
-	Uin               int64    `json:"uin"`                  //账号
-	NickName          string   `json:"nick_name"`            //昵称
-	Avatar            string   `json:"avatar"`               //头像
-	Level             int      `json:"level"`                //等级
-	TotalActiveDay    int      `json:"total_active_day"`     //活跃天
-	NextLevelDay      int      `json:"next_level_day"`       //下次升级所需活跃天数
-	NextCrownLevelDay int      `json:"next_crown_level_day"` //下次升级皇冠所需活跃天数
-	IsVip             bool     `json:"is_vip"`               //是否会员
-	IsSvip            bool     `json:"is_svip"`              //是否超级会员
-	IsYearVip         bool     `json:"is_year_vip"`          //是否年费会员
-	IsBigVip          bool     `json:"is_big_vip"`           //是否大会员
-	IsBigYearVip      bool     `json:"is_big_year_vip"`      //是否年费大会员
-	VipLevel          int      `json:"vip_level"`            //会员等级
-	BigVipLevel       int      `json:"big_vip_level"`        //大会员等级
-	VipIcon           []string `json:"vip_icon"`             //会员图标
-	LevelIcon         []string `json:"level_icon"`           //等级图标
+	Uin                    int64    `json:"uin"`                         //账号
+	NickName               string   `json:"nick_name"`                   //昵称
+	Avatar                 string   `json:"avatar"`                      //头像
+	Level                  int      `json:"level"`                       //等级
+	TotalActiveDay         int      `json:"total_active_day"`            //活跃天
+	NextLevelDay           int      `json:"next_level_day"`              //下次升级所需活跃天数
+	NextCrownLevelDay      int      `json:"next_crown_level_day"`        //下次升级皇冠所需活跃天数
+	IsVip                  bool     `json:"is_vip"`                      //是否会员
+	IsSvip                 bool     `json:"is_svip"`                     //是否超级会员
+	IsYearVip              bool     `json:"is_year_vip"`                 //是否年费会员
+	IsBigVip               bool     `json:"is_big_vip"`                  //是否大会员
+	IsBigYearVip           bool     `json:"is_big_year_vip"`             //是否年费大会员
+	VipLevel               int      `json:"vip_level"`                   //会员等级
+	BigVipLevel            int      `json:"big_vip_level"`               //大会员等级
+	VipIcon                []string `json:"vip_icon"`                    //会员图标
+	LevelIcon              []string `json:"level_icon"`                  //等级图标
+	IfUseDayActiveDay      float64  `json:"if_use_day_active_day"`       //如果是使用代挂每日获取的活跃天
+	IfUseNextLevelDay      int      `json:"if_use_next_level_day"`       //如果使用代挂下次升级所需天数
+	IfUseNextCrownLevelDay int      `json:"if_use_next_crown_level_day"` //如果使用代挂下次升级皇冠所需天数
 }
 type uinInfoResponseStruct struct {
 	Ret                 int    `json:"ret"`
@@ -248,22 +253,102 @@ func GetGuestUinInfo(uin int64) *UinInfo {
 	if err != nil {
 		BigVipLevel = 0
 	}
+	levelList := map[string]float64{
+		"vip1":          1.2,
+		"vip2":          1.4,
+		"vip3":          1.5,
+		"vip4":          1.6,
+		"vip5":          1.6,
+		"vip6":          1.7,
+		"vip7":          1.9,
+		"vip8":          1.9,
+		"vip9":          1.9,
+		"vip10":         1.9,
+		"vip10_1":       1.9,
+		"vip10_2":       1.9,
+		"vip10_3":       1.9,
+		"year_vip1":     1.5,
+		"year_vip2":     1.7,
+		"year_vip3":     1.8,
+		"year_vip4":     1.9,
+		"year_vip5":     1.9,
+		"year_vip6":     2.0,
+		"year_vip7":     2.2,
+		"year_vip8":     2.2,
+		"year_vip9":     2.2,
+		"year_vip10":    2.2,
+		"year_vip10_1":  2.2,
+		"year_vip10_2":  2.2,
+		"year_vip10_3":  2.2,
+		"svip1":         1.4,
+		"svip2":         1.6,
+		"svip3":         1.7,
+		"svip4":         1.8,
+		"svip5":         1.8,
+		"svip6":         1.9,
+		"svip7":         2.1,
+		"svip8":         2.2,
+		"svip9":         2.5,
+		"svip10":        2.9,
+		"svip10_1":      3.1,
+		"svip10_2":      3.4,
+		"svip10_3":      3.9,
+		"year_svip1":    1.7,
+		"year_svip2":    1.9,
+		"year_svip3":    2.0,
+		"year_svip4":    2.1,
+		"year_svip5":    2.2,
+		"year_svip6":    2.4,
+		"year_svip7":    2.7,
+		"year_svip8":    3.0,
+		"year_svip9":    3.2,
+		"year_svip10":   3.5,
+		"year_svip10_1": 3.7,
+		"year_svip10_2": 4.0,
+		"year_svip10_3": 4.5,
+	}
+	useDgDays := 5.0
+	key := ""
+	if res.IVip == "1" {
+		key = "vip"
+	}
+	if res.ISVip == "1" {
+		key = "svip"
+	}
+	if key != "" && res.IYearVip == "1" {
+		key = "year_" + key
+	}
+	if key != "" {
+		key = key + strconv.Itoa(vipLevel)
+		fmt.Println(key)
+		if d, ok := levelList[key]; ok {
+			useDgDays = useDgDays + 1.5*d
+			useDgDays = math.Round(useDgDays*100) / 100
+			s := strconv.FormatFloat(useDgDays, 'f', 2, 64)
+			useDgDays, _ = strconv.ParseFloat(s, 64)
+		}
+	}
+	ifUseNextLevelDay := int(math.Ceil(float64(nextLevelDay) / useDgDays))
+	ifUseNextCrownLevelDay := int(math.Ceil(float64(nextCrownLevelDay) / useDgDays))
 	return &UinInfo{
-		Uin:               uin,
-		NickName:          res.SNickName,
-		Avatar:            res.SFaceUrl,
-		Level:             level,
-		TotalActiveDay:    totalActiveDay,
-		NextLevelDay:      nextLevelDay,
-		NextCrownLevelDay: nextCrownLevelDay,
-		IsVip:             res.IVip == "1",
-		IsSvip:            res.ISVip == "1",
-		IsYearVip:         res.IYearVip == "1",
-		IsBigVip:          res.IBigClubVipFlag == "1",
-		IsBigYearVip:      res.IYearBigClubFlag == "1",
-		VipLevel:          vipLevel,
-		BigVipLevel:       BigVipLevel,
-		VipIcon:           vipIcon,
-		LevelIcon:         levelIcon,
+		Uin:                    uin,
+		NickName:               res.SNickName,
+		Avatar:                 res.SFaceUrl,
+		Level:                  level,
+		TotalActiveDay:         totalActiveDay,
+		NextLevelDay:           nextLevelDay,
+		NextCrownLevelDay:      nextCrownLevelDay,
+		IsVip:                  res.IVip == "1",
+		IsSvip:                 res.ISVip == "1",
+		IsYearVip:              res.IYearVip == "1",
+		IsBigVip:               res.IBigClubVipFlag == "1",
+		IsBigYearVip:           res.IYearBigClubFlag == "1",
+		VipLevel:               vipLevel,
+		BigVipLevel:            BigVipLevel,
+		VipIcon:                vipIcon,
+		LevelIcon:              levelIcon,
+		IfUseDayActiveDay:      useDgDays,
+		IfUseNextLevelDay:      ifUseNextLevelDay,
+		IfUseNextCrownLevelDay: ifUseNextCrownLevelDay,
 	}
 }

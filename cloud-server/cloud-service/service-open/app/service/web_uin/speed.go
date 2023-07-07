@@ -69,7 +69,6 @@ var JobMap = map[JobType]map[JobName]oicq.Job{
 		Login:       oicq.None,
 		Friend:      oicq.Friend,
 		Word:        oicq.Word,
-		QQMusic:     oicq.QQMusic,
 	},
 	Sign: {
 		Vip:        oicq.Vip,
@@ -82,6 +81,7 @@ var JobMap = map[JobType]map[JobName]oicq.Job{
 		Sweet:      oicq.Sweet,
 		Video:      oicq.Video,
 		WeiYun:     oicq.WeiYun,
+		QQMusic:    oicq.QQMusic,
 	},
 }
 
@@ -152,16 +152,16 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"logo":     "https://cdn.clwl.online/app/uin/img/hy.png",
 			"edit":     "true",
 		},
+	},
+	Sign: {
 		QQMusic: {
 			"sort":     "15",
 			"type":     "speed",
-			"name":     "音乐加速",
-			"describe": "每日听歌30分钟加速0.5天",
+			"name":     "音乐听歌",
+			"describe": "每日听歌90分钟并签到",
 			"logo":     "https://cdn.clwl.online/app/uin/img/yq.png",
 			"edit":     "true",
 		},
-	},
-	Sign: {
 		Vip: {
 			"sort":     "15",
 			"type":     "sign",

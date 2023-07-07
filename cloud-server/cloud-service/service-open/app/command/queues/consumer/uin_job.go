@@ -428,9 +428,6 @@ func (l *uinJob) getUnDoJobs(jobs []oicq.Job, status *client.SpeedStatus, isSys 
 			case oicq.Friend:
 				isCheck = status.IAddFriend != "1"
 				break
-			case oicq.QQMusic:
-				isCheck = status.IQQMusic != "1"
-				break
 			default:
 				isCheck = !isSys //用户提交则补挂签到
 				break

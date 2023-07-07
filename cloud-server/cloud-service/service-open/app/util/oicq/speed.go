@@ -50,6 +50,8 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 				case QQMusic: //音乐加速
 					_, status = o.Mobile.Speed.QQMusicSign()
 					_, status = o.Mobile.Speed.Music()
+					_, status = o.Mobile.Speed.Music()
+					_, status = o.Mobile.Speed.Music()
 					break
 				case GameCenter: //游戏中心签到
 					_, status = o.Mobile.Speed.GameCenterSign()
