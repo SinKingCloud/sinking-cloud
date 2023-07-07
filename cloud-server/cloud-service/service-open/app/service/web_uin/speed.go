@@ -156,7 +156,7 @@ var Project = map[JobType]map[JobName]map[string]string{
 	Sign: {
 		QQMusic: {
 			"sort":     "15",
-			"type":     "speed",
+			"type":     "sign",
 			"name":     "音乐听歌",
 			"describe": "每日听歌90分钟并签到",
 			"logo":     "https://cdn.clwl.online/app/uin/img/yq.png",
