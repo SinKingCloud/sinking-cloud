@@ -23,7 +23,7 @@
     routes: [
       {
         path: 'index',
-        component: './index/index/welcome',
+        component: './index/index/Welcome',
       },
       {
         redirect: '/index/index',
