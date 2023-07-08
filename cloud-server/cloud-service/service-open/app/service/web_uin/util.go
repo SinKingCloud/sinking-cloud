@@ -91,6 +91,7 @@ type UinInfo struct {
 	IfUseNextLevelDay      int      `json:"if_use_next_level_day"`       //如果使用代挂下次升级所需天数
 	IfUseNextCrownLevelDay int      `json:"if_use_next_crown_level_day"` //如果使用代挂下次升级皇冠所需天数
 }
+
 type uinInfoResponseStruct struct {
 	Ret                 int    `json:"ret"`
 	QzoneVisitor        string `json:"QzoneVisitor"`
@@ -327,6 +328,8 @@ func GetGuestUinInfo(uin int64) *UinInfo {
 			s := strconv.FormatFloat(useDgDays, 'f', 2, 64)
 			useDgDays, _ = strconv.ParseFloat(s, 64)
 		}
+	} else {
+		useDgDays = useDgDays + 1.5
 	}
 	ifUseNextLevelDay := int(math.Ceil(float64(nextLevelDay) / useDgDays))
 	ifUseNextCrownLevelDay := int(math.Ceil(float64(nextCrownLevelDay) / useDgDays))
