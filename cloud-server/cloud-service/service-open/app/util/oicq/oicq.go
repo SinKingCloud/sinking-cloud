@@ -85,6 +85,8 @@ func GetMobileDevice(uin int64, deviceId int, proto mobile.ClientProtocol) *mobi
 func GetPcDevice(uin int64) *pc.DeviceInfo {
 	device := pc.SystemDeviceInfo
 	device.Name = []byte("PC-SK" + strconv.FormatInt(uin, 10))
+	t := md5.Sum(device.Name)
+	device.Guid = t[:]
 	return device
 }
 
