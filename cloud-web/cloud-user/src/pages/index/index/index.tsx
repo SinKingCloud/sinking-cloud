@@ -8,12 +8,12 @@ import styles from './style.less';
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Marquee from 'react-fast-marquee';
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 // @ts-ignore
 import {useModel} from "@@/plugin-model/useModel";
 import ProCard from "@ant-design/pro-card";
 import {CodeSandboxOutlined, NotificationOutlined, PlusOutlined} from "@ant-design/icons";
-import NoticeInfo from "@/components/Other/Notice/NoticeInfo";
+import NoticeInfo, {NoticeInfoRef} from "@/components/Other/Notice/NoticeInfo";
 import {getNoticeList} from "@/services/common/notice";
 import {ago} from "@/util/time";
 import {getAppList} from "@/services/app/app";
@@ -83,7 +83,7 @@ export default (): React.ReactNode => {
   const [noticeData, setNoticeData] = useState<any>([]);
   const getNoticeData = async () => {
     setNoticeLoading(true);
-    let d = await getNoticeList({page: 1, page_size: 7, place: "index.index"});
+    const d = await getNoticeList({page: 1, page_size: 7, place: "index.index"});
     if (d?.code == 200) {
       setNoticeData(d?.data?.list);
     }
@@ -92,14 +92,14 @@ export default (): React.ReactNode => {
   /**
    * 查看公告
    */
-  const [noticeId, setNoticeId] = useState(0);
+  const noticeRef = useRef<NoticeInfoRef>(null);
   const [noticeVisible, setNoticeVisible] = useState(false);
-  const showNoticeInfoModal = (id: number) => {
-    setNoticeId(id);
+  const showNoticeInfoModal = (id: number | undefined) => {
     setNoticeVisible(true);
+    // @ts-ignore
+    noticeRef?.current?.Show(id);
   }
   const hideNoticeInfoModal = () => {
-    setNoticeId(0);
     setNoticeVisible(false);
   }
   /**
@@ -126,7 +126,7 @@ export default (): React.ReactNode => {
   }, []);
   return (
     <PageContainer title={false}>
-      <NoticeInfo id={noticeId} visible={noticeVisible} onClose={hideNoticeInfoModal}/>
+      <NoticeInfo ref={noticeRef} visible={noticeVisible} onClose={hideNoticeInfoModal}/>
       <Row gutter={24}>
         <Col xl={24} md={24}>
 

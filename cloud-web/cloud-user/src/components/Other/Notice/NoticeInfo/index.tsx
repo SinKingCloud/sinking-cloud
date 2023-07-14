@@ -10,30 +10,35 @@ export type NoticeInfoProps = {
   onClose?: (value?: any) => void;
 };
 
-const NoticeInfo: React.FC<NoticeInfoProps> = (props) => {
+export interface NoticeInfoRef {
+  Show?: (id: number | undefined) => void;
+}
+
+const NoticeInfo = React.forwardRef<NoticeInfoRef, NoticeInfoProps>((props, ref) => {
   const {id, visible, onClose} = props;
-  const [noticeId, setNoticeId] = useState(id);
   const [loading, setLoading] = useState(false);
   const [noticeData, setNoticeData] = useState<any>({});
   const handleCancel = () => {
     onClose?.(noticeData);
   };
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  const getNoticeData = (id: number | undefined) => {
-    if ((id || 0) > 0) {
-      setLoading(true);
-      getNoticeInfo({id: id}).then((r) => {
-        if (r?.code == 200) {
-          setNoticeData(r?.data);
-        }
-        setLoading(false);
-      });
+  const getNoticeData = (id2: number | undefined) => {
+    let temp = id
+    if ((id2 || 0) > 0) {
+      temp = id2
     }
+    setLoading(true);
+    getNoticeInfo({id: temp}).then((r) => {
+      if (r?.code == 200) {
+        setNoticeData(r?.data);
+      }
+      setLoading(false);
+    });
   };
-  if ((id || 0) > 0 && id != noticeId) {
-    setNoticeId(id);
-    getNoticeData(id || 0);
-  }
+  // 将 Test 方法绑定到 ref 对象的 current 属性上
+  React.useImperativeHandle(ref, () => ({
+    Show: getNoticeData,
+  }));
   return (
     <>
       <Modal visible={visible} footer={null} width={550} bodyStyle={{padding: "10px 10px 5px 10px"}}
@@ -59,7 +64,7 @@ const NoticeInfo: React.FC<NoticeInfoProps> = (props) => {
       </Modal>
     </>
   );
-};
+});
 
 
 export default NoticeInfo;

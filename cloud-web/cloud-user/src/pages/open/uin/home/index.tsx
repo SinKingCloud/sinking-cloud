@@ -31,7 +31,7 @@ import RcResizeObserver from 'rc-resize-observer';
 import {getAuthInfo, getSelfInfo, getUinCount, shopLevel} from "@/services/open/uin/home";
 import {getNoticeList} from "@/services/common/notice";
 import {ago} from "@/util/time";
-import NoticeInfo from "@/components/Other/Notice/NoticeInfo";
+import NoticeInfo, {NoticeInfoRef} from "@/components/Other/Notice/NoticeInfo";
 import ProDescriptions from '@ant-design/pro-descriptions';
 
 
@@ -62,14 +62,14 @@ export default (): React.ReactNode => {
   /**
    * 查看公告
    */
-  const [noticeId, setNoticeId] = useState(0);
+  const noticeRef = useRef<NoticeInfoRef>(null);
   const [noticeVisible, setNoticeVisible] = useState(false);
-  const showNoticeInfoModal = (id: number) => {
-    setNoticeId(id);
+  const showNoticeInfoModal = (id: number | undefined) => {
     setNoticeVisible(true);
+    // @ts-ignore
+    noticeRef?.current?.Show(id);
   }
   const hideNoticeInfoModal = () => {
-    setNoticeId(0);
     setNoticeVisible(false);
   }
   /**
@@ -292,7 +292,7 @@ export default (): React.ReactNode => {
       ]}
     >
       <div className={styles.main}>
-        <NoticeInfo id={noticeId} visible={noticeVisible} onClose={hideNoticeInfoModal}/>
+        <NoticeInfo ref={noticeRef} visible={noticeVisible} onClose={hideNoticeInfoModal}/>
         {tabStatus.tabActiveKey == "detail" && (
           <Row gutter={8} style={{paddingBottom: "20px"}}>
             <Col xs={{span: 24, offset: 0}} lg={{span: 16, offset: 0}}>
