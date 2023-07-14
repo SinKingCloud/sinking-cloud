@@ -25,6 +25,14 @@ const QrLogin: React.FC<QrLoginProps> = (props) => {
   const [qrcodeLoading, setQrcodeLoading] = useState(true);
   const [qrcodeMessage, setQrcodeMessage] = useState("请刷新二维码");
   const [qrcodeTips, setQrcodeTips] = useState("点击刷新");
+  /**
+   * 监听数据
+   */
+  const [initUin, setInitUin] = useState(uin);
+  if (initUin != uin) {
+    setInitUin(uin);
+    setQrcodeMessage("请刷新二维码")
+  }
   const qrCodeHandleOk = () => {
     onOk?.();
   };
@@ -81,14 +89,6 @@ const QrLogin: React.FC<QrLoginProps> = (props) => {
       }
     });
   };
-  /**
-   * 监听数据
-   */
-  const [initUin, setInitUin] = useState(uin);
-  if (initUin != uin) {
-    setInitUin(uin);
-    setQrcodeMessage("请刷新二维码")
-  }
   return (
     <>
       <Modal title="更新挂机" key={"qrLogin"

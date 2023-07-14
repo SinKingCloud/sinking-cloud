@@ -3,7 +3,15 @@
   <component name="Go" enabled="true" />
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/.idea/inspectionProfiles" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/libraries" />
+      <excludeFolder url="file://$MODULE_DIR$/cloud-web/cloud-admin/src/.umi" />
+      <excludeFolder url="file://$MODULE_DIR$/cloud-web/cloud-admin/src/.umi-production" />
+      <excludeFolder url="file://$MODULE_DIR$/cloud-web/cloud-admin/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/cloud-web/cloud-user/src/.umi" />
+      <excludeFolder url="file://$MODULE_DIR$/cloud-web/cloud-user/dist" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
