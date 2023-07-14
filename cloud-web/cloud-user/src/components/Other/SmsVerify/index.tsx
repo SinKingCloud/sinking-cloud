@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Button, Col, Form, Image, Input, message, Row} from "antd";
-import {FormInstance} from "antd/lib/form/hooks/useForm";
+import type {FormInstance} from "antd/lib/form/hooks/useForm";
 import {getCaptchaUrl} from "@/services/common/captcha";
 import {sendSms} from "@/services/common/sms";
 
@@ -24,7 +24,7 @@ const SmsVerify: React.FC<SmsVerifyProps> = (props) => {
    * 加载验证码
    */
   const changeCaptcha = () => {
-    let cap = getCaptchaUrl();
+    const cap = getCaptchaUrl();
     setToken(cap.token);
     setCaptchaUrl(cap.url);
   }
@@ -72,7 +72,7 @@ const SmsVerify: React.FC<SmsVerifyProps> = (props) => {
                   message.error("请输入正确的手机号码")
                   return;
                 }
-                let captcha = form?.getFieldValue("captcha");
+                const captcha = form?.getFieldValue("captcha");
                 if (captcha == undefined || captcha.length != 4) {
                   message.error("请输入正确的图形验证码")
                   return;
