@@ -7,7 +7,7 @@ import {deleteUin, getServerList, getUinList, uinRun, uinStatus} from "@/service
 import {DownOutlined, ExclamationCircleOutlined} from "@ant-design/icons";
 import UpdateUin from "@/pages/open/uin/list/components/UpdateUin";
 import {getAppList} from "@/services/app/app";
-import EditUin from "@/pages/open/uin/list/components/EditUin";
+import EditUin, {EditUinRef} from "@/pages/open/uin/list/components/EditUin";
 // @ts-ignore
 import CryptoJS from 'crypto-js';
 import Buy from "@/pages/open/uin/list/components/Buy";
@@ -378,13 +378,12 @@ export default (): React.ReactNode => {
    * 挂机信息
    */
   const [uinInfoVisible, setUinInfoVisible] = useState(false);
-  const [uin1, setUin1] = useState("");
-  const showUinInfoModal = (uin: string = "") => {
-    setUin1(uin);
+  const uinInfoRef = useRef<EditUinRef>(null);
+  const showUinInfoModal = (uin2: string = "") => {
     setUinInfoVisible(true);
+    uinInfoRef?.current?.Show(uin2);
   }
   const hideUinInfoModal = () => {
-    setUin("");
     setUinInfoVisible(false);
   }
   /**
@@ -417,7 +416,7 @@ export default (): React.ReactNode => {
       }} onCancel={() => {
         hideUinQrLoginModal();
       }}/>
-      <EditUin visible={uinInfoVisible} uin={uin1} onCancel={() => {
+      <EditUin ref={uinInfoRef} visible={uinInfoVisible} onCancel={() => {
         hideUinInfoModal();
       }}/>
       <Buy visible={buyVisible} uin={uin2} onCancel={hideBuyModal}

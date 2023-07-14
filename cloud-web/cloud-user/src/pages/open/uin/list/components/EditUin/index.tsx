@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {Avatar, Badge, Drawer, List, message, Modal, Select, Spin, Switch, Tag, TimePicker, Tooltip} from "antd";
 import {
   changeUinArea,
@@ -11,15 +11,18 @@ import {
 import moment from "moment";
 import {ExclamationCircleOutlined, InfoCircleOutlined} from "@ant-design/icons";
 
-export type EditUinProps = {
-  uin?: string;
-  visible?: boolean;
-  onCancel?: (e: any) => void;
-};
 
-const EditUin: React.FC<EditUinProps> = (props) => {
-  const {uin, visible, onCancel} = props;
-  const [u, setU] = useState(uin);
+export interface EditUinRef {
+  Show: (uin: string) => void;
+}
+
+export interface EditUinProps {
+  visible: boolean;
+  onCancel: () => void;
+}
+
+const EditUin = React.forwardRef<EditUinRef, EditUinProps>((props, ref) => {
+  const {visible, onCancel} = props;
   const [serverKey, setServerKey] = useState("");
   const [timing, setTiming] = useState("00:00");
   const [info, setInfo] = useState(null);
@@ -28,11 +31,12 @@ const EditUin: React.FC<EditUinProps> = (props) => {
   /**
    * 挂机地区列表
    */
-  const [servers, setServers] = useState({})
+  const [servers, setServers] = useState({});
+
   /**
    * 初始化数据
    */
-  const init = () => {
+  const Show = (uin: string) => {
     setLoading(true);
     getUinInfo({uin: uin}).then((r) => {
       setLoading(false);
@@ -73,59 +77,62 @@ const EditUin: React.FC<EditUinProps> = (props) => {
       }
     });
   }, []);
-  if (uin != "" && u != uin) {
-    setU(uin);
-    init();
-  }
+
   /**
    * 修改挂机地区
    */
     // eslint-disable-next-line @typescript-eslint/no-shadow
   const changeArea = (uin: string, serverKey: string) => {
-    Modal.confirm({
-      title: '确定要更改挂机地区吗?',
-      icon: <ExclamationCircleOutlined/>,
-      content: '更改挂机地区可能会影响挂机稳定',
-      okType: 'primary',
-      onOk() {
-        const key = "changeArea";
-        message.loading({content: '正在修改挂机地区', key, duration: 60}).then();
-        changeUinArea({uin: uin, server_key: serverKey}).then((r) => {
-          if (r.code == 200) {
-            setServerKey(serverKey);
-            message.success({content: r.message, key, duration: 2}).then();
-          } else {
-            message.error({content: r.message, key, duration: 2}).then();
-          }
-        });
-      },
-    });
-  }
+      Modal.confirm({
+        title: '确定要更改挂机地区吗?',
+        icon: <ExclamationCircleOutlined/>,
+        content: '更改挂机地区可能会影响挂机稳定',
+        okType: 'primary',
+        onOk() {
+          const key = "changeArea";
+          message.loading({content: '正在修改挂机地区', key, duration: 60}).then();
+          changeUinArea({uin: uin, server_key: serverKey}).then((r) => {
+            if (r.code == 200) {
+              setServerKey(serverKey);
+              message.success({content: r.message, key, duration: 2}).then();
+            } else {
+              message.error({content: r.message, key, duration: 2}).then();
+            }
+          });
+        },
+      });
+    }
   /**
    * 修改挂机时间
    */
     // eslint-disable-next-line @typescript-eslint/no-shadow
   const changeTiming = (uin: string, timing: string) => {
-    Modal.confirm({
-      title: '确定要修改挂机时间为' + timing + '吗?',
-      icon: <ExclamationCircleOutlined/>,
-      content: '下次挂机将会在每日' + timing + "时刻挂机",
-      okType: 'primary',
-      onOk() {
-        const key = "changeTiming";
-        message.loading({content: '正在修改挂机时间', key, duration: 60}).then();
-        let tempArr = timing.split(":");
-        changeUinTiming({uin: uin, timing: parseInt(tempArr[0]) * 60 + parseInt(tempArr[1])}).then((r) => {
-          if (r.code == 200) {
-            setTiming(timing);
-            message.success({content: r.message, key, duration: 2}).then();
-          } else {
-            message.error({content: r.message, key, duration: 2}).then();
-          }
-        });
-      },
-    });
-  }
+      Modal.confirm({
+        title: '确定要修改挂机时间为' + timing + '吗?',
+        icon: <ExclamationCircleOutlined/>,
+        content: '下次挂机将会在每日' + timing + "时刻挂机",
+        okType: 'primary',
+        onOk() {
+          const key = "changeTiming";
+          message.loading({content: '正在修改挂机时间', key, duration: 60}).then();
+          const tempArr = timing.split(":");
+          changeUinTiming({uin: uin, timing: parseInt(tempArr[0]) * 60 + parseInt(tempArr[1])}).then((r) => {
+            if (r.code == 200) {
+              setTiming(timing);
+              message.success({content: r.message, key, duration: 2}).then();
+            } else {
+              message.error({content: r.message, key, duration: 2}).then();
+            }
+          });
+        },
+      });
+    }
+
+  // 将 Test 方法绑定到 ref 对象的 current 属性上
+  React.useImperativeHandle(ref, () => ({
+    Show: Show,
+  }));
+
   return (
     <>
       <Drawer title="功能管理" key="EditUin" placement="right" onClose={onCancel} visible={visible}>
@@ -173,64 +180,69 @@ const EditUin: React.FC<EditUinProps> = (props) => {
                 </span>
               </div>
             </div>
-            {uin != null && <List
-              itemLayout="horizontal"
-              // @ts-ignore
-              dataSource={speedArr}
-              renderItem={item => {
+            {// @ts-ignore
+              info?.uin && <List
+                itemLayout="horizontal"
                 // @ts-ignore
-                const days = info?.uin[item?.type == "speed" ? "player_day" : "sign_day"]
-                return <>
-                  <List.Item actions={[
-                    <>
-                      {// @ts-ignore
-                        item?.edit == "true" &&
+                dataSource={speedArr}
+                renderItem={item => {
+                  // @ts-ignore
+                  const days = info?.uin[item?.type == "speed" ? "player_day" : "sign_day"]
+                  return <>
+                    <List.Item actions={[
+                      <>
+                        {// @ts-ignore
+                          item?.edit == "true" &&
+                          // @ts-ignore
+                          <Switch key={info?.uin.uin + item?.key}
+                            // @ts-ignore
+                                  defaultChecked={(info?.setting[item?.key] || "0") == "1"}
+                                  onChange={(checked) => {
+                                    const form = {
+                                      // @ts-ignore
+                                      uin: info?.uin,
+                                      setting: {},
+                                    };
+                                    // @ts-ignore
+                                    form["setting"][item?.key] = checked ? "1" : "0";
+                                    changeUinSetting(form).then((r) => {
+                                      if (r.code != 200) {
+                                        message.error(r.message)
+                                      }
+                                    })
+                                  }}/>}
+                        {// @ts-ignore
+                          item?.edit == "false" && "附加项目"}
+                      </>
+                    ]}>
+                      <List.Item.Meta
                         // @ts-ignore
-                        <Switch key={info?.uin.uin + item?.key}
+                        avatar={<Badge
                           // @ts-ignore
-                                defaultChecked={(info?.setting[item?.key] || "0") == "1"}
-                                onChange={(checked) => {
-                                  const form = {
-                                    uin: uin,
-                                    setting: {},
-                                  };
-                                  // @ts-ignore
-                                  form["setting"][item?.key] = checked ? "1" : "0";
-                                  changeUinSetting(form).then((r) => {
-                                    if (r.code != 200) {
-                                      message.error(r.message)
-                                    }
-                                  })
-                                }}/>}
-                      {// @ts-ignore
-                        item?.edit == "false" && "附加项目"}
-                    </>
-                  ]}>
-                    <List.Item.Meta
-                      // @ts-ignore
-                      avatar={<Badge  color={info?.job_status[item?.key] == "1" ? "green" : (info?.job_status[item?.key] == "2" ? "blue" : "red")}
-                        dot>
-                        <Avatar src={
+                          color={info?.job_status[item?.key] == "1" ? "green" : (info?.job_status[item?.key] == "2" ? "blue" : "red")}
+                          dot>
+                          <Avatar src={
+                            // @ts-ignore
+                            item?.logo} style={{borderRadius: "0px"}}/>
+                        </Badge>}
+                        // @ts-ignore
+                        title={<><a>{item?.name}</a>&nbsp;{days <= 0 &&
+                          <Tag color={"red"}>天数不足</Tag>}
+                          {days > 0 && <Tag color={"success"}>剩余:{days}天</Tag>}</>}
+                        // @ts-ignore
+                        description={<><InfoCircleOutlined style={{fontSize: "12px"}}/>&nbsp;<span
+                          style={{fontSize: "10px"}}>{
                           // @ts-ignore
-                          item?.logo} style={{borderRadius: "0px"}}/>
-                      </Badge>}
-                      // @ts-ignore
-                      title={<><a>{item?.name}</a>&nbsp;{days <= 0 &&
-                        <Tag color={"red"}>天数不足</Tag>}
-                        {days > 0 && <Tag color={"success"}>剩余:{days}天</Tag>}</>}
-                      // @ts-ignore
-                      description={<><InfoCircleOutlined style={{fontSize: "12px"}}/>&nbsp;<span style={{fontSize: "10px"}}>{item?.describe}</span></>}
-                    />
-                  </List.Item>
-                </>
-              }}
-            />}
+                          item?.describe}</span></>}
+                      />
+                    </List.Item>
+                  </>
+                }}
+              />}
           </div>
         </Spin>
       </Drawer>
     </>
-  )
-    ;
-};
-
+  );
+});
 export default EditUin;
