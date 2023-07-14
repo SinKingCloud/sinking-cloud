@@ -409,7 +409,11 @@ func GetGuestUinInfo(uin int64) *UinInfo {
 	}
 	var response *uinInfoResponseStruct
 	err = json.Unmarshal(bytes, &response)
-	if err != nil || response == nil || response.Ret != 0 {
+	if err != nil || response == nil {
+		_, _ = cookie2.GetIns().FindByStatusDomainWithCache(cookie2.Normal, "vip.qq.com", true)
+		return nil
+	}
+	if response.Ret != 0 {
 		return nil
 	}
 	res := response.Data.MRes
