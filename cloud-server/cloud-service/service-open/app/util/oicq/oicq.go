@@ -126,6 +126,9 @@ func (o *Oicq) TokenLogin() error {
 	var e error
 	utils.Try(func() {
 		e = o.Mobile.TokenLogin(o.LoginToken)
+		if e != nil {
+			e = o.Mobile.TokenLogin(o.LoginToken)
+		}
 		if e == nil {
 			e2 := o.Mobile.Init(true, false)
 			if e2 != nil {
