@@ -49,7 +49,6 @@ func (l *messageSender) Listen() {
 	})
 	if err != nil {
 		util.Log.Println(err)
-		log.Println(err)
 		return
 	}
 }

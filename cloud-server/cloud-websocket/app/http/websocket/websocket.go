@@ -28,17 +28,19 @@ func Handler(c *sinking_server.Context) {
 	wsServer := sinking_websocket.WebSocket{
 		OnError: func(err error) {
 			Connection.Delete(id)
-			util.Cache.Delete(util2.CacheNameWebSocketUser + id)
+			util.Cache.Delete(util2.CacheNameWebSocketToken + id)
 		},
 		OnConnect: func(ws *sinking_websocket.Conn) {
 			Connection.Set(id, ws)
 			//更新用户ws地址
 			addr := util.Conf.GetString(config.ConfApplicationAddr) + ":" + util.Conf.GetString(config.ConfApplicationPort)
-			util.Cache.SetWithExpire(util2.CacheNameWebSocketUser+id, addr, util2.CacheTimeWebSocketUser)
+			if !util.Cache.SetWithExpire(util2.CacheNameWebSocketToken+id, addr, util2.CacheTimeWebSocketToken) {
+				Connection.Delete(id)
+			}
 		},
 		OnClose: func(err error) {
 			Connection.Delete(id)
-			util.Cache.Delete(util2.CacheNameWebSocketUser + id)
+			util.Cache.Delete(util2.CacheNameWebSocketToken + id)
 		},
 		OnMessage: func(ws *sinking_websocket.Conn, messageType int, data []byte) {
 			//只返回时间信息,用作心跳判断
