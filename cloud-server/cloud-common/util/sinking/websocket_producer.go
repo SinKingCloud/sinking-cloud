@@ -31,7 +31,7 @@ type WebSocketMessage struct {
 	Message string `json:"message"`
 }
 
-// Build 构建消息
+// Build 构建消息 id:user_id msg:消息
 func (l *webSocketProducer) Build(id string, msg string) *webSocketProducer {
 	l.msg = &WebSocketMessage{
 		Id:      id,
@@ -69,10 +69,10 @@ func (l *webSocketProducer) Send() {
 	webSocketProducerTask <- l.msg
 }
 
-// Auth 授权token
-func (l *webSocketProducer) Auth(token string) error {
+// Auth 授权token id:user_id
+func (l *webSocketProducer) Auth(id string) error {
 	//颁发一个token
-	if util.Cache.SetWithExpire(util2.CacheNameWebSocketAuth+token, token, util2.CacheTimeWebSocketAuth) {
+	if util.Cache.SetWithExpire(util2.CacheNameWebSocketAuth+id, id, util2.CacheTimeWebSocketAuth) {
 		return nil
 	}
 	return errors.New("授权token失败")
