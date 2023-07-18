@@ -1,8 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {PageContainer} from '@ant-design/pro-layout';
+import {FooterToolbar, PageContainer} from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import {getParams} from "@/util/page";
-import {Avatar, Button, Dropdown, Menu, message, Modal, Select, Tag} from "antd";
+import {Avatar, Button, Dropdown, Menu, message, Modal, Select, Table, Tag} from "antd";
 import {deleteUin, getServerList, getUinList, uinRun, uinStatus} from "@/services/open/uin/uin";
 import {DownOutlined, ExclamationCircleOutlined} from "@ant-design/icons";
 import UpdateUin from "@/pages/open/uin/list/components/UpdateUin";
@@ -12,6 +12,7 @@ import EditUin, {EditUinRef} from "@/pages/open/uin/list/components/EditUin";
 import CryptoJS from 'crypto-js';
 import Buy from "@/pages/open/uin/list/components/Buy";
 import QrLogin from "@/pages/open/uin/list/components/QrLogin";
+import Batch, {BatchRef} from "@/pages/open/uin/list/components/Batch";
 
 export default (): React.ReactNode => {
   /**
@@ -19,6 +20,21 @@ export default (): React.ReactNode => {
    */
   const actionRef = useRef();
   const ref = useRef();
+  /**
+   * 批量操作
+   */
+  const [selectedRowsState, setSelectedRows] = useState<any>([]);
+  const [BatchVisible, setBatchVisible] = useState(false);
+  const batchRef = useRef<BatchRef>(null);
+  const showBatchModal = () => {
+    batchRef?.current?.Show(selectedRowsState);
+    setBatchVisible(true);
+  }
+  const hideBatchModal = () => {
+    setUin("");
+    setBatchVisible(false);
+  }
+
   /**
    * 挂机地区列表
    */
@@ -428,6 +444,9 @@ export default (): React.ReactNode => {
                showUinModal(uin);
              }
            }}/>
+      <Batch ref={batchRef} visible={BatchVisible} actionRef={actionRef} onCancel={() => {
+        hideBatchModal()
+      }}/>
       <ProTable
         defaultSize={"small"}
         form={{layout: "vertical", autoFocusFirstInput: false}}
@@ -442,6 +461,12 @@ export default (): React.ReactNode => {
         }}
         // @ts-ignore
         columns={columns}
+        rowSelection={{
+          selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT, Table.SELECTION_NONE],
+          onChange: (index, selectedRows: any) => {
+            setSelectedRows(selectedRows);
+          },
+        }}
         request={async (params, sort) => {
           const data = await getUinList(getParams(params, sort));
           if (data.code != 200) {
@@ -466,6 +491,23 @@ export default (): React.ReactNode => {
           </Button>,
         ]}
       />
+      {
+        selectedRowsState?.length > 0 && (
+          <FooterToolbar
+            extra={
+              <div>
+                已选择&nbsp;&nbsp;<a style={{fontWeight: 600}}>{selectedRowsState.length}</a>&nbsp;&nbsp;项
+              </div>
+            }>
+            <Button type="primary"
+                    onClick={async () => {
+                      showBatchModal()
+                    }}>
+              批量操作
+            </Button>
+          </FooterToolbar>
+        )
+      }
     </PageContainer>
   );
 };
