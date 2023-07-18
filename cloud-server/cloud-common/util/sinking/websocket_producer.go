@@ -28,7 +28,7 @@ type webSocketProducer struct {
 // WebSocketMessage 消息结构
 type WebSocketMessage struct {
 	Id      string `json:"id"`
-	Message string `json:"WebSocketMessage"`
+	Message string `json:"message"`
 }
 
 // Build 构建消息
