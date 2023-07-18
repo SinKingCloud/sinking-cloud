@@ -1,8 +1,10 @@
 package middleware
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/jwt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -33,7 +35,7 @@ func CheckWebUser() sinking_web.HandlerFunc {
 			c.Abort()
 			return
 		}
-		if jwtToken[types] != webToken[types] {
+		if jwtToken[types] != webToken[types] && util2.Conf.GetString(config.ConfProjectEnv) != "dev" {
 			c.TokenError("您的账户已在其他设备登陆,请重新登陆", nil)
 			c.Abort()
 			return
