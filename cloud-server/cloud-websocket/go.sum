@@ -603,8 +603,8 @@ github.com/JohnCGriffin/overflow v0.0.0-20211019200055-46fa312c352c/go.mod h1:X0
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230719065218-8b1dfb905ebb h1:1a6Odn11bqzEk9WDjUR6qaQ/9N2YyXNfM14HLY8mnkI=
 github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230719065218-8b1dfb905ebb/go.mod h1:yKxs0d0LCaraNwGjJaouWN5XIfmzMypgkb8S2ICemjc=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719065218-8b1dfb905ebb h1:PjUW9CPl4Wj6iNnVYYzhtmNqSl0XjRbcKAdGPy4cnkc=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719065218-8b1dfb905ebb/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719084416-e3f0b4b501a4 h1:Ru0qzRxC5a19GpL8uz+MUjsNQPIVn0fbz0UrIH8yinc=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719084416-e3f0b4b501a4/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20230719065218-8b1dfb905ebb h1:GkAiUvxmSEg9xl0Q3r1nTvsymddKdegsBL1BkJabl4A=
 github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20230719065218-8b1dfb905ebb/go.mod h1:hlJtUA3tf3O9AwpLPjMIK6pmOBa+dPXd6abCLsm14uQ=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868/go.mod h1:srphKZ1i+yGXxl/LpBS7ZIECTjCTPzZzAMtJWoG3sLo=

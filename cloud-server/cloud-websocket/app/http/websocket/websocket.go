@@ -19,7 +19,7 @@ func Handler(c *sinking_server.Context) {
 		c.NotLogin("token验证失败", nil)
 		return
 	}
-	id, exists := util.Cache.Get(util2.CacheNameWebSocketAuth + token) //获取token信息
+	_, exists := util.Cache.Get(util2.CacheNameWebSocketAuth + token) //获取token信息
 	if !exists {
 		c.NotLogin("token鉴权失败", nil)
 		return
@@ -27,23 +27,22 @@ func Handler(c *sinking_server.Context) {
 	//ws推送业务
 	wsServer := sinking_websocket.WebSocket{
 		OnError: func(err error) {
-			Connection.Delete(id)
-			util.Cache.Delete(util2.CacheNameWebSocketToken + id)
+			Connection.Delete(token)
+			util.Cache.Delete(util2.CacheNameWebSocketAuth + token)
 		},
 		OnConnect: func(ws *sinking_websocket.Conn) {
-			Connection.Set(id, ws)
+			Connection.Set(token, ws)
 			//更新用户ws地址
 			addr := util.Conf.GetString(config.ConfApplicationAddr) + ":" + util.Conf.GetString(config.ConfApplicationPort)
-			if !util.Cache.SetWithExpire(util2.CacheNameWebSocketToken+id, addr, util2.CacheTimeWebSocketToken) {
-				Connection.Delete(id)
+			if !util.Cache.SetWithExpire(util2.CacheNameWebSocketAuth+token, addr, util2.CacheTimeWebSocketAuth) {
+				Connection.Delete(token)
 			}
 		},
 		OnClose: func(err error) {
-			Connection.Delete(id)
-			util.Cache.Delete(util2.CacheNameWebSocketToken + id)
+			Connection.Delete(token)
+			util.Cache.Delete(util2.CacheNameWebSocketAuth + token)
 		},
 		OnMessage: func(ws *sinking_websocket.Conn, messageType int, data []byte) {
-			//只返回时间信息,用作心跳判断
 			dateTime := time.Now().Format("2006-01-02 15:04:05")
 			_ = ws.Conn.WriteMessage(1, []byte(dateTime))
 		},

@@ -52,7 +52,7 @@ func (l *webSocketProducer) run() {
 			if err != nil {
 				continue
 			}
-			tag, exists := util.Cache.Get(util2.CacheNameWebSocketToken + task.Id)
+			tag, exists := util.Cache.Get(util2.CacheNameWebSocketAuth + task.Id)
 			if exists {
 				_, err = webSocketProducerIns.SendByteMsg(queue3.WebSocketSenderTopic, tag, bytes)
 				if err != nil {
