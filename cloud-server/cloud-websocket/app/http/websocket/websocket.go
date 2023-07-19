@@ -26,25 +26,28 @@ func Handler(c *sinking_server.Context) {
 	}
 	//ws推送业务
 	wsServer := sinking_websocket.WebSocket{
-		OnError: func(err error) {
-			Connection.Delete(token)
-			util.Cache.Delete(util2.CacheNameWebSocketAuth + token)
+		Id: token,
+		OnError: func(id string, err error) {
+			Connection.Delete(id)
+			util.Cache.Delete(util2.CacheNameWebSocketAuth + id)
 		},
-		OnConnect: func(ws *sinking_websocket.Conn) {
-			Connection.Set(token, ws)
+		OnConnect: func(id string, ws *sinking_websocket.Conn) {
+			Connection.Set(id, ws)
 			//更新用户ws地址
 			addr := util.Conf.GetString(config.ConfApplicationAddr) + ":" + util.Conf.GetString(config.ConfApplicationPort)
-			if !util.Cache.SetWithExpire(util2.CacheNameWebSocketAuth+token, addr, util2.CacheTimeWebSocketAuth) {
-				Connection.Delete(token)
+			if !util.Cache.SetWithExpire(util2.CacheNameWebSocketAuth+id, addr, util2.CacheTimeWebSocketAuth) {
+				Connection.Delete(id)
 			}
 		},
-		OnClose: func(err error) {
-			Connection.Delete(token)
-			util.Cache.Delete(util2.CacheNameWebSocketAuth + token)
+		OnClose: func(id string, err error) {
+			Connection.Delete(id)
+			util.Cache.Delete(util2.CacheNameWebSocketAuth + id)
 		},
-		OnMessage: func(ws *sinking_websocket.Conn, messageType int, data []byte) {
-			dateTime := time.Now().Format("2006-01-02 15:04:05")
-			_ = ws.Conn.WriteMessage(1, []byte(dateTime))
+		OnMessage: func(id string, ws *sinking_websocket.Conn, messageType int, data []byte) {
+			if string(data) == "ping" {
+				dateTime := time.Now().Format("2006-01-02 15:04:05")
+				_ = ws.Conn.WriteMessage(1, []byte(dateTime))
+			}
 		},
 	}
 	response := c.Writer.Header().Clone()

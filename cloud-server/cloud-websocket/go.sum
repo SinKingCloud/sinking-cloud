@@ -607,6 +607,8 @@ github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719084416-e3f0b4b501a
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719084416-e3f0b4b501a4/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20230719065218-8b1dfb905ebb h1:GkAiUvxmSEg9xl0Q3r1nTvsymddKdegsBL1BkJabl4A=
 github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20230719065218-8b1dfb905ebb/go.mod h1:hlJtUA3tf3O9AwpLPjMIK6pmOBa+dPXd6abCLsm14uQ=
+github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20230719084416-e3f0b4b501a4 h1:NIJ6T9hc5HQPfie8TMfa/sEZs26mOj6aJ/eUxp0VvJ0=
+github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20230719084416-e3f0b4b501a4/go.mod h1:hlJtUA3tf3O9AwpLPjMIK6pmOBa+dPXd6abCLsm14uQ=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868/go.mod h1:srphKZ1i+yGXxl/LpBS7ZIECTjCTPzZzAMtJWoG3sLo=
 github.com/ajstarks/deck v0.0.0-20200831202436-30c9fc6549a9/go.mod h1:JynElWSGnm/4RlzPXRlREEwqTHAN3T56Bv2ITsFT3gY=
 github.com/ajstarks/deck/generate v0.0.0-20210309230005-c3f852c02e19/go.mod h1:T13YZdzov6OU0A1+RfKZiZN9ca6VeKdBdyDV+BY97Tk=

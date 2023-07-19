@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719084416-e3f0b4b501a4
-	github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20230719065218-8b1dfb905ebb
+	github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20230719084416-e3f0b4b501a4
 )
 
 require (
