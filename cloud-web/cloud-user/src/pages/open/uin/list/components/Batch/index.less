@@ -10,3 +10,20 @@
   color: black;
   text-align: center;
 }
+
+.time{
+  :global{
+    .ant-picker-panel-container{
+      margin-left: 62px;
+    }
+  }
+}
+@media screen and (max-width: 750px) {
+  .time{
+    :global{
+      .ant-picker-panel-container{
+        margin-left: 25px;
+      }
+    }
+  }
+}

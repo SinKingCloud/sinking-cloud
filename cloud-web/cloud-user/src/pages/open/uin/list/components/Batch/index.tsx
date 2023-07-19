@@ -386,6 +386,7 @@ const Batch = React.forwardRef<BatchRef, BatchProps>((props, ref) => {
                     <Form.Item name="time">
                       <TimePicker key={"timing"} bordered={true} allowClear={false}
                                   suffixIcon={false}
+                                  popupClassName={styles['time']}
                                   placeholder="请选择挂机时间"
                                   style={{textAlign: "center", width: "100%"}}
                                   value={moment(timing, 'HH:mm')}
