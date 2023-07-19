@@ -7,7 +7,7 @@ require (
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719065218-8b1dfb905ebb
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1520
-	github.com/aliyun/aliyun-oss-go-sdk v2.2.1+incompatible
+	github.com/aliyun/aliyun-oss-go-sdk v2.2.7+incompatible
 	github.com/apache/rocketmq-client-go/v2 v2.1.1
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 	github.com/go-pay/gopay v1.5.74
@@ -23,7 +23,6 @@ require (
 )
 
 require (
-	github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
@@ -57,7 +56,7 @@ require (
 	golang.org/x/image v0.1.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
-	golang.org/x/time v0.1.0 // indirect
+	golang.org/x/time v0.3.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

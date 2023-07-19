@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719065218-8b1dfb905ebb
-	github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20211125053718-b26199caff3f
+	github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20230719065218-8b1dfb905ebb
 )
 
 require (
@@ -21,7 +21,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/gomodule/redigo v1.8.5 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.2 // indirect
