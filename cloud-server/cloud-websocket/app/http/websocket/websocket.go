@@ -14,7 +14,7 @@ var Connection *sinking_websocket.WebSocketConnections
 // Handler websocket处理
 func Handler(c *sinking_server.Context) {
 	//获取token
-	token := c.Request.Header.Get("Sec-WebSocket-Protocol")
+	token := c.Request.Header.Get("Sec-Websocket-Protocol")
 	if token == "" || len(token) != 32 {
 		c.NotLogin("token验证失败", nil)
 		return
@@ -48,5 +48,7 @@ func Handler(c *sinking_server.Context) {
 			_ = ws.Conn.WriteMessage(1, []byte(dateTime))
 		},
 	}
-	wsServer.Listen(c.Writer, c.Request)
+	response := c.Writer.Header().Clone()
+	response.Set("Sec-Websocket-Protocol", token)
+	wsServer.Listen(c.Writer, c.Request, response)
 }

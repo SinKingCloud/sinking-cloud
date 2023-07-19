@@ -25,10 +25,10 @@ func GetWebUserConfSrvIns() *webUserConfService {
 }
 
 // GetConfigs 获取用户所有配置项
-func (s *webUserConfService) GetConfigs(userId int) map[string]string {
+func (s *webUserConfService) GetConfigs(userId int, prefix string) map[string]string {
 	data := make(map[string]string)
 	var conf []*model.WebUserConfig
-	err := util.Database.Db.Where("`user_id` = ?", userId).Find(&conf).Error
+	err := util.Database.Db.Debug().Where("`user_id` = ? AND `key` LIKE ?", userId, prefix+"%").Find(&conf).Error
 	if err == nil {
 		for _, v := range conf {
 			data[v.Key] = v.Value

@@ -36,6 +36,10 @@ func loadWebRoute(s *sinking_web.Engine) {
 	outGroup := r.Group("/out_login")
 	outGroup.Use(middleware.AuthUser())
 	outGroup.GET("/", sinking_server.HandleFunc(handle.OutLogin))
+
+	pushGroup := r.Group("/push")
+	pushGroup.Use(middleware.AuthUser())
+	pushGroup.GET("/", sinking_server.HandleFunc(handle.Push))
 }
 
 // loadWebRoute 加载后台授权路由
@@ -48,6 +52,10 @@ func loadSystemRoute(s *sinking_web.Engine) {
 	outGroup := r.Group("/out_login")
 	outGroup.Use(middleware.AuthAdmin())
 	outGroup.GET("/", sinking_server.HandleFunc(handle.OutLogin))
+
+	pushGroup := r.Group("/push")
+	pushGroup.Use(middleware.AuthAdmin())
+	pushGroup.GET("/", sinking_server.HandleFunc(handle.Push))
 }
 
 // loadWebRoute 加载验证器路由

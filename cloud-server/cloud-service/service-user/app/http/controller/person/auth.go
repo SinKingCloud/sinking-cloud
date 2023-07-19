@@ -13,7 +13,7 @@ import (
 // AuthInfo 获取实名信息
 func (ControllerPerson) AuthInfo(c *sinking_server.Context) {
 	user := user2.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, false)
-	configs := service.GetWebUserConfSrvIns().GetConfigs(user.Id)
+	configs := service.GetWebUserConfSrvIns().GetConfigs(user.Id, constant.UserConfigPerson)
 	c.SuccessWithData("获取实名信息成功", sinking_web.H{
 		"real_auth": user.RealAuth,
 		"card_no":   str.NewStringTool(configs[constant.UserConfigPersonCardNo]).Show(4, 2, "*"),

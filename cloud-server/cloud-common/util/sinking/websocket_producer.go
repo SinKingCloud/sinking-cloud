@@ -5,8 +5,12 @@ import (
 	"errors"
 	queue3 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/queue"
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/web_user_config"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"strconv"
 )
 
 // webSocketProducerIns 生产者单例
@@ -76,4 +80,58 @@ func (l *webSocketProducer) Auth(id string) error {
 		return nil
 	}
 	return errors.New("授权token失败")
+}
+
+// Push 根据32位token推送 id:user_id msg:消息内容
+func (l *webSocketProducer) Push(id string, msg string) {
+	l.msg = &WebSocketMessage{
+		Id:      id,
+		Message: msg,
+	}
+	l.Send()
+}
+
+// GenToken 生成token
+func (l *webSocketProducer) GenToken() (string, error) {
+	id := str.NewStringTool(str.GetSnowWorkIns().GetUuid()).Md5()
+	if l.Auth(id) == nil {
+		return id, nil
+	}
+	return "", errors.New("授权token失败")
+}
+
+// PushByUserId 根据用户ID推送 id:user_id msg:消息内容
+func (l *webSocketProducer) PushByUserId(userId int, msg string) error {
+	//1.查询用户绑定得token
+	token, exists := util.Cache.Get(util2.CacheNameWebSocketUser + strconv.Itoa(userId))
+	if !exists {
+		configs := service.GetWebUserConfSrvIns().GetConfigs(userId, web_user_config.WebSocket)
+		if d, ok := configs[web_user_config.WebSocketToken]; ok {
+			if util.Cache.SetWithExpire(util2.CacheNameWebSocketUser+strconv.Itoa(userId), d, util2.CacheTimeWebSocketUser) {
+				exists = true
+				token = d
+			}
+		}
+	}
+	if exists && token != "" {
+		l.Push(token, msg)
+		return nil
+	}
+	return errors.New("获取绑定关系失败")
+}
+
+// GenTokenByUserId 根据用户ID生成token id:user_id msg:消息内容
+func (l *webSocketProducer) GenTokenByUserId(userId int) (string, error) {
+	//1.生成用户绑定token
+	token, err := l.GenToken()
+	if err != nil || token == "" {
+		return "", errors.New("获取授权token失败")
+	}
+	//2.写入用户绑定关系
+	if service.GetWebUserConfSrvIns().SetConfig(userId, web_user_config.WebSocketToken, token) {
+		if util.Cache.SetWithExpire(util2.CacheNameWebSocketUser+strconv.Itoa(userId), token, util2.CacheTimeWebSocketUser) {
+			return token, nil
+		}
+	}
+	return "", errors.New("写入授权token失败")
 }
