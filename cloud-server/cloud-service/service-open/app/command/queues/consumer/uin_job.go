@@ -28,6 +28,7 @@ import (
 var (
 	uinJobIns     queue.MqConsumer
 	onceUinJobIns sync.Once
+	refreshTask   = utils.NewDelayQueue(10, 100000)
 )
 
 func NewUinJob() *uinJob {
@@ -44,7 +45,7 @@ func (l *uinJob) Listen() {
 	})
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("3252362007") //3252362007
+	//	list, _ := uin2.GetIns().SelectByUin("1031730851") //2528328605 3292163391
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -330,6 +331,10 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 	if err == nil {
 		cookies[oicq.Ws] = wsCookie
 	}
+	err, musicCookie := web_uin.GetUinCookies(uin.Uin, "y.qq.com", true)
+	if err == nil {
+		cookies[oicq.QQMusic] = musicCookie
+	}
 	//登陆手机
 	err, loginResponse := cli.AutoLogin()
 	log.Println("挂机登陆结果", uin.Uin, err, loginResponse)
@@ -375,10 +380,22 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 	if resCookie[oicq.Ws] != "" && (wsCookie == "" || resCookie[oicq.Ws] != wsCookie) {
 		_ = web_uin.SetUinCookies(uin.Uin, "h5.weishi.qq.com", resCookie[oicq.Ws])
 	}
+	if resCookie[oicq.QQMusic] != "" && (musicCookie == "" || resCookie[oicq.QQMusic] != musicCookie) {
+		_ = web_uin.SetUinCookies(uin.Uin, "i.qq.com", resCookie[oicq.QQMusic])
+	}
 	//保存加速状态
 	if e, s := cli.Mobile.Speed.Info(); e == nil {
 		l.saveJobStatus(uin, 1, s)
 	}
+	//延迟刷新状态
+	refreshTask.Push(10*time.Minute, func() {
+		if cli != nil {
+			cli.Mobile.Speed.VisitLevelPage()
+			if e, s := cli.Mobile.Speed.Info(); e == nil {
+				_ = web_uin.SetUinSpeedStatus(uin.Uin, s)
+			}
+		}
+	})
 	return false, nil, cli.LoginToken
 }
 
@@ -427,6 +444,9 @@ func (l *uinJob) getUnDoJobs(jobs []oicq.Job, status *client.SpeedStatus, isSys 
 				break
 			case oicq.Friend:
 				isCheck = status.IAddFriend != "1"
+				break
+			case oicq.QQMusic:
+				isCheck = status.IQQMusic != "1"
 				break
 			default:
 				isCheck = !isSys //用户提交则补挂签到

@@ -230,6 +230,7 @@ func SetUinSpeedStatus(uin string, status *client.SpeedStatus) error {
 		"word":         status.ISmallWorld,
 		"dress":        status.IDress,
 		"qbox":         status.IQBox,
+		"qq_music":     status.IQQMusic,
 	}
 	return uin_info.GetIns().Save(info, speedInfo)
 }

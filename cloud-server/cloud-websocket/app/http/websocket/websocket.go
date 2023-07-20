@@ -11,6 +11,35 @@ import (
 
 var Connection *sinking_websocket.WebSocketConnections
 
+// onError 监听错误
+func onError(id string, err error) {
+	Connection.Delete(id)
+	util.Cache.Delete(util2.CacheNameWebSocketAuth + id)
+}
+
+// onConnect 监听连接
+func onConnect(id string, ws *sinking_websocket.Conn) {
+	Connection.Set(id, ws)
+	addr := util.Conf.GetString(config.ConfApplicationAddr) + ":" + util.Conf.GetString(config.ConfApplicationPort)
+	if !util.Cache.SetWithExpire(util2.CacheNameWebSocketAuth+id, addr, util2.CacheTimeWebSocketAuth) {
+		Connection.Delete(id)
+	}
+}
+
+// onClose 监听关闭
+func onClose(id string, err error) {
+	Connection.Delete(id)
+	util.Cache.Delete(util2.CacheNameWebSocketAuth + id)
+}
+
+// onMessage 接收消息
+func onMessage(id string, ws *sinking_websocket.Conn, messageType int, data []byte) {
+	if string(data) == "ping" {
+		dateTime := time.Now().Format("2006-01-02 15:04:05")
+		_ = ws.Conn.WriteMessage(1, []byte(dateTime))
+	}
+}
+
 // Handler websocket处理
 func Handler(c *sinking_server.Context) {
 	//获取token
@@ -26,29 +55,11 @@ func Handler(c *sinking_server.Context) {
 	}
 	//ws推送业务
 	wsServer := sinking_websocket.WebSocket{
-		Id: token,
-		OnError: func(id string, err error) {
-			Connection.Delete(id)
-			util.Cache.Delete(util2.CacheNameWebSocketAuth + id)
-		},
-		OnConnect: func(id string, ws *sinking_websocket.Conn) {
-			Connection.Set(id, ws)
-			//更新用户ws地址
-			addr := util.Conf.GetString(config.ConfApplicationAddr) + ":" + util.Conf.GetString(config.ConfApplicationPort)
-			if !util.Cache.SetWithExpire(util2.CacheNameWebSocketAuth+id, addr, util2.CacheTimeWebSocketAuth) {
-				Connection.Delete(id)
-			}
-		},
-		OnClose: func(id string, err error) {
-			Connection.Delete(id)
-			util.Cache.Delete(util2.CacheNameWebSocketAuth + id)
-		},
-		OnMessage: func(id string, ws *sinking_websocket.Conn, messageType int, data []byte) {
-			if string(data) == "ping" {
-				dateTime := time.Now().Format("2006-01-02 15:04:05")
-				_ = ws.Conn.WriteMessage(1, []byte(dateTime))
-			}
-		},
+		Id:        token,
+		OnError:   onError,
+		OnConnect: onConnect,
+		OnClose:   onClose,
+		OnMessage: onMessage,
 	}
 	response := c.Writer.Header().Clone()
 	response.Set("Sec-Websocket-Protocol", token)

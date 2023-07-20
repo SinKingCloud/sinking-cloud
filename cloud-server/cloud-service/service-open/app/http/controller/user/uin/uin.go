@@ -1210,7 +1210,7 @@ func (ControllerUin) Info(c *sinking_server.Context) {
 func (ControllerUin) Heart(c *sinking_server.Context) {
 	type Form struct {
 		Uin  string `json:"uin" validate:"required,numeric" label:"QQ账号"`
-		Wait bool   `json:"wait" validate:"omitempty" label:"QQ账号"`
+		Wait bool   `json:"wait" validate:"omitempty" label:"是否等待返回结果"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorJson(form); !ok {
