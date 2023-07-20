@@ -53,9 +53,6 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					if status == mobile.SpeedCookieExpire {
 						_, cookie, status = o.Mobile.Speed.Music("")
 					}
-					if status == mobile.SpeedError {
-						_, cookie, status = o.Mobile.Speed.Music(cookie)
-					}
 					break
 				case GameCenter: //游戏中心签到
 					_, status = o.Mobile.Speed.GameCenterSign()
