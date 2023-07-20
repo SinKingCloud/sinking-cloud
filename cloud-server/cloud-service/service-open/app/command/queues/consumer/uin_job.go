@@ -388,7 +388,7 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 		l.saveJobStatus(uin, 1, s)
 	}
 	//延迟刷新状态
-	refreshTask.Push(10*time.Minute, func() {
+	refreshTask.Push(70*time.Minute, func() {
 		if cli != nil {
 			cli.Mobile.Speed.VisitLevelPage()
 			if e, s := cli.Mobile.Speed.Info(); e == nil {
