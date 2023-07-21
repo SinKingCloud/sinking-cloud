@@ -6,6 +6,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-go/sinking-websocket"
+	"net/http"
 	"time"
 )
 
@@ -61,7 +62,7 @@ func Handler(c *sinking_server.Context) {
 		OnClose:   onClose,
 		OnMessage: onMessage,
 	}
-	response := c.Writer.Header().Clone()
+	response := make(http.Header)
 	response.Set("Sec-Websocket-Protocol", token)
 	wsServer.Listen(c.Writer, c.Request, response)
 }
