@@ -38,7 +38,7 @@ const (
 // Setting 功能设置
 var Setting = map[JobName]string{
 	Mobile:      "1",
-	Pc:          "1",
+	Pc:          "0",
 	Ws:          "1",
 	MobileClock: "1",
 	ZoneClock:   "1",
