@@ -7,13 +7,11 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/aliyun"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/user"
 	"strconv"
 )
 
 // FaceInit 初始化人脸识别
-func FaceInit(userId int, cardType string, cardNo string, cardName string) (string, string, error) {
+func FaceInit(userId int, cardType string, cardNo string, cardName string, jumpUrl string, callbackUrl string) (string, string, error) {
 	type Form struct {
 		UserId   int    `json:"user_id"`
 		CardNo   string `json:"card_no"`
@@ -26,6 +24,12 @@ func FaceInit(userId int, cardType string, cardNo string, cardName string) (stri
 	}
 	configs := service.GetSystemConfigServiceIns().GetGroupByCache(config.AliyunGroup, false)
 	configs2 := service.GetSystemConfigServiceIns().GetGroupByCache(config.SystemGroup, false)
+	if jumpUrl == "" {
+		jumpUrl = configs2[config.SystemUrl]
+	}
+	if callbackUrl == "" {
+		callbackUrl = "/auth/callback/face"
+	}
 	id, url, err := aliyun.NewFace(configs[config.AliyunAccessKey], configs[config.AliyunAccessSecret]).
 		Init(strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10),
 			configs[config.AliyunAuthSceneId],
@@ -33,8 +37,8 @@ func FaceInit(userId int, cardType string, cardNo string, cardName string) (stri
 			cardType,
 			cardNo,
 			cardName,
-			configs2[config.SystemUrl],
-			configs2[config.SystemGateway]+"/auth/callback/face",
+			jumpUrl,
+			configs2[config.SystemGateway]+callbackUrl,
 		)
 	if err != nil {
 		return "", "", err
@@ -50,12 +54,12 @@ func FaceInit(userId int, cardType string, cardNo string, cardName string) (stri
 }
 
 // FaceCheck 判断人脸识别
-func FaceCheck(id string) bool {
+func FaceCheck(id string) (res bool, userId int, cardNo string, cardName string) {
 	configs := service.GetSystemConfigServiceIns().GetGroupByCache(config.AliyunGroup, false)
 	res, err := aliyun.NewFace(configs[config.AliyunAccessKey], configs[config.AliyunAccessSecret]).
 		Query(configs[config.AliyunAuthSceneId], id)
 	if err != nil {
-		return false
+		return false, 0, "", ""
 	}
 	if res {
 		data, exists := util.Cache.Get("Face_" + id)
@@ -66,19 +70,11 @@ func FaceCheck(id string) bool {
 				CardName string `json:"card_name"`
 			}
 			form := &Form{}
-			err := json.Unmarshal([]byte(data), &form)
+			err = json.Unmarshal([]byte(data), &form)
 			if err == nil {
-				//写入信息
-				service.GetWebUserConfSrvIns().SetConfigs(form.UserId, map[string]string{
-					constant.UserConfigPersonCardNo:   form.CardNo,
-					constant.UserConfigPersonCardName: form.CardName,
-				})
-				//更新用户信息
-				_ = user.GetIns().UpdateById(form.UserId, map[string]interface{}{
-					"real_auth": "1",
-				})
+				return true, form.UserId, form.CardNo, form.CardName
 			}
 		}
 	}
-	return res
+	return res, 0, "", ""
 }

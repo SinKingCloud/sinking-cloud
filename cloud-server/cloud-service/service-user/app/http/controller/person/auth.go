@@ -1,10 +1,10 @@
 package person
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/web_user_config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/aliyun"
 	user2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/user"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -13,11 +13,11 @@ import (
 // AuthInfo 获取实名信息
 func (ControllerPerson) AuthInfo(c *sinking_server.Context) {
 	user := user2.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, false)
-	configs := service.GetWebUserConfSrvIns().GetConfigs(user.Id, constant.UserConfigPerson)
+	configs := service.GetWebUserConfSrvIns().GetConfigs(user.Id, web_user_config.Person)
 	c.SuccessWithData("获取实名信息成功", sinking_web.H{
 		"real_auth": user.RealAuth,
-		"card_no":   str.NewStringTool(configs[constant.UserConfigPersonCardNo]).Show(4, 2, "*"),
-		"card_name": str.NewStringTool(configs[constant.UserConfigPersonCardName]).Show(1, 0, "*"),
+		"card_no":   str.NewStringTool(configs[web_user_config.PersonCardNo]).Show(4, 2, "*"),
+		"card_name": str.NewStringTool(configs[web_user_config.PersonCardName]).Show(1, 0, "*"),
 	})
 }
 
@@ -38,7 +38,7 @@ func (ControllerPerson) AuthInit(c *sinking_server.Context) {
 		c.Error("您已实名成功,无需重复实名")
 		return
 	}
-	id, url, err := aliyun.FaceInit(user.Id, form.CardType, form.CardNo, form.CardName)
+	id, url, err := aliyun.FaceInit(user.Id, form.CardType, form.CardNo, form.CardName, "", "")
 	if err != nil {
 		c.Error("发起认证请求失败，请检查资料")
 		return
@@ -59,8 +59,17 @@ func (ControllerPerson) AuthCheck(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	if aliyun.FaceCheck(form.CertifyId) {
-		c.Success("实名成功")
+	user := user2.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, false)
+	if user.RealAuth == 1 {
+		c.Error("您已实名成功,无需重复实名")
+		return
+	}
+	if res, userId, cardNo, cardName := aliyun.FaceCheck(form.CertifyId); res && userId == c.GetWebUserInfo().Id {
+		if service.GetWebUserServiceIns().SetRealAuthStatu(userId, res, cardNo, cardName) == nil {
+			c.Success("实名成功")
+		} else {
+			c.Error("更改实名状态失败")
+		}
 	} else {
 		c.Error("实名失败")
 	}

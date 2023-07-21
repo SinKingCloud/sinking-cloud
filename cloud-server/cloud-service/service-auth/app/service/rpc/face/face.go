@@ -26,12 +26,24 @@ func GetIns() *service {
 }
 
 // Check 判断验证码是否正确
-func (*service) Check(id string) bool {
-	client, err := rpc.New(group.CloudService, name.ServiceUser).Call("/rpc/face/check", &rpc.Param{
-		"id": id,
-	}).Response()
-	if err != nil {
-		return false
+func (*service) Check(id string) (res bool, userId int, cardNo string, cardName string) {
+	type Response struct {
+		Code      int    `json:"code"`
+		Message   string `json:"message"`
+		RequestId string `json:"request_id"`
+		Data      *struct {
+			UserId   int    `json:"user_id"`
+			Result   bool   `json:"result"`
+			CardNo   string `json:"card_no"`
+			CardName string `json:"card_name"`
+		} `json:"data"`
 	}
-	return client.Data.(bool)
+	var response Response
+	_, err := rpc.New(group.CloudService, name.ServiceUser).Call("/rpc/face/check", &rpc.Param{
+		"id": id,
+	}).Unmarshal(&response)
+	if err != nil || response.Code != 200 || response.Data == nil {
+		return false, 0, "", ""
+	}
+	return response.Data.Result, response.Data.UserId, response.Data.CardNo, response.Data.CardName
 }

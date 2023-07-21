@@ -1,6 +1,7 @@
 package callback
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/rpc"
 )
@@ -15,7 +16,8 @@ func (ControllerCallback) Face(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	if rpc.Face.Check(form.CertifyId) {
+	if res, userId, cardNo, cardName := rpc.Face.Check(form.CertifyId); res && userId > 0 {
+		_ = service.GetWebUserServiceIns().SetRealAuthStatu(userId, res, cardNo, cardName)
 		c.Success("success")
 	} else {
 		c.Error("error")

@@ -2,7 +2,9 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/web_user_config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
@@ -38,6 +40,16 @@ func (webUserService) ClearCache(id int) {
 // FindById 查询用户信息(根据用户ID)
 func (webUserService) FindById(id int) (user *model.WebUser, err error) {
 	err = util.Database.Db.Where("id = ?", id).First(&user).Error
+	return
+}
+
+// UpdateById 通过ID更新
+func (w webUserService) UpdateById(id int, data map[string]interface{}) (err error) {
+	data["update_time"] = str.DateTime(time.Now())
+	err = util.Database.Db.Model(&model.WebUser{}).Where("`id` = ? ", id).Updates(data).Error
+	if err == nil {
+		w.ClearCache(id)
+	}
 	return
 }
 
@@ -81,5 +93,26 @@ func (webUserService) Money(userId int, money string, mod int) (err error) {
 		"money":       gorm.Expr("`money`" + l + money),
 		"update_time": str.DateTime(time.Now()),
 	}).Error
+	return
+}
+
+// SetRealAuthStatu 设置实名状态(根据用户ID)
+func (w webUserService) SetRealAuthStatu(userId int, status bool, cardNo string, cardName string) (err error) {
+	if userId <= 0 {
+		return errors.New("用户不存在")
+	}
+	if cardNo != "" {
+		GetWebUserConfSrvIns().SetConfig(userId, web_user_config.PersonCardNo, cardNo)
+	}
+	if cardName != "" {
+		GetWebUserConfSrvIns().SetConfig(userId, web_user_config.PersonCardName, cardName)
+	}
+	s := "0"
+	if status {
+		s = "1"
+	}
+	err = w.UpdateById(userId, map[string]interface{}{
+		"real_auth": s,
+	})
 	return
 }

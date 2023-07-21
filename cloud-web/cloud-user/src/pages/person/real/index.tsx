@@ -60,7 +60,7 @@ export default (): React.ReactNode => {
    * 递归判断状态
    */
   const checkStatus = (id: string) => {
-    if (id != "" && localStorage.getItem('internal') == id && location.pathname == "/person/real" && current == 1) {
+    if (id != "" && localStorage.getItem('internal') == id && history.location.pathname == "/person/real" && current == 1) {
       checkAuth({certifyId: id}).then(async (r) => {
         if (r.code != 200) {
           setTimeout(() => {
