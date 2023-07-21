@@ -40,7 +40,7 @@ type Proxy struct {
 func NewOicq(uin int64, password [16]byte, proxy *Proxy, device int, loginToken []byte, proto mobile.ClientProtocol) *Oicq {
 	oicq := &Oicq{
 		Mobile:   mobile.NewClientMd5(uin, password).UseDevice(GetMobileDevice(uin, device, proto)).ChooseServerMode(true),
-		Pc:       pc.NewClientMd5(uin, password[:]).UseDevice(GetPcDevice(uin)).UseTcp(true),
+		Pc:       pc.NewClientMd5(uin, password[:]).UseDevice(GetPcDevice(uin)).ChooseServerMode(true).UseTcp(true),
 		DeviceId: device,
 		Password: password,
 	}
