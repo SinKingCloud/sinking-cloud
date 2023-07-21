@@ -214,6 +214,9 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 						if status.ISmallWorld != "1" {
 							_, _, _ = cli.Speed.WebFeedCloud("")
 						}
+						if status.IQQMusic != "1" {
+							_, _, _ = cli.Speed.Music("")
+						}
 					}
 				}
 				break
