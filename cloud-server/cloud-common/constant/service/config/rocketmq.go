@@ -1,5 +1,7 @@
 package config
 
 const (
-	RocketmqServer = "server"
+	RocketmqServer    = "server"
+	RocketmqAccessKey = "accessKey"
+	RocketmqSecretKey = "secretKey"
 )

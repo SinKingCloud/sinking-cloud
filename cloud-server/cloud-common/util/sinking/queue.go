@@ -10,16 +10,18 @@ import (
 
 // GetRocketProducerServer 获取消息队列生产者对象
 func GetRocketProducerServer(groupName string, retry int) queue.MqProducer {
+	vip := util.Consul.Config(group.CloudCommon).Name(config.RocketMqCommon).Viper()
 	return queue.RegisterRocketProducerMust([]string{
-		util.Consul.Config(group.CloudCommon).Name(config.RocketMqCommon).Viper().GetString(config.RocketmqServer),
-	}, groupName, retry)
+		vip.GetString(config.RocketmqServer),
+	}, groupName, retry, vip.GetString(config.RocketmqAccessKey), vip.GetString(config.RocketmqSecretKey))
 }
 
 // GetRocketConsumerServer 获取消息队列消费者者对象
 func GetRocketConsumerServer(groupName string, allListen bool) queue.MqConsumer {
+	vip := util.Consul.Config(group.CloudCommon).Name(config.RocketMqCommon).Viper()
 	return queue.RegisterRocketConsumerMust([]string{
-		util.Consul.Config(group.CloudCommon).Name(config.RocketMqCommon).Viper().GetString(config.RocketmqServer),
-	}, groupName, allListen)
+		vip.GetString(config.RocketmqServer),
+	}, groupName, allListen, vip.GetString(config.RocketmqAccessKey), vip.GetString(config.RocketmqSecretKey))
 }
 
 // GetServerHash 获取节点hash

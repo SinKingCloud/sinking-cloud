@@ -17,9 +17,9 @@ type RocketMq struct {
 }
 
 // RegisterRocketProducerMust 注册并启动生产者接口实现
-func RegisterRocketProducerMust(endPoints []string, groupName string, retry int) (client MqProducer) {
+func RegisterRocketProducerMust(endPoints []string, groupName string, retry int, accessKey string, secretKey string) (client MqProducer) {
 	var err error
-	client, err = RegisterRocketMqProducer(endPoints, groupName, retry)
+	client, err = RegisterRocketMqProducer(endPoints, groupName, retry, accessKey, secretKey)
 	if err != nil {
 		panic(err)
 	}
@@ -27,9 +27,9 @@ func RegisterRocketProducerMust(endPoints []string, groupName string, retry int)
 }
 
 // RegisterRocketConsumerMust 注册消费者
-func RegisterRocketConsumerMust(endPoints []string, groupName string, allListen bool) (client MqConsumer) {
+func RegisterRocketConsumerMust(endPoints []string, groupName string, allListen bool, accessKey string, secretKey string) (client MqConsumer) {
 	var err error
-	client, err = RegisterRocketMqConsumer(endPoints, groupName, allListen)
+	client, err = RegisterRocketMqConsumer(endPoints, groupName, allListen, accessKey, secretKey)
 	if err != nil {
 		panic(err)
 	}
@@ -106,7 +106,7 @@ func (r *RocketMq) ListenReceiveMsgDo(topic string, tag string, receiveDo func(m
 }
 
 // RegisterRocketMqProducer 注册rocketmq生产者
-func RegisterRocketMqProducer(endPoints []string, groupName string, retry int) (mqIns *RocketMq, err error) {
+func RegisterRocketMqProducer(endPoints []string, groupName string, retry int, accessKey string, secretKey string) (mqIns *RocketMq, err error) {
 	addr, err := primitive.NewNamesrvAddr(endPoints...)
 	if err != nil {
 		return nil, err
@@ -124,6 +124,10 @@ func RegisterRocketMqProducer(endPoints []string, groupName string, retry int) (
 		producer.WithRetry(retry),
 		producer.WithGroupName(groupName),
 		producer.WithVIPChannel(false),
+		producer.WithCredentials(primitive.Credentials{
+			AccessKey: accessKey,
+			SecretKey: secretKey,
+		}),
 	)
 
 	if err != nil {
@@ -139,7 +143,7 @@ func RegisterRocketMqProducer(endPoints []string, groupName string, retry int) (
 }
 
 // RegisterRocketMqConsumer 注册rocketmq消费者
-func RegisterRocketMqConsumer(endPoints []string, groupName string, allListen bool) (mqIns *RocketMq, err error) {
+func RegisterRocketMqConsumer(endPoints []string, groupName string, allListen bool, accessKey string, secretKey string) (mqIns *RocketMq, err error) {
 	addr, err := primitive.NewNamesrvAddr(endPoints...)
 	if err != nil {
 		return nil, err
@@ -155,6 +159,10 @@ func RegisterRocketMqConsumer(endPoints []string, groupName string, allListen bo
 		consumer.WithNameServer(addr),
 		consumer.WithConsumerModel(consumerModel),
 		consumer.WithGroupName(groupName),
+		consumer.WithCredentials(primitive.Credentials{
+			AccessKey: accessKey,
+			SecretKey: secretKey,
+		}),
 	)
 	if err != nil {
 		return nil, err
