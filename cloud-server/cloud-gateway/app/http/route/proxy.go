@@ -47,7 +47,7 @@ func InitProxyRouter(route *sinking_web.Engine) {
 				url, exists := util.Consul.GetService(groupName.(string), name.(string), mode)
 				if exists {
 					s.Set(constant.ServerAddr, url.Addr)
-					s.Proxy(prefix+url.Addr, func(r *http.Request) *http.Request {
+					err := s.Proxy(prefix+url.Addr, func(r *http.Request) *http.Request {
 						r.URL.Path = strings.Replace(s.Request.URL.Path, patten, "", 1)
 						r.URL.RawPath, r.RequestURI = r.URL.Path, r.URL.Path
 						r.Header.Set(util.Conf.GetString("register.tokenKey"), util.Conf.GetString("register.tokenValue"))
@@ -57,6 +57,7 @@ func InitProxyRouter(route *sinking_web.Engine) {
 						r.Header.Set("X-Real-Ip", ip)
 						return r
 					})
+					s.ErrorWithData("调用服务失败", err)
 				} else {
 					s.ErrorWithData("未发现有效服务", tempV1)
 				}
