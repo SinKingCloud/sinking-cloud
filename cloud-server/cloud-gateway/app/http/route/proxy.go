@@ -57,7 +57,9 @@ func InitProxyRouter(route *sinking_web.Engine) {
 						r.Header.Set("X-Real-Ip", ip)
 						return r
 					})
-					s.ErrorWithData("调用服务失败", err)
+					if err != nil {
+						s.ErrorWithData("调用服务失败", err)
+					}
 				} else {
 					s.ErrorWithData("未发现有效服务", tempV1)
 				}

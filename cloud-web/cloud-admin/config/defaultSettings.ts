@@ -12,6 +12,7 @@ let Settings = {
   iconfontUrl: '',
   footer: 'All Right Revered',
   api: '',
+  ws: '',
   base: '/',
   publicPath: '/',
 };
@@ -24,6 +25,7 @@ Settings = Object.assign(Settings, {
   title: '沉沦云网络',
   logo: '/logo.svg',
   api: isDev ? 'http://127.0.0.1:1000' : 'https://gateway.clwl.online',
+  ws: isDev ? 'ws://127.0.0.1:1000/ws/server' : 'wss://gateway.clwl.online/ws/server',
   base: '/master/',
   publicPath: '/master/',
 });
