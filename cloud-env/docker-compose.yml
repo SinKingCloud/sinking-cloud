@@ -47,7 +47,7 @@ services:
 
   ####################### rocket #######################
   rocket-namesrv:
-    image: foxiswho/rocketmq:4.8.0
+    image: apache/rocketmq:5.1.3
     container_name: rocket-namesrv
     restart: always
     ports:
@@ -61,7 +61,7 @@ services:
     command: sh mqnamesrv
 
   rocket-broker:
-    image: foxiswho/rocketmq:4.8.0
+    image: apache/rocketmq:5.1.3
     container_name: rocket-broker
     restart: always
     ports:
@@ -71,6 +71,7 @@ services:
       - ./rocket/logs:/home/rocketmq/logs
       - ./rocket/store:/home/rocketmq/store
       - ./rocket/brokerconf/broker.conf:/etc/rocketmq/broker.conf
+      - ./rocket/brokerconf/plain_acl.yml:/home/rocketmq/rocketmq-5.1.3/conf/plain_acl.yml
     environment:
       TZ: Asia/Shanghai
       NAMESRV_ADDR: "rocket-namesrv:9876"
@@ -78,15 +79,17 @@ services:
       JAVA_OPT_EXT: "-Duser.home=/home/rocketmq -Xms512M -Xmx512M -Xmn128m"
     command: sh mqbroker -c /etc/rocketmq/broker.conf
 
-  rocket-console:
-    image: styletang/rocketmq-console-ng
+  rocketmq-console:
+    image: apacherocketmq/rocketmq-dashboard:latest
     container_name: rocket-console
     restart: always
     ports:
       - "8180:8080"
+    volumes:
+      - ./rocket/console/:/tmp/rocketmq-console/data/
     environment:
-      TZ: Asia/Shanghai
-      JAVA_OPTS: "-Drocketmq.namesrv.addr=rocket-namesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=-Drocketmq.namesrv.addr=rocket-namesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false -Drocketmq.config.isAuthenticationEnabled=true -Drocketmq.config.brokerAddresses=rocket-broker:10911 -Drocketmq.config.accessKey=root -Drocketmq.config.secretKey=Qq@1178710004... -Drocketmq.config.loginRequired=true -Drocketmq.config.loginUsername=root -Drocketmq.config.loginPassword=Qq@1178710004...
 
   ############################# redis #############################
   redis:

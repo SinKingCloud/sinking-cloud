@@ -1,0 +1,6 @@
+globalWhiteRemoteAddresses:
+accounts:
+  - accessKey: root
+    secretKey: Qq@1178710004...
+    whiteRemoteAddress:
+    admin: true
