@@ -18,7 +18,8 @@ func Cors() sinking_web.HandlerFunc {
 		if strings.ToLower(c.Request.Method) == "options" {
 			c.SetStatus(http.StatusNoContent)
 			c.Abort()
+		} else {
+			c.Next()
 		}
-		c.Next()
 	})
 }

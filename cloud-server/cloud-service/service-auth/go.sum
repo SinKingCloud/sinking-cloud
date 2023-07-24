@@ -601,10 +601,10 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/JohnCGriffin/overflow v0.0.0-20211019200055-46fa312c352c/go.mod h1:X0CRv0ky0k6m906ixxpzmDRLvX58TFUKS2eePweuyxk=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
-github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230724031354-206a9d06857c h1:8y3RKFkXOeclf2+ZtLvpdIZQjzffB5tq2qgQAYYoCjA=
-github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230724031354-206a9d06857c/go.mod h1:yKxs0d0LCaraNwGjJaouWN5XIfmzMypgkb8S2ICemjc=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230724031354-206a9d06857c h1:2hG5EQA4tPNxitj+6NULXCAHM9/3el4OuAc6plhN7jw=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230724031354-206a9d06857c/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230724045235-9cba339118c6 h1:8c9eiRLbu539lS9X+Iio7iIz3MTcMenY2Ns+U9yfSrY=
+github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230724045235-9cba339118c6/go.mod h1:yKxs0d0LCaraNwGjJaouWN5XIfmzMypgkb8S2ICemjc=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230724045235-9cba339118c6 h1:eyG1TpN446UT+HfDBNQDFquR8+u1uHCWTNFaurnqlrQ=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230724045235-9cba339118c6/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868 h1:uFrPOl1VBt/Abfl2z+A/DFc+AwmFLxEHR1+Yq6cXvww=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868/go.mod h1:srphKZ1i+yGXxl/LpBS7ZIECTjCTPzZzAMtJWoG3sLo=
 github.com/ajstarks/deck v0.0.0-20200831202436-30c9fc6549a9/go.mod h1:JynElWSGnm/4RlzPXRlREEwqTHAN3T56Bv2ITsFT3gY=
