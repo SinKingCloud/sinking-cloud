@@ -3,9 +3,9 @@ import React from 'react';
 import type {Settings as LayoutSettings} from '@ant-design/pro-layout';
 import {PageLoading} from '@ant-design/pro-layout';
 // @ts-ignore
-import type {RunTimeLayoutConfig} from 'umi';
+import type {RunTimeLayoutConfig, RequestConfig} from 'umi';
 // @ts-ignore
-import {history, Link, RequestConfig} from 'umi';
+import {history, Link} from 'umi';
 import RightContent from '@/components/RightContent';
 import Footer from '@/components/Footer';
 import {queryCurrentUser} from './services/person/info';
@@ -15,6 +15,8 @@ import defaultSettings from '../config/defaultSettings';
 import * as auth from './util/auth';
 import {getQueryString} from "@/util/string";
 import {queryCurrentWeb} from "@/services/common/info";
+import SinKingPush from "@/util/push";
+import {genPushTicket} from "@/services/common/push";
 
 /**
  * 开发环境
@@ -84,6 +86,36 @@ export async function getInitialState(): Promise<{
   // 如果是登录页面，不执行
   if (allowPaths.indexOf(history.location.pathname) < 0) {
     const currentUser = await fetchUserInfo();
+    if (currentUser != null) {
+      genPushTicket().then((r) => {
+        if (r?.code == 200) {
+          const ws = SinKingPush({
+            url: defaultSettings.ws,
+            token: r?.data,
+            onConnect: () => {
+              //连接成功
+              console.log('WebSocket connected');
+              setInterval(() => {
+                ws.send("ping")
+              }, 5000)
+            },
+            onClose: () => {
+              //连接关闭
+              console.log('WebSocket disconnected');
+            },
+            onError: (event) => {
+              //连接异常
+              console.error('WebSocket error:', event);
+            },
+            onMessage: (msg: any) => {
+              //收到消息
+              message.info(msg)
+              console.log('WebSocket received message:', msg);
+            },
+          });
+        }
+      })
+    }
     return {
       fetchUserInfo,
       currentUser,
@@ -161,7 +193,7 @@ const requestMiddleware = async (ctx: any, next: () => void) => {
   await next();
   if (ctx.res.code == 503 || ctx.res.code == 403) {
     history.push(allowPaths[0]);
-    let token = auth.getLoginToken();
+    const token = auth.getLoginToken();
     auth.deleteHeader();
     if (token != null && token != "") {
       return message.error({content: ctx.res.message || "登陆超时", key: "requestMiddleware", duration: 3});
