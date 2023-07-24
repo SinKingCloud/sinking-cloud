@@ -85,9 +85,11 @@ services:
     restart: always
     ports:
       - "8180:8080"
+    volumes:
+      - ./rocket/console:/tmp/rocketmq-console/data
     environment:
       - TZ=Asia/Shanghai
-      - JAVA_OPTS=-Drocketmq.namesrv.addr=rocket-namesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false -Drocketmq.config.isAuthenticationEnabled=true -Drocketmq.config.brokerAddresses=rocket-broker:10911 -Drocketmq.config.accessKey=root -Drocketmq.config.secretKey=Qq@1178710004... -Drocketmq.config.loginRequired=true -Drocketmq.config.loginUsername=root -Drocketmq.config.loginPassword=Qq@1178710004...
+      - JAVA_OPTS=-Drocketmq.namesrv.addr=rocket-namesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false -Drocketmq.config.isAuthenticationEnabled=true -Drocketmq.config.brokerAddresses=rocket-broker:10911 -Drocketmq.config.accessKey=rocketmq -Drocketmq.config.secretKey=Qq@1178710004... -Drocketmq.config.loginRequired=true -Drocketmq.config.dataPath=/tmp/rocketmq-console/data
 
   ############################# redis #############################
   redis:
