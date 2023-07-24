@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230722105613-dcac7cbd640f
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230724031354-206a9d06857c
 	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20230721082328-a902bfa985df
 	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20230721082328-a902bfa985df
 	github.com/makiuchi-d/gozxing v0.1.1
@@ -15,7 +15,7 @@ require (
 require (
 	github.com/RomiChan/protobuf v0.0.0-20220624030127-3310cba9dbc0 // indirect
 	github.com/RomiChan/syncx v0.0.0-20220404072119-d7ea0ae15a4c // indirect
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230722105613-dcac7cbd640f // indirect
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230724031354-206a9d06857c // indirect
 	github.com/apache/rocketmq-client-go/v2 v2.1.1 // indirect
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
