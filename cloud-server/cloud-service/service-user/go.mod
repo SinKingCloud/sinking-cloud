@@ -4,12 +4,12 @@ go 1.17
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230724031354-206a9d06857c
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230724045235-9cba339118c6
 	gorm.io/gorm v1.21.15
 )
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230724031354-206a9d06857c // indirect
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230724045235-9cba339118c6 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1520 // indirect
 	github.com/aliyun/aliyun-oss-go-sdk v2.2.7+incompatible // indirect
 	github.com/apache/rocketmq-client-go/v2 v2.1.1 // indirect

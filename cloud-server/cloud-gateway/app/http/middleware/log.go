@@ -19,7 +19,7 @@ import (
 func Log() sinking_web.HandlerFunc {
 	return sinking_server.HandleFunc(func(c *sinking_server.Context) {
 		//websocket直接通过
-		if c.Request.Header.Get("Connection") == "Upgrade" || c.Request.Method == "OPTIONS" {
+		if strings.ToLower(c.Request.Header.Get("Connection")) == "upgrade" {
 			c.Next()
 			return
 		}

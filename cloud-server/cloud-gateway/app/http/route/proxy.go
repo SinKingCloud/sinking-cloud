@@ -58,7 +58,7 @@ func InitProxyRouter(route *sinking_web.Engine) {
 						return r
 					})
 					if err != nil {
-						s.ErrorWithData("调用服务失败", err)
+						s.ErrorWithData("调用服务失败", err.Error())
 					}
 				} else {
 					s.ErrorWithData("未发现有效服务", tempV1)
