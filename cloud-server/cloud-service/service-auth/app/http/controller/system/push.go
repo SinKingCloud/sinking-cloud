@@ -12,7 +12,7 @@ func (ControllerSystem) Push(c *sinking_server.Context) {
 		c.Error("获取账户信息失败")
 		return
 	}
-	id, e := sinking.NewWebSocketProducer().GenTokenByUserId(u.Id)
+	id, e := sinking.NewWebSocketProducer().GenTokenByUserId(u.Id, true)
 	if e != nil {
 		c.Error(e.Error())
 		return

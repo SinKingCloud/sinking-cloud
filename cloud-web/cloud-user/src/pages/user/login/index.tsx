@@ -32,7 +32,7 @@ const Login: React.FC = () => {
    * 加载验证码
    */
   const changeCaptcha = () => {
-    let cap = getCaptchaUrl();
+    const cap = getCaptchaUrl();
     setToken(cap.token);
     setCaptchaUrl(cap.url);
     form.setFieldsValue({captcha: ""});
@@ -181,6 +181,7 @@ const Login: React.FC = () => {
                   } else {
                     setLoginToken("web", r.data);
                     await fetchUserInfo();
+                    initialState?.initSocketServer?.();
                     message.success(r.message);
                     /** 判断是否授权登陆 */
                     if (localStorage.getItem("ticket")) {
@@ -223,12 +224,12 @@ const Login: React.FC = () => {
                           <Button size={'large'}
                                   loading={isSmsSendLoading}
                                   onClick={(e) => {
-                                    let phone = form.getFieldValue("phone");
+                                    const phone = form.getFieldValue("phone");
                                     if (!/^[1][3,4,5,6,7,8,9][0-9]{9}$/.test(phone)) {
                                       message.error("请输入正确的手机号码")
                                       return;
                                     }
-                                    let captcha = form.getFieldValue("captcha");
+                                    const captcha = form.getFieldValue("captcha");
                                     if (captcha == undefined || captcha.length != 4) {
                                       message.error("请输入正确的图形验证码")
                                       return;

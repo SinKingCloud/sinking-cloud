@@ -56,6 +56,7 @@ const Login: React.FC = () => {
         message.success(response.message)
         setLoginToken("web", response.data)
         await fetchUserInfo();
+        initialState?.initSocketServer?.();
         /** 此方法会跳转到 redirect 参数所在的位置 */
         if (!history) return;
         const {query} = history.location;

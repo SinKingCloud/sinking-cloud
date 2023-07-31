@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	queue3 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/queue"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/sys_user_config"
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/web_user_config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
@@ -33,6 +34,13 @@ type webSocketProducer struct {
 type WebSocketMessage struct {
 	Id      string `json:"id"`
 	Message string `json:"message"`
+}
+
+// WebSocketMessageBody 消息内容结构
+type WebSocketMessageBody struct {
+	Id   int64       `json:"id"`
+	Cmd  string      `json:"cmd"`
+	Data interface{} `json:"data"`
 }
 
 // Build 构建消息 id:user_id msg:消息
@@ -101,13 +109,25 @@ func (l *webSocketProducer) GenToken() (string, error) {
 }
 
 // PushByUserId 根据用户ID推送 id:user_id msg:消息内容
-func (l *webSocketProducer) PushByUserId(userId int, msg string) error {
+func (l *webSocketProducer) PushByUserId(userId int, msg string, isSys bool) error {
+	key := "web_"
+	if isSys {
+		key = "sys_"
+	}
 	//1.查询用户绑定得token
-	token, exists := util.Cache.Get(util2.CacheNameWebSocketUser + strconv.Itoa(userId))
+	token, exists := util.Cache.Get(util2.CacheNameWebSocketUser + key + strconv.Itoa(userId))
 	if !exists {
-		configs := service.GetWebUserConfSrvIns().GetConfigs(userId, web_user_config.WebSocket)
-		if d, ok := configs[web_user_config.WebSocketToken]; ok {
-			if util.Cache.SetWithExpire(util2.CacheNameWebSocketUser+strconv.Itoa(userId), d, util2.CacheTimeWebSocketUser) {
+		var d string
+		var ok bool
+		if isSys {
+			configs := service.GetSysUserConfSrvIns().GetConfigs(userId, sys_user_config.WebSocket)
+			d, ok = configs[sys_user_config.WebSocketToken]
+		} else {
+			configs := service.GetWebUserConfSrvIns().GetConfigs(userId, web_user_config.WebSocket)
+			d, ok = configs[web_user_config.WebSocketToken]
+		}
+		if ok {
+			if util.Cache.SetWithExpire(util2.CacheNameWebSocketUser+key+strconv.Itoa(userId), d, util2.CacheTimeWebSocketUser) {
 				exists = true
 				token = d
 			}
@@ -121,15 +141,25 @@ func (l *webSocketProducer) PushByUserId(userId int, msg string) error {
 }
 
 // GenTokenByUserId 根据用户ID生成token id:user_id msg:消息内容
-func (l *webSocketProducer) GenTokenByUserId(userId int) (string, error) {
+func (l *webSocketProducer) GenTokenByUserId(userId int, isSys bool) (string, error) {
+	key := "web_"
+	if isSys {
+		key = "sys_"
+	}
 	//1.生成用户绑定token
 	token, err := l.GenToken()
 	if err != nil || token == "" {
 		return "", errors.New("获取授权token失败")
 	}
 	//2.写入用户绑定关系
-	if service.GetWebUserConfSrvIns().SetConfig(userId, web_user_config.WebSocketToken, token) {
-		if util.Cache.SetWithExpire(util2.CacheNameWebSocketUser+strconv.Itoa(userId), token, util2.CacheTimeWebSocketUser) {
+	r := false
+	if isSys {
+		r = service.GetSysUserConfSrvIns().SetConfig(userId, sys_user_config.WebSocketToken, token)
+	} else {
+		r = service.GetWebUserConfSrvIns().SetConfig(userId, web_user_config.WebSocketToken, token)
+	}
+	if r {
+		if util.Cache.SetWithExpire(util2.CacheNameWebSocketUser+key+strconv.Itoa(userId), token, util2.CacheTimeWebSocketUser) {
 			return token, nil
 		}
 	}

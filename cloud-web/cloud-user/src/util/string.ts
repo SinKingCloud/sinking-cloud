@@ -20,7 +20,7 @@ export function getRandStr(length = 16) {
  */
 export function getUrlQuery(url: string) {
   const noMatchData = {};
-  if (!url || false) return noMatchData;
+  if (!url) return noMatchData;
   const reg = /(?:\?|&)(?:(?:([^=&]+?)=([^&#]+))|([^&#]+))/gi;
   const obj = {};
   // @ts-ignore
@@ -42,9 +42,10 @@ export function getUrlQuery(url: string) {
  */
 export function getQueryString(url: string = ""): string {
   if (url == "") {
+    // eslint-disable-next-line no-param-reassign
     url = window.location.href;
   }
-  let firstIndex = decodeURI(url).indexOf("?");
+  const firstIndex = decodeURI(url).indexOf("?");
   if (firstIndex < 0) {
     return ""
   }
@@ -61,7 +62,9 @@ export function implode(glue: string, pieces: any) {
     retVal = '',
     tGlue = '';
   if (arguments.length === 1) {
+    // eslint-disable-next-line no-param-reassign
     pieces = glue;
+    // eslint-disable-next-line no-param-reassign
     glue = '';
   }
   if (typeof pieces === 'object') {

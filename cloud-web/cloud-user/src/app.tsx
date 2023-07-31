@@ -16,24 +16,22 @@ import * as auth from './util/auth';
 import {getQueryString} from "@/util/string";
 import {queryCurrentWeb} from "@/services/common/info";
 import SinKingPush from "@/util/push";
-import {genPushTicket} from "@/services/common/push";
 
 /**
  * 开发环境
  */
 const isDev = process.env.NODE_ENV === 'development';
-
 /**
  * 无需登陆的页面
  */
 const allowPaths = ['/user/login'];//无需登陆页面
-
-
 /** 获取用户信息展示一个 loading */
 export const initialStateConfig = {
   // @ts-ignore
   loading: <PageLoading/>,
 };
+/** webSocket对象 */
+let socket: WebSocket | undefined;
 
 /**
  * 初始化数据
@@ -45,6 +43,8 @@ export async function getInitialState(): Promise<{
   currentWeb?: API.WebInfo;
   fetchUserInfo?: () => Promise<API.UserInfo | undefined>;
   fetchWebInfo?: () => Promise<API.WebInfo | undefined>;
+  initSocketServer?: () => void;
+  socket?: WebSocket | undefined;
 }> {
   const fetchUserInfo = async () => {
     const {redirect, ticket} = history.location.query as { redirect: string, ticket: string };
@@ -82,39 +82,22 @@ export async function getInitialState(): Promise<{
     }
     return response.data;
   };
+  const initSocketServer = async () => {
+    // @ts-ignore
+    socket?.closeServer();
+    socket = await SinKingPush({
+      url: defaultSettings.ws,
+      onMessage: (cmd: string, id: number, data: any) => {
+        console.log('WebSocket received message:', cmd, id, data);
+      },
+    });
+  }
   const currentWeb = await fetchWebInfo();
   // 如果是登录页面，不执行
   if (allowPaths.indexOf(history.location.pathname) < 0) {
     const currentUser = await fetchUserInfo();
-    if (currentUser != null) {
-      genPushTicket().then((r) => {
-        if (r?.code == 200) {
-          const ws = SinKingPush({
-            url: defaultSettings.ws,
-            token: r?.data,
-            onConnect: () => {
-              //连接成功
-              console.log('WebSocket connected');
-              setInterval(() => {
-                ws.send("ping")
-              }, 5000)
-            },
-            onClose: () => {
-              //连接关闭
-              console.log('WebSocket disconnected');
-            },
-            onError: (event) => {
-              //连接异常
-              console.error('WebSocket error:', event);
-            },
-            onMessage: (msg: any) => {
-              //收到消息
-              message.info(msg)
-              console.log('WebSocket received message:', msg);
-            },
-          });
-        }
-      })
+    if (currentUser) {
+      await initSocketServer();
     }
     return {
       fetchUserInfo,
@@ -122,6 +105,8 @@ export async function getInitialState(): Promise<{
       fetchWebInfo,
       currentWeb,
       settings: {},
+      initSocketServer: initSocketServer,
+      socket: socket,
     };
   }
   return {
@@ -129,6 +114,8 @@ export async function getInitialState(): Promise<{
     fetchWebInfo,
     currentWeb,
     settings: {},
+    initSocketServer: initSocketServer,
+    socket: socket,
   };
 }
 

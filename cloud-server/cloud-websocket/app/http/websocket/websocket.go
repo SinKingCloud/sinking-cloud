@@ -1,9 +1,11 @@
 package websocket
 
 import (
+	"encoding/json"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/service/config"
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-go/sinking-websocket"
 	"net/http"
@@ -35,10 +37,32 @@ func onClose(id string, err error) {
 
 // onMessage 接收消息
 func onMessage(id string, ws *sinking_websocket.Conn, messageType int, data []byte) {
-	if string(data) == "ping" {
-		dateTime := time.Now().Format("2006-01-02 15:04:05")
-		_ = ws.Conn.WriteMessage(1, []byte(dateTime))
+	var req *sinking.WebSocketMessageBody
+	err := json.Unmarshal(data, &req)
+	if err != nil || req == nil {
+		return
 	}
+	switch req.Cmd {
+	case "ping":
+		_ = ws.Conn.WriteMessage(1, response(req.Id, req.Cmd, time.Now().Format("2006-01-02 15:04:05")))
+		break
+	case "time":
+		_ = ws.Conn.WriteMessage(1, response(req.Id, req.Cmd, time.Now().UnixMilli()))
+		break
+	}
+}
+
+// response 结果响应
+func response(id int64, cmd string, data interface{}) []byte {
+	bytes, e := json.Marshal(&sinking.WebSocketMessageBody{
+		Id:   id,
+		Cmd:  cmd,
+		Data: data,
+	})
+	if e == nil {
+		return bytes
+	}
+	return []byte{}
 }
 
 // Handler websocket处理
@@ -62,7 +86,7 @@ func Handler(c *sinking_server.Context) {
 		OnClose:   onClose,
 		OnMessage: onMessage,
 	}
-	response := make(http.Header)
-	response.Set("Sec-Websocket-Protocol", token)
-	wsServer.Listen(c.Writer, c.Request, response)
+	resp := make(http.Header)
+	resp.Set("Sec-Websocket-Protocol", token)
+	wsServer.Listen(c.Writer, c.Request, resp)
 }

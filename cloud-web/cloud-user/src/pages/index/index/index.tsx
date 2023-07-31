@@ -56,7 +56,7 @@ const ExtraContent: FC<{ currentUser: Partial<any> }> = ({currentUser}) => (
 export default (): React.ReactNode => {
   const {initialState, setInitialState} = useModel('@@initialState');
   // @ts-ignore
-  const {currentUser} = initialState;
+  const {currentUser, webSocket} = initialState;
   /**
    * 获取当前用户信息
    */
