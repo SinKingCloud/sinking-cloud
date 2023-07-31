@@ -24,7 +24,7 @@ const Login: React.FC = () => {
    * 加载验证码
    */
   const changeCaptcha = () => {
-    let cap = getCaptchaUrl();
+    const cap = getCaptchaUrl();
     setToken(cap.token)
     setCaptchaUrl(cap.url)
   }
