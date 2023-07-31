@@ -25,8 +25,8 @@ const Login: React.FC = () => {
    */
   const changeCaptcha = () => {
     const cap = getCaptchaUrl();
-    setToken(cap.token)
-    setCaptchaUrl(cap.url)
+    setToken(cap.token);
+    setCaptchaUrl(cap.url);
   }
   useEffect(changeCaptcha, [])
   const {initialState, setInitialState} = useModel('@@initialState');
