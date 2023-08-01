@@ -8,6 +8,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-websocket/app/http/websocket"
+	sinking_websocket "github.com/SinKingCloud/sinking-go/sinking-websocket"
 	"log"
 	"sync"
 )
@@ -29,6 +30,9 @@ type messageSender struct {
 
 // Listen 监听并发送消息
 func (l *messageSender) Listen() {
+	if websocket.Connection == nil {
+		websocket.Connection = sinking_websocket.NewWebSocketConnections() //初始化ws连接池
+	}
 	onceWebSocketSenderIns.Do(func() {
 		webSocketSenderIns = sinking.GetRocketConsumerServer(sinking.GetServerHash(queue3.WebSocketSenderGroup), false)
 	})
