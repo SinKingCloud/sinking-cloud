@@ -45,7 +45,7 @@ func (l *uinJob) Listen() {
 	})
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("354053373") //2528328605 3292163391
+	//	list, _ := uin2.GetIns().SelectByUin("2820116468") //2528328605 3292163391
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -210,10 +210,15 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 				}
 			}(serverId)
 		}
+		uinInfo, err := uin2.GetIns().FindById(uin.Id)
+		if err != nil || uinInfo == nil {
+			log.Println("获取uinInfo失败", err, uinInfo)
+			return
+		}
 		//限流结束
-		log.Println("执行挂机", uin)
+		log.Println("执行挂机", uinInfo.Uin)
 		var j map[web_uin.JobName]string
-		e := json.Unmarshal([]byte(uin.Setting), &j)
+		e := json.Unmarshal([]byte(uinInfo.Setting), &j)
 		if e == nil && j != nil {
 			var jobs []web_uin.JobName
 			for k, v := range web_uin.Setting {
@@ -222,17 +227,17 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 				}
 			}
 			//更改状态为已提交
-			_ = web_uin.SetUinJobStatus(uin.Uin, jobs, 2)
+			_ = web_uin.SetUinJobStatus(uinInfo.Uin, jobs, 2)
 		}
 		serverIdLock.Lock()
 		var proxy *oicq.Proxy
-		if d, ok := serverIds[uin.ServerId]; ok && d != nil {
+		if d, ok := serverIds[uinInfo.ServerId]; ok && d != nil {
 			proxy = d
 		}
 		serverIdLock.Unlock()
 		var jobs []oicq.Job
 		var userJob map[web_uin.JobName]string
-		err := json.Unmarshal([]byte(uin.Setting), &userJob)
+		err = json.Unmarshal([]byte(uinInfo.Setting), &userJob)
 		if err != nil || userJob == nil {
 			jobs = []oicq.Job{}
 		}
@@ -244,7 +249,7 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 				if uin.PlayerDay > 0 {
 					isCost = true
 					//判断是否开启项目
-					if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
+					if d, o := userJob[k]; (o && d == "1") || (!o && v == "1") {
 						num = value
 					}
 				}
@@ -252,7 +257,7 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 				if uin.SignDay > 0 {
 					isCost = true
 					//判断是否开启项目
-					if (userJob[k] == "" && v == "1") || userJob[k] != "0" {
+					if d, o := userJob[k]; (o && d == "1") || (!o && v == "1") {
 						num = value
 					}
 				}
@@ -261,6 +266,7 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 				jobs = append(jobs, num)
 			}
 		}
+		log.Println("获取挂机开启项目", uinInfo.Uin, jobs)
 		data := map[string]interface{}{"run_time": str.DateTime(time.Now())}
 		stamp, e := time.ParseInLocation("2006-01-02 15:04:05", uin.RunTime.String(), time.Local)
 		if e != nil {
@@ -284,10 +290,10 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 			var token []byte
 			if isCheck {
 				//第二次挂机
-				fail, _, token = l.speedJob(proxy, uin, jobs, false, isSys)
+				fail, _, token = l.speedJob(proxy, uinInfo, jobs, false, isSys)
 			} else {
 				//第一次挂机
-				fail, _, token = l.speedJob(proxy, uin, jobs, true, isSys)
+				fail, _, token = l.speedJob(proxy, uinInfo, jobs, true, isSys)
 				//6.5小时后补挂一次
 				if time.Now().Unix()-str.NewTimeTool().GetZeroTime(time.Now()).Unix() < 3600*17 {
 					data["check_time"] = str.DateTime(time.Now().Add(6.5 * 3600 * time.Second))
@@ -309,16 +315,11 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 }
 
 // speedJob 加速项目
-func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Job, isFirst bool, isSys bool) (bool, map[int]client.SpeedStatus, []byte) {
-	log.Println("开始挂机", uin)
-	//读取代理并发
-	uinInfo, err := uin2.GetIns().FindById(uin.Id)
-	if err != nil || uinInfo == nil {
-		return false, nil, nil
-	}
+func (l *uinJob) speedJob(proxy *oicq.Proxy, uinInfo *model.AppUin, jobs []oicq.Job, isFirst bool, isSys bool) (bool, map[int]client.SpeedStatus, []byte) {
+	log.Println("开始挂机", uinInfo.Uin)
 	cli, err := web_uin.GetOicqInsWithOption(uinInfo, proxy, false)
 	if err != nil {
-		log.Println("获取挂机实例失败", uin)
+		log.Println("获取挂机实例失败", uinInfo.Uin)
 		return false, nil, nil
 	}
 	defer func(cli *oicq.Oicq) {
@@ -327,29 +328,29 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 	}(cli)
 	//查询cookie项
 	cookies := make(map[oicq.Job]string)
-	err, wsCookie := web_uin.GetUinCookies(uin.Uin, "h5.weishi.qq.com", true)
+	err, wsCookie := web_uin.GetUinCookies(uinInfo.Uin, "h5.weishi.qq.com", true)
 	if err == nil {
 		cookies[oicq.Ws] = wsCookie
 	}
-	err, musicCookie := web_uin.GetUinCookies(uin.Uin, "y.qq.com", true)
+	err, musicCookie := web_uin.GetUinCookies(uinInfo.Uin, "y.qq.com", true)
 	if err == nil {
 		cookies[oicq.QQMusic] = musicCookie
 	}
 	//登陆手机
 	err, loginResponse := cli.AutoLogin()
-	log.Println("挂机登陆结果", uin.Uin, err, loginResponse)
+	log.Println("挂机登陆结果", uinInfo.Uin, err, loginResponse)
 	if err != nil {
-		l.saveJobStatus(uin, 0, nil)
+		l.saveJobStatus(uinInfo, 0, nil)
 		return false, nil, nil
 	}
 	if !loginResponse.Success {
-		l.saveJobStatus(uin, 0, nil)
+		l.saveJobStatus(uinInfo, 0, nil)
 		return true, nil, nil
 	}
 	//保存相关cookie
 	cookie := cli.Mobile.GetAllCookies()
 	for k, v := range cookie {
-		_ = web_uin.SetUinCookies(uin.Uin, k, v)
+		_ = web_uin.SetUinCookies(uinInfo.Uin, k, v)
 	}
 	if !isFirst {
 		//获取未执行的项目
@@ -358,41 +359,41 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 			jobs = l.getUnDoJobs(jobs, s, isSys)
 			if len(jobs) <= 0 {
 				//保存加速状态
-				l.saveJobStatus(uin, 1, s)
+				l.saveJobStatus(uinInfo, 1, s)
 			}
 		}
 	}
-	log.Println("获取挂机任务", uin.Uin, jobs)
+	log.Println("获取挂机任务", uinInfo.Uin, jobs)
 	//jobs = []oicq.Job{oicq.Pc}
 	if len(jobs) <= 0 {
 		return false, nil, cli.LoginToken
 	}
 	//执行挂机项
-	log.Println("执行挂机项目", uin.Uin, jobs, cookies)
+	log.Println("执行挂机项目", uinInfo.Uin, jobs, cookies)
 	r := make(map[oicq.Job]client.SpeedCode)
 	resCookie := make(map[oicq.Job]string)
 	sinking_web.Try(func() {
 		r, resCookie = cli.ActiveProject(jobs, cookies)
 	}, func(i interface{}) {
-		log.Println("执行挂机项目出错", uin.Uin, jobs, cookies, i, debug.Stack())
+		log.Println("执行挂机项目出错", uinInfo.Uin, jobs, cookies, i, debug.Stack())
 	})
-	log.Println("执行挂机结果", uin.Uin, r, resCookie)
+	log.Println("执行挂机结果", uinInfo.Uin, r, resCookie)
 	if resCookie[oicq.Ws] != "" && (wsCookie == "" || resCookie[oicq.Ws] != wsCookie) {
-		_ = web_uin.SetUinCookies(uin.Uin, "h5.weishi.qq.com", resCookie[oicq.Ws])
+		_ = web_uin.SetUinCookies(uinInfo.Uin, "h5.weishi.qq.com", resCookie[oicq.Ws])
 	}
 	if resCookie[oicq.QQMusic] != "" && (musicCookie == "" || resCookie[oicq.QQMusic] != musicCookie) {
-		_ = web_uin.SetUinCookies(uin.Uin, "i.qq.com", resCookie[oicq.QQMusic])
+		_ = web_uin.SetUinCookies(uinInfo.Uin, "y.qq.com", resCookie[oicq.QQMusic])
 	}
 	//保存加速状态
 	if e, s := cli.Mobile.Speed.Info(); e == nil {
-		l.saveJobStatus(uin, 1, s)
+		l.saveJobStatus(uinInfo, 1, s)
 	}
 	//延迟刷新状态
-	refreshTask.Push(70*time.Minute, func() {
+	refreshTask.Push(150*time.Minute, func() {
 		if cli != nil {
 			cli.Mobile.Speed.VisitLevelPage()
 			if e, s := cli.Mobile.Speed.Info(); e == nil {
-				_ = web_uin.SetUinSpeedStatus(uin.Uin, s)
+				_ = web_uin.SetUinSpeedStatus(uinInfo.Uin, s)
 			}
 		}
 	})
@@ -400,7 +401,7 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uin *uin2.AppUinJob, jobs []oicq.Jo
 }
 
 // saveJobStatus 保存加速状态
-func (l *uinJob) saveJobStatus(uin *uin2.AppUinJob, status int, speedStatus *client.SpeedStatus) {
+func (l *uinJob) saveJobStatus(uin *model.AppUin, status int, speedStatus *client.SpeedStatus) {
 	sinking_web.Try(func() {
 		//把所有状态改为已加速
 		var userJob map[web_uin.JobName]string
