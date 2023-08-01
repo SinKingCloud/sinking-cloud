@@ -30,11 +30,11 @@ type messageSender struct {
 
 // Listen 监听并发送消息
 func (l *messageSender) Listen() {
-	if websocket.Connection == nil {
-		websocket.Connection = sinking_websocket.NewWebSocketConnections() //初始化ws连接池
-	}
 	onceWebSocketSenderIns.Do(func() {
 		webSocketSenderIns = sinking.GetRocketConsumerServer(sinking.GetServerHash(queue3.WebSocketSenderGroup), false)
+		if websocket.Connection == nil {
+			websocket.Connection = sinking_websocket.NewWebSocketConnections() //初始化ws连接池
+		}
 	})
 	tag := util.Conf.GetString(config.ConfApplicationAddr) + ":" + util.Conf.GetString(config.ConfApplicationPort)
 	err := webSocketSenderIns.ListenReceiveMsgDo(queue3.WebSocketSenderTopic, tag, func(mqMsg queue.MqMsg) {
