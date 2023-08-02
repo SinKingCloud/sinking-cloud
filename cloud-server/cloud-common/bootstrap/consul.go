@@ -36,7 +36,9 @@ func LoadConsul() {
 				service[k] = append(service[k], v1.(string))
 			}
 		}
-		util.Consul.UseService(service)
+		if len(service) > 0 {
+			util.Consul.UseService(service)
+		}
 	}
 	//监听
 	util.Consul.Listen()

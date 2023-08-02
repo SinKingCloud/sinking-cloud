@@ -12,11 +12,7 @@ application:
   timeout:
     read: 60 #超时读(s)
     write: 60 #超时写(s)
-  useService:
-    cloud-common:
-      - cloud-websocket #引用websocket服务
-    cloud-service:
-      - service-auth #引用授权服务
+  useService: #填写则拉取固定服务,不填写则拉取全部服务
 
 #注册中心
 register:
