@@ -68,7 +68,7 @@ func test() {
 			return
 		}
 	}(z)
-	p, err := ioutil.ReadAll(z)
+	p, err := io.ReadAll(z)
 	if err == nil {
 		fmt.Println(string(p))
 	}

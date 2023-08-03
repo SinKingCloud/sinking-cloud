@@ -5,8 +5,8 @@ go 1.20
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230802073129-e2466a2cf8c9
-	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20230731085428-c62948b80377
-	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20230731085428-c62948b80377
+	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20230803012617-b4c72651d8fd
+	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20230803012617-b4c72651d8fd
 	github.com/makiuchi-d/gozxing v0.1.1
 	golang.org/x/net v0.12.0
 	gorm.io/gorm v1.21.15
