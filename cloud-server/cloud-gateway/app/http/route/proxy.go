@@ -11,6 +11,7 @@ import (
 	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/http/middleware"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"net/http"
+	"net/http/httputil"
 	"strings"
 )
 
@@ -47,7 +48,7 @@ func InitProxyRouter(route *sinking_web.Engine) {
 				url, exists := util.Consul.GetService(groupName.(string), name.(string), mode)
 				if exists {
 					s.Set(constant.ServerAddr, url.Addr)
-					err := s.Proxy(prefix+url.Addr, func(r *http.Request) *http.Request {
+					err := s.Proxy(prefix+url.Addr, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
 						r.URL.Path = strings.Replace(s.Request.URL.Path, patten, "", 1)
 						r.URL.RawPath, r.RequestURI = r.URL.Path, r.URL.Path
 						r.Header.Set(util.Conf.GetString("register.tokenKey"), util.Conf.GetString("register.tokenValue"))
@@ -55,7 +56,6 @@ func InitProxyRouter(route *sinking_web.Engine) {
 						ip := s.ClientIP(true)
 						r.Header.Set("X-Forwarded-For", ip)
 						r.Header.Set("X-Real-Ip", ip)
-						return r
 					})
 					if err != nil {
 						s.ErrorWithData("调用服务失败", err.Error())

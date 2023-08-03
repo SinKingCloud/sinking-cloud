@@ -3,8 +3,8 @@ module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 go 1.17
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230802073129-e2466a2cf8c9
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230802073129-e2466a2cf8c9
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20230803064149-b38fa1e3105c
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230803064149-b38fa1e3105c
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1520
 	github.com/aliyun/aliyun-oss-go-sdk v2.2.7+incompatible
