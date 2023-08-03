@@ -120,7 +120,7 @@ services:
     volumes:
       - ./sinking/sinking-consul/config/:/data/sinking-consul/config/
 
-  ######################### sinking-consul ############################
+  ######################### 前端环境 ############################
   node:
     image: node:16.14.0
     container_name: node
