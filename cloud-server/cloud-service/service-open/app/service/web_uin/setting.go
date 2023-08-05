@@ -236,7 +236,7 @@ func SetUinSpeedStatus(uin string, status *client.SpeedStatus) error {
 }
 
 // SetUinJobStatus 设置任务状态
-// status 0:未加速/1:已加速/2:已提交/3:已过期
+// status 0:未加速/1:已加速/2:正在加速/3:已过期
 func SetUinJobStatus(uin string, jobs []JobName, status int) error {
 	info := &model.AppUinInfo{
 		Uin: uin,

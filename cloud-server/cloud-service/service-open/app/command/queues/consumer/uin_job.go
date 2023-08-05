@@ -45,7 +45,7 @@ func (l *uinJob) Listen() {
 	})
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("3176422896") //1845566947 2268811860 3176422896
+	//	list, _ := uin2.GetIns().SelectByUin("2831924533") //1845566947 2268811860 3176422896
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -75,9 +75,6 @@ func (l *uinJob) Listen() {
 var (
 	servers    = make(map[int]chan interface{}) //服务器列表
 	serverLock = &sync.RWMutex{}                //并发锁
-
-	serverIds    = make(map[int]*oicq.Proxy) //服务器列表
-	serverIdLock = &sync.RWMutex{}           //并发锁
 
 	authThreadWait     = &sync.WaitGroup{} //动态协程池并发锁
 	authThreadWaitLock = &sync.RWMutex{}
@@ -115,7 +112,7 @@ func (l *uinJob) autoStartThread() {
 func (l *uinJob) restartThread(server *model.AppUinServer) {
 	//查询正常挂机账号数量
 	num := uin2.GetIns().Count(map[string]string{"server_id": strconv.Itoa(server.Id), "uin_status": strconv.Itoa(int(uin2.StatusUinNormal))})
-	threadNum := int(num / 100) //每100个账号开启一个协程
+	threadNum := int(num / 120) //每120个账号开启一个协程
 	//最小一个协程
 	if threadNum <= 0 {
 		threadNum = 1
@@ -125,7 +122,7 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 		threadNum = 60
 	}
 	//更新缓存信息
-	server, err := server2.GetIns().FindByIdWithCache(server.Id, false)
+	server, err := server2.GetIns().FindByIdWithCache(server.Id, true)
 	if err != nil || server == nil || server.Status != server2.Normal {
 		return
 	}
@@ -133,9 +130,6 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 	server2.GetIns().ServerJobReset(strconv.Itoa(server.Id))
 	var proxy *oicq.Proxy
 	_ = json.Unmarshal([]byte(server.Proxy), &proxy)
-	serverIdLock.RLock()
-	serverIds[server.Id] = proxy
-	serverIdLock.RUnlock()
 	serverLock.RLock()
 	defer serverLock.RUnlock()
 	if servers[server.Id] != nil {
@@ -217,26 +211,14 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 		}
 		//限流结束
 		log.Println("执行挂机", uinInfo.Uin)
-		var j map[web_uin.JobName]string
-		e := json.Unmarshal([]byte(uinInfo.Setting), &j)
-		if e == nil && j != nil {
-			var jobs []web_uin.JobName
-			for k, v := range web_uin.Setting {
-				if (j[k] == "" && v == "1") || j[k] != "0" {
-					jobs = append(jobs, k)
-				}
-			}
-			//更改状态为已提交
-			_ = web_uin.SetUinJobStatus(uinInfo.Uin, jobs, 2)
-		}
-		serverIdLock.Lock()
 		var proxy *oicq.Proxy
-		if d, ok := serverIds[uinInfo.ServerId]; ok && d != nil {
-			proxy = d
+		server, err := server2.GetIns().FindByIdWithCache(uinInfo.ServerId, false)
+		if err == nil && server != nil && server.Status == server2.Normal {
+			_ = json.Unmarshal([]byte(server.Proxy), &proxy)
 		}
-		serverIdLock.Unlock()
 		var jobs []oicq.Job
 		var userJob map[web_uin.JobName]string
+		var userJobStatus []web_uin.JobName
 		err = json.Unmarshal([]byte(uinInfo.Setting), &userJob)
 		if err != nil || userJob == nil {
 			jobs = []oicq.Job{}
@@ -245,12 +227,14 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 		for k, v := range web_uin.Setting {
 			//类型判断
 			num := oicq.None
+			status := 0
 			if value, ok := web_uin.JobMap[web_uin.Speed][k]; ok {
 				if uin.PlayerDay > 0 {
 					isCost = true
 					//判断是否开启项目
 					if d, o := userJob[k]; (o && d == "1") || (!o && v == "1") {
 						num = value
+						status = 1
 					}
 				}
 			} else if value, ok = web_uin.JobMap[web_uin.Sign][k]; ok {
@@ -259,13 +243,19 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 					//判断是否开启项目
 					if d, o := userJob[k]; (o && d == "1") || (!o && v == "1") {
 						num = value
+						status = 1
 					}
 				}
 			}
 			if num != oicq.None {
 				jobs = append(jobs, num)
 			}
+			if status == 1 {
+				userJobStatus = append(userJobStatus, k)
+			}
 		}
+		//更改状态为已提交
+		_ = web_uin.SetUinJobStatus(uinInfo.Uin, userJobStatus, 2)
 		log.Println("获取挂机开启项目", uinInfo.Uin, jobs)
 		data := map[string]interface{}{"run_time": str.DateTime(time.Now())}
 		stamp, e := time.ParseInLocation("2006-01-02 15:04:05", uin.RunTime.String(), time.Local)
