@@ -217,6 +217,9 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 						if status.IQQMusic != "1" {
 							_, _, _ = cli.Speed.Music("")
 						}
+						if status.IQBoxAnswer != "1" {
+							_, _, _ = cli.Speed.QBoxAnswer("")
+						}
 					}
 				}
 				break

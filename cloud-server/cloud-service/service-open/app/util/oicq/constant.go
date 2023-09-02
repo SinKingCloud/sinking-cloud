@@ -21,6 +21,7 @@ const (
 	ZoneClock              //空间打卡
 	Friend                 //加好友加速
 	QQMusic                //音乐签到
+	QBoxAnswer             //qbox问卷加速
 
 	Vip        //会员签到
 	BigVip     //大会员签到

@@ -51,6 +51,12 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 						_, cookie, status = o.Mobile.Speed.Music("")
 					}
 					break
+				case QBoxAnswer: //qbox问卷加速
+					_, cookie, status = o.Mobile.Speed.QBoxAnswer(cookies[v])
+					if status == mobile.SpeedCookieExpire {
+						_, cookie, status = o.Mobile.Speed.QBoxAnswer("")
+					}
+					break
 				case GameCenter: //游戏中心签到
 					_, status = o.Mobile.Speed.GameCenterSign()
 					break

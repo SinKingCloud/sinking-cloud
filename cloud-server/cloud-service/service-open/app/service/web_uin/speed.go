@@ -16,6 +16,7 @@ const (
 	Friend      JobName = "friend"
 	Word        JobName = "word"
 	QQMusic     JobName = "qq_music"
+	QBoxAnswer  JobName = "qbox_answer"
 	Vip         JobName = "vip"
 	BigVip      JobName = "big_vip"
 	Hz          JobName = "hz"
@@ -46,6 +47,7 @@ var Setting = map[JobName]string{
 	Friend:      "1",
 	Word:        "1",
 	QQMusic:     "1",
+	QBoxAnswer:  "1",
 	Vip:         "1",
 	BigVip:      "1",
 	Hz:          "1",
@@ -70,6 +72,7 @@ var JobMap = map[JobType]map[JobName]oicq.Job{
 		Friend:      oicq.Friend,
 		QQMusic:     oicq.QQMusic,
 		Word:        oicq.Word,
+		QBoxAnswer:  oicq.QBoxAnswer,
 	},
 	Sign: {
 		Vip:        oicq.Vip,
@@ -160,10 +163,18 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"logo":     "https://cdn.clwl.online/app/uin/img/yq.png",
 			"edit":     "true",
 		},
+		QBoxAnswer: {
+			"sort":     "16",
+			"type":     "speed",
+			"name":     "问卷加速",
+			"describe": "每日QBox提交问卷加速0.5天",
+			"logo":     "https://cdn.clwl.online/app/uin/img/gd.png",
+			"edit":     "true",
+		},
 	},
 	Sign: {
 		Vip: {
-			"sort":     "15",
+			"sort":     "16",
 			"type":     "sign",
 			"name":     "会员成长",
 			"describe": "SVIP6级年费以上用户，每月SVIP成长值840点左右",

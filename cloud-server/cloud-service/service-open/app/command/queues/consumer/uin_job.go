@@ -45,7 +45,7 @@ func (l *uinJob) Listen() {
 	})
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("2831924533") //1845566947 2268811860 3176422896
+	//	list, _ := uin2.GetIns().SelectByUin("1643940673") //1845566947 2268811860 3176422896
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -326,6 +326,10 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uinInfo *model.AppUin, jobs []oicq.
 	if err == nil {
 		cookies[oicq.QQMusic] = musicCookie
 	}
+	err, qboxCookie := web_uin.GetUinCookies(uinInfo.Uin, "gongyi.qq.com", true)
+	if err == nil {
+		cookies[oicq.QBoxAnswer] = qboxCookie
+	}
 	//登陆手机
 	err, loginResponse := cli.AutoLogin()
 	log.Println("挂机登陆结果", uinInfo.Uin, err, loginResponse)
@@ -373,6 +377,9 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uinInfo *model.AppUin, jobs []oicq.
 	}
 	if resCookie[oicq.QQMusic] != "" && (musicCookie == "" || resCookie[oicq.QQMusic] != musicCookie) {
 		_ = web_uin.SetUinCookies(uinInfo.Uin, "y.qq.com", resCookie[oicq.QQMusic])
+	}
+	if resCookie[oicq.QBoxAnswer] != "" && (qboxCookie == "" || resCookie[oicq.QBoxAnswer] != qboxCookie) {
+		_ = web_uin.SetUinCookies(uinInfo.Uin, "gongyi.qq.com", resCookie[oicq.QBoxAnswer])
 	}
 	//保存加速状态
 	if e, s := cli.Mobile.Speed.Info(); e == nil {
@@ -438,6 +445,9 @@ func (l *uinJob) getUnDoJobs(jobs []oicq.Job, status *client.SpeedStatus, isSys 
 				break
 			case oicq.QQMusic:
 				isCheck = status.IQQMusic != "1"
+				break
+			case oicq.QBoxAnswer:
+				isCheck = status.IQBoxAnswer != "1"
 				break
 			default:
 				isCheck = !isSys //用户提交则补挂签到
