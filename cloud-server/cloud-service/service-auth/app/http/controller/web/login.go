@@ -2,11 +2,11 @@ package web
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/auth"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/captcha"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/rpc"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/rpc/log"
 )
 
 func (ControllerWeb) Login(c *sinking_server.Context) {
@@ -20,7 +20,7 @@ func (ControllerWeb) Login(c *sinking_server.Context) {
 		Captcha  string `form:"captcha" json:"captcha" default:"" validate:"required,numeric,len=4" label:"验证码"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

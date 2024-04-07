@@ -20,18 +20,18 @@ type WebNotice struct {
 }
 
 // TableName 获取表名
-func (WebNotice) TableName() string {
+func (*WebNotice) TableName() string {
 	return "web_notices"
 }
 
 // BeforeCreate 创建前
-func (t *WebNotice) BeforeCreate(tx *gorm.DB) error {
+func (t *WebNotice) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *WebNotice) BeforeUpdate(tx *gorm.DB) error {
+func (t *WebNotice) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

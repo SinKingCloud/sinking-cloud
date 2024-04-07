@@ -27,18 +27,18 @@ type AuthVersion struct {
 }
 
 // TableName 获取表名
-func (AuthVersion) TableName() string {
+func (*AuthVersion) TableName() string {
 	return "auth_versions"
 }
 
 // BeforeCreate 创建前
-func (t *AuthVersion) BeforeCreate(tx *gorm.DB) error {
+func (t *AuthVersion) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *AuthVersion) BeforeUpdate(tx *gorm.DB) error {
+func (t *AuthVersion) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

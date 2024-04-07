@@ -9,11 +9,11 @@ import (
 
 func (ControllerPerson) Password(c *sinking_server.Context) {
 	type Form struct {
-		OldPassword string `json:"old_password" default:"" validate:"required" label:"旧密码"`
-		Password    string `json:"password" default:"" validate:"required" label:"新密码"`
+		OldPassword string `form:"old_password" json:"old_password" default:"" validate:"required" label:"旧密码"`
+		Password    string `form:"password" json:"password" default:"" validate:"required" label:"新密码"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

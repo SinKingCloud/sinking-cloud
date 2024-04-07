@@ -6,7 +6,7 @@ import (
 )
 
 // FindByPhone 查询信息
-func (*service) FindByPhone(phone string) (user *model.WebUser, err error) {
+func (*Service) FindByPhone(phone string) (user *model.WebUser, err error) {
 	err = util.Database.Db.Where("`phone` = ?", phone).First(&user).Error
 	return
 }

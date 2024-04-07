@@ -11,7 +11,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/pay_log"
 )
 
-func (s *service) CallBack(tradeNo string, outTradeNo string) bool {
+func (s *Service) CallBack(tradeNo string, outTradeNo string) bool {
 	key := constant.LockChangeOrderStatus + tradeNo
 	if !util.Cache.Lock(key, constant.LockTimeChangeOrderStatus) {
 		return false

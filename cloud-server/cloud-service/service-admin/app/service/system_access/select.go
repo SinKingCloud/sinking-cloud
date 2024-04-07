@@ -6,7 +6,7 @@ import (
 )
 
 // Select 获取权限列表数据
-func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.SystemAccess, total int64, err error) {
+func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.SystemAccess, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.SystemAccess{})
 	if where["method"] != "" {

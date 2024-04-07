@@ -6,7 +6,7 @@ import (
 )
 
 // Select 查询
-func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.AppOauth, total int64, err error) {
+func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.AppOauth, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.AppOauth{})
 	if where["user_id"] != "" {

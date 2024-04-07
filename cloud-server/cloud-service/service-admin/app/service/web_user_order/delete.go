@@ -6,7 +6,7 @@ import (
 )
 
 // Delete 删除数据
-func (s *service) Delete(where map[string]string) (err error) {
+func (s *Service) Delete(where map[string]string) (err error) {
 	query := util.Database.Db.Model(&model.WebUserOrder{})
 	if where["user_id"] != "" {
 		query.Where("`user_id` = ?", where["user_id"])

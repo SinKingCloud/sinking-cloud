@@ -6,7 +6,7 @@ import (
 )
 
 // FindByTradeNo 通过订单号查询
-func (s *service) FindByTradeNo(tradeNo string) (order *model.WebUserOrder, err error) {
+func (s *Service) FindByTradeNo(tradeNo string) (order *model.WebUserOrder, err error) {
 	err = util.Database.Db.Where("`trade_no` = ? ", tradeNo).First(&order).Error
 	return
 }

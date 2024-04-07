@@ -21,18 +21,18 @@ type SystemConfig struct {
 }
 
 // TableName 获取表名
-func (SystemConfig) TableName() string {
+func (*SystemConfig) TableName() string {
 	return "system_configs"
 }
 
 // BeforeCreate 创建前
-func (t *SystemConfig) BeforeCreate(tx *gorm.DB) error {
+func (t *SystemConfig) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *SystemConfig) BeforeUpdate(tx *gorm.DB) error {
+func (t *SystemConfig) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

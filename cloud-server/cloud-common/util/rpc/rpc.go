@@ -9,7 +9,7 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go"
 )
 
-type rpc struct {
+type Rpc struct {
 	groupName string
 	name      string
 	res       string
@@ -27,15 +27,15 @@ type Response struct {
 type Param map[string]interface{}
 
 // New 新建调用实例
-func New(groupName string, name string) *rpc {
-	return &rpc{
+func New(groupName string, name string) *Rpc {
+	return &Rpc{
 		groupName: groupName,
 		name:      name,
 	}
 }
 
 // Call 调用指定地址
-func (r *rpc) Call(url string, param *Param) *rpc {
+func (r *Rpc) Call(url string, param *Param) *Rpc {
 	r.requestId = str.GetSnowWorkIns().GetUuid()
 	r.res, r.err = util.Consul.Rpc(r.groupName, r.name).Method("POST").Header(map[string]string{
 		util2.RequestId: r.requestId,
@@ -45,17 +45,17 @@ func (r *rpc) Call(url string, param *Param) *rpc {
 		"data":  param,
 		"group": util.Conf.GetString(config.ConfApplicationGroup),
 		"name":  util.Conf.GetString(config.ConfApplicationName),
-	})
+	}, sinking_sdk_go.Poll)
 	return r
 }
 
 // Body 获取结果
-func (r *rpc) Body() (string, error) {
+func (r *Rpc) Body() (string, error) {
 	return r.res, r.err
 }
 
 // Unmarshal 获取结果
-func (r *rpc) Unmarshal(v interface{}) (interface{}, error) {
+func (r *Rpc) Unmarshal(v interface{}) (interface{}, error) {
 	if r.err != nil {
 		return nil, r.err
 	}
@@ -67,7 +67,7 @@ func (r *rpc) Unmarshal(v interface{}) (interface{}, error) {
 }
 
 // Response 获取响应对象
-func (r *rpc) Response() (*Response, error) {
+func (r *Rpc) Response() (*Response, error) {
 	var response Response
 	data, err := r.Unmarshal(&response)
 	if err != nil {

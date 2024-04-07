@@ -5,35 +5,35 @@ import (
 	"sync"
 )
 
-// service 单例对象
-type service struct {
+// Service 单例对象
+type Service struct {
 }
 
 // obj 单例对象
 var (
-	obj  *service
+	obj  *Service
 	once sync.Once
 )
 
 // GetIns 获取单例
-func GetIns() *service {
+func GetIns() *Service {
 	once.Do(func() {
-		obj = &service{}
+		obj = &Service{}
 	})
 	return obj
 }
 
 // WebUserOrder 会员用户订单记录
 type WebUserOrder struct {
-	Id         int          `json:"id"`
-	UserId     int          `json:"user_id"`
-	PayType    int          `json:"pay_type"`
-	OrderType  int          `json:"order_type"`
-	Money      float64      `json:"money"`
-	TradeNo    string       `json:"trade_no"`
-	OutTradeNo string       `json:"out_trade_no"`
-	Name       string       `json:"name"`
-	Status     int          `json:"status"`
-	CreateTime str.DateTime `json:"create_time"`
-	UpdateTime str.DateTime `json:"update_time"`
+	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
+	UserId     int          `gorm:"column:user_id" json:"user_id"`
+	PayType    int          `gorm:"column:pay_type" json:"pay_type"`
+	OrderType  int          `gorm:"column:order_type" json:"order_type"`
+	Money      float64      `gorm:"column:money" json:"money"`
+	TradeNo    string       `gorm:"column:trade_no" json:"trade_no"`
+	OutTradeNo string       `gorm:"column:out_trade_no" json:"out_trade_no"`
+	Name       string       `gorm:"column:name" json:"name"`
+	Status     int          `gorm:"column:status" json:"status"`
+	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
+	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }

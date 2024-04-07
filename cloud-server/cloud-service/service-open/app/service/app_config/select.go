@@ -6,7 +6,7 @@ import (
 )
 
 // SelectWithMap 查看map配置数据
-func (*service) SelectWithMap(identId string, key string) map[string]string {
+func (*Service) SelectWithMap(identId string, key string) map[string]string {
 	var configs []*model.AppConfig
 	temp := make(map[string]string)
 	query := util.Database.Db.Model(&model.AppConfig{})

@@ -6,7 +6,7 @@ import (
 )
 
 // Count 统计
-func (s *service) Count(where map[string]string) (total int64) {
+func (s *Service) Count(where map[string]string) (total int64) {
 	query := util.Database.Db.Model(&model.UserAuth{})
 	if where["user_id"] != "" {
 		query.Where("`user_id` = ?", where["user_id"])

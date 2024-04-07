@@ -3,6 +3,8 @@ package web
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/auth"
 )
@@ -13,5 +15,6 @@ func (ControllerWeb) OutLogin(c *sinking_server.Context) {
 	if err == nil && user != nil {
 		auth.OutLogin(c.Request.Header.Get(util.JwtTokenNameType), nil, user)
 	}
+	rpc.Log.CreateUser(user.Id, c.GetRequestId(), c.GetRequestIp(), log.UserEventLogin, "注销登录", "注销登陆成功")
 	c.Success("注销登录成功")
 }

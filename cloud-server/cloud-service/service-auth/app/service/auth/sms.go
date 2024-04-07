@@ -13,11 +13,22 @@ import (
 // SmsCheck 判断验证码正确性
 func SmsCheck(phone string, code string) bool {
 	key := constant.CacheNameWithSmsPhone + phone
+	key2 := key + "Num"
+	util.Cache.Inc(key2)
+	util.Cache.SetExpire(key2, constant.CacheTimeWithSmsPhone)
+	num, exists := util.Cache.Get(key2)
+	if exists && num != "" {
+		num2, err := strconv.Atoi(key2)
+		if err == nil && num2 >= 10 {
+			return false
+		}
+	}
 	data, exists := util.Cache.Get(key)
 	if exists {
 		res := data == code
 		if res {
 			util.Cache.Delete(key)
+			util.Cache.Delete(key2)
 		}
 		return res
 	}

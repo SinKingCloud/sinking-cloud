@@ -6,29 +6,29 @@ import (
 	"sync"
 )
 
-// webUserConfService config_service
-type webUserConfService struct {
+// WebUserConfService config_service
+type WebUserConfService struct {
 }
 
 // webUserConfigObj systemUserConfigObj对象
 var (
-	webUserConfigObj     *webUserConfService
+	webUserConfigObj     *WebUserConfService
 	onceWebUserConfigObj sync.Once
 )
 
 // GetWebUserConfSrvIns 获取单例
-func GetWebUserConfSrvIns() *webUserConfService {
+func GetWebUserConfSrvIns() *WebUserConfService {
 	onceWebUserConfigObj.Do(func() {
-		webUserConfigObj = &webUserConfService{}
+		webUserConfigObj = &WebUserConfService{}
 	})
 	return webUserConfigObj
 }
 
 // GetConfigs 获取用户所有配置项
-func (s *webUserConfService) GetConfigs(userId int, prefix string) map[string]string {
+func (s *WebUserConfService) GetConfigs(userId int, prefix string) map[string]string {
 	data := make(map[string]string)
 	var conf []*model.WebUserConfig
-	err := util.Database.Db.Debug().Where("`user_id` = ? AND `key` LIKE ?", userId, prefix+"%").Find(&conf).Error
+	err := util.Database.Db.Where("`user_id` = ? AND `key` LIKE ?", userId, prefix+"%").Find(&conf).Error
 	if err == nil {
 		for _, v := range conf {
 			data[v.Key] = v.Value
@@ -38,7 +38,7 @@ func (s *webUserConfService) GetConfigs(userId int, prefix string) map[string]st
 }
 
 // SetConfig 设置配置
-func (s *webUserConfService) SetConfig(userId int, key string, value string) bool {
+func (s *WebUserConfService) SetConfig(userId int, key string, value string) bool {
 	var total int64
 	err := util.Database.Db.Where("`user_id` = ? and `key` = ?", userId, key).Updates(&model.WebUserConfig{
 		Value: value,
@@ -54,20 +54,20 @@ func (s *webUserConfService) SetConfig(userId int, key string, value string) boo
 }
 
 // SetConfigs 设置配置
-func (s *webUserConfService) SetConfigs(userId int, data map[string]string) {
+func (s *WebUserConfService) SetConfigs(userId int, data map[string]string) {
 	for k, v := range data {
 		s.SetConfig(userId, k, v)
 	}
 }
 
 // FindByKey 通过key查询配置
-func (s *webUserConfService) FindByKey(key string) (config *model.WebUserConfig, err error) {
+func (s *WebUserConfService) FindByKey(key string) (config *model.WebUserConfig, err error) {
 	err = util.Database.Db.Where("`key` = ?", key).Find(&config).Error
 	return
 }
 
 // FindByValue 通过value查询配置
-func (s *webUserConfService) FindByValue(value string) (config *model.WebUserConfig, err error) {
+func (s *WebUserConfService) FindByValue(value string) (config *model.WebUserConfig, err error) {
 	err = util.Database.Db.Where("`value` = ?", value).Find(&config).Error
 	return
 }

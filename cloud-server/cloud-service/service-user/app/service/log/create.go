@@ -8,13 +8,13 @@ import (
 )
 
 // Create 插入数据
-func (s *service) Create(data *model.SystemLog) (err error) {
+func (s *Service) Create(data *model.WebUserLog) (err error) {
 	err = util.Database.Db.Create(&data).Error
 	return
 }
 
 // CreateByQueue 插入数据(异步消息队列)
-func (s *service) CreateByQueue(c *sinking_server.Context, types int, title string, content string) {
+func (s *Service) CreateByQueue(c *sinking_server.Context, types int, title string, content string) {
 	producer.NewWebUserLogProducer().Build(&model.WebUserLog{
 		UserId:    c.GetWebUserInfo().Id,
 		RequestId: c.GetRequestId(),

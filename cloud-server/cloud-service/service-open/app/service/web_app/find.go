@@ -9,19 +9,19 @@ import (
 )
 
 // FindByUserIdWithId 通过用户ID及ID查询
-func (s *service) FindByUserIdWithId(userId int, id int) (data *model.UserApp, err error) {
+func (s *Service) FindByUserIdWithId(userId int, id int) (data *model.UserApp, err error) {
 	err = util.Database.Db.Where("`id` = ? and `user_id` = ?", id, userId).First(&data).Error
 	return
 }
 
 // FindById 通过ID查询
-func (s *service) FindById(id int) (data *model.UserApp, err error) {
+func (s *Service) FindById(id int) (data *model.UserApp, err error) {
 	err = util.Database.Db.Where("`id` = ? ", id).First(&data).Error
 	return
 }
 
 // FindByIdWithCache 通过ID查询
-func (s *service) FindByIdWithCache(id int, refresh bool) (data *model.UserApp, err error) {
+func (s *Service) FindByIdWithCache(id int, refresh bool) (data *model.UserApp, err error) {
 	key := constant.CacheNameWithAppKey + strconv.Itoa(id)
 	if refresh {
 		data, err = s.FindById(id)
@@ -51,7 +51,7 @@ func (s *service) FindByIdWithCache(id int, refresh bool) (data *model.UserApp, 
 }
 
 // Clear 清除缓存
-func (s *service) Clear(id int) bool {
+func (s *Service) Clear(id int) bool {
 	key := constant.CacheNameWithAppKey + strconv.Itoa(id)
 	return util.Cache.Delete(key)
 }

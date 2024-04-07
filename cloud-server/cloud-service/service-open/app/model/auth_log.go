@@ -17,18 +17,18 @@ type AuthLog struct {
 }
 
 // TableName 获取表名
-func (AuthLog) TableName() string {
+func (*AuthLog) TableName() string {
 	return "auth_logs"
 }
 
 // BeforeCreate 创建前
-func (t *AuthLog) BeforeCreate(tx *gorm.DB) error {
+func (t *AuthLog) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *AuthLog) BeforeUpdate(tx *gorm.DB) error {
+func (t *AuthLog) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

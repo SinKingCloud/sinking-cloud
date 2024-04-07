@@ -1,8 +1,8 @@
 package verify
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/user"
 	"strconv"
 )
@@ -14,7 +14,7 @@ func (ControllerVerify) Sms(c *sinking_server.Context) {
 		Captcha string `form:"captcha" json:"captcha" default:"" validate:"required,numeric,len=4" label:"验证码"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

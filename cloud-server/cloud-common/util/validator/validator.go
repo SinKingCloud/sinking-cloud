@@ -17,7 +17,6 @@ var (
 
 // getIns 获取单例对象
 func getIns() *validator.Validate {
-
 	once.Do(func() {
 		validate = validator.New()
 		validate.RegisterTagNameFunc(func(field reflect.StructField) string {

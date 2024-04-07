@@ -6,7 +6,7 @@ import (
 )
 
 // Select 查询角色
-func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.SystemConfig, total int64, err error) {
+func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.SystemConfig, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.SystemConfig{})
 	if where["pid"] != "" {

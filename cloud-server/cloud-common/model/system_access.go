@@ -19,18 +19,18 @@ type SystemAccess struct {
 }
 
 // TableName 获取表名
-func (SystemAccess) TableName() string {
+func (*SystemAccess) TableName() string {
 	return "system_accesses"
 }
 
 // BeforeCreate 创建前
-func (t *SystemAccess) BeforeCreate(tx *gorm.DB) error {
+func (t *SystemAccess) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *SystemAccess) BeforeUpdate(tx *gorm.DB) error {
+func (t *SystemAccess) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

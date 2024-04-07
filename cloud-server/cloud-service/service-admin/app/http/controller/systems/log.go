@@ -12,20 +12,20 @@ func (ControllerLog) List(c *sinking_server.Context) {
 	type Form struct {
 		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id create_time" label:"排序字段"`
 		OrderByType     string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		Account         string `form:"account" default:"" validate:"omitempty,max=15" label:"用户账号"`
-		NickName        string `form:"nick_name" default:"" validate:"omitempty,max=20" label:"用户昵称"`
-		Email           string `form:"email" default:"" validate:"omitempty" label:"用户邮箱"`
-		Phone           string `form:"phone" default:"" validate:"omitempty,numeric" label:"用户手机"`
-		RequestId       string `form:"request_id" default:"" validate:"omitempty,len=36" label:"请求ID"`
-		RequestIp       string `form:"request_ip" default:"" validate:"omitempty,max=20" label:"请求IP"`
-		Type            string `form:"type" default:"" validate:"omitempty,numeric" label:"类型"`
-		Title           string `form:"title" default:"" validate:"omitempty,max=50" label:"标题"`
-		Content         string `form:"content" default:"" validate:"omitempty,max=100" label:"内容"`
-		CreateTimeStart string `form:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		Account         string `form:"account" json:"account" default:"" validate:"omitempty,max=15" label:"用户账号"`
+		NickName        string `form:"nick_name" json:"nick_name" default:"" validate:"omitempty,max=20" label:"用户昵称"`
+		Email           string `form:"email" json:"email" default:"" validate:"omitempty" label:"用户邮箱"`
+		Phone           string `form:"phone" json:"phone" default:"" validate:"omitempty,numeric" label:"用户手机"`
+		RequestId       string `form:"request_id" json:"request_id" default:"" validate:"omitempty,len=36" label:"请求ID"`
+		RequestIp       string `form:"request_ip" json:"request_ip" default:"" validate:"omitempty,max=20" label:"请求IP"`
+		Type            string `form:"type" json:"type" default:"" validate:"omitempty,numeric" label:"类型"`
+		Title           string `form:"title" json:"title" default:"" validate:"omitempty,max=50" label:"标题"`
+		Content         string `form:"content" json:"content" default:"" validate:"omitempty,max=100" label:"内容"`
+		CreateTimeStart string `form:"create_time_start" json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `form:"create_time_end" json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorGet(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -75,11 +75,11 @@ func (ControllerLog) List(c *sinking_server.Context) {
 // Delete 删除记录
 func (ControllerLog) Delete(c *sinking_server.Context) {
 	type Form struct {
-		RequestTimeStart string `json:"request_time_start" default:"" validate:"required" label:"创建起始时间"`
-		RequestTimeEnd   string `json:"request_time_end" default:"" validate:"required" label:"创建结束时间"`
+		RequestTimeStart string `form:"request_time_start" json:"request_time_start" default:"" validate:"required" label:"创建起始时间"`
+		RequestTimeEnd   string `form:"request_time_end" json:"request_time_end" default:"" validate:"required" label:"创建结束时间"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

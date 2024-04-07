@@ -6,7 +6,7 @@ import (
 )
 
 // DeleteByIds 通过ID列表删除
-func (s *service) DeleteByIds(ids []int) (err error) {
+func (s *Service) DeleteByIds(ids []int) (err error) {
 	err = util.Database.Db.Where("`id` in ? ", ids).Delete(&model.SystemConfig{}).Error
 	return
 }

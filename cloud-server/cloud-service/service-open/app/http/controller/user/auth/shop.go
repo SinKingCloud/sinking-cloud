@@ -13,15 +13,15 @@ func (ControllerAuth) ShopList(c *sinking_server.Context) {
 	type Form struct {
 		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id create_time" label:"排序字段"`
 		OrderByType     string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		Name            string `form:"name" default:"" validate:"omitempty,max=50" label:"名称"`
-		Describe        string `form:"describe" default:"" validate:"omitempty,len=100" label:"描述"`
-		CreateTimeStart string `form:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
-		UpdateTimeStart string `form:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"修改起始时间"`
-		UpdateTimeEnd   string `form:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"修改结束时间"`
+		Name            string `form:"name" json:"name" default:"" validate:"omitempty,max=50" label:"名称"`
+		Describe        string `form:"describe" json:"describe" default:"" validate:"omitempty,len=100" label:"描述"`
+		CreateTimeStart string `form:"create_time_start" json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `form:"create_time_end" json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		UpdateTimeStart string `form:"update_time_start" json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"修改起始时间"`
+		UpdateTimeEnd   string `form:"update_time_end" json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"修改结束时间"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorGet(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -55,11 +55,11 @@ func (ControllerAuth) ShopList(c *sinking_server.Context) {
 // ShopBuy 购买商品
 func (ControllerAuth) ShopBuy(c *sinking_server.Context) {
 	type Form struct {
-		Id     int    `json:"id" default:"" validate:"min=0" label:"程序ID"`
-		Domain string `json:"domain" default:"" validate:"required,max=100" label:"域名"`
+		Id     int    `form:"id" json:"id" default:"" validate:"min=0" label:"程序ID"`
+		Domain string `form:"domain" json:"domain" default:"" validate:"required,max=100" label:"域名"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

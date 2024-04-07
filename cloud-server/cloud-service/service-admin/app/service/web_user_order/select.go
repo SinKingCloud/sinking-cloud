@@ -6,7 +6,7 @@ import (
 )
 
 // Select 获取数据
-func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*WebUserOrder, total int64, err error) {
+func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*WebUserOrder, total int64, err error) {
 	offset := pageSize * (page - 1)
 	table := &model.WebUser{}
 	query := util.Database.Db.Model(&model.WebUserOrder{}).

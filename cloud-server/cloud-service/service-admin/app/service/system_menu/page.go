@@ -8,37 +8,37 @@ import (
 	"sync"
 )
 
-// service 单例对象
-type service struct {
+// Service 单例对象
+type Service struct {
 }
 
 // obj 单例对象
 var (
-	obj  *service
+	obj  *Service
 	once sync.Once
 )
 
 // GetIns 获取单例
-func GetIns() *service {
+func GetIns() *Service {
 	once.Do(func() {
-		obj = &service{}
+		obj = &Service{}
 	})
 	return obj
 }
 
 // Menu 页面输出结构
 type Menu struct {
-	Id    int    `json:"id"`
-	Pid   int    `json:"pid"`
-	Sort  int    `json:"sort"`
-	Title string `json:"title"`
-	Key   string `json:"key"`
-	Path  string `json:"path"`
-	Icon  string `json:"icon"`
+	Id    int    `gorm:"column:id;PRIMARY_KEY" json:"id"`
+	Pid   int    `gorm:"column:pid" json:"pid"`
+	Sort  int    `gorm:"column:sort" json:"sort"`
+	Title string `gorm:"column:title" json:"title"`
+	Key   string `gorm:"column:key" json:"key"`
+	Path  string `gorm:"column:path" json:"path"`
+	Icon  string `gorm:"column:icon" json:"icon"`
 }
 
 // SelectByIdsWithCache 根据菜单id查询角色菜单
-func (s *service) SelectByIdsWithCache(roleId int, menuIds string, refresh bool) (menus []*Menu, err error) {
+func (s *Service) SelectByIdsWithCache(roleId int, menuIds string, refresh bool) (menus []*Menu, err error) {
 	key := constant.CacheNameWithRoleMenu + strconv.Itoa(roleId)
 	var ids []int
 	err = json.Unmarshal([]byte(menuIds), &ids)
@@ -73,7 +73,7 @@ func (s *service) SelectByIdsWithCache(roleId int, menuIds string, refresh bool)
 }
 
 // ClearRoleMenuCache 清理角色菜单缓存
-func (s *service) ClearRoleMenuCache(roleId int) bool {
+func (s *Service) ClearRoleMenuCache(roleId int) bool {
 	key := constant.CacheNameWithRoleMenu + strconv.Itoa(roleId)
 	return util.Cache.Delete(key)
 }

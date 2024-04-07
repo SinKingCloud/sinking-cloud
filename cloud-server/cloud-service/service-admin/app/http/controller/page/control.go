@@ -9,10 +9,10 @@ import (
 
 func (ControllerPage) Control(c *sinking_server.Context) {
 	type Form struct {
-		Key string `form:"key" default:"" validate:"required" label:"页面ID"`
+		Key string `form:"key" json:"key" default:"" validate:"required" label:"页面ID"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorGet(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

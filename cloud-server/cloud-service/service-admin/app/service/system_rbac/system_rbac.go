@@ -12,25 +12,25 @@ import (
 	"sync"
 )
 
-// service 单例对象
-type service struct {
+// Service 单例对象
+type Service struct {
 }
 
 // obj 单例对象
 var (
-	obj  *service
+	obj  *Service
 	once sync.Once
 )
 
 // GetIns 获取单例
-func GetIns() *service {
+func GetIns() *Service {
 	once.Do(func() {
-		obj = &service{}
+		obj = &Service{}
 	})
 	return obj
 }
 
-func (s *service) CheckAccessByCache(roleId int, url string, method string) bool {
+func (s *Service) CheckAccessByCache(roleId int, url string, method string) bool {
 	key := constant.CacheNameWithRbac + strconv.Itoa(roleId) + url + ":" + method
 	res, exists := util.Cache.Get(key)
 	if exists {
@@ -49,7 +49,7 @@ func (s *service) CheckAccessByCache(roleId int, url string, method string) bool
 }
 
 // CheckAccess 判断是否含有权限
-func (s *service) CheckAccess(roleId int, url string, method string) (bool, *model.SystemAccess) {
+func (s *Service) CheckAccess(roleId int, url string, method string) (bool, *model.SystemAccess) {
 	role, err := role2.GetIns().FindByIdWithCache(roleId, false)
 	if err != nil || role == nil {
 		return true, nil

@@ -10,7 +10,7 @@ type ValidatePage struct {
 // ValidatePageDefault 默认分页验证
 func ValidatePageDefault(c *sinking_server.Context) *ValidatePage {
 	pageInfo := &ValidatePage{}
-	if ok, _ := c.ValidatorGet(pageInfo); !ok {
+	if ok, _ := c.ValidatorAll(pageInfo); !ok {
 		pageInfo.Page = 1
 		pageInfo.PageSize = 20
 	}

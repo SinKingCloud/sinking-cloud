@@ -1,0 +1,9 @@
+package task
+
+import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/command/task/uin_job"
+)
+
+func Run() {
+	uin_job.Run()
+}

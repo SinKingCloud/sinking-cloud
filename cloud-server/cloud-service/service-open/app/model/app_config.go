@@ -17,18 +17,18 @@ type AppConfig struct {
 }
 
 // TableName 获取表名
-func (AppConfig) TableName() string {
+func (*AppConfig) TableName() string {
 	return "app_configs"
 }
 
 // BeforeCreate 创建前
-func (t *AppConfig) BeforeCreate(tx *gorm.DB) error {
+func (t *AppConfig) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *AppConfig) BeforeUpdate(tx *gorm.DB) error {
+func (t *AppConfig) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

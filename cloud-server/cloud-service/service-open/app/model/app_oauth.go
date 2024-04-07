@@ -19,18 +19,18 @@ type AppOauth struct {
 }
 
 // TableName 获取表名
-func (AppOauth) TableName() string {
+func (*AppOauth) TableName() string {
 	return "app_oauths"
 }
 
 // BeforeCreate 创建前
-func (t *AppOauth) BeforeCreate(tx *gorm.DB) error {
+func (t *AppOauth) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *AppOauth) BeforeUpdate(tx *gorm.DB) error {
+func (t *AppOauth) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

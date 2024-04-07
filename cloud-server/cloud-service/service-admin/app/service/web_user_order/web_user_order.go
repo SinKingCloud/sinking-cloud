@@ -5,20 +5,20 @@ import (
 	"sync"
 )
 
-// service 单例对象
-type service struct {
+// Service 单例对象
+type Service struct {
 }
 
 // obj 单例对象
 var (
-	obj  *service
+	obj  *Service
 	once sync.Once
 )
 
 // GetIns 获取单例
-func GetIns() *service {
+func GetIns() *Service {
 	once.Do(func() {
-		obj = &service{}
+		obj = &Service{}
 	})
 	return obj
 }
@@ -27,11 +27,11 @@ func GetIns() *service {
 type WebUserOrder struct {
 	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	UserId     int          `gorm:"column:user_id" json:"user_id"`
-	Account    string       `json:"account"`
-	NickName   string       `json:"nick_name"`
-	Avatar     string       `json:"avatar"`
-	Email      string       `json:"email"`
-	Phone      int64        `json:"phone"`
+	Account    string       `gorm:"column:account" json:"account"`
+	NickName   string       `gorm:"column:nick_name" json:"nick_name"`
+	Avatar     string       `gorm:"column:avatar" json:"avatar"`
+	Email      string       `gorm:"column:email" json:"email"`
+	Phone      int64        `gorm:"column:phone" json:"phone"`
 	PayType    int          `gorm:"column:pay_type" json:"pay_type"`
 	OrderType  int          `gorm:"column:order_type" json:"order_type"`
 	Money      float64      `gorm:"column:money" json:"money"`

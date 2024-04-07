@@ -1,10 +1,10 @@
 package person
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/user"
 	"regexp"
 	"strconv"
@@ -13,13 +13,13 @@ import (
 // Update 修改资料
 func (ControllerPerson) Update(c *sinking_server.Context) {
 	type Form struct {
-		Account  string `json:"account" default:"" validate:"omitempty,min=5,max=25" label:"账号"`
-		Email    string `json:"email" default:"" validate:"omitempty,email,max=30" label:"邮箱"`
-		NickName string `json:"nick_name" default:"" validate:"omitempty,min=1,max=15" label:"用户昵称"`
-		Avatar   string `json:"avatar" default:"" validate:"omitempty,uri" label:"用户头像"`
+		Account  string `form:"account" json:"account" default:"" validate:"omitempty,min=5,max=25" label:"账号"`
+		Email    string `form:"email" json:"email" default:"" validate:"omitempty,email,max=30" label:"邮箱"`
+		NickName string `form:"nick_name" json:"nick_name" default:"" validate:"omitempty,min=1,max=15" label:"用户昵称"`
+		Avatar   string `form:"avatar" json:"avatar" default:"" validate:"omitempty,uri" label:"用户头像"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -62,7 +62,7 @@ func (ControllerPerson) Password(c *sinking_server.Context) {
 		Password string `form:"password" json:"password" default:"" validate:"required,min=6,max=20" label:"密码"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -88,7 +88,7 @@ func (ControllerPerson) Phone(c *sinking_server.Context) {
 		Password string `form:"password" json:"password" default:"" validate:"required,min=6,max=20" label:"密码"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

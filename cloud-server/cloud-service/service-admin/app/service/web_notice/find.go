@@ -6,7 +6,7 @@ import (
 )
 
 // FindById 查询信息
-func (*service) FindById(id int) (user *model.WebNotice, err error) {
+func (*Service) FindById(id int) (user *model.WebNotice, err error) {
 	err = util.Database.Db.Where("`id` = ?", id).First(&user).Error
 	return
 }

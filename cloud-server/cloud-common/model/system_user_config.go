@@ -17,18 +17,18 @@ type SystemUserConfig struct {
 }
 
 // TableName 获取表名
-func (SystemUserConfig) TableName() string {
+func (*SystemUserConfig) TableName() string {
 	return "system_user_configs"
 }
 
 // BeforeCreate 创建前
-func (t *SystemUserConfig) BeforeCreate(tx *gorm.DB) error {
+func (t *SystemUserConfig) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *SystemUserConfig) BeforeUpdate(tx *gorm.DB) error {
+func (t *SystemUserConfig) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

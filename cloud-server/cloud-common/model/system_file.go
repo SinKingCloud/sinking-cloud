@@ -21,18 +21,18 @@ type SystemFile struct {
 }
 
 // TableName 获取表名
-func (SystemFile) TableName() string {
+func (*SystemFile) TableName() string {
 	return "system_files"
 }
 
 // BeforeCreate 创建前
-func (t *SystemFile) BeforeCreate(tx *gorm.DB) error {
+func (t *SystemFile) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *SystemFile) BeforeUpdate(tx *gorm.DB) error {
+func (t *SystemFile) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

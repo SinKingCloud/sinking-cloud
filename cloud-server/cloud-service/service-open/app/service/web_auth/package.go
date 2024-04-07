@@ -9,9 +9,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/auth_app"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/auth_version"
 	"gorm.io/gorm"
@@ -47,10 +47,10 @@ func (p *pkg) BuildRelease(id int, userAuth *model.UserAuth) (string, error) {
 	}
 	//完整包下载数量+1
 	go func(id int) {
-		_ = auth_app.GetIns().UpdateById(id, map[string]interface{}{
+		_ = auth_app.GetIns().UpdateById(authVersion.AuthId, map[string]interface{}{
 			"release_down_num": gorm.Expr("`release_down_num`+1"),
 		})
-		_ = auth_version.GetIns().UpdateById(id, map[string]interface{}{
+		_ = auth_version.GetIns().UpdateById(authVersion.AuthId, map[string]interface{}{
 			"release_down_num": gorm.Expr("`release_down_num`+1"),
 		})
 	}(authVersion.Id)
@@ -72,10 +72,10 @@ func (p *pkg) BuildUpdate(id int, userAuth *model.UserAuth) (string, error) {
 	}
 	//更新包下载数量+1
 	go func(id int) {
-		_ = auth_app.GetIns().UpdateById(id, map[string]interface{}{
+		_ = auth_app.GetIns().UpdateById(authVersion.AuthId, map[string]interface{}{
 			"update_down_num": gorm.Expr("`update_down_num`+1"),
 		})
-		_ = auth_version.GetIns().UpdateById(id, map[string]interface{}{
+		_ = auth_version.GetIns().UpdateById(authVersion.AuthId, map[string]interface{}{
 			"update_down_num": gorm.Expr("`update_down_num`+1"),
 		})
 	}(authVersion.Id)

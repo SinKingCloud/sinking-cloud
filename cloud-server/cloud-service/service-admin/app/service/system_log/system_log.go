@@ -5,38 +5,38 @@ import (
 	"sync"
 )
 
-// service 单例对象
-type service struct {
+// Service 单例对象
+type Service struct {
 }
 
 // obj 单例对象
 var (
-	obj  *service
+	obj  *Service
 	once sync.Once
 )
 
 // GetIns 获取单例
-func GetIns() *service {
+func GetIns() *Service {
 	once.Do(func() {
-		obj = &service{}
+		obj = &Service{}
 	})
 	return obj
 }
 
 // SystemLog 系统操作日志表
 type SystemLog struct {
-	Id         int          `json:"id"`
-	UserId     int          `json:"user_id"`
-	Account    string       `json:"account"`
-	NickName   string       `json:"nick_name"`
-	Avatar     string       `json:"avatar"`
-	Email      string       `json:"email"`
-	Phone      int64        `json:"phone"`
-	RequestId  string       `json:"request_id"`
-	RequestIp  string       `json:"request_ip"`
-	Type       int          `json:"type"`
-	Title      string       `json:"title"`
-	Content    string       `json:"content"`
-	CreateTime str.DateTime `json:"create_time"`
-	UpdateTime str.DateTime `json:"update_time"`
+	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
+	UserId     int          `gorm:"column:user_id" json:"user_id"`
+	Account    string       `gorm:"column:account" json:"account"`
+	NickName   string       `gorm:"column:nick_name" json:"nick_name"`
+	Avatar     string       `gorm:"column:avatar" json:"avatar"`
+	Email      string       `gorm:"column:email" json:"email"`
+	Phone      int64        `gorm:"column:phone" json:"phone"`
+	RequestId  string       `gorm:"column:request_id" json:"request_id"`
+	RequestIp  string       `gorm:"column:request_ip" json:"request_ip"`
+	Type       int          `gorm:"column:type" json:"type"`
+	Title      string       `gorm:"column:title" json:"title"`
+	Content    string       `gorm:"column:content" json:"content"`
+	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
+	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }

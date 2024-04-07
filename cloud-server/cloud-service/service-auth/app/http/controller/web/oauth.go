@@ -1,8 +1,8 @@
 package web
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/rpc"
 )
 
 // Oauth 授权登录
@@ -12,7 +12,7 @@ func (ControllerWeb) Oauth(c *sinking_server.Context) {
 		RedirectUrl string `form:"redirect_url" json:"redirect_url" default:"" validate:"required,uri" label:"回调网址"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

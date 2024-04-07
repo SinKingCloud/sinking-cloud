@@ -8,7 +8,7 @@ import (
 )
 
 // DeleteById 通过ID删除
-func (s *service) DeleteById(id int) (err error) {
+func (s *Service) DeleteById(id int) (err error) {
 	go func(id int) {
 		_ = oauth_log.GetIns().DeleteByOauthId(id)
 		_ = oauth_user.GetIns().DeleteByOauthId(id)

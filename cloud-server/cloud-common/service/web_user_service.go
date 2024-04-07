@@ -14,37 +14,37 @@ import (
 	"time"
 )
 
-// webUserService 单例对象
-type webUserService struct {
+// WebUserService 单例对象
+type WebUserService struct {
 }
 
 // userObj 单例对象
 var (
-	webUserObj     *webUserService
+	webUserObj     *WebUserService
 	onceWebUserObj sync.Once
 )
 
 // GetWebUserServiceIns 获取单例
-func GetWebUserServiceIns() *webUserService {
+func GetWebUserServiceIns() *WebUserService {
 	onceWebUserObj.Do(func() {
-		webUserObj = &webUserService{}
+		webUserObj = &WebUserService{}
 	})
 	return webUserObj
 }
 
 // ClearCache 清理缓存
-func (webUserService) ClearCache(id int) {
+func (WebUserService) ClearCache(id int) {
 	util.Cache.Delete(util2.CacheNameWithWebUser + strconv.Itoa(id))
 }
 
 // FindById 查询用户信息(根据用户ID)
-func (webUserService) FindById(id int) (user *model.WebUser, err error) {
+func (WebUserService) FindById(id int) (user *model.WebUser, err error) {
 	err = util.Database.Db.Where("id = ?", id).First(&user).Error
 	return
 }
 
 // UpdateById 通过ID更新
-func (w webUserService) UpdateById(id int, data map[string]interface{}) (err error) {
+func (w WebUserService) UpdateById(id int, data map[string]interface{}) (err error) {
 	data["update_time"] = str.DateTime(time.Now())
 	err = util.Database.Db.Model(&model.WebUser{}).Where("`id` = ? ", id).Updates(data).Error
 	if err == nil {
@@ -54,7 +54,7 @@ func (w webUserService) UpdateById(id int, data map[string]interface{}) (err err
 }
 
 // FindByIdWithCache 查询缓存用户信息(根据用户ID)
-func (w webUserService) FindByIdWithCache(id int, refresh bool) (user *model.WebUser, err error) {
+func (w WebUserService) FindByIdWithCache(id int, refresh bool) (user *model.WebUser, err error) {
 	key := util2.CacheNameWithWebUser + strconv.Itoa(id)
 	if refresh {
 		user, err = w.FindById(id)
@@ -84,7 +84,7 @@ func (w webUserService) FindByIdWithCache(id int, refresh bool) (user *model.Web
 }
 
 // Money 用户余额调整(根据用户ID)
-func (webUserService) Money(userId int, money string, mod int) (err error) {
+func (WebUserService) Money(userId int, money string, mod int) (err error) {
 	l := "+"
 	if mod == 0 {
 		l = "-"
@@ -97,7 +97,7 @@ func (webUserService) Money(userId int, money string, mod int) (err error) {
 }
 
 // SetRealAuthStatu 设置实名状态(根据用户ID)
-func (w webUserService) SetRealAuthStatu(userId int, status bool, cardNo string, cardName string) (err error) {
+func (w WebUserService) SetRealAuthStatu(userId int, status bool, cardNo string, cardName string) (err error) {
 	if userId <= 0 {
 		return errors.New("用户不存在")
 	}

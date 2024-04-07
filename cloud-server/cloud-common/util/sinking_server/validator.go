@@ -9,6 +9,14 @@ func (c *Context) Validator(data interface{}) (bool, string) {
 	return validator.Check(data)
 }
 
+// ValidatorAll 参数绑定
+func (c *Context) ValidatorAll(data interface{}) (bool, string) {
+	if c.BindAll(data) != nil {
+		return false, "参数绑定失败"
+	}
+	return validator.Check(data)
+}
+
 // ValidatorJson json参数验证
 func (c *Context) ValidatorJson(data interface{}) (bool, string) {
 	if c.BindJson(data) != nil {

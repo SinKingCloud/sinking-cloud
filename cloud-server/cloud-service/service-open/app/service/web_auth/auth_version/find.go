@@ -9,19 +9,19 @@ import (
 )
 
 // FindById 通过ID查询
-func (s *service) FindById(id int) (data *model.AuthVersion, err error) {
+func (s *Service) FindById(id int) (data *model.AuthVersion, err error) {
 	err = util.Database.Db.Where("`id` = ? ", id).First(&data).Error
 	return
 }
 
 // FindByAuthIdVerNum 通过程序ID和版本版本ID查询
-func (s *service) FindByAuthIdVerNum(authId int, versionNumber int) (data *model.AuthVersion, err error) {
+func (s *Service) FindByAuthIdVerNum(authId int, versionNumber int) (data *model.AuthVersion, err error) {
 	err = util.Database.Db.Where("`auth_id` = ? and `version_number` = ? ", authId, versionNumber).First(&data).Error
 	return
 }
 
 // FindByIdWithCache 通过ID查询
-func (s *service) FindByIdWithCache(id int, refresh bool) (data *model.AuthVersion, err error) {
+func (s *Service) FindByIdWithCache(id int, refresh bool) (data *model.AuthVersion, err error) {
 	key := constant.CacheNameWithAuthVersion + strconv.Itoa(id)
 	if refresh {
 		data, err = s.FindById(id)
@@ -51,7 +51,7 @@ func (s *service) FindByIdWithCache(id int, refresh bool) (data *model.AuthVersi
 }
 
 // Clear 清除缓存
-func (s *service) Clear(id int) bool {
+func (s *Service) Clear(id int) bool {
 	key := constant.CacheNameWithAuthVersion + strconv.Itoa(id)
 	return util.Cache.Delete(key)
 }

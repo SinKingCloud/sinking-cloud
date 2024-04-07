@@ -8,25 +8,25 @@ import (
 	"time"
 )
 
-// systemFileService config_service
-type systemFileService struct {
+// SystemFileService config_service
+type SystemFileService struct {
 }
 
 // systemFileObj systemConfigObj对象
 var (
-	systemFileObj     *systemFileService
+	systemFileObj     *SystemFileService
 	onceSystemFileObj sync.Once
 )
 
 // GetSystemFileServiceIns 获取单例
-func GetSystemFileServiceIns() *systemFileService {
+func GetSystemFileServiceIns() *SystemFileService {
 	onceSystemFileObj.Do(func() {
-		systemFileObj = &systemFileService{}
+		systemFileObj = &SystemFileService{}
 	})
 	return systemFileObj
 }
 
-func (*systemFileService) Create(file *model.SystemFile) (err error) {
+func (*SystemFileService) Create(file *model.SystemFile) (err error) {
 	var count int64
 	err = util.Database.Db.Model(&model.SystemFile{}).Where("`hash`=?", file.Hash).Count(&count).Error
 	if err != nil {

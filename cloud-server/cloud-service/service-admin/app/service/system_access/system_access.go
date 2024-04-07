@@ -8,32 +8,32 @@ import (
 	"sync"
 )
 
-// service 单例对象
-type service struct {
+// Service 单例对象
+type Service struct {
 }
 
 // obj 单例对象
 var (
-	obj  *service
+	obj  *Service
 	once sync.Once
 )
 
 // GetIns 获取单例
-func GetIns() *service {
+func GetIns() *Service {
 	once.Do(func() {
-		obj = &service{}
+		obj = &Service{}
 	})
 	return obj
 }
 
 // FindByUriMethod 查询接口信息
-func (*service) FindByUriMethod(url string, method string) (access *model.SystemAccess, err error) {
+func (*Service) FindByUriMethod(url string, method string) (access *model.SystemAccess, err error) {
 	err = util.Database.Db.Where("`url` = ? and `method`=?", url, method).First(&access).Error
 	return
 }
 
 // FindByUriMethodWithCache 根据缓存查询接口信息
-func (s *service) FindByUriMethodWithCache(url string, method string, refresh bool) (access *model.SystemAccess, err error) {
+func (s *Service) FindByUriMethodWithCache(url string, method string, refresh bool) (access *model.SystemAccess, err error) {
 	key := constant.CacheNameWithSystemAccess + url + method
 	if refresh {
 		access, err = s.FindByUriMethod(url, method)

@@ -21,18 +21,18 @@ type AuthApp struct {
 }
 
 // TableName 获取表名
-func (AuthApp) TableName() string {
+func (*AuthApp) TableName() string {
 	return "auth_apps"
 }
 
 // BeforeCreate 创建前
-func (t *AuthApp) BeforeCreate(tx *gorm.DB) error {
+func (t *AuthApp) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *AuthApp) BeforeUpdate(tx *gorm.DB) error {
+func (t *AuthApp) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

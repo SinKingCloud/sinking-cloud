@@ -17,4 +17,7 @@ func loadRpc(s *sinking_web.Engine) {
 func registerService(g *sinking_web.RouterGroup) {
 	r := g.Group("/oauth")
 	r.POST("/auth_ticket", sinking_server.HandleFunc(rpc.Oauth.AuthTicket))
+
+	r2 := g.Group("/user_app")
+	r2.POST("/findById", sinking_server.HandleFunc(rpc.UserApp.FindById))
 }

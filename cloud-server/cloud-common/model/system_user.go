@@ -25,18 +25,18 @@ type SystemUser struct {
 }
 
 // TableName 获取表名
-func (SystemUser) TableName() string {
+func (*SystemUser) TableName() string {
 	return "system_users"
 }
 
 // BeforeCreate 创建前
-func (t *SystemUser) BeforeCreate(tx *gorm.DB) error {
+func (t *SystemUser) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *SystemUser) BeforeUpdate(tx *gorm.DB) error {
+func (t *SystemUser) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

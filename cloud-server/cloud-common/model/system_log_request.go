@@ -28,18 +28,18 @@ type SystemLogRequest struct {
 }
 
 // TableName 获取表名
-func (SystemLogRequest) TableName() string {
+func (*SystemLogRequest) TableName() string {
 	return "system_log_requests"
 }
 
 // BeforeCreate 创建前
-func (t *SystemLogRequest) BeforeCreate(tx *gorm.DB) error {
+func (t *SystemLogRequest) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *SystemLogRequest) BeforeUpdate(tx *gorm.DB) error {
+func (t *SystemLogRequest) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

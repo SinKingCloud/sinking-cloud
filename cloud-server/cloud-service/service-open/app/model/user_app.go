@@ -19,18 +19,18 @@ type UserApp struct {
 }
 
 // TableName 获取表名
-func (UserApp) TableName() string {
+func (*UserApp) TableName() string {
 	return "user_apps"
 }
 
 // BeforeCreate 创建前
-func (t *UserApp) BeforeCreate(tx *gorm.DB) error {
+func (t *UserApp) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *UserApp) BeforeUpdate(tx *gorm.DB) error {
+func (t *UserApp) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

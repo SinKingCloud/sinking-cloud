@@ -8,7 +8,7 @@ import (
 )
 
 // FindByKeyWithCache 通过key查找页面数据（缓存）
-func (s *service) FindByKeyWithCache(key string, refresh bool) (menu *Menu, err error) {
+func (s *Service) FindByKeyWithCache(key string, refresh bool) (menu *Menu, err error) {
 	cacheKey := constant.CacheNameRoleMenu + key
 	if refresh {
 		menu, err = s.FindByKey(key)
@@ -38,7 +38,7 @@ func (s *service) FindByKeyWithCache(key string, refresh bool) (menu *Menu, err 
 }
 
 // SelectControlWithCache 查询页面控件(缓存)
-func (s *service) SelectControlWithCache(roleId int, menuIds string, pid int, refresh bool) (menus []*Menu, err error) {
+func (s *Service) SelectControlWithCache(roleId int, menuIds string, pid int, refresh bool) (menus []*Menu, err error) {
 	key := constant.CacheNameWithRoleMenuControl + strconv.Itoa(roleId) + "-" + strconv.Itoa(pid)
 	var ids []int
 	err = json.Unmarshal([]byte(menuIds), &ids)
@@ -73,7 +73,7 @@ func (s *service) SelectControlWithCache(roleId int, menuIds string, pid int, re
 }
 
 // GetAccessIdsByMenuIds 通过菜单获取关联接口权限
-func (s *service) GetAccessIdsByMenuIds(ids []int) (accessIds []int, err error) {
+func (s *Service) GetAccessIdsByMenuIds(ids []int) (accessIds []int, err error) {
 	menus, err := s.SelectFullByIds(ids)
 	if err != nil {
 		return

@@ -17,16 +17,16 @@ func (ControllerRole) List(c *sinking_server.Context) {
 	type Form struct {
 		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id update_time create_time status" label:"排序字段"`
 		OrderByType     string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		Name            string `form:"name" default:"" validate:"max=20" label:"名称"`
-		Describe        string `form:"describe" default:"" validate:"max=100" label:"描述"`
-		Status          string `form:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`
-		CreateTimeStart string `form:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
-		UpdateTimeStart string `form:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
-		UpdateTimeEnd   string `form:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
+		Name            string `form:"name" json:"name" default:"" validate:"max=20" label:"名称"`
+		Describe        string `form:"describe" json:"describe" default:"" validate:"max=100" label:"描述"`
+		Status          string `form:"status" json:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`
+		CreateTimeStart string `form:"create_time_start" json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `form:"create_time_end" json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		UpdateTimeStart string `form:"update_time_start" json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
+		UpdateTimeEnd   string `form:"update_time_end" json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorGet(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -64,14 +64,14 @@ func (ControllerRole) List(c *sinking_server.Context) {
 // Update 修改信息
 func (r ControllerRole) Update(c *sinking_server.Context) {
 	type Form struct {
-		Ids      []int  `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
-		Name     string `json:"name" default:"" validate:"omitempty,max=20" label:"名称"`
-		Describe string `json:"describe" default:"" validate:"omitempty,max=100" label:"描述"`
-		Menus    string `json:"menus" default:"" validate:"omitempty" label:"绑定菜单"`
-		Status   string `json:"status" default:"" validate:"omitempty,numeric,oneof=0 1" label:"状态"`
+		Ids      []int  `form:"ids" json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
+		Name     string `form:"name" json:"name" default:"" validate:"omitempty,max=20" label:"名称"`
+		Describe string `form:"describe" json:"describe" default:"" validate:"omitempty,max=100" label:"描述"`
+		Menus    string `form:"menus" json:"menus" default:"" validate:"omitempty" label:"绑定菜单"`
+		Status   string `form:"status" json:"status" default:"" validate:"omitempty,numeric,oneof=0 1" label:"状态"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -104,13 +104,13 @@ func (r ControllerRole) Update(c *sinking_server.Context) {
 // Create 添加信息
 func (r ControllerRole) Create(c *sinking_server.Context) {
 	type Form struct {
-		Name     string `json:"name" validate:"required,max=20" label:"名称"`
-		Describe string `json:"describe" validate:"required,max=100" label:"描述"`
-		Menus    string `json:"menus" default:"" validate:"required" label:"绑定菜单"`
-		Status   int    `json:"status" validate:"oneof=0 1" label:"状态"`
+		Name     string `form:"name" json:"name" validate:"required,max=20" label:"名称"`
+		Describe string `form:"describe" json:"describe" validate:"required,max=100" label:"描述"`
+		Menus    string `form:"menus" json:"menus" default:"" validate:"required" label:"绑定菜单"`
+		Status   int    `form:"status" json:"status" validate:"oneof=0 1" label:"状态"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -132,10 +132,10 @@ func (r ControllerRole) Create(c *sinking_server.Context) {
 // Delete 删除信息
 func (r ControllerRole) Delete(c *sinking_server.Context) {
 	type Form struct {
-		Ids []int `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
+		Ids []int `form:"ids" json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

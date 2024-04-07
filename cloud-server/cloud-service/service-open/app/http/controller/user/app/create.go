@@ -1,11 +1,11 @@
 package app
 
 import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/rpc"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/rpc/web_user_log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_app"
 	"strings"
 )
@@ -18,7 +18,7 @@ func (ControllerApp) Create(c *sinking_server.Context) {
 		Status   int    `json:"status" validate:"oneof=0 2" label:"状态"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -30,7 +30,7 @@ func (ControllerApp) Create(c *sinking_server.Context) {
 		Status:   form.Status,
 	})
 	if err == nil {
-		rpc.WebUserLog.Create(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), web_user_log.EventCreate, "创建应用", "创建应用信息")
+		rpc.Log.CreateUser(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), log.UserEventCreate, "创建应用", "创建应用信息")
 		c.Success("创建应用成功")
 	} else {
 		c.Error("创建应用失败")

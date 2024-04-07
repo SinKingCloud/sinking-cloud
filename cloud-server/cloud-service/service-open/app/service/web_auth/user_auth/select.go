@@ -6,7 +6,7 @@ import (
 )
 
 // Select 获取数据
-func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*UserAuth, total int64, err error) {
+func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*UserAuth, total int64, err error) {
 	offset := pageSize * (page - 1)
 	table := &model.AuthApp{}
 	query := util.Database.Db.Model(&model.UserAuth{}).Select("u.*,a.`name`,a.`describe`,a.`version_id`,a.`release_down_num`,a.`update_down_num`,a.`price`").

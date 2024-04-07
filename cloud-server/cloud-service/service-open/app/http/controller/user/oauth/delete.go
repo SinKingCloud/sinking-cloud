@@ -8,10 +8,10 @@ import (
 // Delete 删除
 func (ControllerOauth) Delete(c *sinking_server.Context) {
 	type Form struct {
-		Id int `json:"id" default:"" validate:"min=1" label:"ID"`
+		Id int `form:"id" json:"id" default:"" validate:"min=1" label:"ID"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

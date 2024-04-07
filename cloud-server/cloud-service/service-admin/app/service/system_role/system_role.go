@@ -9,26 +9,26 @@ import (
 	"sync"
 )
 
-// service 单例对象
-type service struct {
+// Service 单例对象
+type Service struct {
 }
 
 // obj 单例对象
 var (
-	obj  *service
+	obj  *Service
 	once sync.Once
 )
 
 // GetIns 获取单例
-func GetIns() *service {
+func GetIns() *Service {
 	once.Do(func() {
-		obj = &service{}
+		obj = &Service{}
 	})
 	return obj
 }
 
 // FindByIdWithCache 根据缓存查询角色信息(根据角色ID)
-func (s *service) FindByIdWithCache(id int, refresh bool) (role *model.SystemRole, err error) {
+func (s *Service) FindByIdWithCache(id int, refresh bool) (role *model.SystemRole, err error) {
 	key := constant.CacheNameWithSystemRole + strconv.Itoa(id)
 	if refresh {
 		role, err = s.FindById(id)
@@ -58,7 +58,7 @@ func (s *service) FindByIdWithCache(id int, refresh bool) (role *model.SystemRol
 }
 
 // ClearRoleCache 清理角色缓存(根据角色ID)
-func (s *service) ClearRoleCache(id int) bool {
+func (s *Service) ClearRoleCache(id int) bool {
 	key := constant.CacheNameWithSystemRole + strconv.Itoa(id)
 	return util.Cache.Delete(key)
 }

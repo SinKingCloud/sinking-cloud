@@ -6,7 +6,7 @@ import (
 )
 
 // Select 获取数据
-func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*AuthVersion, total int64, err error) {
+func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*AuthVersion, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.AuthVersion{})
 	if where["auth_id"] != "" {
@@ -50,7 +50,7 @@ func (s *service) Select(where map[string]string, orderByField string, orderByTy
 }
 
 // SelectUpgrade 查询大于版本
-func (s *service) SelectUpgrade(authId int, versionNumber int) (list []*AuthVersion, err error) {
+func (s *Service) SelectUpgrade(authId int, versionNumber int) (list []*AuthVersion, err error) {
 	err = util.Database.Db.Model(&model.AuthVersion{}).
 		Where("`auth_id` = ? and `version_number` > ? and `status` = ?", authId, versionNumber, Normal).
 		Order("`version_number` desc").

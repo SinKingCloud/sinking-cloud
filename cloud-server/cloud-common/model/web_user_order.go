@@ -23,18 +23,18 @@ type WebUserOrder struct {
 }
 
 // TableName 获取表名
-func (WebUserOrder) TableName() string {
+func (*WebUserOrder) TableName() string {
 	return "web_user_orders"
 }
 
 // BeforeCreate 创建前
-func (t *WebUserOrder) BeforeCreate(tx *gorm.DB) error {
+func (t *WebUserOrder) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *WebUserOrder) BeforeUpdate(tx *gorm.DB) error {
+func (t *WebUserOrder) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

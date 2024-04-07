@@ -9,7 +9,7 @@ import (
 )
 
 // Find 查询
-func (s *service) Find(where map[string]string) (data *model.UserAuth, err error) {
+func (s *Service) Find(where map[string]string) (data *model.UserAuth, err error) {
 	query := util.Database.Db.Model(&model.UserAuth{})
 	if where["user_id"] != "" {
 		query.Where("`user_id` = ?", where["user_id"])
@@ -31,19 +31,19 @@ func (s *service) Find(where map[string]string) (data *model.UserAuth, err error
 }
 
 // FindByAuthIdDomain 通过程序ID以及域名查询
-func (s *service) FindByAuthIdDomain(authId int, domain string) (data *model.UserAuth, err error) {
+func (s *Service) FindByAuthIdDomain(authId int, domain string) (data *model.UserAuth, err error) {
 	err = util.Database.Db.Where("`auth_id` = ? and `domain` = ?", authId, domain).First(&data).Error
 	return
 }
 
 // FindById 通过ID查询
-func (s *service) FindById(id int) (data *model.UserAuth, err error) {
+func (s *Service) FindById(id int) (data *model.UserAuth, err error) {
 	err = util.Database.Db.Where("`id` = ? ", id).First(&data).Error
 	return
 }
 
 // FindByIdWithCache 通过ID查询
-func (s *service) FindByIdWithCache(id int, refresh bool) (data *model.UserAuth, err error) {
+func (s *Service) FindByIdWithCache(id int, refresh bool) (data *model.UserAuth, err error) {
 	key := constant.CacheNameWithUserAuth + strconv.Itoa(id)
 	if refresh {
 		data, err = s.FindById(id)
@@ -73,7 +73,7 @@ func (s *service) FindByIdWithCache(id int, refresh bool) (data *model.UserAuth,
 }
 
 // Clear 清除缓存
-func (s *service) Clear(id int) bool {
+func (s *Service) Clear(id int) bool {
 	key := constant.CacheNameWithAuthVersion + strconv.Itoa(id)
 	return util.Cache.Delete(key)
 }

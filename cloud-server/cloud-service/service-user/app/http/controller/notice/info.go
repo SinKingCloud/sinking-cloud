@@ -9,10 +9,10 @@ import (
 // Info 获取详情
 func (ControllerNotice) Info(c *sinking_server.Context) {
 	type Form struct {
-		Id int `form:"id" default:"" validate:"numeric,min=1" label:"记录ID"`
+		Id int `form:"id" json:"id" default:"" validate:"numeric,min=1" label:"记录ID"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorGet(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

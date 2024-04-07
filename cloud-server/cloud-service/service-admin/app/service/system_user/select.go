@@ -6,13 +6,13 @@ import (
 )
 
 // SelectByIds 根据id查询用户
-func (s *service) SelectByIds(ids []int) (users []*model.SystemUser, err error) {
+func (s *Service) SelectByIds(ids []int) (users []*model.SystemUser, err error) {
 	err = util.Database.Db.Model(&model.SystemUser{}).Where("`id` in ? ", ids).Find(&users).Error
 	return
 }
 
 // Select 查询用户
-func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*SystemUser, total int64, err error) {
+func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*SystemUser, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.SystemUser{})
 	if where["role_id"] != "" {

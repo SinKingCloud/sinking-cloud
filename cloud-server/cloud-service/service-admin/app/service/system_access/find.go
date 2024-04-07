@@ -6,7 +6,7 @@ import (
 )
 
 // FindById 通过ID查询
-func (s *service) FindById(id int) (access *model.SystemAccess, err error) {
+func (s *Service) FindById(id int) (access *model.SystemAccess, err error) {
 	err = util.Database.Db.Where("`id` = ? ", id).First(&access).Error
 	return
 }

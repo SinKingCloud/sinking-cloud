@@ -13,24 +13,24 @@ func (ControllerUserOrder) List(c *sinking_server.Context) {
 	type Form struct {
 		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id user_id pay_type order_type create_time update_time status" label:"排序字段"`
 		OrderByType     string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		Status          string `form:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`
-		Account         string `form:"account" default:"" validate:"omitempty,max=15" label:"用户账号"`
-		NickName        string `form:"nick_name" default:"" validate:"omitempty,max=20" label:"用户昵称"`
-		Email           string `form:"email" default:"" validate:"omitempty" label:"用户邮箱"`
-		Phone           string `form:"phone" default:"" validate:"omitempty,numeric" label:"用户手机"`
-		UserId          string `form:"user_id" default:"" validate:"omitempty,numeric" label:"用户ID"`
-		PayType         string `form:"pay_type" default:"" validate:"omitempty,numeric" label:"支付类型"`
-		OrderType       string `form:"order_type" default:"" validate:"omitempty,numeric" label:"订单类型"`
-		TradeNo         string `form:"trade_no" default:"" validate:"omitempty,numeric" label:"订单号"`
-		OutTradeNo      string `form:"out_trade_no" default:"" validate:"omitempty,numeric" label:"外部订单号"`
-		Name            string `form:"name" default:"" validate:"omitempty,max=50" label:"订单名称"`
-		CreateTimeStart string `form:"create_time_start" default:"" validate:"-" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" default:"" validate:"-" label:"创建结束时间"`
-		UpdateTimeStart string `form:"update_time_start" default:"" validate:"-" label:"更新起始时间"`
-		UpdateTimeEnd   string `form:"update_time_end" default:"" validate:"-" label:"更新结束时间"`
+		Status          string `form:"status" json:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`
+		Account         string `form:"account" json:"account" default:"" validate:"omitempty,max=15" label:"用户账号"`
+		NickName        string `form:"nick_name" json:"nick_name" default:"" validate:"omitempty,max=20" label:"用户昵称"`
+		Email           string `form:"email" json:"email" default:"" validate:"omitempty" label:"用户邮箱"`
+		Phone           string `form:"phone" json:"phone" default:"" validate:"omitempty,numeric" label:"用户手机"`
+		UserId          string `form:"user_id" json:"user_id" default:"" validate:"omitempty,numeric" label:"用户ID"`
+		PayType         string `form:"pay_type" json:"pay_type" default:"" validate:"omitempty,numeric" label:"支付类型"`
+		OrderType       string `form:"order_type" json:"order_type" default:"" validate:"omitempty,numeric" label:"订单类型"`
+		TradeNo         string `form:"trade_no" json:"trade_no" default:"" validate:"omitempty,numeric" label:"订单号"`
+		OutTradeNo      string `form:"out_trade_no" json:"out_trade_no" default:"" validate:"omitempty,numeric" label:"外部订单号"`
+		Name            string `form:"name" json:"name" default:"" validate:"omitempty,max=50" label:"订单名称"`
+		CreateTimeStart string `form:"create_time_start" json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `form:"create_time_end" json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		UpdateTimeStart string `form:"update_time_start" json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
+		UpdateTimeEnd   string `form:"update_time_end" json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorGet(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -92,15 +92,15 @@ func (ControllerUserOrder) List(c *sinking_server.Context) {
 // Delete 删除记录
 func (ControllerUserOrder) Delete(c *sinking_server.Context) {
 	type Form struct {
-		CreateTimeStart string `json:"create_time_start" default:"" validate:"required" label:"创建起始时间"`
-		CreateTimeEnd   string `json:"create_time_end" default:"" validate:"required" label:"创建结束时间"`
-		Status          string `form:"status" default:"" validate:"omitempty,oneof=0 1" label:"订单状态"`
-		UserId          string `form:"user_id" default:"" validate:"omitempty,numeric" label:"用户ID"`
-		PayType         string `form:"pay_type" default:"" validate:"omitempty,numeric" label:"支付类型"`
-		OrderType       string `form:"order_type" default:"" validate:"omitempty,numeric" label:"订单类型"`
+		CreateTimeStart string `form:"create_time_start" json:"create_time_start" default:"" validate:"required,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `form:"create_time_end" json:"create_time_end" default:"" validate:"required,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		Status          string `form:"status" json:"status" default:"" validate:"omitempty,oneof=0 1" label:"订单状态"`
+		UserId          string `form:"user_id" json:"user_id" default:"" validate:"omitempty,numeric" label:"用户ID"`
+		PayType         string `form:"pay_type" json:"pay_type" default:"" validate:"omitempty,numeric" label:"支付类型"`
+		OrderType       string `form:"order_type" json:"order_type" default:"" validate:"omitempty,numeric" label:"订单类型"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

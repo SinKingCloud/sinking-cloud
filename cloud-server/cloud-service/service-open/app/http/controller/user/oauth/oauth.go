@@ -11,10 +11,10 @@ type ControllerOauth struct {
 // GenTicket 生成ticket
 func (ControllerOauth) GenTicket(c *sinking_server.Context) {
 	type Form struct {
-		OauthId int `json:"oauth_id" default:"" validate:"min=1" label:"OauthID"`
+		OauthId int `form:"oauth_id" json:"oauth_id" default:"" validate:"min=1" label:"OauthID"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -35,11 +35,11 @@ func (ControllerOauth) GenTicket(c *sinking_server.Context) {
 // GetUserInfo 获取授权用户信息
 func (ControllerOauth) GetUserInfo(c *sinking_server.Context) {
 	type Form struct {
-		OauthId int    `json:"oauth_id" default:"" validate:"min=1" label:"OauthID"`
-		Ticket  string `json:"ticket" validate:"required,len=32" label:"授权码"`
+		OauthId int    `form:"oauth_id" json:"oauth_id" default:"" validate:"min=1" label:"OauthID"`
+		Ticket  string `form:"ticket" json:"ticket" validate:"required,len=32" label:"授权码"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

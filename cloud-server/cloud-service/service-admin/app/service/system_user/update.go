@@ -8,7 +8,7 @@ import (
 )
 
 // UpdateByIds 通过ID列表更新
-func (s *service) UpdateByIds(ids []int, data map[string]interface{}) (err error) {
+func (s *Service) UpdateByIds(ids []int, data map[string]interface{}) (err error) {
 	data["update_time"] = str.DateTime(time.Now())
 	err = util.Database.Db.Model(&model.SystemUser{}).Where("`id` in ? ", ids).Updates(data).Error
 	return

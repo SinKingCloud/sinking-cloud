@@ -26,18 +26,18 @@ type WebUser struct {
 }
 
 // TableName 获取表名
-func (WebUser) TableName() string {
+func (*WebUser) TableName() string {
 	return "web_users"
 }
 
 // BeforeCreate 创建前
-func (t *WebUser) BeforeCreate(tx *gorm.DB) error {
+func (t *WebUser) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *WebUser) BeforeUpdate(tx *gorm.DB) error {
+func (t *WebUser) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

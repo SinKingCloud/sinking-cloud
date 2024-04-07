@@ -17,18 +17,18 @@ type WebUserConfig struct {
 }
 
 // TableName 获取表名
-func (WebUserConfig) TableName() string {
+func (*WebUserConfig) TableName() string {
 	return "web_user_configs"
 }
 
 // BeforeCreate 创建前
-func (t *WebUserConfig) BeforeCreate(tx *gorm.DB) error {
+func (t *WebUserConfig) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *WebUserConfig) BeforeUpdate(tx *gorm.DB) error {
+func (t *WebUserConfig) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

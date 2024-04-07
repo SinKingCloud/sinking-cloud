@@ -9,7 +9,10 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/constant"
 	middleware2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-gateway/app/http/middleware"
+	sinking_sdk_go "github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
+	"io"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -25,7 +28,7 @@ func InitProxyRouter(route *sinking_web.Engine) {
 			name := tempV1["name"]         //服务名
 			protocol := tempV1["protocol"] //使用协议
 			login := tempV1["login"]       //验证状态
-			mode := 0                      //轮询算法0:随机/1:轮询/2:单机
+			mode := sinking_sdk_go.Poll    //轮询算法0:随机/1:轮询/2:单机
 			if tempV1["mode"] != nil {
 				mode = int(tempV1["mode"].(float64))
 			}
@@ -48,14 +51,16 @@ func InitProxyRouter(route *sinking_web.Engine) {
 				url, exists := util.Consul.GetService(groupName.(string), name.(string), mode)
 				if exists {
 					s.Set(constant.ServerAddr, url.Addr)
-					err := s.Proxy(prefix+url.Addr, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
+					err := s.Proxy(prefix+url.Addr, log.New(io.Discard, "", 0), func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
 						r.URL.Path = strings.Replace(s.Request.URL.Path, patten, "", 1)
 						r.URL.RawPath, r.RequestURI = r.URL.Path, r.URL.Path
-						r.Header.Set(util.Conf.GetString("register.tokenKey"), util.Conf.GetString("register.tokenValue"))
+						r.Header.Set(util.Conf.GetString(config.ConfRegisterTokenKey), util.Conf.GetString(config.ConfRegisterTokenValue))
 						r.Header.Set(util2.RequestId, s.GetRequestId())
 						ip := s.ClientIP(true)
 						r.Header.Set("X-Forwarded-For", ip)
 						r.Header.Set("X-Real-Ip", ip)
+					}, func(_ http.ResponseWriter, _ *http.Request, _ error) {
+						s.ErrorWithData("调用服务失败,服务已下线", nil)
 					})
 					if err != nil {
 						s.ErrorWithData("调用服务失败", err.Error())

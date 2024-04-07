@@ -9,13 +9,13 @@ import (
 )
 
 // FindById 通过ID查询
-func (s *service) FindById(id int) (data *model.AuthApp, err error) {
+func (s *Service) FindById(id int) (data *model.AuthApp, err error) {
 	err = util.Database.Db.Where("`id` = ? ", id).First(&data).Error
 	return
 }
 
 // FindByIdWithCache 通过ID查询
-func (s *service) FindByIdWithCache(id int, refresh bool) (data *model.AuthApp, err error) {
+func (s *Service) FindByIdWithCache(id int, refresh bool) (data *model.AuthApp, err error) {
 	key := constant.CacheNameWithAuth + strconv.Itoa(id)
 	if refresh {
 		data, err = s.FindById(id)
@@ -45,7 +45,7 @@ func (s *service) FindByIdWithCache(id int, refresh bool) (data *model.AuthApp, 
 }
 
 // Clear 清除缓存
-func (s *service) Clear(id int) bool {
+func (s *Service) Clear(id int) bool {
 	key := constant.CacheNameWithAuth + strconv.Itoa(id)
 	return util.Cache.Delete(key)
 }

@@ -8,26 +8,26 @@ import (
 	"sync"
 )
 
-// systemConfigService config_service
-type systemConfigService struct {
+// SystemConfigService config_service
+type SystemConfigService struct {
 }
 
 // systemConfigObj systemConfigObj对象
 var (
-	systemConfigObj     *systemConfigService
+	systemConfigObj     *SystemConfigService
 	onceSystemConfigObj sync.Once
 )
 
 // GetSystemConfigServiceIns 获取单例
-func GetSystemConfigServiceIns() *systemConfigService {
+func GetSystemConfigServiceIns() *SystemConfigService {
 	onceSystemConfigObj.Do(func() {
-		systemConfigObj = &systemConfigService{}
+		systemConfigObj = &SystemConfigService{}
 	})
 	return systemConfigObj
 }
 
 // ClearCache 清理缓存
-func (systemConfigService) ClearCache() {
+func (SystemConfigService) ClearCache() {
 	util.Cache.Delete(util2.CacheNameWithSystemConfig)
 	//查询所有group
 	var configs []*model.SystemConfig
@@ -40,7 +40,7 @@ func (systemConfigService) ClearCache() {
 }
 
 // SelectAllWithMap 获取map类型配置
-func (systemConfigService) SelectAllWithMap() map[string]string {
+func (SystemConfigService) SelectAllWithMap() map[string]string {
 	var configs []*model.SystemConfig
 	temp := make(map[string]string)
 	e := util.Database.Db.Find(&configs).Error
@@ -53,7 +53,7 @@ func (systemConfigService) SelectAllWithMap() map[string]string {
 }
 
 // GetByCache 获取系统配置
-func (c systemConfigService) GetByCache(refresh bool) map[string]string {
+func (c SystemConfigService) GetByCache(refresh bool) map[string]string {
 	config := make(map[string]string)
 	if refresh {
 		config = c.SelectAllWithMap()
@@ -77,7 +77,7 @@ func (c systemConfigService) GetByCache(refresh bool) map[string]string {
 }
 
 // SelectByGroupWithMap 获取配置组获取
-func (systemConfigService) SelectByGroupWithMap(group string) map[string]string {
+func (SystemConfigService) SelectByGroupWithMap(group string) map[string]string {
 	var configs []*model.SystemConfig
 	table := &model.SystemConfig{}
 	temp := make(map[string]string)
@@ -94,7 +94,7 @@ func (systemConfigService) SelectByGroupWithMap(group string) map[string]string 
 }
 
 // GetGroupByCache 获取系统配置组
-func (c systemConfigService) GetGroupByCache(group string, refresh bool) map[string]string {
+func (c SystemConfigService) GetGroupByCache(group string, refresh bool) map[string]string {
 	config := make(map[string]string)
 	key := util2.CacheNameWithSystemConfig + "_" + group
 	if refresh {

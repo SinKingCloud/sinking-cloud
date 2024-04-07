@@ -6,7 +6,7 @@ import (
 )
 
 // Select 获取请求日志数据
-func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.UserApp, total int64, err error) {
+func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.UserApp, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.UserApp{})
 	if where["user_id"] != "" {

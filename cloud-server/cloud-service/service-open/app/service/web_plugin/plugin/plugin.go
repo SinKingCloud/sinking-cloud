@@ -1,0 +1,35 @@
+package plugin
+
+import "sync"
+
+// Service 单例对象
+type Service struct {
+}
+
+// obj 单例对象
+var (
+	obj  *Service
+	once sync.Once
+)
+
+// GetIns 获取单例
+func GetIns() *Service {
+	once.Do(func() {
+		obj = &Service{}
+	})
+	return obj
+}
+
+type Status int
+
+const (
+	StatusNormal Status = iota //正常
+	StatusError                //禁用
+)
+
+type IsFree int
+
+const (
+	IsFreeYes IsFree = iota
+	IsFreeNo
+)

@@ -6,7 +6,7 @@ import (
 )
 
 // Create 插入数据
-func (s *service) Create(data *model.WebNotice) (err error) {
+func (s *Service) Create(data *model.WebNotice) (err error) {
 	err = util.Database.Db.Create(&data).Error
 	return
 }

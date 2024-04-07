@@ -6,7 +6,7 @@ import (
 )
 
 // Select 查询角色
-func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.SystemFile, total int64, err error) {
+func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.SystemFile, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.SystemFile{})
 	if where["type"] != "" {
@@ -35,7 +35,7 @@ func (s *service) Select(where map[string]string, orderByField string, orderByTy
 }
 
 // SelectPathByIds 通过id查询文件path
-func (s *service) SelectPathByIds(ids []int) []string {
+func (s *Service) SelectPathByIds(ids []int) []string {
 	var list []string
 	util.Database.Db.Model(&model.SystemFile{}).Where("`id` in ? ", ids).Select("`path`").Scan(&list)
 	return list

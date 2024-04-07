@@ -20,18 +20,18 @@ type WebUserPayLog struct {
 }
 
 // TableName 获取表名
-func (WebUserPayLog) TableName() string {
+func (*WebUserPayLog) TableName() string {
 	return "web_user_pay_logs"
 }
 
 // BeforeCreate 创建前
-func (t *WebUserPayLog) BeforeCreate(tx *gorm.DB) error {
+func (t *WebUserPayLog) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *WebUserPayLog) BeforeUpdate(tx *gorm.DB) error {
+func (t *WebUserPayLog) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

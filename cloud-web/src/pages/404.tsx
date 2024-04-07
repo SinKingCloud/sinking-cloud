@@ -1,0 +1,30 @@
+import {Body} from "@/layouts/components";
+import {Button, Result} from "@/components";
+import {createStyles} from "antd-style";
+import {history} from "umi";
+
+const useStyles = createStyles(({token}): any => {
+    return {
+        body: {
+            width: "100%",
+            height: "100vh",
+            paddingTop: "10vh",
+        },
+    };
+});
+
+export default () => {
+    const {styles: {body}} = useStyles();
+    return (
+        <Body className={body}>
+            <Result
+                status="404"
+                title="404"
+                subTitle="对不起, 您访问的页面不存在."
+                extra={<Button type="primary" onClick={() => {
+                    history?.push("/");
+                }}>返回首页</Button>}
+            />
+        </Body>
+    );
+};

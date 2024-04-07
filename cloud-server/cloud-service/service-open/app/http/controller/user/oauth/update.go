@@ -10,14 +10,14 @@ import (
 // Update 更新信息
 func (ControllerOauth) Update(c *sinking_server.Context) {
 	type Form struct {
-		Id     int    `json:"id" default:"" validate:"min=1" label:"ID"`
-		AppId  string `json:"app_id" default:"" validate:"omitempty,numeric,min=1" label:"应用ID"`
-		Name   string `json:"name" default:"" validate:"omitempty,max=20" label:"名称"`
-		Domain string `json:"domain" default:"" validate:"omitempty,max=100" label:"域名"`
-		Status string `json:"status" default:"" validate:"omitempty,numeric,oneof=0 1" label:"状态"`
+		Id     int    `form:"id" json:"id" default:"" validate:"min=1" label:"ID"`
+		AppId  string `form:"app_id" json:"app_id" default:"" validate:"omitempty,numeric,min=1" label:"应用ID"`
+		Name   string `form:"name" json:"name" default:"" validate:"omitempty,max=20" label:"名称"`
+		Domain string `form:"domain" json:"domain" default:"" validate:"omitempty,max=100" label:"域名"`
+		Status string `form:"status" json:"status" default:"" validate:"omitempty,numeric,oneof=0 1" label:"状态"`
 	}
 	form := &Form{}
-	if ok, msg := c.ValidatorJson(form); !ok {
+	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
 	}

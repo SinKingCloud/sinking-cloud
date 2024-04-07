@@ -20,18 +20,18 @@ type UserAuth struct {
 }
 
 // TableName 获取表名
-func (UserAuth) TableName() string {
+func (*UserAuth) TableName() string {
 	return "user_auths"
 }
 
 // BeforeCreate 创建前
-func (t *UserAuth) BeforeCreate(tx *gorm.DB) error {
+func (t *UserAuth) BeforeCreate(_ *gorm.DB) error {
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *UserAuth) BeforeUpdate(tx *gorm.DB) error {
+func (t *UserAuth) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

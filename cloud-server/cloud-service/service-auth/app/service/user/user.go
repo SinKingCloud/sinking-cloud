@@ -1,16 +1,16 @@
 package user
 
-// service 单例对象
-type service struct {
+// Service 单例对象
+type Service struct {
 }
 
 // obj 单例对象
-var obj *service
+var obj *Service
 
 // GetIns 获取单例
-func GetIns() *service {
+func GetIns() *Service {
 	if obj == nil {
-		obj = &service{}
+		obj = &Service{}
 	}
 	return obj
 }
