@@ -1,5 +1,5 @@
 import {history} from 'umi';
-import route, {user, userPath, admin, adminPath} from '../../config/routes'
+import route, {user, userPath, admin, adminPath, indexPath, index} from '../../config/routes'
 import {Icon} from "@/components";
 import React from "react";
 
@@ -73,6 +73,7 @@ function getMenuItems(routes, parentPath = '/') {
         const menuItem: any = {
             label: route?.title,
             path: route?.path,
+            name: route?.name
         };
         if (route?.icon) {
             menuItem.icon = <Icon type={route?.icon}/>;
@@ -96,6 +97,50 @@ function getMenuItems(routes, parentPath = '/') {
     });
 }
 
+
+const parentCache = {}
+
+/**
+ * 根据name查找父级菜单
+ * @param data 菜单
+ * @param name 标识
+ */
+export function getParentList(data: any[], name: string): any[] {
+    if (Object.keys(name) <= 0 && parentCache[name]) {
+        return parentCache[name];
+    }
+    let parents: any[] = [];
+
+    function findParent(data: any, name: string): boolean {
+        if (data?.children && data?.children?.length > 0) {
+            if (data.name === name) {
+                parents.push(data);
+                return true;
+            }
+        } else {
+            for (const item of data) {
+                if (item.name === name) {
+                    parents.push(item);
+                    return true;
+                }
+                if (item.children) {
+                    if (findParent(item.children, name)) {
+                        parents.push(item);
+                        return true;
+                    }
+                }
+            }
+
+        }
+        return false;
+    }
+
+    findParent(data, name);
+    parentCache[name] = parents.reverse()
+    return parentCache[name];
+}
+
+
 /**
  * 获取user菜单
  */
@@ -111,8 +156,78 @@ export function getAdminMenuItems() {
 }
 
 /**
+ * 获取index菜单
+ */
+export function getIndexMenuItems() {
+    return getMenuItems(index, '/' + indexPath);
+}
+
+/**
  * 获取菜单
  */
 export function getAllMenuItems() {
     return getMenuItems(route)
+}
+
+/**
+ * 当前访问系统path
+ */
+export function getCurrentPath(pathName): any {
+    let mode = "";
+    const regex = /\/([^/]+)\//; // 正则表达式匹配 / 之间的内容
+    const matches = pathName.match(regex); // 匹配结果数组
+    if (matches && matches.length >= 2) {
+        mode = matches[1];
+    }
+    if (mode == userPath) {
+        return '/' + userPath;
+    }
+    if (mode == adminPath) {
+        return '/' + adminPath;
+    }
+    if (mode == indexPath) {
+        return '/' + indexPath;
+    }
+    return "/";
+}
+
+/**
+ * 当前访问系统路由
+ */
+export function getCurrentMenus(pathName): any {
+    let mode = "";
+    const regex = /\/([^/]+)\//; // 正则表达式匹配 / 之间的内容
+    const matches = pathName.match(regex); // 匹配结果数组
+    if (matches && matches.length >= 2) {
+        mode = matches[1];
+    }
+    if (mode == userPath) {
+        return getUserMenuItems();
+    }
+    if (mode == adminPath) {
+        return getAdminMenuItems();
+    }
+    if (mode == indexPath) {
+        return getIndexMenuItems();
+    }
+    return [];
+}
+
+
+/**
+ * 获取第一个菜单(排除children)
+ * @param menu
+ */
+export function getFirstMenuWithoutChildren(menu: any[]): any | null {
+    for (const item of menu) {
+        if (!item.hasOwnProperty('children')) {
+            return item; // 如果对象没有 children 属性，则返回该对象
+        } else {
+            const result = getFirstMenuWithoutChildren(item.children); // 递归查找子菜单
+            if (result !== null) {
+                return result; // 如果子菜单中找到了符合条件的对象，则返回该对象
+            }
+        }
+    }
+    return null; // 如果没有找到符合条件的对象，则返回 null
 }

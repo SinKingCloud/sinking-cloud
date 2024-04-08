@@ -1,21 +1,36 @@
-import React from "react";
-import {useModel} from "@@/exports";
-import {ConfigProvider, Layout} from "antd";
+import React, {useEffect, useState} from "react";
+import {useLocation, useModel, useRouteData, history} from "umi";
+import {Breadcrumb, ConfigProvider, Layout} from "antd";
 import {createStyles} from "antd-style";
-import {Spin} from "@/components";
+import {Spin, Space} from "@/components";
+import {getCurrentMenus, getCurrentPath, getFirstMenuWithoutChildren, getParentList, historyPush} from "@/utils/route";
 
 const useStyles = createStyles(({token}): any => {
     return {
         body: {
-            width: "100%",
-            margin: "0 auto",
-            lineHeight: "80vh"
+            padding: "10px",
         },
+        load: {
+            margin: "0 auto",
+            width: "100%",
+            lineHeight: "80vh",
+        },
+        gutter: {
+            display: "flex"
+        },
+        bread: {
+            backgroundColor: token?.colorBgContainer,
+            padding: "5px 15px 5px 15px",
+            fontSize: "12px",
+            borderTop: "0.1px solid " + token?.colorFillSecondary
+        }
     };
 });
 
 export type BodyProps = {
     loading?: boolean;//是否加载状态
+    space?: boolean;//是否开启间距
+    breadCrumb?: boolean;//面包屑
     style?: any;//样式
     className?: any;//样式名
 };
@@ -25,13 +40,60 @@ export type BodyProps = {
  * @constructor
  */
 const Body: React.FC<BodyProps> = (props) => {
-    const {children, loading, style, className} = props;
-    const {styles: {body}} = useStyles();
+    const {children, loading, style, className, space = true, breadCrumb = true} = props;
+    const {styles: {body, load, gutter, bread}} = useStyles();
     const systemTheme = useModel("theme");
+
+    /**
+     * 初始化面包屑
+     */
+    const [breadCrumbData, setBreadCrumb] = useState([]);
+    const location = useLocation();
+    const match = useRouteData();
+    const initBreadCrumb = () => {
+        const items = getParentList(getCurrentMenus(location?.pathname), match?.route?.name);
+        let temp = [{
+            title: '首页',
+            onClick: () => {
+                historyPush(getFirstMenuWithoutChildren(getCurrentMenus(location?.pathname))?.name || "");
+            }
+        }];
+        const onClick = (x: any) => {
+            if (x?.children && x?.children?.length > 0) {
+                historyPush(getFirstMenuWithoutChildren(x?.children)?.name || "");
+            } else {
+                historyPush(x?.name);
+            }
+        }
+        items.map((x) => {
+            temp.push({
+                title: x?.label,
+                onClick: () => {
+                    onClick(x);
+                }
+            });
+        });
+        setBreadCrumb(temp);
+    }
+
+    /**
+     * 初始化
+     */
+    useEffect(() => {
+        if (breadCrumb) {
+            initBreadCrumb();
+        }
+    }, []);
+
     return <ConfigProvider theme={systemTheme?.themes}>
-        {(loading && <Spin spinning={true} size="large" className={body}></Spin>) ||
-            <Layout style={style} className={className}>
-                {children}
+        {(loading && <Spin spinning={true} size="large" className={load}></Spin>) ||
+            <Layout style={style}>
+                {breadCrumb && breadCrumbData?.length > 0 && <Breadcrumb className={bread} items={breadCrumbData}/>}
+                <div className={className ? className : body}>
+                    {(space && <Space direction="vertical" size="middle" className={gutter}>
+                        {children}
+                    </Space>) || children}
+                </div>
             </Layout>}
     </ConfigProvider>
 }

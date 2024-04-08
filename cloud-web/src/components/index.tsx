@@ -4,6 +4,8 @@ import {Icon} from "@/components/icon";
 import Drawer from "@/components/drawer";
 import Spin from "@/components/spin";
 import Result from "@/components/result";
+import Table from "@/components/table";
+import Space from "@/components/space";
 import * as Layout from "@/components/layout";
 
 export {
@@ -13,5 +15,7 @@ export {
     Icon,
     Spin,
     Result,
+    Table,
+    Space,
     Layout
 }

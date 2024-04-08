@@ -17,6 +17,7 @@ export const admin = [
         name: "testtwo22",
         hideInMenu: true,
     },
+
 ];
 
 /**
@@ -39,6 +40,44 @@ export const user = [
         name: "doc",
         icon: 'icon-doc',
         hideInMenu: false,
+    },
+    {
+        path: "test",
+        title: "测试菜单",
+        name: "doc12",
+        icon: 'icon-doc',
+        hideInMenu: false,
+        routes: [
+            {
+                path: "index",
+                component: "@/pages/user/index",
+                title: "系统首页",
+                name: "user.index12",
+                hideInMenu: false,
+            },
+            {
+                path: "docs",
+                title: "开发文档",
+                name: "doc1234s",
+                hideInMenu: false,
+                routes: [
+                    {
+                        path: "index",
+                        component: "@/pages/user/index",
+                        title: "系统首页",
+                        name: "user.index124",
+                        hideInMenu: false,
+                    },
+                    {
+                        path: "docs",
+                        component: "@/pages/user/docs",
+                        title: "开发文档",
+                        name: "doc1234",
+                        hideInMenu: false,
+                    },
+                ]
+            },
+        ]
     },
 ];
 

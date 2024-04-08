@@ -2,7 +2,7 @@ import {Body} from "@/layouts/components";
 
 const DocsPage = () => {
     return (
-        <Body>
+        <Body className={undefined} loading={false}>
             <div>
                 <p>This is umi docs.</p>
             </div>
