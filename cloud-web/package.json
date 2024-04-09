@@ -12,7 +12,8 @@
     "@umijs/plugins": "^4.1.1",
     "antd": "^5.14.1",
     "antd-style": "^3.6.1",
-    "umi": "^4.1.1"
+    "umi": "^4.1.1",
+    "umi-request": "^1.4.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.33",
