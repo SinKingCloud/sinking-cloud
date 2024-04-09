@@ -6,7 +6,7 @@ import {createStyles, useResponsive} from "antd-style";
 import React, {useState} from "react";
 import {Outlet, useModel} from "umi";
 import {ConfigProvider} from "antd";
-import {Drawer, Button, Layout as SkLayout} from "@/components";
+import {Drawer, Button, App, Layout as SkLayout} from "@/components";
 import {MenuFoldOutlined, MenuUnfoldOutlined} from "@ant-design/icons";
 
 const useLayoutStyles = createStyles((): any => {
@@ -115,59 +115,61 @@ const Layout: React.FC<LayoutProps> = (props) => {
 
     return (
         <ConfigProvider theme={systemTheme?.themes}>
-            <SkLayout.Layout>
-                <SkLayout.Sider className={sider} trigger={null} collapsible collapsed={collapsed}
-                                width={menuUnCollapsedWidth} collapsedWidth={menuCollapsedWidth} hidden={mobile}>
-                    {(mobile && <Drawer
-                            placement={"left"}
-                            closable={false}
-                            onClose={() => {
-                                setOpen(false)
-                            }}
-                            open={open}
-                            width={menuUnCollapsedWidth} classNames={{body: drawMenu}}>
+            <App>
+                <SkLayout.Layout>
+                    <SkLayout.Sider className={sider} trigger={null} collapsible collapsed={collapsed}
+                                    width={menuUnCollapsedWidth} collapsedWidth={menuCollapsedWidth} hidden={mobile}>
+                        {(mobile && <Drawer
+                                placement={"left"}
+                                closable={false}
+                                onClose={() => {
+                                    setOpen(false)
+                                }}
+                                open={open}
+                                width={menuUnCollapsedWidth} classNames={{body: drawMenu}}>
+                                <Sider collapsed={collapsed}
+                                       onMenuClick={(item) => {
+                                           setOpen(false);
+                                           onMenuClick?.(item);
+                                       }} onLogoClick={onLogoClick} collapsedLogo={collapsedLogo}
+                                       unCollapsedLogo={unCollapsedLogo}
+                                       menuBottomBtnIcon={menuBottomBtnIcon}
+                                       menuBottomBtnText={menuBottomBtnText}
+                                       onMenuBottomBtnClick={onMenuBottomBtnClick}
+                                       menus={menus}/>
+                            </Drawer>)
+                            ||
                             <Sider collapsed={collapsed}
                                    onMenuClick={(item) => {
-                                       setOpen(false);
                                        onMenuClick?.(item);
-                                   }} onLogoClick={onLogoClick} collapsedLogo={collapsedLogo}
+                                   }}
+                                   onLogoClick={onLogoClick}
+                                   collapsedLogo={collapsedLogo}
                                    unCollapsedLogo={unCollapsedLogo}
                                    menuBottomBtnIcon={menuBottomBtnIcon}
                                    menuBottomBtnText={menuBottomBtnText}
                                    onMenuBottomBtnClick={onMenuBottomBtnClick}
-                                   menus={menus}/>
-                        </Drawer>)
-                        ||
-                        <Sider collapsed={collapsed}
-                               onMenuClick={(item) => {
-                                   onMenuClick?.(item);
-                               }}
-                               onLogoClick={onLogoClick}
-                               collapsedLogo={collapsedLogo}
-                               unCollapsedLogo={unCollapsedLogo}
-                               menuBottomBtnIcon={menuBottomBtnIcon}
-                               menuBottomBtnText={menuBottomBtnText}
-                               onMenuBottomBtnClick={onMenuBottomBtnClick}
-                               menus={menus}/>}
-                </SkLayout.Sider>
-                <SkLayout.Layout className={body}
-                                 style={{marginLeft: mobile ? 0 : (collapsed ? menuCollapsedWidth + "px" : menuUnCollapsedWidth + "px")}}>
-                    <SkLayout.Header className={header}>
-                        <Button type="text" size={"large"}
-                                icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
-                                onClick={menuBtnOnClick} className={menuBtn}/>
-                        <Header left={headerLeft} right={headerRight}/>
-                    </SkLayout.Header>
-                    <SkLayout.Content className={content}>
-                        <Outlet/>
-                    </SkLayout.Content>
-                    {
-                        props?.footer && <SkLayout.Footer className={footer}>
-                            <Footer> {props?.footer}</Footer>
-                        </SkLayout.Footer>
-                    }
+                                   menus={menus}/>}
+                    </SkLayout.Sider>
+                    <SkLayout.Layout className={body}
+                                     style={{marginLeft: mobile ? 0 : (collapsed ? menuCollapsedWidth + "px" : menuUnCollapsedWidth + "px")}}>
+                        <SkLayout.Header className={header}>
+                            <Button type="text" size={"large"}
+                                    icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
+                                    onClick={menuBtnOnClick} className={menuBtn}/>
+                            <Header left={headerLeft} right={headerRight}/>
+                        </SkLayout.Header>
+                        <SkLayout.Content className={content}>
+                            <Outlet/>
+                        </SkLayout.Content>
+                        {
+                            props?.footer && <SkLayout.Footer className={footer}>
+                                <Footer> {props?.footer}</Footer>
+                            </SkLayout.Footer>
+                        }
+                    </SkLayout.Layout>
                 </SkLayout.Layout>
-            </SkLayout.Layout>
+            </App>
         </ConfigProvider>
     );
 }

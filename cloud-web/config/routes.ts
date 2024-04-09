@@ -109,7 +109,15 @@ export default [
         path: "/",
         name: "redirect." + indexPath,
         title: index[0]?.title,
-        component: index[0]?.component,
+        component: '@/layouts/index',
+        routes: [
+            {
+                path: "/",
+                component: index[0]?.component,
+                title: index[0]?.title,
+                name: index[0]?.name,
+            }
+        ],
         layout: false,
     },
     {
@@ -118,6 +126,7 @@ export default [
         title: "系统首页",
         icon: 'icon-doc',
         routes: index,
+        component: '@/layouts/index',
         layout: false,
     },
     /**

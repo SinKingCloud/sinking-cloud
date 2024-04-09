@@ -7,6 +7,7 @@ import Result from "@/components/result";
 import Table from "@/components/table";
 import Space from "@/components/space";
 import Breadcrumb from "@/components/breadcrumb";
+import App from "@/components/app";
 import message from "@/components/message";
 import * as Layout from "@/components/layout";
 
@@ -20,6 +21,7 @@ export {
     Table,
     Space,
     Breadcrumb,
+    App,
     message,
     Layout
 }

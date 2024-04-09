@@ -1,7 +1,6 @@
 import Layout from "@/layouts/components";
 import {getUserMenuItems} from "@/utils/route";
-import defaultSettings from "../../config/defaultSettings";
-import React from "react";
+import defaultSettings from "@/../config/defaultSettings";
 import {Doc} from "@/components/icon";
 
 export default () => {

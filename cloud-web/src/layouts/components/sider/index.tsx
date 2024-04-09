@@ -18,6 +18,7 @@ const useStyles = createStyles(({token}): any => {
             overflowX: "hidden",
             borderRight: "none !important",
             marginBottom: "50px",
+            fontWeight: "bolder",
             ":focus-visible": {
                 outline: "none !important"
             },
