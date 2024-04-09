@@ -35,7 +35,6 @@ const getDarkTheme = (): any => {
     return themes
 }
 
-
 export default () => {
     const [themes, setThemes] = useState<any>(getLightTheme());
     const setLightTheme = () => {

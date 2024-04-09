@@ -91,6 +91,9 @@ const Body: React.FC<BodyProps> = (props) => {
         }
     }, []);
 
+    /**
+     * 页面容器
+     */
     return <ConfigProvider theme={systemTheme?.themes}>
         {(loading && <Spin spinning={true} size="large" className={load}></Spin>) ||
             <Layout style={style}>
