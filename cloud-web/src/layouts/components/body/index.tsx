@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {useLocation, useModel, useRouteData, history} from "umi";
+import {useLocation, useModel, useRouteData} from "umi";
 import {ConfigProvider, Layout} from "antd";
 import {createStyles} from "antd-style";
 import {Spin, Space, Breadcrumb} from "@/components";
@@ -23,7 +23,11 @@ const useStyles = createStyles(({token}): any => {
             padding: "5px 15px 5px 15px",
             fontSize: "12px",
             borderTop: "0.1px solid " + token?.colorFillSecondary
-        }
+        },
+        breadStyle: {
+            color: "rgb(156, 156, 156)",
+            cursor: "pointer"
+        },
     };
 });
 
@@ -41,7 +45,7 @@ export type BodyProps = {
  */
 const Body: React.FC<BodyProps> = (props) => {
     const {children, loading, style, className, space = true, breadCrumb = true} = props;
-    const {styles: {body, load, gutter, bread}} = useStyles();
+    const {styles: {body, load, gutter, bread, breadStyle}} = useStyles();
     const systemTheme = useModel("theme");
 
     /**
@@ -56,7 +60,8 @@ const Body: React.FC<BodyProps> = (props) => {
             title: '首页',
             onClick: () => {
                 historyPush(getFirstMenuWithoutChildren(getCurrentMenus(location?.pathname))?.name || "");
-            }
+            },
+            className: breadStyle,
         }];
         const onClick = (x: any) => {
             if (x?.children && x?.children?.length > 0) {
@@ -65,12 +70,13 @@ const Body: React.FC<BodyProps> = (props) => {
                 historyPush(x?.name);
             }
         }
-        items.map((x) => {
+        items.map((x, n) => {
             temp.push({
                 title: x?.label,
                 onClick: () => {
                     onClick(x);
-                }
+                },
+                className: breadStyle,
             });
         });
         setBreadCrumb(temp);

@@ -16,7 +16,7 @@ export default () => {
                     console.log("点击了底部按钮")
                 }}
                 menuCollapsedWidth={60}
-                menuUnCollapsedWidth={220}
+                menuUnCollapsedWidth={210}
                 onLogoClick={() => {
                     console.log("点击了logo")
                 }}

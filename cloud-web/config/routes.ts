@@ -6,6 +6,7 @@ export const admin = [
     {
         path: 'test',
         component: '@/pages/user/index',
+        icon: 'icon-doc',
         title: "测试二级",
         name: "testtwo11",
         hideInMenu: false,
@@ -13,11 +14,11 @@ export const admin = [
     {
         path: 'admin',
         component: '@/pages/user/docs',
+        icon: 'icon-doc',
         title: "测试二级",
         name: "testtwo22",
-        hideInMenu: true,
+        hideInMenu: false,
     },
-
 ];
 
 /**
