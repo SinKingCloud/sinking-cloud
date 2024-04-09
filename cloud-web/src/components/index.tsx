@@ -6,6 +6,7 @@ import Spin from "@/components/spin";
 import Result from "@/components/result";
 import Table from "@/components/table";
 import Space from "@/components/space";
+import Breadcrumb from "@/components/breadcrumb"
 import * as Layout from "@/components/layout";
 
 export {
@@ -17,5 +18,6 @@ export {
     Result,
     Table,
     Space,
+    Breadcrumb,
     Layout
 }

@@ -223,11 +223,11 @@ export function getFirstMenuWithoutChildren(menu: any[]): any | null {
         if (!item.hasOwnProperty('children')) {
             return item; // 如果对象没有 children 属性，则返回该对象
         } else {
-            const result = getFirstMenuWithoutChildren(item.children); // 递归查找子菜单
+            const result = getFirstMenuWithoutChildren(item.children);
             if (result !== null) {
-                return result; // 如果子菜单中找到了符合条件的对象，则返回该对象
+                return result;
             }
         }
     }
-    return null; // 如果没有找到符合条件的对象，则返回 null
+    return null;
 }
