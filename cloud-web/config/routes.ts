@@ -78,6 +78,28 @@ export const user = [
                     },
                 ]
             },
+            {
+                path: "docs12",
+                title: "开发文档",
+                name: "doc1234s12",
+                hideInMenu: false,
+                routes: [
+                    {
+                        path: "index12",
+                        component: "@/pages/user/index",
+                        title: "系统首页",
+                        name: "user.index12412",
+                        hideInMenu: false,
+                    },
+                    {
+                        path: "docs12",
+                        component: "@/pages/user/docs",
+                        title: "开发文档",
+                        name: "doc123412",
+                        hideInMenu: false,
+                    },
+                ]
+            },
         ]
     },
 ];

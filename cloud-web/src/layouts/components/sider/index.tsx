@@ -1,9 +1,8 @@
-import {useModel, useLocation, history} from 'umi';
+import {useModel, useLocation, history, useSelectedRoutes} from 'umi';
 import React, {useEffect, useState} from 'react';
 import {ConfigProvider, theme} from 'antd';
 import {createStyles, useResponsive} from "antd-style";
 import {Menu, Layout, Icon} from "@/components";
-import {getAllMenuItems} from "@/utils/route";
 
 const useStyles = createStyles(({token}): any => {
     return {
@@ -92,43 +91,52 @@ const Sider: React.FC<SiderProps> = (props) => {
     const {styles: {left, menu, menuTop, menuBottom, logoClose}} = useStyles();
     const [selectedKeys, setSelectedKeys] = useState([]);
     const location = useLocation();
-    useEffect(() => {
+    const match = useSelectedRoutes();
+    const initSelectMenu = () => {
         setSelectedKeys([location?.pathname]);
+        let temp = []
+        for (let i = 0; i < match?.length; i++) {
+            temp.push(match[i]?.pathname);
+        }
+        setStateOpenKeys(temp);
+    }
+
+    useEffect(() => {
+        initSelectMenu();
     }, [location]);
 
     /**
      * 只展开一个子集
      */
-    const [openKeys, setOpenKeys] = useState<string[]>([]);
-    let parentKey: string[] = [];
-    const findParent = (arr: any[], path: string, parent: string[] = []): string[] => {
-        let a = parent;
-        for (const k in arr) {
-            if (parentKey.length == 0) {
-                if (arr[k]?.key === path) {
-                    parentKey = parent;
-                } else {
-                    a = [];
+    const getLevelKeys = (items1: any) => {
+        const key: Record<string, number> = {};
+        const func = (items2: any, level = 1) => {
+            items2.forEach((item) => {
+                if (item.key) {
+                    key[item.key] = level;
                 }
-                if (arr[k]?.children && arr[k]?.children!.length > 0) {
-                    if (findParent(arr[k].children!, path, [arr[k].key, ...parent]).length > 0) {
-                        parent = parent.concat(findParent(arr[k].children!, path, [arr[k].key, ...parent]))
-                    }
+                if (item.children) {
+                    return func(item.children, level + 1);
                 }
-            }
-        }
-        return a
-    }
-    const onOpenChange: any = (keys) => {
-        const openKey = keys.find((key) => openKeys.indexOf(key) === -1);
-        if (openKey) {
-            const key = findParent(getAllMenuItems(), openKey, []) || [];
-            setOpenKeys([openKey, key, ...parentKey]);
-            parentKey = [];
-        } else {
-            setOpenKeys(keys);
-        }
+            });
+        };
+        func(items1);
+        return key;
     };
+    const levelKeys = getLevelKeys(menus);
+    const [stateOpenKeys, setStateOpenKeys] = useState([]);
+    const onOpenChange = (openKeys) => {
+        const currentOpenKey = openKeys.find((key) => stateOpenKeys.indexOf(key) === -1);
+        if (currentOpenKey !== undefined) {
+            const repeatIndex = openKeys.filter((key) => key !== currentOpenKey).findIndex((key) => levelKeys[key] === levelKeys[currentOpenKey]);
+            setStateOpenKeys(
+                openKeys.filter((_, index) => index !== repeatIndex).filter((key) => levelKeys[key] <= levelKeys[currentOpenKey]),
+            );
+        } else {
+            setStateOpenKeys(openKeys);
+        }
+    }
+
     const {token} = theme?.useToken();
     return (
         <Layout.Layout className={left}>
@@ -156,7 +164,7 @@ const Sider: React.FC<SiderProps> = (props) => {
                     <Menu selectedKeys={selectedKeys}
                           mode="inline"
                           items={menus} className={menu}
-                          openKeys={openKeys}
+                          openKeys={stateOpenKeys}
                           onOpenChange={onOpenChange}
                           onClick={(item) => {
                               history?.push(item?.key);
