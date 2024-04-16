@@ -15,5 +15,10 @@ export default defineConfig({
     model: {},
     favicons: [
         defaultSettings?.favicons?.toString(),
-    ]
+    ],
+    history: {
+        type: 'browser'
+    },
+    hash: true,
+    exportStatic: {},
 });

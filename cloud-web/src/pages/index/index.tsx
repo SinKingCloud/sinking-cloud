@@ -1,5 +1,9 @@
+import {Body} from "@/layouts/components";
+
 export default () => {
     return (
-        <div>首页</div>
+        <Body breadCrumb={false}>
+            首页内容
+        </Body>
     );
 };

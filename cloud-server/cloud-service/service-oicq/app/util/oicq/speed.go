@@ -168,7 +168,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 									if o.Pc.Online.Load() {
 										status = mobile.SpeedSuccess
 									} else {
-										log.Println(o.Mobile.Uin, "pc登陆失败", e)
+										log.Println(o.Mobile.Uin, "pc登陆失败", e2)
 										e = errors.New("登陆失败")
 									}
 								} else {

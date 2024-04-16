@@ -8,6 +8,7 @@ import {Outlet, useModel} from "umi";
 import {ConfigProvider} from "antd";
 import {Drawer, Button, App, Layout as SkLayout} from "@/components";
 import {MenuFoldOutlined, MenuUnfoldOutlined} from "@ant-design/icons";
+import Loading from "@/loading"
 
 const useLayoutStyles = createStyles((): any => {
     return {
@@ -58,6 +59,7 @@ const useLayoutStyles = createStyles((): any => {
 });
 
 export type LayoutProps = {
+    loading?: boolean;//是否显示加载
     menuCollapsedWidth?: Number;//菜单关闭时宽度
     menuUnCollapsedWidth?: Number;//菜单开启时宽度
     menus?: any;//菜单列表
@@ -76,6 +78,7 @@ export type LayoutProps = {
 
 const Layout: React.FC<LayoutProps> = (props) => {
     const {
+        loading = false,
         menus,
         onMenuClick,
         onMenuBtnClick,
@@ -116,7 +119,7 @@ const Layout: React.FC<LayoutProps> = (props) => {
     return (
         <ConfigProvider theme={systemTheme?.themes}>
             <App>
-                <SkLayout.Layout>
+                {(loading && <Loading/>) || <SkLayout.Layout>
                     <SkLayout.Sider className={sider} trigger={null} collapsible collapsed={collapsed}
                                     width={menuUnCollapsedWidth} collapsedWidth={menuCollapsedWidth} hidden={mobile}>
                         {(mobile && <Drawer
@@ -168,7 +171,7 @@ const Layout: React.FC<LayoutProps> = (props) => {
                             </SkLayout.Footer>
                         }
                     </SkLayout.Layout>
-                </SkLayout.Layout>
+                </SkLayout.Layout>}
             </App>
         </ConfigProvider>
     );

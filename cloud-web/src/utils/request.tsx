@@ -1,34 +1,36 @@
 import {extend} from 'umi-request';
 import defaultSettings from "@/../config/defaultSettings";
-import {message} from "@/components";
+import {getHeaders} from "@/utils/auth";
+import {historyPush} from "@/utils/route";
 
 /**
  * request对象
  */
-export const request = extend({
+const request = extend({
     prefix: defaultSettings?.gateway || '',
     timeout: 60000,
     errorHandler: errorHandle,
+    headers: getHeaders(),
 });
 
 /**
  * 异常处理
- * @param error 错误信息
  */
-function errorHandle(error): any {
-    const {response} = error;
-    if (response && response.code) {
-        return message.error({content: `请求错误`, key: "errorHandler", duration: 3});
-    }
-    if (!response) {
-        return message.error({content: `您的网络发生异常`, key: "errorHandler", duration: 3});
-    }
-    return response;
+function errorHandle(): void {
+    return historyPush("error");
 }
 
 /**
  * 中间件
+ * @param ctx context
+ * @param next 执行函数
  */
-request.use(async (ctx, next) => {
+const check = async (ctx, next) => {
     await next();
-});
+    if (ctx.res.code == 401) {
+        historyPush("notAllowed");//无权限页面;
+    }
+}
+request.use(check);
+
+export default request;

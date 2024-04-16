@@ -1,0 +1,10 @@
+import {Body} from "@/layouts/components";
+
+
+export default () => {
+    return (
+        <Body className={undefined} loading={false} breadCrumb={false}>
+            admin login page
+        </Body>
+    );
+};

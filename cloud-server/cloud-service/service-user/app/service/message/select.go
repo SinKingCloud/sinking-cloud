@@ -5,7 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 )
 
-// Select 获取数据 todo 增加站内信接口
+// Select 获取数据
 func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.WebUserMessage, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.WebUserMessage{})

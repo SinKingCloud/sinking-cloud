@@ -57,7 +57,7 @@ export function getFullPathByName(name, params = {}): string {
  * @param params 参数
  */
 export function historyPush(name, params = {}) {
-    history.push(getFullPathByName(name, params));
+    history.push(getFullPathByName(name, params) || "/");
 }
 
 /**

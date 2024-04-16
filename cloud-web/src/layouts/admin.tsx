@@ -1,7 +1,24 @@
 import Layout from "@/layouts/components";
-import {getAdminMenuItems} from "@/utils/route";
+import {getAdminMenuItems, historyPush} from "@/utils/route";
 import defaultSettings from "../../config/defaultSettings";
 import React from "react";
+import {deleteHeader} from "@/utils/auth";
+import request from "@/utils/request";
+
+
+/**
+ * 中间件
+ * @param ctx context
+ * @param next 执行函数
+ */
+const check = async (ctx, next) => {
+    await next();
+    if (ctx.res.code == 503 || ctx.res.code == 403) {
+        deleteHeader();
+        historyPush("admin.login");
+    }
+}
+request.use(check);
 
 export default () => {
     return (

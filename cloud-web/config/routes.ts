@@ -138,7 +138,22 @@ export default [
                 component: index[0]?.component,
                 title: index[0]?.title,
                 name: index[0]?.name,
-            }
+                hideInMenu: true,
+            },
+            {
+                path: '/' + userPath + '/login',
+                component: '@/pages/user/login',
+                name: "user.login",
+                title: "帐号登录",
+                hideInMenu: true,
+            },
+            {
+                path: '/' + adminPath + '/login',
+                component: '@/pages/admin/login',
+                name: "admin.login",
+                title: "后台登录",
+                hideInMenu: true,
+            },
         ],
         layout: false,
     },
@@ -188,6 +203,28 @@ export default [
         layout: false,
         component: '@/layouts/user',
         routes: user,
+    },
+    /**
+     * 500
+     */
+    {
+        path: '/500',
+        component: '@/pages/500.tsx',
+        name: "error",
+        title: "服务器错误",
+        layout: false,
+        hideInMenu: true,
+    },
+    /**
+     * 403
+     */
+    {
+        path: '/403',
+        component: '@/pages/500.tsx',
+        name: "notAllowed",
+        title: "无权限",
+        layout: false,
+        hideInMenu: true,
     },
     /**
      * 404

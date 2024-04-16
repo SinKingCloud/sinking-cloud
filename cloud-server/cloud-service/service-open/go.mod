@@ -11,6 +11,8 @@ require (
 
 require (
 	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240221033916-0f208e6cf31a // indirect
+	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20240416013346-723e149f449f // indirect
+	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20240416013346-723e149f449f // indirect
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
