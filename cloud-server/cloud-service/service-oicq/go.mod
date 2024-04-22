@@ -4,9 +4,9 @@ go 1.20
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240221033916-0f208e6cf31a
-	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20240124035523-b484bf5aa28f
-	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20240124035523-b484bf5aa28f
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240422013649-bbe95255e2ad
+	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20240418070022-2a5be6718de1
+	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20240418070022-2a5be6718de1
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/pkg/errors v0.9.1
 	golang.org/x/net v0.21.0
@@ -16,7 +16,7 @@ require (
 require (
 	github.com/RomiChan/protobuf v0.0.0-20220624030127-3310cba9dbc0 // indirect
 	github.com/RomiChan/syncx v0.0.0-20221202055724-5f842c53020e // indirect
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240221033916-0f208e6cf31a // indirect
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240422013649-bbe95255e2ad // indirect
 	github.com/apache/rocketmq-client-go/v2 v2.1.2 // indirect
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
@@ -41,7 +41,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
-	github.com/pelletier/go-toml/v2 v2.1.1 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.1 // indirect
 	github.com/pierrec/lz4/v4 v4.1.19 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
@@ -57,10 +57,10 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.19.0 // indirect
-	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a // indirect
-	golang.org/x/sync v0.5.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/crypto v0.22.0 // indirect
+	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
+	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

@@ -4,11 +4,11 @@ go 1.20
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240221033916-0f208e6cf31a
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240422013649-bbe95255e2ad
 )
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240221033916-0f208e6cf31a // indirect
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240422013649-bbe95255e2ad // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v1.62.678 // indirect
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible // indirect
 	github.com/apache/rocketmq-client-go/v2 v2.1.2 // indirect
@@ -36,7 +36,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
-	github.com/pelletier/go-toml/v2 v2.1.1 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
@@ -52,10 +52,10 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.19.0 // indirect
-	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a // indirect
+	golang.org/x/crypto v0.22.0 // indirect
+	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
 	golang.org/x/net v0.21.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
