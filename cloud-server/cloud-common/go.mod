@@ -3,10 +3,10 @@ module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 go 1.20
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240422013649-bbe95255e2ad
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240422013649-bbe95255e2ad
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240423075456-a23257ff8701
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240423075456-a23257ff8701
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
-	github.com/aliyun/alibaba-cloud-sdk-go v1.62.678
+	github.com/aliyun/alibaba-cloud-sdk-go v1.62.721
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
 	github.com/apache/rocketmq-client-go/v2 v2.1.2
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
@@ -38,7 +38,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -64,7 +64,7 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
-	golang.org/x/image v0.1.0 // indirect
+	golang.org/x/image v0.10.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/term v0.19.0 // indirect

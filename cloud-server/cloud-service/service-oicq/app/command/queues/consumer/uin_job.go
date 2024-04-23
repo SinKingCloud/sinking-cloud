@@ -45,6 +45,15 @@ func (l *uinJob) Listen() {
 		uinJobIns = sinking.GetRocketConsumerServer(constant.UinJobGroup, false)
 	})
 	l.autoStartThread()
+	//go func() {
+	//	list, _ := uin2.GetIns().SelectByUin("1178710004")
+	//	for _, v := range list {
+	//		if v.PlayerDay > 0 && v.UinStatus == 0 {
+	//			l.run(v)
+	//			break
+	//		}
+	//	}
+	//}()
 	err := uinJobIns.ListenReceiveMsgDo(constant.UinJobTopic, "", func(mqMsg queue.MqMsg) {
 		sinking_web.Try(func() {
 			s := &uin2.AppUinJob{}

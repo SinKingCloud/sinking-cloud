@@ -5,12 +5,12 @@ go 1.17
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240422013649-bbe95255e2ad
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240423075456-a23257ff8701
 	github.com/go-rod/rod v0.102.1
 )
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240422013649-bbe95255e2ad // indirect
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240423075456-a23257ff8701 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
