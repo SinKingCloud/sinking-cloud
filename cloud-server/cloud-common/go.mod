@@ -13,9 +13,9 @@ require (
 	github.com/go-pay/gopay v1.5.100
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
-	github.com/go-playground/validator/v10 v10.18.0
+	github.com/go-playground/validator/v10 v10.19.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/gomodule/redigo v1.9.1
+	github.com/gomodule/redigo v1.9.2
 	github.com/spf13/viper v1.18.2
 	golang.org/x/crypto v0.22.0
 	gorm.io/driver/mysql v1.5.4
