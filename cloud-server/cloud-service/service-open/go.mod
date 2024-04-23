@@ -6,7 +6,7 @@ require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240423075456-a23257ff8701
 	golang.org/x/net v0.21.0
-	gorm.io/gorm v1.25.7
+	gorm.io/gorm v1.25.9
 )
 
 require (
@@ -44,7 +44,7 @@ require (
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/driver/mysql v1.5.4 // indirect
+	gorm.io/driver/mysql v1.5.6 // indirect
 )
 
 replace github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common => ../../cloud-common
