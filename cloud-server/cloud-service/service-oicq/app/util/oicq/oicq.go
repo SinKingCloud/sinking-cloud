@@ -40,7 +40,7 @@ type Proxy struct {
 func NewOicq(uin int64, password [16]byte, proxy *Proxy, device int, loginToken []byte, proto mobile.ClientProtocol) *Oicq {
 	oicq := &Oicq{
 		Mobile:   mobile.NewClientMd5(uin, password).UseDevice(GetMobileDevice(uin, device, proto)).ChooseServerMode(true),
-		Pc:       pc.NewClientMd5(uin, password[:]).UseDevice(GetPcDevice(uin)).ChooseServerMode(true).UseTcp(true),
+		Pc:       pc.NewClientMd5(uin, password[:]).UseDevice(GetPcDevice(uin, device)).ChooseServerMode(true).UseTcp(true),
 		DeviceId: device,
 		Password: password,
 	}
@@ -82,9 +82,9 @@ func GetMobileDevice(uin int64, deviceId int, proto mobile.ClientProtocol) *mobi
 	return device
 }
 
-func GetPcDevice(uin int64) *pc.DeviceInfo {
+func GetPcDevice(uin int64, deviceId int) *pc.DeviceInfo {
 	device := pc.SystemDeviceInfo
-	device.Name = []byte("PC-SK" + strconv.FormatInt(uin, 10))
+	device.Name = []byte("PC-SK" + strconv.FormatInt(uin, 10) + strconv.Itoa(deviceId))
 	t := md5.Sum(device.Name)
 	device.Guid = t[:]
 	return device

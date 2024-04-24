@@ -46,7 +46,7 @@ func (l *uinJob) Listen() {
 	})
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("1178710004")
+	//	list, _ := uin2.GetIns().SelectByUin("727988793")
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 && v.UinStatus == 0 {
 	//			l.run(v)
@@ -86,7 +86,7 @@ var (
 // autoStartThread 动态协程池
 func (l *uinJob) autoStartThread() {
 	go func(l *uinJob) {
-		for true {
+		for {
 			//上锁,禁止新增任务
 			authThreadWaitLock.RLock()
 			authThreadWait.Add(1)
@@ -191,7 +191,7 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 	sinking_web.Try(func() {
 		//开始限流
 		serverId := strconv.Itoa(uin.ServerId)
-		for true {
+		for {
 			if server2.GetIns().ServerJobNum(serverId) > 100 {
 				time.Sleep(100 * time.Millisecond)
 			} else {
