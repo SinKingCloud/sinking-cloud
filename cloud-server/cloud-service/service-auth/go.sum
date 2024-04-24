@@ -54,8 +54,8 @@ github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240424060449-32c6118b87d
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868 h1:uFrPOl1VBt/Abfl2z+A/DFc+AwmFLxEHR1+Yq6cXvww=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868/go.mod h1:srphKZ1i+yGXxl/LpBS7ZIECTjCTPzZzAMtJWoG3sLo=
 github.com/ajstarks/svgo v0.0.0-20180226025133-644b8db467af/go.mod h1:K08gAheRH3/J6wwsYMMT4xOr94bZjxIelGM0+d/wbFw=
-github.com/aliyun/alibaba-cloud-sdk-go v1.62.721 h1:OwLOwY8UfcuwE2eoKA2CxNewpUQv8Qnmpf7UcYNihvk=
-github.com/aliyun/alibaba-cloud-sdk-go v1.62.721/go.mod h1:SOSDHfe1kX91v3W5QiBsWSLqeLxImobbMX1mxrFHsVQ=
+github.com/aliyun/alibaba-cloud-sdk-go v1.62.722 h1:OH64boHkLu+98x6K/ly+oOfCw7TvyLg5AzjFZUq9CeM=
+github.com/aliyun/alibaba-cloud-sdk-go v1.62.722/go.mod h1:SOSDHfe1kX91v3W5QiBsWSLqeLxImobbMX1mxrFHsVQ=
 github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible h1:8psS8a+wKfiLt1iVDX79F7Y6wUM49Lcha2FMXt4UM8g=
 github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible/go.mod h1:T/Aws4fEfogEE9v+HPhhw+CntffsBHJ8nXQCwKr0/g8=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
@@ -112,8 +112,8 @@ github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeME
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
-github.com/go-pay/bm v0.0.1 h1:F2d1KhrupJr7yGPCQTVeYjeOJwN35WhoofopSm6undY=
-github.com/go-pay/bm v0.0.1/go.mod h1:/6bIb0yBj8JbATmE+ib41me4RikMGN3f/XSDF5FjsPQ=
+github.com/go-pay/bm v0.0.2 h1:CLa5hNTIm6uv8HSWGWd4moZbuOzQqJo5HcScXBBSY/E=
+github.com/go-pay/bm v0.0.2/go.mod h1:nyglxC5YS4+gVaO9TxLMI0I/naFUqwffdt5n6llM8uM=
 github.com/go-pay/crypto v0.0.1 h1:B6InT8CLfSLc6nGRVx9VMJRBBazFMjr293+jl0lLXUY=
 github.com/go-pay/crypto v0.0.1/go.mod h1:41oEIvHMKbNcYlWUlRWtsnC6+ASgh7u29z0gJXe5bes=
 github.com/go-pay/gopay v1.5.100 h1:jFpyLA/flrSigY0WFpNaSuQcMFn0yjFpObBnlTzqO9Y=
