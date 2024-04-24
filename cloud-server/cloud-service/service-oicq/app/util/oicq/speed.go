@@ -172,7 +172,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 										e = errors.New("登陆失败")
 									}
 								} else {
-									log.Println(o.Mobile.Uin, "pc授权登陆失败", e)
+									log.Println(o.Mobile.Uin, "pc授权登陆失败", e2)
 									e = errors.New("pc授权登陆失败")
 								}
 								if info != nil {
