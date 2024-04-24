@@ -46,10 +46,10 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/toml v1.1.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
-github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240423075456-a23257ff8701 h1:NM6eZUhGdxfmPXmyPe0GYXyUso9LVHMITC0XZQvNHS4=
-github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240423075456-a23257ff8701/go.mod h1:QVgh64FuScg0gzJ7QGL7IEZInQW160UNUloe+wH5C+c=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240423075456-a23257ff8701 h1:jvS32E/d4FV/fgmLirEKA0rPo1OCFFGLmMG0Ylyw7/I=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240423075456-a23257ff8701/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240424060449-32c6118b87d5 h1:PhSGmzfOAiHw6c4vjdNdAyP+uhX3jduMVVzpS4RF5jU=
+github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240424060449-32c6118b87d5/go.mod h1:QVgh64FuScg0gzJ7QGL7IEZInQW160UNUloe+wH5C+c=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240424060449-32c6118b87d5 h1:Idg+OJ6w8ZJkOSRqBiKZj1Zlc/QdPI2rOCpkmRy4uwQ=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240424060449-32c6118b87d5/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20240422013649-bbe95255e2ad h1:KU51LNCSFPSf0JwhPiP9KyvaLbw4daWPTHlT7lCxo/E=
 github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20240422013649-bbe95255e2ad/go.mod h1:hlJtUA3tf3O9AwpLPjMIK6pmOBa+dPXd6abCLsm14uQ=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
