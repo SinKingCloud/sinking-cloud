@@ -1,9 +1,10 @@
+import React from 'react';
 import {Breadcrumb as AntdBreadcrumb} from 'antd';
 
-const Breadcrumb = ({children, ...props}) => {
+const Breadcrumb = ({...props}) => {
     return (
         <AntdBreadcrumb {...props}>
-            {children}
+            {props?.children}
         </AntdBreadcrumb>
     );
 };

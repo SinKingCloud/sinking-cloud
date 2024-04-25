@@ -1,9 +1,10 @@
+import React from 'react';
 import {Button as AntdButton} from 'antd';
 
-const Button = ({children, ...props}) => {
+const Button = ({...props}) => {
     return (
         <AntdButton {...props}>
-            {children}
+            {props?.children}
         </AntdButton>
     );
 };

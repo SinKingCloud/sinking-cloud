@@ -1,9 +1,10 @@
+import React from 'react';
 import {Spin as AntdSpin} from 'antd';
 
-const Spin = ({children, ...props}) => {
+const Spin = ({...props}) => {
     return (
         <AntdSpin {...props}>
-            {children}
+            {props?.children}
         </AntdSpin>
     );
 };

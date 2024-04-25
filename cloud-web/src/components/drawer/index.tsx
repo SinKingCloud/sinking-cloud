@@ -1,9 +1,10 @@
+import React from 'react';
 import {Drawer as AntdDrawer} from 'antd';
 
-const Drawer = ({children, ...props}) => {
+const Drawer = ({...props}) => {
     return (
         <AntdDrawer {...props}>
-            {children}
+            {props?.children}
         </AntdDrawer>
     );
 };

@@ -1,9 +1,10 @@
+import React from 'react';
 import {Result as AntdResult} from 'antd';
 
-const Result = ({children, ...props}) => {
+const Result = ({...props}) => {
     return (
         <AntdResult {...props}>
-            {children}
+            {props?.children}
         </AntdResult>
     );
 };

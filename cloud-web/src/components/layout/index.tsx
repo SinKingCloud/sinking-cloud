@@ -1,41 +1,42 @@
+import React from 'react';
 import {Layout as AntdLayout} from 'antd';
 
-const Layout = ({children, ...props}) => {
+const Layout = ({...props}) => {
     return (
         <AntdLayout {...props}>
-            {children}
+            {props?.children}
         </AntdLayout>
     );
 };
 
-const Sider = ({children, ...props}) => {
+const Sider = ({...props}) => {
     return (
         <AntdLayout.Sider {...props}>
-            {children}
+            {props?.children}
         </AntdLayout.Sider>
     );
 };
 
-const Header = ({children, ...props}) => {
+const Header = ({...props}) => {
     return (
         <AntdLayout.Header {...props}>
-            {children}
+            {props?.children}
         </AntdLayout.Header>
     );
 };
 
-const Content = ({children, ...props}) => {
+const Content = ({...props}) => {
     return (
         <AntdLayout.Content {...props}>
-            {children}
+            {props?.children}
         </AntdLayout.Content>
     );
 };
 
-const Footer = ({children, ...props}) => {
+const Footer = ({...props}) => {
     return (
         <AntdLayout.Footer {...props}>
-            {children}
+            {props?.children}
         </AntdLayout.Footer>
     );
 };

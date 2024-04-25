@@ -1,9 +1,10 @@
+import React from 'react';
 import {Table as AntdTable} from 'antd';
 
-const Table = ({children, ...props}) => {
+const Table = ({...props}) => {
     return (
         <AntdTable {...props}>
-            {children}
+            {props?.children}
         </AntdTable>
     );
 };

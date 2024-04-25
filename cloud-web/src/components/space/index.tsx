@@ -1,9 +1,10 @@
+import React from 'react';
 import {Space as AntdSpace} from 'antd';
 
-const Space = ({children, ...props}) => {
+const Space = ({...props}) => {
     return (
         <AntdSpace {...props}>
-            {children}
+            {props?.children}
         </AntdSpace>
     );
 };

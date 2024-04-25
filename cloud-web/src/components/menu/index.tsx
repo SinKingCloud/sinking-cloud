@@ -1,9 +1,10 @@
+import React from 'react';
 import {Menu as AntdMenu} from 'antd';
 
-const Menu = ({children, ...props}) => {
+const Menu = ({...props}) => {
     return (
         <AntdMenu {...props}>
-            {children}
+            {props?.children}
         </AntdMenu>
     );
 };

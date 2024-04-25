@@ -1,11 +1,11 @@
-import React, {useEffect, useState} from "react";
-import {useLocation, useModel, useRouteData} from "umi";
-import {ConfigProvider, Layout} from "antd";
-import {createStyles} from "antd-style";
-import {Spin, Space, Breadcrumb} from "@/components";
-import {getCurrentMenus, getFirstMenuWithoutChildren, getParentList, historyPush} from "@/utils/route";
+import React, { useEffect, useState } from "react";
+import { useLocation, useModel, useRouteData } from "umi";
+import { ConfigProvider, Layout } from "antd";
+import { createStyles } from "antd-style";
+import { Spin, Space, Breadcrumb } from "@/components";
+import { getCurrentMenus, getFirstMenuWithoutChildren, getParentList, historyPush } from "@/utils/route";
 
-const useStyles = createStyles(({token}): any => {
+const useStyles = createStyles(({ token }): any => {
     return {
         body: {
             padding: "10px",
@@ -37,6 +37,7 @@ export type BodyProps = {
     breadCrumb?: boolean;//面包屑
     style?: any;//样式
     className?: any;//样式名
+    children?: any;//子内容
 };
 /**
  * 页面主体部分
@@ -44,8 +45,8 @@ export type BodyProps = {
  * @constructor
  */
 const Body: React.FC<BodyProps> = (props) => {
-    const {children, loading, style, className, space = true, breadCrumb = true} = props;
-    const {styles: {body, load, gutter, bread, breadStyle}} = useStyles();
+    const { children, loading, style, className, space = true, breadCrumb = true } = props;
+    const { styles: { body, load, gutter, bread, breadStyle } } = useStyles();
     const systemTheme = useModel("theme");
 
     /**
@@ -97,7 +98,7 @@ const Body: React.FC<BodyProps> = (props) => {
     return <ConfigProvider theme={systemTheme?.themes}>
         {(loading && <Spin spinning={true} size="large" className={load}></Spin>) ||
             <Layout style={style}>
-                {breadCrumb && breadCrumbData?.length > 0 && <Breadcrumb className={bread} items={breadCrumbData}/>}
+                {breadCrumb && breadCrumbData?.length > 0 && <Breadcrumb className={bread} items={breadCrumbData} />}
                 <div className={className ? className : body}>
                     {(space && <Space direction="vertical" size="middle" className={gutter}>
                         {children}
