@@ -3,11 +3,10 @@ import defaultSettings from "../config/defaultSettings";
 
 /**
  * 路由跳转事件
- * @param clientRoutes 路由
- * @param location location对象
+ * @param props 传递参数
  */
-export function onRouteChange({clientRoutes, location}) {
-    const route = matchRoutes(clientRoutes, location?.pathname)?.pop()?.route;
+export function onRouteChange(props: any) {
+    const route = matchRoutes(props?.clientRoutes, props?.location?.pathname)?.pop()?.route;
     if (route && route?.title) {
         document.title = route?.title + " - " + defaultSettings?.title;
     }
