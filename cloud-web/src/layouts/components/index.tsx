@@ -89,8 +89,8 @@ const Layout: React.FC<LayoutProps> = (props) => {
         headerLeft,
         menuCollapsedWidth = 60,
         menuUnCollapsedWidth = 220,
-        menuBottomBtnIcon = null,
-        menuBottomBtnText = null,
+        menuBottomBtnIcon = undefined,
+        menuBottomBtnText = undefined,
         onMenuBottomBtnClick,
     } = props;
     /*
