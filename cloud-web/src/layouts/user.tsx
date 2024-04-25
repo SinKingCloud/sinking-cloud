@@ -18,7 +18,7 @@ const check = async (ctx: any, next: any) => {
     await next();
     if (ctx.res.code == 503 || ctx.res.code == 403) {
         deleteHeader();
-        // historyPush("user.login");
+        historyPush("user.login");
     }
 }
 request.use(check);
@@ -40,7 +40,7 @@ export default () => {
     const [loading, setLoading] = useState(true);
     const initUser = () => {
         setLoading(true);
-        user?.getWebUser()?.then((u:any) => {
+        user?.getWebUser()?.then((u: any) => {
             user?.setWeb(u);
         })?.finally(() => {
             setLoading(false);
