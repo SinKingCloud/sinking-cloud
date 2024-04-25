@@ -89,7 +89,7 @@ const Sider: React.FC<SiderProps> = (props) => {
     const {mobile} = useResponsive();
     const systemTheme = useModel("theme");
     const {styles: {left, menu, menuTop, menuBottom, logoClose}} = useStyles();
-    const [selectedKeys, setSelectedKeys] = useState([]);
+    const [selectedKeys, setSelectedKeys] = useState<any>([]);
     const location = useLocation();
     const match = useSelectedRoutes();
     const initSelectMenu = () => {
@@ -111,7 +111,7 @@ const Sider: React.FC<SiderProps> = (props) => {
     const getLevelKeys = (items1: any) => {
         const key: Record<string, number> = {};
         const func = (items2: any, level = 1) => {
-            items2.forEach((item) => {
+            items2.forEach((item:any) => {
                 if (item.key) {
                     key[item.key] = level;
                 }
@@ -124,8 +124,8 @@ const Sider: React.FC<SiderProps> = (props) => {
         return key;
     };
     const levelKeys = getLevelKeys(menus);
-    const [stateOpenKeys, setStateOpenKeys] = useState([]);
-    const onOpenChange = (openKeys) => {
+    const [stateOpenKeys, setStateOpenKeys] = useState<any>([]);
+    const onOpenChange = (openKeys:any[]) => {
         const currentOpenKey = openKeys.find((key) => stateOpenKeys.indexOf(key) === -1);
         if (currentOpenKey !== undefined) {
             const repeatIndex = openKeys.filter((key) => key !== currentOpenKey).findIndex((key) => levelKeys[key] === levelKeys[currentOpenKey]);
@@ -166,7 +166,7 @@ const Sider: React.FC<SiderProps> = (props) => {
                           items={menus} className={menu}
                           openKeys={stateOpenKeys}
                           onOpenChange={onOpenChange}
-                          onClick={(item) => {
+                          onClick={(item:any) => {
                               history?.push(item?.key);
                               setSelectedKeys([item?.key]);
                               onMenuClick?.(item);

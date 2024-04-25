@@ -1,3 +1,4 @@
+import React from "react";
 import Layout from "@/layouts/components";
 import {getUserMenuItems} from "@/utils/route";
 import defaultSettings from "@/../config/defaultSettings";
@@ -13,11 +14,11 @@ import request from "@/utils/request";
  * @param ctx context
  * @param next 执行函数
  */
-const check = async (ctx, next) => {
+const check = async (ctx: any, next: any) => {
     await next();
     if (ctx.res.code == 503 || ctx.res.code == 403) {
         deleteHeader();
-        historyPush("user.login");
+        // historyPush("user.login");
     }
 }
 request.use(check);
@@ -39,7 +40,7 @@ export default () => {
     const [loading, setLoading] = useState(true);
     const initUser = () => {
         setLoading(true);
-        user?.getWebUser()?.then((u) => {
+        user?.getWebUser()?.then((u:any) => {
             user?.setWeb(u);
         })?.finally(() => {
             setLoading(false);

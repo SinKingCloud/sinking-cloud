@@ -1,3 +1,4 @@
+import React from "react";
 import {Body} from "@/layouts/components";
 import {Button, Result} from "@/components";
 import {createStyles} from "antd-style";

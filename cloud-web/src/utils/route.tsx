@@ -10,7 +10,7 @@ import React from "react";
  * @param params
  * @param currentPath
  */
-function getPathByName(routes, name, params = {}, currentPath = ''): any {
+function getPathByName(routes: any, name: any, params: any = {}, currentPath = ''): any {
     for (const route of routes) {
         let finalPath = currentPath + (currentPath && !currentPath.endsWith('/') ? '/' : '') + (route.path.startsWith('/') ? route.path.slice(1) : route.path);
         if (params && Object.keys(params).length > 0) {
@@ -36,15 +36,15 @@ function getPathByName(routes, name, params = {}, currentPath = ''): any {
 /**
  * 路由缓存
  */
-const routeCache = {}
+const routeCache:any = {}
 
 /**
  * 根据name获取路径
  * @param name 标识
  * @param params 参数
  */
-export function getFullPathByName(name, params = {}): string {
-    if (Object.keys(params) <= 0 && routeCache[name]) {
+export function getFullPathByName(name:any, params:any = {}): string {
+    if (Object.keys(params).length <= 0 && routeCache?.[name]!=undefined) {
         return routeCache[name];
     }
     routeCache[name] = getPathByName(route, name, params, '');
@@ -56,7 +56,7 @@ export function getFullPathByName(name, params = {}): string {
  * @param name 标识
  * @param params 参数
  */
-export function historyPush(name, params = {}) {
+export function historyPush(name:any, params = {}) {
     history.push(getFullPathByName(name, params) || "/");
 }
 
@@ -65,8 +65,8 @@ export function historyPush(name, params = {}) {
  * @param routes
  * @param parentPath
  */
-function getMenuItems(routes, parentPath = '/') {
-    return routes.map((route) => {
+function getMenuItems(routes:any, parentPath = '/') {
+    return routes.map((route:any) => {
         if (route?.hideInMenu) {
             return;
         }
@@ -98,7 +98,7 @@ function getMenuItems(routes, parentPath = '/') {
 }
 
 
-const parentCache = {}
+const parentCache:any = {}
 
 /**
  * 根据name查找父级菜单
@@ -106,7 +106,7 @@ const parentCache = {}
  * @param name 标识
  */
 export function getParentList(data: any[], name: string): any[] {
-    if (Object.keys(name) <= 0 && parentCache[name]) {
+    if (Object.keys(name).length <= 0 && parentCache?.[name]!=undefined) {
         return parentCache[name];
     }
     let parents: any[] = [];
@@ -172,7 +172,7 @@ export function getAllMenuItems() {
 /**
  * 当前访问系统path
  */
-export function getCurrentPath(pathName): any {
+export function getCurrentPath(pathName:any): any {
     let mode = "";
     const regex = /\/([^/]+)\//; // 正则表达式匹配 / 之间的内容
     const matches = pathName.match(regex); // 匹配结果数组
@@ -194,7 +194,7 @@ export function getCurrentPath(pathName): any {
 /**
  * 当前访问系统路由
  */
-export function getCurrentMenus(pathName): any {
+export function getCurrentMenus(pathName:any): any {
     let mode = "";
     const regex = /\/([^/]+)\//; // 正则表达式匹配 / 之间的内容
     const matches = pathName.match(regex); // 匹配结果数组

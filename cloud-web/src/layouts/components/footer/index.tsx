@@ -1,8 +1,12 @@
 import React from "react";
 
-const Footer: React.FC = ({children}) => {
+export type FooterProps = {
+    children?: any;//子内容
+};
+
+const Footer: React.FC<FooterProps> = ({...props}) => {
     return <>
-        {children}
+        {props?.children}
     </>
 }
 

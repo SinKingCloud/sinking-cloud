@@ -1,7 +1,7 @@
+import React from "react";
 import Layout from "@/layouts/components";
 import {getAdminMenuItems, historyPush} from "@/utils/route";
 import defaultSettings from "../../config/defaultSettings";
-import React from "react";
 import {deleteHeader} from "@/utils/auth";
 import request from "@/utils/request";
 
@@ -11,7 +11,7 @@ import request from "@/utils/request";
  * @param ctx context
  * @param next 执行函数
  */
-const check = async (ctx, next) => {
+const check = async (ctx: any, next: any) => {
     await next();
     if (ctx.res.code == 503 || ctx.res.code == 403) {
         deleteHeader();

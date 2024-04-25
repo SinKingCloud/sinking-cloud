@@ -7,7 +7,7 @@ import defaultSettings from "../config/defaultSettings";
  * @param location location对象
  */
 export function onRouteChange({clientRoutes, location}) {
-    const route = matchRoutes(clientRoutes, location.pathname)?.pop()?.route;
+    const route = matchRoutes(clientRoutes, location?.pathname)?.pop()?.route;
     if (route && route?.title) {
         document.title = route?.title + " - " + defaultSettings?.title;
     }
