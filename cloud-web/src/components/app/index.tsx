@@ -1,11 +1,11 @@
 import {App as AntdApp} from 'antd';
 
-const App = ({children, ...props}) => {
+const App = ({...props}) => {
     return (
         <AntdApp {...props}>
-            {children}
+            {props?.children}
         </AntdApp>
     );
 };
 
-export default AntdApp;
+export default App;

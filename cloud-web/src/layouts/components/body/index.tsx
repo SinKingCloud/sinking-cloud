@@ -52,7 +52,7 @@ const Body: React.FC<BodyProps> = (props) => {
     /**
      * 初始化面包屑
      */
-    const [breadCrumbData, setBreadCrumb] = useState([]);
+    const [breadCrumbData, setBreadCrumb] = useState<any>([]);
     const location = useLocation();
     const match = useRouteData();
     const initBreadCrumb = () => {
