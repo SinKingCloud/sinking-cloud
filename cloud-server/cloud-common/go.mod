@@ -6,7 +6,7 @@ require (
 	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240424060449-32c6118b87d5
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240424060449-32c6118b87d5
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
-	github.com/aliyun/alibaba-cloud-sdk-go v1.62.722
+	github.com/aliyun/alibaba-cloud-sdk-go v1.62.726
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
 	github.com/apache/rocketmq-client-go/v2 v2.1.2
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
