@@ -3,10 +3,10 @@ module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 go 1.20
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240424060449-32c6118b87d5
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240424060449-32c6118b87d5
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240429092826-ed2ea6f81e66
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240429092826-ed2ea6f81e66
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
-	github.com/aliyun/alibaba-cloud-sdk-go v1.62.726
+	github.com/aliyun/alibaba-cloud-sdk-go v1.62.728
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
 	github.com/apache/rocketmq-client-go/v2 v2.1.2
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
@@ -19,7 +19,7 @@ require (
 	github.com/spf13/viper v1.18.2
 	golang.org/x/crypto v0.22.0
 	gorm.io/driver/mysql v1.5.6
-	gorm.io/gorm v1.25.9
+	gorm.io/gorm v1.25.10
 )
 
 require (
