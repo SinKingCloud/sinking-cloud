@@ -6,7 +6,7 @@ import {Form} from "antd";
 export default () => {
     const [form] = Form.useForm();
     const test = () => {
-        form?.getFieldValue("test");
+        form?.getFieldValue("test" as NamePath);
         form?.getFieldValue("test2" as NamePath)
     }
     return (

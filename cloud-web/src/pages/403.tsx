@@ -1,6 +1,6 @@
 import React from "react";
 import {Body} from "@/layouts/components";
-import {Button, Result} from "@/components";
+import {Button, Result} from "antd";
 import {createStyles} from "antd-style";
 import {history} from "umi";
 

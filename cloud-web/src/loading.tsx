@@ -1,6 +1,6 @@
 import React from "react";
 import {createStyles} from "antd-style";
-import {Spin} from "@/components";
+import {Spin} from "antd";
 
 const useStyles = createStyles(({token}): any => {
     return {

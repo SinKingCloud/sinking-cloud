@@ -5,10 +5,9 @@ import Sider from "@/layouts/components/sider";
 import {createStyles, useResponsive} from "antd-style";
 import React, {useState} from "react";
 import {Outlet, useModel} from "umi";
-import {ConfigProvider} from "antd";
-import {Drawer, Button, App, Layout as SkLayout} from "@/components";
 import {MenuFoldOutlined, MenuUnfoldOutlined} from "@ant-design/icons";
 import Loading from "@/loading"
+import {App, Button, ConfigProvider, Drawer, Layout as SkLayout} from "antd";
 
 const useLayoutStyles = createStyles((): any => {
     return {
@@ -119,7 +118,7 @@ const Layout: React.FC<LayoutProps> = (props) => {
     return (
         <ConfigProvider theme={systemTheme?.themes}>
             <App>
-                {(loading && <Loading/>) || <SkLayout.Layout>
+                {(loading && <Loading/>) || <SkLayout>
                     <SkLayout.Sider className={sider} trigger={null} collapsible collapsed={collapsed}
                                     width={menuUnCollapsedWidth} collapsedWidth={menuCollapsedWidth} hidden={mobile}>
                         {(mobile && <Drawer
@@ -154,8 +153,8 @@ const Layout: React.FC<LayoutProps> = (props) => {
                                    onMenuBottomBtnClick={onMenuBottomBtnClick}
                                    menus={menus}/>}
                     </SkLayout.Sider>
-                    <SkLayout.Layout className={body}
-                                     style={{marginLeft: mobile ? 0 : (collapsed ? menuCollapsedWidth + "px" : menuUnCollapsedWidth + "px")}}>
+                    <SkLayout className={body}
+                              style={{marginLeft: mobile ? 0 : (collapsed ? menuCollapsedWidth + "px" : menuUnCollapsedWidth + "px")}}>
                         <SkLayout.Header className={header}>
                             <Button type="text" size={"large"}
                                     icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
@@ -170,8 +169,8 @@ const Layout: React.FC<LayoutProps> = (props) => {
                                 <Footer> {props?.footer}</Footer>
                             </SkLayout.Footer>
                         }
-                    </SkLayout.Layout>
-                </SkLayout.Layout>}
+                    </SkLayout>
+                </SkLayout>}
             </App>
         </ConfigProvider>
     );
