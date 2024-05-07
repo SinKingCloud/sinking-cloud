@@ -119,6 +119,7 @@ func SaveLoginToken(uinInfo *model.AppUin, token []byte) error {
 	data["proto"] = uinInfo.Proto
 	data["token"] = utils.Bin2HexTo(token)
 	data["uin_status"] = int(uin.StatusUinNormal)
+	data["setting"] = uinInfo.Setting
 	data["password"] = uinInfo.Password
 	data["device"] = uinInfo.Device
 	err := uin.GetIns().UpdateByUin(uinInfo.Uin, data)
