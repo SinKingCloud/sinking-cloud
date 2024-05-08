@@ -26,10 +26,10 @@ func GetIns() *Service {
 }
 
 // Check 判断验证码是否正确
-func (*Service) Check(key string, code string) bool {
+func (*Service) Check(randStr string, ticket string) bool {
 	client, err := rpc.New(group.CloudService, name.ServiceAuth).Call("/rpc/captcha/check", &rpc.Param{
-		"key":  key,
-		"code": code,
+		"key":  randStr,
+		"code": ticket,
 	}).Response()
 	if err != nil {
 		return false

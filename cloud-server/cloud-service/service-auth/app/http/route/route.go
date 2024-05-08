@@ -62,7 +62,6 @@ func loadSystemRoute(s *sinking_web.Engine) {
 func loadVerifyRoute(s *sinking_web.Engine) {
 	r := s.Group("/verify")
 	handle := &verify.ControllerVerify{}
-	r.GET("/code", sinking_server.HandleFunc(handle.Code))
 	r.POST("/sms", sinking_server.HandleFunc(handle.Sms))
 }
 
