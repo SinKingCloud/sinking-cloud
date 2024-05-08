@@ -5,7 +5,7 @@ import defaultSettings from "@/../config/defaultSettings";
 
 export default () => {
     const [info, setInfo] = useState<API.WebInfo>({
-        name: defaultSettings?.title,
+        ...defaultSettings as API.WebInfo
     });
     /**
      * 获取站点信息
@@ -23,13 +23,6 @@ export default () => {
             setInfo(d);
         });
     }
-
-    /**
-     * 初始化信息
-     */
-    useEffect(() => {
-        refreshInfo();
-    }, []);
 
     return {
         info,
