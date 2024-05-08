@@ -35,12 +35,14 @@ export default () => {
                     console.log("点击了菜单", item)
                 }}
                 collapsedLogo={() => {
-                    return <img src="/logo.svg" width="39"
+                    return <img src={(defaultSettings?.basePath || "/") + "logo.svg"} width="39"
                                 alt={defaultSettings?.title}/>;
                 }}
                 unCollapsedLogo={(isLight) => {
-                    return <img src={isLight ? "/logo_light.png" : "/logo_dark.png"} width="130"
-                                alt={defaultSettings?.title}/>;
+                    return <img
+                        src={(defaultSettings?.basePath || "/") + (isLight ? "logo_light.png" : "logo_dark.png")}
+                        width="130"
+                        alt={defaultSettings?.title}/>;
                 }}
                 onMenuBtnClick={(state) => {
                     console.log("点击了菜单按钮", state)
