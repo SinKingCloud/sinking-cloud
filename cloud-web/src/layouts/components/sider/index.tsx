@@ -18,15 +18,24 @@ const useStyles = createStyles(({token}): any => {
             borderRight: "none !important",
             marginBottom: "50px",
             fontWeight: "bolder",
+            userSelect: "none",
             ":focus-visible": {
                 outline: "none !important"
             },
             "::-webkit-scrollbar": {
                 width: 0
+            },
+            ".ant-menu-item-selected::after": {
+                top: "19% !important",
+                right: "5px !important",
+                height: "60% !important",
+                borderRightWidth: "5px !important",
+                borderRadius: "10px 0 0 10px",
             }
         },
         menuTop: {
             zIndex: 2,
+            userSelect: "none",
             height: "100px",
             lineHeight: "100px !important",
             width: "100%",
@@ -39,6 +48,7 @@ const useStyles = createStyles(({token}): any => {
         },
         menuBottom: {
             background: token?.colorBgContainer,
+            userSelect: "none",
             padding: "0px !important",
             borderRadius: "0px",
             height: "50px",
