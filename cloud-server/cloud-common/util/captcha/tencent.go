@@ -38,8 +38,8 @@ func (t *tencent) Check(randStr string, ticket string) bool {
 		return false
 	}
 	type Response struct {
-		Data   string `json:"data"`
-		ReCode int    `json:"reCode"`
+		Data   interface{} `json:"data"`
+		ReCode int         `json:"reCode"`
 	}
 	var response *Response
 	e = json.Unmarshal([]byte(t.jsonpToJson(string(body))), &response)

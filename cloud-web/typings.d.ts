@@ -3,6 +3,16 @@ import 'umi/typings';
 declare namespace API {
 
     /**
+     * 快捷请求结构
+     */
+    type RequestParams = {
+        body?: any,
+        onSuccess?: (res) => void,
+        onFail?: (res) => void,
+        onFinally?: () => void
+    }
+
+    /**
      * 通用响应
      */
     type Response = {

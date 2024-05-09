@@ -36,15 +36,15 @@ function getPathByName(routes: any, name: any, params: any = {}, currentPath = '
 /**
  * 路由缓存
  */
-const routeCache:any = {}
+const routeCache: any = {}
 
 /**
  * 根据name获取路径
  * @param name 标识
  * @param params 参数
  */
-export function getFullPathByName(name:any, params:any = {}): string {
-    if (Object.keys(params).length <= 0 && routeCache?.[name]!=undefined) {
+export function getFullPathByName(name: any, params: any = {}): string {
+    if (Object.keys(params).length <= 0 && routeCache?.[name] != undefined) {
         return routeCache[name];
     }
     routeCache[name] = getPathByName(route, name, params, '');
@@ -56,8 +56,8 @@ export function getFullPathByName(name:any, params:any = {}): string {
  * @param name 标识
  * @param params 参数
  */
-export function historyPush(name:any, params = {}) {
-    history.push(getFullPathByName(name, params) || "/");
+export function historyPush(name: any, params = {}) {
+    history?.push(getFullPathByName(name, params) || "/");
 }
 
 /**
@@ -65,8 +65,8 @@ export function historyPush(name:any, params = {}) {
  * @param routes
  * @param parentPath
  */
-function getMenuItems(routes:any, parentPath = '/') {
-    return routes.map((route:any) => {
+function getMenuItems(routes: any, parentPath = '/') {
+    return routes.map((route: any) => {
         if (route?.hideInMenu) {
             return;
         }
@@ -98,7 +98,7 @@ function getMenuItems(routes:any, parentPath = '/') {
 }
 
 
-const parentCache:any = {}
+const parentCache: any = {}
 
 /**
  * 根据name查找父级菜单
@@ -106,7 +106,7 @@ const parentCache:any = {}
  * @param name 标识
  */
 export function getParentList(data: any[], name: string): any[] {
-    if (Object.keys(name).length <= 0 && parentCache?.[name]!=undefined) {
+    if (Object.keys(name).length <= 0 && parentCache?.[name] != undefined) {
         return parentCache[name];
     }
     let parents: any[] = [];
@@ -172,7 +172,7 @@ export function getAllMenuItems() {
 /**
  * 当前访问系统path
  */
-export function getCurrentPath(pathName:any): any {
+export function getCurrentPath(pathName: any): any {
     let mode = "";
     const regex = /\/([^/]+)\//; // 正则表达式匹配 / 之间的内容
     const matches = pathName.match(regex); // 匹配结果数组
@@ -194,7 +194,7 @@ export function getCurrentPath(pathName:any): any {
 /**
  * 当前访问系统路由
  */
-export function getCurrentMenus(pathName:any): any {
+export function getCurrentMenus(pathName: any): any {
     let mode = "";
     const regex = /\/([^/]+)\//; // 正则表达式匹配 / 之间的内容
     const matches = pathName.match(regex); // 匹配结果数组

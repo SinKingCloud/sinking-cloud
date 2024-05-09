@@ -24,6 +24,10 @@ export default () => {
         });
     }
 
+    useEffect(() => {
+        refreshInfo();
+    }, []);
+
     return {
         info,
         setInfo,

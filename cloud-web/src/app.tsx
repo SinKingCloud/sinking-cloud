@@ -1,11 +1,5 @@
 import {matchRoutes} from 'umi';
 import defaultSettings from "../config/defaultSettings";
-import {initDefaultSetting} from "@/utils/init";
-
-/**
- * 初始化defaultSetting
- */
-await initDefaultSetting();
 
 /**
  * 路由跳转事件
