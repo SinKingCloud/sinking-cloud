@@ -101,7 +101,7 @@ const Layout: React.FC<LayoutProps> = (props) => {
     const {mobile} = useResponsive();
     const systemTheme = useModel("theme");
     const menuBtnOnClick = () => {
-        let status = false;
+        let status: boolean;
         if (mobile) {
             if (collapsed) {
                 setCollapsed(false);
