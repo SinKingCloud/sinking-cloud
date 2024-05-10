@@ -3,6 +3,7 @@ import defaultSettings from "@/../config/defaultSettings";
 import {getHeaders} from "@/utils/auth";
 import {historyPush} from "@/utils/route";
 import {API} from "../../typings";
+import {Modal} from "antd";
 
 /**
  * request对象
@@ -17,7 +18,11 @@ const request = extend({
  * 异常处理
  */
 function errorHandle(): void {
-    return historyPush("error");
+    Modal.error({
+        title: '系统错误',
+        content: "服务器连接失败,请检查网络配置并稍后刷新重试",
+        okText: "确认"
+    })
 }
 
 /**
