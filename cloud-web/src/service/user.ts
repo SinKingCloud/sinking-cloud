@@ -1,24 +1,12 @@
-import request from "@/utils/request";
 import {API} from "@/../typings";
+import {get} from "@/utils/request";
 
 /*****  获取网站用户信息  *****/
-export async function getWebUserInfo(params?: {}, options?: { [key: string]: any }) {
-    return request<API.Response>('/user/person/info', {
-        method: 'GET',
-        params: {
-            ...params,
-        },
-        ...(options || {}),
-    });
+export async function getWebUserInfo(params: API.RequestParams = {}) {
+    return get("/user/person/info", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
 }
 
-/*****  获取系统用户信息  *****/
-export async function getSystemUserInfo(params?: {}, options?: { [key: string]: any }) {
-    return request<API.Response>('/admin/person/info', {
-        method: 'GET',
-        params: {
-            ...params,
-        },
-        ...(options || {}),
-    });
+/*****  获取网站用户信息  *****/
+export async function getSystemUserInfo(params: API.RequestParams = {}) {
+    return get("/admin/person/info", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
 }

@@ -42,7 +42,7 @@ const PageHeaderContent: FC<{ currentUser: Partial<any> }> = ({currentUser}) => 
   );
 };
 
-const ExtraContent: FC<{ currentUser: Partial<any> }> = ({currentUser}) => (
+const ExtraContent: FC<{currentUser: Partial<any> }> = ({currentUser}) => (
   <div className={styles.extraContent}>
     <div className={styles.statItem}>
       <Statistic title="绑定手机" value={currentUser?.phone}/>
@@ -92,7 +92,7 @@ export default (): React.ReactNode => {
   /**
    * 查看公告
    */
-  const noticeRef = useRef<NoticeInfoRef>(null);
+  const noticeRef = useRef<NoticeInfoRef>();
   const [noticeVisible, setNoticeVisible] = useState(false);
   const showNoticeInfoModal = (id: number | undefined) => {
     setNoticeVisible(true);

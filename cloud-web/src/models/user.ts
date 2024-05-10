@@ -11,15 +11,19 @@ export default () => {
      */
     const getWebUser = async () => {
         const resp = await getWebUserInfo();
+        if (resp?.code != 200) {
+            return undefined;
+        }
         return resp?.data || undefined;
     }
 
     /**
      * 刷新网站用户信息
      */
-    const refreshWebUser = () => {
+    const refreshWebUser = (callback: () => void = undefined) => {
         getWebUser().then((d) => {
             setWeb(d);
+            callback?.();
         });
     }
 
@@ -28,15 +32,19 @@ export default () => {
      */
     const getSystemUser = async () => {
         const resp = await getSystemUserInfo();
+        if (resp?.code != 200) {
+            return undefined;
+        }
         return resp?.data || undefined;
     }
 
     /**
      * 刷新系统用户信息
      */
-    const refreshSystemUser = () => {
+    const refreshSystemUser = (callback: () => void = undefined) => {
         getSystemUser().then((d) => {
             setSystem(d);
+            callback?.();
         });
     }
 

@@ -11,7 +11,6 @@ const request = extend({
     prefix: defaultSettings?.gateway || '',
     timeout: 60000,
     errorHandler: errorHandle,
-    headers: getHeaders() || {},
 });
 
 /**
@@ -27,12 +26,14 @@ function errorHandle(): void {
  * @param next 执行函数
  */
 const check = async (ctx: any, next: any) => {
+    ctx.req.options.headers = getHeaders();
     await next();
     if (ctx.res.code == 401) {
         historyPush("notAllowed");//无权限页面;
     }
 }
 request.use(check);
+
 
 /**
  * 发送post请求
@@ -67,7 +68,7 @@ export async function post(url: string = "", body: any = {}, onSuccess: (res) =>
     }).finally(() => {
         onFinally?.();
     });
-    return res;
+    return res as API.Response;
 }
 
 /**
@@ -102,7 +103,7 @@ export async function get(url: string = "", params?: {}, onSuccess: (res) => voi
     }).finally(() => {
         onFinally?.();
     });
-    return res;
+    return res as API.Response;
 }
 
 export default request;
