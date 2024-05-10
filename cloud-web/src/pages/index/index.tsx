@@ -1,17 +1,14 @@
 import React from "react";
 import {Body} from "@/layouts/components";
-import {NamePath} from "rc-field-form/es/interface";
-import {Form} from "antd";
+import {App, Button, Form} from "antd";
 
 export default () => {
-    const [form] = Form.useForm();
-    const test = () => {
-        form?.getFieldValue("test" as NamePath);
-        form?.getFieldValue("test2" as NamePath)
-    }
+    const {message} = App.useApp();
     return (
         <Body breadCrumb={false}>
-            test
+            <Button onClick={() => {
+                message?.error("succ")
+            }}>test</Button>
         </Body>
     );
 };

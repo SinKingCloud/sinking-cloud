@@ -1,5 +1,8 @@
 import {matchRoutes} from 'umi';
 import defaultSettings from "../config/defaultSettings";
+import {App} from "antd";
+import {Antd} from "@/components"
+import React from "react";
 
 /**
  * 路由跳转事件
@@ -10,4 +13,17 @@ export function onRouteChange(props: any) {
     if (route && route?.title) {
         document.title = route?.title + " - " + (defaultSettings?.name || defaultSettings?.title);
     }
+}
+
+/**
+ * 挂载静态方法
+ * @param container 容器
+ */
+export function rootContainer(container: React.ReactElement) {
+    return (
+        <App>
+            <Antd/>
+            {container}
+        </App>
+    )
 }

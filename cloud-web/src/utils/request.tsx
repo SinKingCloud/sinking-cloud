@@ -3,7 +3,7 @@ import defaultSettings from "@/../config/defaultSettings";
 import {getHeaders} from "@/utils/auth";
 import {historyPush} from "@/utils/route";
 import {API} from "../../typings";
-import {Modal} from "antd";
+import {Modal} from "@/components";
 
 /**
  * request对象
@@ -17,12 +17,28 @@ const request = extend({
 /**
  * 异常处理
  */
+let lock = false;
+
 function errorHandle(): void {
-    Modal.error({
-        title: '系统错误',
-        content: "服务器连接失败,请检查网络配置并稍后刷新重试",
-        okText: "确认"
-    })
+    if (!lock) {
+        lock = true
+        const clear = () => {
+            lock = false;
+            location?.replace(location?.href);
+        }
+        Modal?.error({
+            title: "系统错误",
+            content: "服务器连接失败,请检查网络配置并稍后刷新重试",
+            okText: "刷新",
+            onOk: clear,
+            onCancel: clear,
+            styles: {
+                mask: {
+                    WebkitBackdropFilter: "blur(10px)",
+                },
+            },
+        });
+    }
 }
 
 /**
