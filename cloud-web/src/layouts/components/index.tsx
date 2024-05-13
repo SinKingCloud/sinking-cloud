@@ -121,37 +121,35 @@ const Layout: React.FC<LayoutProps> = (props) => {
                 {(loading && <Loading/>) || <SkLayout>
                     <SkLayout.Sider className={sider} trigger={null} collapsible collapsed={collapsed}
                                     width={menuUnCollapsedWidth} collapsedWidth={menuCollapsedWidth} hidden={mobile}>
-                        {(mobile && <Drawer
-                                placement={"left"}
-                                closable={false}
-                                onClose={() => {
-                                    setOpen(false)
-                                }}
-                                open={open}
-                                width={menuUnCollapsedWidth} classNames={{body: drawMenu}}>
+                        {(mobile && <Drawer placement={"left"} closable={false} open={open} width={menuUnCollapsedWidth}
+                                            classNames={{body: drawMenu}}
+                                            onClose={() => {
+                                                setOpen(false)
+                                            }}>
                                 <Sider collapsed={collapsed}
-                                       onMenuClick={(item) => {
-                                           setOpen(false);
-                                           onMenuClick?.(item);
-                                       }} onLogoClick={onLogoClick} collapsedLogo={collapsedLogo}
                                        unCollapsedLogo={unCollapsedLogo}
                                        menuBottomBtnIcon={menuBottomBtnIcon}
                                        menuBottomBtnText={menuBottomBtnText}
                                        onMenuBottomBtnClick={onMenuBottomBtnClick}
-                                       menus={menus}/>
+                                       menus={menus}
+                                       onLogoClick={onLogoClick} collapsedLogo={collapsedLogo}
+                                       onMenuClick={(item) => {
+                                           setOpen(false);
+                                           onMenuClick?.(item);
+                                       }}/>
                             </Drawer>)
                             ||
                             <Sider collapsed={collapsed}
-                                   onMenuClick={(item) => {
-                                       onMenuClick?.(item);
-                                   }}
                                    onLogoClick={onLogoClick}
                                    collapsedLogo={collapsedLogo}
                                    unCollapsedLogo={unCollapsedLogo}
                                    menuBottomBtnIcon={menuBottomBtnIcon}
                                    menuBottomBtnText={menuBottomBtnText}
                                    onMenuBottomBtnClick={onMenuBottomBtnClick}
-                                   menus={menus}/>}
+                                   menus={menus}
+                                   onMenuClick={(item) => {
+                                       onMenuClick?.(item);
+                                   }}/>}
                     </SkLayout.Sider>
                     <SkLayout className={body}
                               style={{marginLeft: mobile ? 0 : (collapsed ? menuCollapsedWidth + "px" : menuUnCollapsedWidth + "px")}}>
@@ -164,11 +162,9 @@ const Layout: React.FC<LayoutProps> = (props) => {
                         <SkLayout.Content className={content}>
                             <Outlet/>
                         </SkLayout.Content>
-                        {
-                            props?.footer && <SkLayout.Footer className={footer}>
-                                <Footer> {props?.footer}</Footer>
-                            </SkLayout.Footer>
-                        }
+                        {props?.footer && <SkLayout.Footer className={footer}>
+                            <Footer> {props?.footer}</Footer>
+                        </SkLayout.Footer>}
                     </SkLayout>
                 </SkLayout>}
             </App>

@@ -22,8 +22,10 @@ export default () => {
      */
     const refreshWebUser = (callback: () => void = undefined) => {
         getWebUser().then((d) => {
-            setWeb(d);
-            callback?.();
+            if (d) {
+                setWeb(d);
+                callback?.();
+            }
         });
     }
 
@@ -43,8 +45,10 @@ export default () => {
      */
     const refreshSystemUser = (callback: () => void = undefined) => {
         getSystemUser().then((d) => {
-            setSystem(d);
-            callback?.();
+            if (d) {
+                setSystem(d);
+                callback?.();
+            }
         });
     }
 

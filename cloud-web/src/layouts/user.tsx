@@ -5,7 +5,7 @@ import defaultSettings from "@/../config/defaultSettings";
 import {Doc} from "@/components/icon";
 import {useModel} from "umi";
 import {useEffect, useState} from "react";
-import {deleteHeader} from "@/utils/auth";
+import {deleteHeader, getLoginToken} from "@/utils/auth";
 import {historyPush} from "@/utils/route";
 import request from "@/utils/request";
 
@@ -40,6 +40,9 @@ export default () => {
     const [loading, setLoading] = useState(true);
     const initUser = () => {
         setLoading(true);
+        if (getLoginToken() == "") {
+            historyPush("user.login")
+        }
         user?.getWebUser()?.then((u: any) => {
             user?.setWeb(u);
         })?.finally(() => {

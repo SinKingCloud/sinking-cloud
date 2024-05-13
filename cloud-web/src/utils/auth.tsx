@@ -15,7 +15,7 @@ export function setLoginToken(device: string, token: string) {
  * @returns {string}
  */
 export function getLoginToken() {
-    return localStorage.getItem('sinking-token');
+    return localStorage.getItem('sinking-token') || "";
 }
 
 /**
@@ -23,7 +23,7 @@ export function getLoginToken() {
  * @returns {string}
  */
 export function getLoginType() {
-    return localStorage.getItem('sinking-device');
+    return localStorage.getItem('sinking-device') || "";
 }
 
 /**
