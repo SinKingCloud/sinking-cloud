@@ -31,7 +31,7 @@ export const user = [
         component: "@/pages/user/index",
         title: "系统首页",
         name: "user.index",
-        icon: 'icon-doc',
+        icon: 'icon-application',
         hideInMenu: false,
     },
     {

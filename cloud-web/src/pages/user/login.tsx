@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {Body} from "@/layouts/components";
 import {createStyles, useResponsive} from "antd-style";
 import {App, Button, Checkbox, Col, Form, Input, Row, Tabs} from "antd";
@@ -6,12 +6,11 @@ import defaultSettings from "../../../config/defaultSettings";
 import {Variant} from "antd/es/form/hooks/useVariants";
 import {historyPush} from "@/utils/route";
 import {LeftOutlined} from "@ant-design/icons";
-// @ts-ignore
-import Script from 'react-load-script';
-import {webLogin} from "@/service/login";
+import {getSms, webLogin} from "@/service/login";
 import {setLoginToken} from "@/utils/auth";
 import {useModel} from "umi";
-
+import Captcha, {CaptchaRef} from "@/components/captcha";
+//@ts-ignore
 const useStyles = createStyles(({token, css, responsive}): any => {
     return {
         body: {
@@ -155,44 +154,29 @@ const useStyles = createStyles(({token, css, responsive}): any => {
             overflow: "hidden",
             marginTop: "-10px"
         },
+        sms: {
+            fontSize: "12px",
+            color: "gray",
+            cursor: "pointer",
+        }
     };
 });
 
 export default () => {
     /**
      * 样式表
-     */
-    const {
+     */const {
         styles: {
-            body,
-            main,
-            right,
-            left,
-            form,
-            logoContainer,
-            logo,
-            login,
-            tab,
-            input,
-            btn,
-            gray,
-            item,
-            leftBtn,
-            rightBtn,
-            leftBtn2,
-            rightBtn2,
-            sendSmsBtn,
-            findPwdTitle,
+            body, main, right, left, form, logoContainer, logo, login, tab, input, btn, gray, item,
+            leftBtn, rightBtn, leftBtn2, rightBtn2, findPwdTitle, sendSmsBtn, sms
         }
     } = useStyles();
-
     /**
      * 相关组件
      */
     const {message, modal} = App.useApp();
     const {mobile} = useResponsive();
     const user = useModel("user");
-
     /**
      * 找回密码panel
      */
@@ -203,19 +187,16 @@ export default () => {
     const showFindPwdPanel = () => {
         setLoginPanel(false);
     }
-
     /**
      * 显示验证码
      * @param callback 验证回调
      */
-    const showCaptcha = (callback: (res: any) => void = undefined) => {
+    const refCaptcha = useRef<CaptchaRef>()
+    // @ts-ignore
+    const show = (callback: (res: any) => void = undefined) => {
         // @ts-ignore
-        const captcha = new TencentCaptcha('2046626881', (res) => {
-            callback?.(res);
-        });
-        captcha?.show();
+        refCaptcha?.current?.show(callback);
     }
-
     /**
      * 密码登录
      * @param values 登录表单
@@ -226,9 +207,9 @@ export default () => {
             historyPush("user.index");
         });
     }
-    const pwdLoginOnFinish = (values) => {
+    const pwdLoginOnFinish = (values: any) => {
         setPwdLoginBtnLoading(true)
-        return showCaptcha(async (res) => {
+        return show(async (res) => {
             if (res?.ret == 0) {
                 await webLogin({
                     body: {
@@ -239,7 +220,7 @@ export default () => {
                     },
                     onSuccess: (r) => {
                         setLoginToken(mobile ? "mobile" : "pc", r?.data);
-                        message.success(r?.message);
+                        message?.success(r?.message);
                         checkJump();
                     },
                     onFail: (r) => {
@@ -254,13 +235,63 @@ export default () => {
             setPwdLoginBtnLoading(false);
         });
     }
-
+    /**
+     * 验证码登录
+     */
+    const [smsForm] = Form.useForm()
+    const [countdown, setCountdown] = useState(0); // 倒计时秒数
+    const [canGetCode, setCanGetCode] = useState(true); // 是否允许获取验证码
+    const [sent, setSent] = useState(false); // 标记验证码是否已发送
+    const startCountdown = () => {
+        let timeLeft = 60;
+        setCountdown(timeLeft);
+        const timer = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                setCountdown(0);
+                setCanGetCode(true); // 倒计时结束后允许重新获取验证码
+            } else {
+                setCountdown(timeLeft - 1);
+            }
+            timeLeft -= 1;
+        }, 1000);
+    };
+    const getCode = (phone: any) => {
+        if (phone == undefined || phone == "") {
+            return message?.error("请输入手机号")
+        }
+        // 如果不允许获取验证码，则直接返回
+        if (!canGetCode) return
+        show(async (res) => {
+            if (res?.ret == 0) {
+                await getSms({
+                    body: {
+                        token: res?.randstr,
+                        captcha: res?.ticket,
+                        phone: phone
+                    },
+                    onSuccess: (r) => {
+                        setSent(true)
+                        setCanGetCode(false)
+                        message?.success(r?.message)
+                        startCountdown()
+                    },
+                    onFail: (r) => {
+                        message?.error(r?.message)
+                        setCanGetCode(true); // 发送失败立即允许重新获取
+                        setSent(false)
+                    }
+                })
+            }
+        })
+    }
     useEffect(() => {
         checkJump();
     }, []);
 
-    return (<Body className={body} loading={false} breadCrumb={false} space={false}>
-            <Script url={"https://ssl.captcha.qq.com/TCaptcha.js"}/>
+    return (
+        <Body className={body} loading={false} breadCrumb={false} space={false}>
+            <Captcha ref={refCaptcha}/>
             <Row className={main}>
                 <Col xs={24} sm={24} md={11} className={left}>
                     <div className={form}>
@@ -276,18 +307,19 @@ export default () => {
                                     key: '1',
                                     label: '密码登录',
                                     children: <Form name="pwd_login" onFinish={pwdLoginOnFinish}>
-                                        <Form.Item name="account"
-                                                   className={item}
+                                        <Form.Item name="account" className={item}
                                                    rules={[{required: true, message: '请输入账号或手机号'}]}>
                                             <Input prefix={<div>
                                                 <span className={gray}>+86</span>
                                                 <span className={gray}>|</span>
                                             </div>} allowClear placeholder="请输入账号或手机号" className={input}
+                                                // @ts-ignore
                                                    variant={0 as Variant}/>
                                         </Form.Item>
                                         <Form.Item name="password" className={item}
                                                    rules={[{required: true, message: '请输入密码'}]}>
                                             <Input.Password placeholder="请输入密码" className={input}
+                                                            // @ts-ignore
                                                             variant={0 as Variant}/>
                                         </Form.Item>
                                         <Form.Item>
@@ -305,76 +337,92 @@ export default () => {
                                 {
                                     key: '2',
                                     label: '验证码登录',
-                                    children: <Form name="phone_login">
-                                        <Form.Item name="phone"
-                                                   className={item}
-                                                   rules={[{required: true, message: '请输入手机号'}]}>
-                                            <Input allowClear placeholder="请输入手机号" className={input}
-                                                   variant={0 as Variant}
-                                                   prefix={<div>
-                                                       <span className={gray}>+86</span>
-                                                       <span className={gray}>|</span>
-                                                   </div>}/>
-                                        </Form.Item>
-                                        <Form.Item name="code"
-                                                   className={item}
-                                                   rules={[{required: true, message: '请输入验证码'}]}>
-                                            <Input allowClear placeholder="请输入验证码" className={input}
-                                                   suffix={<a className={sendSmsBtn}>发送验证码</a>}
-                                                   variant={0 as Variant}/>
-                                        </Form.Item>
-                                        <Form.Item>
-                                            <Checkbox className={leftBtn} defaultChecked>下次自动登录</Checkbox>
-                                        </Form.Item>
-                                        <Form.Item>
-                                            <Button type="primary" htmlType="submit" block className={btn}
-                                                    onClick={() => {
-                                                        message?.success("success")
-                                                    }}>
-                                                登录/注册
-                                            </Button>
-                                        </Form.Item>
-                                    </Form>,
+                                    children:
+                                        <Form name="phone_login" form={smsForm} onFinish={pwdLoginOnFinish}>
+                                            <Form.Item name="phone" className={item}
+                                                       rules={[{required: true, message: '请输入手机号'}]}>
+                                                <Input allowClear placeholder="请输入手机号" className={input}
+                                                    // @ts-ignore
+                                                       variant={0 as Variant}
+                                                       prefix={<div>
+                                                           <span className={gray}>+86</span>
+                                                           <span className={gray}>|</span>
+                                                       </div>}/>
+                                            </Form.Item>
+                                            <Form.Item name="code" className={item}
+                                                       rules={[{required: true, message: '请输入验证码'}]}>
+                                                <Input allowClear placeholder="请输入验证码" className={input}
+                                                       suffix={canGetCode ? (
+                                                               <a className={sendSmsBtn}
+                                                                  onClick={() => getCode(smsForm.getFieldValue("phone"))}>
+                                                                   发送验证码
+                                                               </a>
+                                                           ) :
+                                                           (<span
+                                                               className={sent ? sms : sendSmsBtn}>{sent ? `${countdown}s后重新发送` : '发送验证码'}</span>)
+                                                       }
+                                                    // @ts-ignore
+                                                       variant={0 as Variant}/>
+                                            </Form.Item>
+                                            <Form.Item>
+                                                <Checkbox className={leftBtn} defaultChecked>下次自动登录</Checkbox>
+                                            </Form.Item>
+                                            <Form.Item>
+                                                <Button type="primary" htmlType="submit" block className={btn}
+                                                        loading={pwdLoginBtnLoading}>
+                                                    登录/注册
+                                                </Button>
+                                            </Form.Item>
+                                        </Form>,
                                 },
                             ]}/>) || <>
                                 <div className={findPwdTitle}>
                                     <h2 className={leftBtn2}>找回密码</h2>
                                     <h4 className={rightBtn2} onClick={showLoginPanel}><LeftOutlined/>返回登录</h4>
                                 </div>
-                                <Form name="find_pwd">
-                                    <Form.Item name="phone"
-                                               className={item}
+                                <Form name="phone_login" >
+                                    <Form.Item name="phone" className={item}
                                                rules={[{required: true, message: '请输入手机号'}]}>
-                                        <Input prefix={<div>
-                                            <span className={gray}>+86</span>
-                                            <span className={gray}>|</span>
-                                        </div>} allowClear placeholder="请输入手机号" className={input}
-                                               variant={0 as Variant}/>
+                                        <Input allowClear placeholder="请输入手机号" className={input}
+                                            // @ts-ignore
+                                               variant={0 as Variant}
+                                               prefix={<div>
+                                                   <span className={gray}>+86</span>
+                                                   <span className={gray}>|</span>
+                                               </div>}/>
                                     </Form.Item>
-                                    <Form.Item name="code"
-                                               className={item}
+                                    <Form.Item name="code" className={item}
                                                rules={[{required: true, message: '请输入验证码'}]}>
                                         <Input allowClear placeholder="请输入验证码" className={input}
-                                               suffix={<a className={sendSmsBtn}>发送验证码</a>}
+                                               suffix={canGetCode ? (
+                                                       <a className={sendSmsBtn}
+                                                          onClick={() => getCode(smsForm.getFieldValue("phone"))}>
+                                                           发送验证码
+                                                       </a>
+                                                   ) :
+                                                   (<span
+                                                       className={sent ? sms : sendSmsBtn}>{sent ? `${countdown}s后重新发送` : '发送验证码'}</span>)
+                                               }
+                                               // @ts-ignore
                                                variant={0 as Variant}/>
                                     </Form.Item>
                                     <Form.Item name="password" className={item}
                                                rules={[{required: true, message: '请输入新密码'}]}>
-                                        <Input.Password
-                                            placeholder="新密码(8-20位字母或数字符号)"
-                                            className={input}
-                                            variant={0 as Variant}
-                                        />
+                                        <Input.Password placeholder="新密码(8-20位字母或数字符号)" className={input}
+                                                        // @ts-ignore
+                                                        ariant={0 as Variant}/>
                                     </Form.Item>
                                     <Form.Item>
                                         <Checkbox className={leftBtn} defaultChecked>下次自动登录</Checkbox>
                                     </Form.Item>
                                     <Form.Item>
                                         <Button type="primary" htmlType="submit" block className={btn}>
-                                            确认
+                                            登录
                                         </Button>
                                     </Form.Item>
-                                </Form></>}
+                                </Form>,
+                            </>
+                            }
                         </div>
                     </div>
                 </Col>

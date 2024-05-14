@@ -110,7 +110,6 @@ export function getParentList(data: any[], name: string): any[] {
         return parentCache[name];
     }
     let parents: any[] = [];
-
     function findParent(data: any, name: string): boolean {
         if (data?.children && data?.children?.length > 0) {
             if (data.name === name) {

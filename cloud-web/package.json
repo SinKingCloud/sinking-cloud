@@ -2,13 +2,14 @@
   "private": true,
   "author": "",
   "scripts": {
-    "dev": "PORT=9001 umi dev",
+    "dev": "umi dev",
     "build": "umi build",
     "postinstall": "umi setup",
     "setup": "umi setup",
     "start": "npm run dev"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.3.7",
     "@umijs/plugins": "^4.1.1",
     "antd": "^5.14.1",
     "antd-style": "^3.6.1",
