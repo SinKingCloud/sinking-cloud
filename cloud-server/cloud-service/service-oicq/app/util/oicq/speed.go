@@ -48,9 +48,9 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					break
 				case QQMusic: //音乐加速
 					_, status = o.Mobile.Speed.QQMusicSign()
-					_, cookie, _, status = o.Mobile.Speed.Music(cookies[v], cookies[v+9999])
+					_, cookie, _, status = o.Mobile.Speed.Music(cookies[v], "")
 					if status == mobile.SpeedCookieExpire {
-						_, cookie, _, status = o.Mobile.Speed.Music("", cookies[v+9999])
+						_, cookie, _, status = o.Mobile.Speed.Music("", "")
 					}
 					break
 				case GameCenter: //游戏中心签到

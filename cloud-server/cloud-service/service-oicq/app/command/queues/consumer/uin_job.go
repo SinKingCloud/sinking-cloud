@@ -10,7 +10,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/web_uin"
-	cookie2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/web_uin/cookie"
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/web_uin/server"
 	uin2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/web_uin/uin"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/util/oicq"
@@ -326,10 +325,6 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uinInfo *model.AppUin, jobs []oicq.
 	err, musicCookie := web_uin.GetUinCookies(uinInfo.Uin, "y.qq.com", true)
 	if err == nil {
 		cookies[oicq.QQMusic] = musicCookie
-	}
-	uc, err := cookie2.GetIns().FindByStatusDomainOrderByIdWithCache(cookie2.Normal, "y.qq.com", false)
-	if err == nil && uc != nil {
-		cookies[oicq.QQMusic+9999] = "uin=" + uc.Uin + ";qm_keyst=" + str.NewStringTool(uc.Cookie).GetBetween("qm_keyst=", ";") + ";"
 	}
 	//登陆手机
 	err, loginResponse := cli.AutoLogin()
