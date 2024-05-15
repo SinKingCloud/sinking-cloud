@@ -10,7 +10,8 @@ import {getSms, webLogin} from "@/service/login";
 import {setLoginToken} from "@/utils/auth";
 import {useModel} from "umi";
 import Captcha, {CaptchaRef} from "@/components/captcha";
-//@ts-ignore
+import {NamePath} from "rc-field-form/es/interface";
+
 const useStyles = createStyles(({token, css, responsive}): any => {
     return {
         body: {
@@ -191,57 +192,59 @@ export default () => {
      * 显示验证码
      * @param callback 验证回调
      */
-    const refCaptcha = useRef<CaptchaRef>()
-    // @ts-ignore
-    const show = (callback: (res: any) => void = undefined) => {
-        // @ts-ignore
-        refCaptcha?.current?.show(callback);
-    }
+    const captcha = useRef<CaptchaRef>({});
     /**
      * 密码登录
      * @param values 登录表单
      */
     const [pwdLoginBtnLoading, setPwdLoginBtnLoading] = useState(false);
+
+    /**
+     * 验证码登录
+     */
+    const [smsForm] = Form.useForm();
+    /**
+     * 登录处理
+     */
     const checkJump = () => {
         user?.refreshWebUser(() => {
             historyPush("user.index");
         });
     }
-    const pwdLoginOnFinish = (values: any) => {
-        setPwdLoginBtnLoading(true)
-        return show(async (res) => {
-            if (res?.ret == 0) {
-                await webLogin({
-                    body: {
-                        token: res?.randstr,
-                        captcha: res?.ticket,
-                        device: "pc",
-                        ...values
-                    },
-                    onSuccess: (r) => {
-                        setLoginToken(mobile ? "mobile" : "pc", r?.data);
-                        message?.success(r?.message);
-                        checkJump();
-                    },
-                    onFail: (r) => {
-                        modal.error({
-                            title: '登录失败',
-                            content: r?.message,
-                            okText: "确认"
-                        })
-                    }
-                })
-            }
+    const loginOnFinish = (values: any) => {
+        setPwdLoginBtnLoading(true);
+        captcha?.current?.Show?.(async (res) => {
+            await webLogin({
+                body: {
+                    token: res?.randstr,
+                    captcha: res?.ticket,
+                    device: "pc",
+                    ...values
+                },
+                onSuccess: (r) => {
+                    setLoginToken(mobile ? "mobile" : "pc", r?.data);
+                    message?.success(r?.message);
+                    checkJump();
+                },
+                onFail: (r) => {
+                    modal.error({
+                        title: '登录失败',
+                        content: r?.message,
+                        okText: "确认"
+                    })
+                }
+            });
+            setPwdLoginBtnLoading(false);
+        }, () => {
+            message?.warning("请完成验证码认证");
             setPwdLoginBtnLoading(false);
         });
     }
+
     /**
-     * 验证码登录
+     * 验证码处理
      */
-    const [smsForm] = Form.useForm()
     const [countdown, setCountdown] = useState(0); // 倒计时秒数
-    const [canGetCode, setCanGetCode] = useState(true); // 是否允许获取验证码
-    const [sent, setSent] = useState(false); // 标记验证码是否已发送
     const startCountdown = () => {
         let timeLeft = 60;
         setCountdown(timeLeft);
@@ -249,7 +252,6 @@ export default () => {
             if (timeLeft <= 0) {
                 clearInterval(timer);
                 setCountdown(0);
-                setCanGetCode(true); // 倒计时结束后允许重新获取验证码
             } else {
                 setCountdown(timeLeft - 1);
             }
@@ -260,38 +262,45 @@ export default () => {
         if (phone == undefined || phone == "") {
             return message?.error("请输入手机号")
         }
-        // 如果不允许获取验证码，则直接返回
-        if (!canGetCode) return
-        show(async (res) => {
-            if (res?.ret == 0) {
-                await getSms({
-                    body: {
-                        token: res?.randstr,
-                        captcha: res?.ticket,
-                        phone: phone
-                    },
-                    onSuccess: (r) => {
-                        setSent(true)
-                        setCanGetCode(false)
-                        message?.success(r?.message)
-                        startCountdown()
-                    },
-                    onFail: (r) => {
-                        message?.error(r?.message)
-                        setCanGetCode(true); // 发送失败立即允许重新获取
-                        setSent(false)
-                    }
-                })
-            }
+        if (countdown > 0) return
+        captcha?.current?.Show?.(async (res) => {
+            setCountdown(-1);
+            await getSms({
+                body: {
+                    token: res?.randstr,
+                    captcha: res?.ticket,
+                    phone: phone
+                },
+                onSuccess: (r) => {
+                    message?.success(r?.message)
+                    startCountdown()
+                },
+                onFail: (r) => {
+                    message?.error(r?.message)
+                }
+            })
+        }, () => {
+            message?.warning("请完成验证码认证")
         })
     }
+    const getSendBtn = (phone: string) => {
+        return <>
+            {countdown <= 0 && <a className={sendSmsBtn}
+                                  onClick={() => getCode(phone)}>
+                {countdown < 0 ? '发送中...' : '发送验证码'}
+            </a>}
+            {countdown > 0 && <span
+                className={countdown > 0 ? sms : sendSmsBtn}>{countdown > 0 && `${countdown}s后重新发送`}</span>}
+        </>;
+    }
+
     useEffect(() => {
         checkJump();
     }, []);
 
     return (
         <Body className={body} loading={false} breadCrumb={false} space={false}>
-            <Captcha ref={refCaptcha}/>
+            <Captcha ref={captcha}/>
             <Row className={main}>
                 <Col xs={24} sm={24} md={11} className={left}>
                     <div className={form}>
@@ -306,20 +315,18 @@ export default () => {
                                 {
                                     key: '1',
                                     label: '密码登录',
-                                    children: <Form name="pwd_login" onFinish={pwdLoginOnFinish}>
+                                    children: <Form name="pwd_login" onFinish={loginOnFinish}>
                                         <Form.Item name="account" className={item}
                                                    rules={[{required: true, message: '请输入账号或手机号'}]}>
                                             <Input prefix={<div>
                                                 <span className={gray}>+86</span>
                                                 <span className={gray}>|</span>
                                             </div>} allowClear placeholder="请输入账号或手机号" className={input}
-                                                // @ts-ignore
                                                    variant={0 as Variant}/>
                                         </Form.Item>
                                         <Form.Item name="password" className={item}
                                                    rules={[{required: true, message: '请输入密码'}]}>
                                             <Input.Password placeholder="请输入密码" className={input}
-                                                            // @ts-ignore
                                                             variant={0 as Variant}/>
                                         </Form.Item>
                                         <Form.Item>
@@ -338,11 +345,10 @@ export default () => {
                                     key: '2',
                                     label: '验证码登录',
                                     children:
-                                        <Form name="phone_login" form={smsForm} onFinish={pwdLoginOnFinish}>
+                                        <Form name="phone_login" form={smsForm} onFinish={loginOnFinish}>
                                             <Form.Item name="phone" className={item}
                                                        rules={[{required: true, message: '请输入手机号'}]}>
                                                 <Input allowClear placeholder="请输入手机号" className={input}
-                                                    // @ts-ignore
                                                        variant={0 as Variant}
                                                        prefix={<div>
                                                            <span className={gray}>+86</span>
@@ -352,16 +358,9 @@ export default () => {
                                             <Form.Item name="code" className={item}
                                                        rules={[{required: true, message: '请输入验证码'}]}>
                                                 <Input allowClear placeholder="请输入验证码" className={input}
-                                                       suffix={canGetCode ? (
-                                                               <a className={sendSmsBtn}
-                                                                  onClick={() => getCode(smsForm.getFieldValue("phone"))}>
-                                                                   发送验证码
-                                                               </a>
-                                                           ) :
-                                                           (<span
-                                                               className={sent ? sms : sendSmsBtn}>{sent ? `${countdown}s后重新发送` : '发送验证码'}</span>)
-                                                       }
-                                                    // @ts-ignore
+                                                       suffix={() => {
+                                                           return getSendBtn(smsForm.getFieldValue("phone" as NamePath))
+                                                       }}
                                                        variant={0 as Variant}/>
                                             </Form.Item>
                                             <Form.Item>
@@ -380,11 +379,10 @@ export default () => {
                                     <h2 className={leftBtn2}>找回密码</h2>
                                     <h4 className={rightBtn2} onClick={showLoginPanel}><LeftOutlined/>返回登录</h4>
                                 </div>
-                                <Form name="phone_login" >
+                                <Form name="phone_login">
                                     <Form.Item name="phone" className={item}
                                                rules={[{required: true, message: '请输入手机号'}]}>
                                         <Input allowClear placeholder="请输入手机号" className={input}
-                                            // @ts-ignore
                                                variant={0 as Variant}
                                                prefix={<div>
                                                    <span className={gray}>+86</span>
@@ -394,22 +392,14 @@ export default () => {
                                     <Form.Item name="code" className={item}
                                                rules={[{required: true, message: '请输入验证码'}]}>
                                         <Input allowClear placeholder="请输入验证码" className={input}
-                                               suffix={canGetCode ? (
-                                                       <a className={sendSmsBtn}
-                                                          onClick={() => getCode(smsForm.getFieldValue("phone"))}>
-                                                           发送验证码
-                                                       </a>
-                                                   ) :
-                                                   (<span
-                                                       className={sent ? sms : sendSmsBtn}>{sent ? `${countdown}s后重新发送` : '发送验证码'}</span>)
-                                               }
-                                               // @ts-ignore
+                                               suffix={() => {
+                                                   return getSendBtn(smsForm.getFieldValue("phone" as NamePath))
+                                               }}
                                                variant={0 as Variant}/>
                                     </Form.Item>
                                     <Form.Item name="password" className={item}
                                                rules={[{required: true, message: '请输入新密码'}]}>
                                         <Input.Password placeholder="新密码(8-20位字母或数字符号)" className={input}
-                                                        // @ts-ignore
                                                         ariant={0 as Variant}/>
                                     </Form.Item>
                                     <Form.Item>

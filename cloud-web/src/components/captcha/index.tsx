@@ -1,35 +1,37 @@
 import React from "react";
 //@ts-ignore
 import Script from 'react-load-script';
-export type CaptchaProps = {
 
-};
+export type CaptchaProps = {};
+
 export interface CaptchaRef {
-    show?: (callback: (res: any) => void) => void;
+    Show?: (onSuccess: (res: any) => void, onFail: (res: any) => void) => void;
 }
+
 const Captcha = React.forwardRef<CaptchaRef, CaptchaProps>((props, ref) => {
 
     /**
      * 显示验证码
-     * @param callback 验证回调
-     * @param onSuccess
-     * @param onFail
+     * @param onSuccess 成功回调
+     * @param onFail 失败回调
      */
+    const show = (onSuccess: (res: any) => void = undefined, onFail: (res: any) => void = undefined) => {
         // @ts-ignore
-    const show = (callback: (res: any) => void = undefined,onSuccess: (res: any) => void = undefined,onFail: (res: any) => void = undefined) => {
-            // @ts-ignore
-            const captcha = new TencentCaptcha('2046626881', (res) => {
-                callback?.(res);
-                if(res.set == 0){
-                    onSuccess?.(res);
-                    onFail?.(res);
-                }
-            });
-            captcha?.show();
-        }
+        const captcha = new TencentCaptcha('2046626881', (res) => {
+            if (res.ret == 0) {
+                onSuccess?.(res);
+
+            } else {
+                onFail?.(res);
+            }
+        });
+        captcha?.show();
+    }
+
     React.useImperativeHandle(ref, () => ({
-        show: show,
+        Show: show,
     }));
+
     return (
         <Script url={"https://ssl.captcha.qq.com/TCaptcha.js"}/>
     );
