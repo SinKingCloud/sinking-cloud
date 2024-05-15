@@ -2,13 +2,11 @@ import React from "react";
 //@ts-ignore
 import Script from 'react-load-script';
 
-export type CaptchaProps = {};
-
 export interface CaptchaRef {
     Show?: (onSuccess: (res: any) => void, onFail: (res: any) => void) => void;
 }
 
-const Captcha = React.forwardRef<CaptchaRef, CaptchaProps>((props, ref) => {
+const Captcha = React.forwardRef<CaptchaRef>((props, ref) => {
 
     /**
      * 显示验证码

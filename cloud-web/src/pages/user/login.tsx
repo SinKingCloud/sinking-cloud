@@ -9,8 +9,10 @@ import {LeftOutlined} from "@ant-design/icons";
 import {getSms, webLogin} from "@/service/login";
 import {setLoginToken} from "@/utils/auth";
 import {useModel} from "umi";
-import Captcha, {CaptchaRef} from "@/components/captcha";
+import {Captcha} from "@/components";
 import {NamePath} from "rc-field-form/es/interface";
+import {CaptchaRef} from "@/components/captcha";
+import {SiderProps} from "@/layouts/components/sider";
 
 const useStyles = createStyles(({token, css, responsive}): any => {
     return {
@@ -283,10 +285,10 @@ export default () => {
             message?.warning("请完成验证码认证")
         })
     }
-    const getSendBtn = (phone: string) => {
+    const SendSms: React.FC<{ form?: any }> = (props) => {
         return <>
             {countdown <= 0 && <a className={sendSmsBtn}
-                                  onClick={() => getCode(phone)}>
+                                  onClick={() => getCode(props?.form?.getFieldValue("phone"))}>
                 {countdown < 0 ? '发送中...' : '发送验证码'}
             </a>}
             {countdown > 0 && <span
@@ -315,6 +317,7 @@ export default () => {
                                 {
                                     key: '1',
                                     label: '密码登录',
+                                    forceRender: true,
                                     children: <Form name="pwd_login" onFinish={loginOnFinish}>
                                         <Form.Item name="account" className={item}
                                                    rules={[{required: true, message: '请输入账号或手机号'}]}>
@@ -344,6 +347,7 @@ export default () => {
                                 {
                                     key: '2',
                                     label: '验证码登录',
+                                    forceRender: true,
                                     children:
                                         <Form name="phone_login" form={smsForm} onFinish={loginOnFinish}>
                                             <Form.Item name="phone" className={item}
@@ -358,9 +362,8 @@ export default () => {
                                             <Form.Item name="code" className={item}
                                                        rules={[{required: true, message: '请输入验证码'}]}>
                                                 <Input allowClear placeholder="请输入验证码" className={input}
-                                                       suffix={() => {
-                                                           return getSendBtn(smsForm.getFieldValue("phone" as NamePath))
-                                                       }}
+                                                       suffix={<SendSms
+                                                           form={smsForm}/>}
                                                        variant={0 as Variant}/>
                                             </Form.Item>
                                             <Form.Item>
@@ -392,9 +395,7 @@ export default () => {
                                     <Form.Item name="code" className={item}
                                                rules={[{required: true, message: '请输入验证码'}]}>
                                         <Input allowClear placeholder="请输入验证码" className={input}
-                                               suffix={() => {
-                                                   return getSendBtn(smsForm.getFieldValue("phone" as NamePath))
-                                               }}
+                                               suffix={<SendSms form={smsForm}/>}
                                                variant={0 as Variant}/>
                                     </Form.Item>
                                     <Form.Item name="password" className={item}
