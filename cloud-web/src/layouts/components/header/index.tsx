@@ -8,7 +8,7 @@ const useStyles = createStyles((): any => {
         },
         left: {
             float: "left",
-            zIndex: 2
+            zIndex: 2,
         },
     };
 });

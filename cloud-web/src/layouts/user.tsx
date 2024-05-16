@@ -2,15 +2,13 @@ import React, {useEffect} from "react";
 import Layout from "@/layouts/components";
 import {getUserMenuItems} from "@/utils/route";
 import defaultSettings from "@/../config/defaultSettings";
-import {Doc, Icon, Information, KeFu, Notice} from "@/components/icon";
-import {useModel, history} from "umi";
+import {Doc, Icon, FeedBack, Customer, Notice, Bottom, Search} from "@/components/icon";
+import {useModel} from "umi";
 import {useState} from "react";
 import {deleteHeader, getLoginToken} from "@/utils/auth";
 import {historyPush} from "@/utils/route";
 import request from "@/utils/request";
-import {Avatar, Dropdown, message, Select, Space} from "antd";
-import {outLogin} from "@/service/login";
-import {DownOutlined} from "@ant-design/icons";
+import {Avatar, Input, Popover, Tooltip} from "antd";
 import {createStyles, useResponsive} from "antd-style";
 
 /**
@@ -26,33 +24,131 @@ const check = async (ctx: any, next: any) => {
     }
 }
 request.use(check);
+
 /**
- * 样式
+ * 左侧部分组件
+ * @constructor
  */
-const useStyles = createStyles((): any => {
-    return {
-        icon: {
-            fontSize: "20px",
-            marginRight: "15px",
-            cursor: "pointer",
-        },
-        img: {
-            marginBottom: "10px",
-        },
-        drop: {
-            marginLeft: "8px",
-            fontSize: "14px",
-            color: "gray",
-            marginRight: "20px",
-        },
-        list: {
-            backgroundColor: "#fff"
-        },
-        listItem: {
-            cursor: "pointer"
+const LeftTop: React.FC = () => {
+    /**
+     * 样式
+     */
+    const useStyles = createStyles(({css}): any => {
+        return {
+            search: css`
+                margin-left: 5px;
+                height: 30px;
+                line-height: 22px;
+                width: 90px;
+                transition: background-color, width 0.3s ease !important;
+                border-radius: 15px;
+
+                :hover {
+                    border-color: #d9d9d9 !important;
+                    width: 180px;
+                }
+            `
+        };
+    });
+    const {styles: {search}} = useStyles();
+    const {mobile} = useResponsive();
+
+    /**
+     * 显示控制
+     */
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState("");
+
+    return <>
+        {!mobile &&
+            <>
+                <Popover autoAdjustOverflow={false}
+                         placement="bottomLeft"
+                         content={<div style={{width: "400px", height: "300px"}}>
+                             测试内容
+                         </div>} trigger="focus" open={open} onOpenChange={setOpen}>
+                    <Input className={search} value={value} prefix={<Icon type={Search}/>} placeholder="搜索菜单"
+                           onChange={(e) => {
+                               setValue(e?.target?.value);
+                               setOpen(e?.target?.value != "")
+                           }}/>
+                </Popover>
+            </>
         }
-    };
-});
+    </>
+}
+
+/**
+ * 右侧部分组件
+ * @constructor
+ */
+const RightTop: React.FC = () => {
+    /**
+     * 全局数据
+     */
+    const user = useModel("user");//用户信息
+
+    /**
+     * 样式
+     */
+    const useStyles = createStyles(({css}): any => {
+        return {
+            icon: {
+                fontSize: "17px",
+                padding: "5px",
+                marginRight: "5px",
+                cursor: "pointer",
+                borderRadius: "5px",
+                transition: "background-color 0.5s ease",
+                ":hover": {
+                    backgroundColor: "rgba(0, 0, 0, 0.1)",
+                }
+            },
+            img: {
+                marginBottom: "5px",
+                cursor: "pointer",
+            },
+            nickname: {
+                marginLeft: "3px",
+                fontSize: "13px",
+                color: "rgb(122,122,122)",
+                fontWeight: "bold",
+                cursor: "pointer",
+            },
+            profile: css`
+                margin-left: 10px;
+                margin-right: 20px;
+
+                .anticon {
+                    margin-left: 2px;
+                    font-size: 10px;
+                }
+            `
+        };
+    });
+    const {styles: {icon, img, nickname, profile}} = useStyles();
+
+    return <>
+        <Tooltip title="我要反馈">
+            <Icon type={FeedBack} className={icon}/>
+        </Tooltip>
+        <Tooltip title="在线客服">
+            <Icon type={Customer} className={icon}/>
+        </Tooltip>
+        <Tooltip title="站内消息">
+            <Icon type={Notice} className={icon}/>
+        </Tooltip>
+        <Popover className={profile} autoAdjustOverflow={false} placement="bottomRight"
+                 content={<div style={{width: "250px", height: "300px"}}>
+                     测试内容
+                 </div>}>
+            <Avatar className={img} src={user?.web?.avatar}/>
+            <span className={nickname}>{user?.web?.nick_name || "未设置"}</span>
+            <Icon type={Bottom}/>
+        </Popover>
+    </>
+}
+
 /**
  * 用户系统
  */
@@ -61,10 +157,9 @@ export default () => {
     /**
      * 全局信息
      */
-    const {styles: {icon, img, drop}} = useStyles();
     const web = useModel("web");//网站信息
     const user = useModel("user");//用户信息
-    const {mobile} = useResponsive()
+
     /**
      * 初始化用户信息
      */
@@ -72,7 +167,8 @@ export default () => {
     const initUser = () => {
         setLoading(true);
         if (getLoginToken() == "") {
-            historyPush("user.login")
+            historyPush("user.login");
+            return;
         }
         user?.getWebUser()?.then((u: any) => {
             user?.setWeb(u);
@@ -80,75 +176,19 @@ export default () => {
             setLoading(false);
         });
     }
-
-    const [menu, setMenu] = useState<any>()
-    const initMenu = ()=>{
-        const userMenu = getUserMenuItems();
-        setMenu(userMenu)
-    }
     /**
      * 搜索菜单栏
      */
     useEffect(() => {
         initUser();
-        initMenu()
     }, []);
 
     return (
         <Layout loading={loading}
-                menus={menu}
+                menus={getUserMenuItems()}
                 footer={<>©{new Date().getFullYear()} All Right Revered {web?.info?.name || defaultSettings?.title}</>}
-                headerLeft={<>
-                    {!mobile &&
-                        <Select
-                            showSearch
-                            style={{width: 200}}
-                            placeholder="请选择菜单"
-                            optionFilterProp="label"
-                            filterOption={(input, option) => {
-                                return option?.props?.label?.toUpperCase().indexOf(input.toUpperCase()) >= 0
-                            }}
-                            options={menu}
-                        />
-                    }
-                </>}
-                headerRight={
-                    <>
-                        <Icon type={Information} className={icon}/>
-                        <Icon type={KeFu} className={icon}/>
-                        <Icon type={Notice} className={icon}/>
-                        <Avatar size="large" className={img} src={user?.web?.avatar}/>
-                        <Dropdown className={drop} trigger={["click"]} overlayStyle={{width: "max-content"}}
-                                  arrow={true}
-                                  placement={"bottomRight"} menu={{
-                            items: [{
-                                key: '1',
-                                label: (
-                                    <a onClick={async () => {
-                                        await outLogin({
-                                            onSuccess: (r) => {
-                                                if (r?.code === 200) {
-                                                    message?.success(r?.message)
-                                                    localStorage.removeItem("sinking-token")
-                                                }
-                                            },
-                                            onFail: (r) => {
-                                                message?.error(r?.message)
-                                            }
-                                        })
-                                        history.push("/user/login")
-                                    }}>退出登录</a>
-                                )
-                            }]
-                        }}>
-                            <a onClick={(e) => e.preventDefault()}>
-                                <Space>
-                                    {user?.web?.nick_name || "未设置"}
-                                    <DownOutlined/>
-                                </Space>
-                            </a>
-                        </Dropdown>
-                    </>}
+                headerLeft={<LeftTop/>}
+                headerRight={<RightTop/>}
                 menuBottomBtnIcon={Doc}
                 menuBottomBtnText={"开发文档"}
                 onMenuBottomBtnClick={() => {

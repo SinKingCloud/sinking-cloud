@@ -8,6 +8,8 @@ import {Outlet, useModel} from "umi";
 import {MenuFoldOutlined, MenuUnfoldOutlined} from "@ant-design/icons";
 import Loading from "@/loading"
 import {App, Button, ConfigProvider, Drawer, Layout as SkLayout} from "antd";
+import zhCN from 'antd/locale/zh_CN';
+import 'dayjs/locale/zh-cn';
 
 const useLayoutStyles = createStyles((): any => {
     return {
@@ -116,7 +118,7 @@ const Layout: React.FC<LayoutProps> = (props) => {
     }
 
     return (
-        <ConfigProvider theme={systemTheme?.themes}>
+        <ConfigProvider theme={systemTheme?.themes} locale={zhCN}>
             <App>
                 {(loading && <Loading/>) || <SkLayout>
                     <SkLayout.Sider className={sider} trigger={null} collapsible collapsed={collapsed}

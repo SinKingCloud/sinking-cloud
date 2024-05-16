@@ -4,6 +4,8 @@ import {ConfigProvider, Layout} from "antd";
 import {createStyles} from "antd-style";
 import {Spin, Space, Breadcrumb, App} from "antd";
 import {getCurrentMenus, getFirstMenuWithoutChildren, getParentList, historyPush} from "@/utils/route";
+import zhCN from 'antd/locale/zh_CN';
+import 'dayjs/locale/zh-cn';
 
 const useStyles = createStyles(({token}): any => {
     return {
@@ -95,7 +97,7 @@ const Body: React.FC<BodyProps> = (props) => {
     /**
      * 页面容器
      */
-    return <ConfigProvider theme={systemTheme?.themes}>
+    return <ConfigProvider theme={systemTheme?.themes} locale={zhCN}>
         <App>
             {(loading && <Spin spinning={true} size="large" className={load}></Spin>) ||
                 <Layout style={style}>
