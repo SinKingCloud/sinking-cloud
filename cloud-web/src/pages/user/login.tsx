@@ -10,9 +10,7 @@ import {getSms, webLogin} from "@/service/login";
 import {setLoginToken} from "@/utils/auth";
 import {useModel} from "umi";
 import {Captcha} from "@/components";
-import {NamePath} from "rc-field-form/es/interface";
 import {CaptchaRef} from "@/components/captcha";
-import {SiderProps} from "@/layouts/components/sider";
 
 const useStyles = createStyles(({token, css, responsive}): any => {
     return {
