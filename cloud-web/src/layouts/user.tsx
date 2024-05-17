@@ -2,7 +2,8 @@ import React, {useEffect} from "react";
 import Layout from "@/layouts/components";
 import {getUserMenuItems} from "@/utils/route";
 import defaultSettings from "@/../config/defaultSettings";
-import {Doc, Icon, FeedBack, Customer, Notice, Bottom, Search} from "@/components/icon";
+import {Doc, FeedBack, Customer, Notice, Bottom, Search, Light, Dark} from "@/components/icon";
+import {Icon} from "@/components";
 import {useModel} from "umi";
 import {useState} from "react";
 import {deleteHeader, getLoginToken} from "@/utils/auth";
@@ -42,6 +43,7 @@ const LeftTop: React.FC = () => {
                 width: 90px;
                 transition: background-color, width 0.3s ease !important;
                 border-radius: 15px;
+                font-size: 12px;
 
                 :hover {
                     border-color: #d9d9d9 !important;
@@ -87,6 +89,7 @@ const RightTop: React.FC = () => {
      * 全局数据
      */
     const user = useModel("user");//用户信息
+    const theme = useModel("theme");//主题信息
 
     /**
      * 样式
@@ -95,7 +98,7 @@ const RightTop: React.FC = () => {
         return {
             icon: {
                 fontSize: "17px",
-                padding: "5px",
+                padding: "7px",
                 marginRight: "5px",
                 cursor: "pointer",
                 borderRadius: "5px",
@@ -106,14 +109,12 @@ const RightTop: React.FC = () => {
             },
             img: {
                 marginBottom: "5px",
-                cursor: "pointer",
             },
             nickname: {
                 marginLeft: "3px",
                 fontSize: "13px",
                 color: "rgb(122,122,122)",
                 fontWeight: "bold",
-                cursor: "pointer",
             },
             profile: css`
                 margin-left: 10px;
@@ -123,12 +124,24 @@ const RightTop: React.FC = () => {
                     margin-left: 2px;
                     font-size: 10px;
                 }
+            `,
+            pop: css`
+                display: initial;
+                padding: 11px 5px;
+                border-radius: 10px;
+                transition: background-color 0.5s ease;
+                cursor: pointer;
             `
         };
     });
-    const {styles: {icon, img, nickname, profile}} = useStyles();
+    const {styles: {icon, img, nickname, profile, pop}} = useStyles();
 
     return <>
+        <Tooltip title={theme?.isDarkTheme() ? "暗夜模式" : "日间模式"}>
+            <Icon type={theme?.isDarkTheme() ? Dark : Light} className={icon} onClick={() => {
+                theme?.toggle?.();
+            }}/>
+        </Tooltip>
         <Tooltip title="我要反馈">
             <Icon type={FeedBack} className={icon}/>
         </Tooltip>
@@ -142,9 +155,13 @@ const RightTop: React.FC = () => {
                  content={<div style={{width: "250px", height: "300px"}}>
                      测试内容
                  </div>}>
-            <Avatar className={img} src={user?.web?.avatar}/>
-            <span className={nickname}>{user?.web?.nick_name || "未设置"}</span>
-            <Icon type={Bottom}/>
+            <div className={pop}>
+                <Avatar className={img} src={user?.web?.avatar}>
+                    {(user?.web?.nick_name || "未设置")[0]}
+                </Avatar>
+                <span className={nickname}>{user?.web?.nick_name || "未设置"}</span>
+                <Icon type={Bottom}/>
+            </div>
         </Popover>
     </>
 }
