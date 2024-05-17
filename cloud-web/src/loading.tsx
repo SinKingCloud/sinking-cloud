@@ -1,8 +1,11 @@
 import React from "react";
 import {createStyles} from "antd-style";
-import {Spin} from "antd";
+import {App, ConfigProvider, Spin} from "antd";
+import {useModel} from "umi";
+import zhCN from 'antd/locale/zh_CN';
+import 'dayjs/locale/zh-cn';
 
-const useStyles = createStyles(({token}): any => {
+const useStyles = createStyles((): any => {
     return {
         body: {
             width: "100%",
@@ -14,7 +17,12 @@ const useStyles = createStyles(({token}): any => {
 
 export default () => {
     const {styles: {body}} = useStyles();
+    const systemTheme = useModel("theme");
     return (
-        <Spin size="large" className={body}/>
+        <ConfigProvider theme={systemTheme?.themes} locale={zhCN}>
+            <App>
+                <Spin size="large" className={body}/>
+            </App>
+        </ConfigProvider>
     );
 };

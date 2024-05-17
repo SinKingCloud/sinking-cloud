@@ -178,6 +178,7 @@ export default () => {
     const {message, modal} = App.useApp();
     const {mobile} = useResponsive();
     const user = useModel("user");
+    const theme = useModel("theme");
     /**
      * 找回密码panel
      */
@@ -218,7 +219,7 @@ export default () => {
                 body: {
                     token: res?.randstr,
                     captcha: res?.ticket,
-                    device: "pc",
+                    device: mobile ? "mobile" : "pc",
                     ...values
                 },
                 onSuccess: (r) => {
@@ -299,7 +300,7 @@ export default () => {
     }, []);
 
     return (
-        <Body className={body} loading={false} breadCrumb={false} space={false}>
+        <Body className={body} themes={theme?.getLightTheme()} loading={false} breadCrumb={false} space={false}>
             <Captcha ref={captcha}/>
             <Row className={main}>
                 <Col xs={24} sm={24} md={11} className={left}>

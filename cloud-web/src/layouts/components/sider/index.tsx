@@ -154,10 +154,10 @@ const Sider: React.FC<SiderProps> = (props) => {
                 onLogoClick?.();
             }}>
                 {(mobile || (!mobile && !collapsed)) &&
-                    unCollapsedLogo?.(systemTheme?.themes?.mode == "light")
+                    unCollapsedLogo?.(systemTheme?.isLightTheme())
                 }
                 {!mobile && collapsed &&
-                    collapsedLogo?.(systemTheme?.themes?.mode == "light")
+                    collapsedLogo?.(systemTheme?.isLightTheme())
                 }
             </Layout.Header>
             <Layout.Content>

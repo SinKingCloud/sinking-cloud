@@ -40,6 +40,7 @@ export type BodyProps = {
     style?: any;//样式
     className?: any;//样式名
     children?: any;//子内容
+    themes?: any;//主题
 };
 /**
  * 页面主体部分
@@ -47,7 +48,7 @@ export type BodyProps = {
  * @constructor
  */
 const Body: React.FC<BodyProps> = (props) => {
-    const {children, loading, style, className, space = true, breadCrumb = true} = props;
+    const {children, loading, style, className, space = true, breadCrumb = true, themes = undefined} = props;
     const {styles: {body, load, gutter, bread, breadStyle}} = useStyles();
     const systemTheme = useModel("theme");
 
@@ -97,7 +98,7 @@ const Body: React.FC<BodyProps> = (props) => {
     /**
      * 页面容器
      */
-    return <ConfigProvider theme={systemTheme?.themes} locale={zhCN}>
+    return <ConfigProvider theme={themes ? themes : systemTheme?.themes} locale={zhCN}>
         <App>
             {(loading && <Spin spinning={true} size="large" className={load}></Spin>) ||
                 <Layout style={style}>

@@ -36,12 +36,20 @@ const getDarkTheme = (): any => {
 }
 
 export default () => {
-    const [themes, setThemes] = useState<any>(getLightTheme());
+    const [themes, setThemes] = useState<any>(localStorage?.getItem("theme") == "light" ? getLightTheme() : getDarkTheme());
     const setLightTheme = () => {
         setThemes(getLightTheme());
+        localStorage?.setItem("theme", "light");
     }
     const setDarkTheme = () => {
         setThemes(getDarkTheme());
+        localStorage?.setItem("theme", "dark");
+    }
+    const isLightTheme = () => {
+        return themes?.mode == 'light';
+    }
+    const isDarkTheme = () => {
+        return themes?.mode == 'dark';
     }
     const toggle = () => {
         if ((themes?.mode || 'light') == 'light') {
@@ -54,6 +62,10 @@ export default () => {
         themes,
         toggle,
         setLightTheme,
-        setDarkTheme
+        setDarkTheme,
+        isLightTheme,
+        isDarkTheme,
+        getDarkTheme,
+        getLightTheme
     };
 };

@@ -46,6 +46,7 @@ const useLayoutStyles = createStyles((): any => {
             boxShadow: "0 2px 8px 0 rgba(29, 35, 41, 0.05)",
             position: "sticky",
             top: 0,
+            userSelect: "none",
         },
         content: {
             minHeight: "calc(100vh - 110px)",
