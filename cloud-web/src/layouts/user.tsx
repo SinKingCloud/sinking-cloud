@@ -219,8 +219,9 @@ const RightTop: React.FC = () => {
                 marginTop: 18,
                 marginBottom: 10
             },
-            regTime: {},
-
+            regTime: {
+                fontSize: "11px",
+            },
             menu: {
                 listStyle: "none",
                 padding: 0,
