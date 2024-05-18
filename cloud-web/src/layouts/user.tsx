@@ -2,7 +2,20 @@ import React, {useEffect} from "react";
 import Layout from "@/layouts/components";
 import {getUserMenuItems} from "@/utils/route";
 import defaultSettings from "@/../config/defaultSettings";
-import {Doc, FeedBack, Customer, Notice, Bottom, Search, Light, Dark} from "@/components/icon";
+import {
+    Doc,
+    FeedBack,
+    Customer,
+    Notice,
+    Bottom,
+    Search,
+    Light,
+    Dark,
+    Setting,
+    Right,
+    PayLog,
+    Order, Out
+} from "@/components/icon";
 import {Icon} from "@/components";
 import {useModel} from "umi";
 import {useState} from "react";
@@ -51,18 +64,18 @@ const LeftTop: React.FC = () => {
                     width: 180px;
                 }
             `,
-         tab:{
-             padding:"4px",
-                 boxSizing:"border-box",
-                 marginRight:"40px",
-                 color: "rgb(122,122,122)",
-                 border:"1px solid rgb(122,122,122)",
-                 borderRadius:"5px",
-                 cursor: "pointer",
-         }
+            tab: {
+                padding: "4px",
+                boxSizing: "border-box",
+                marginRight: "40px",
+                color: "rgb(122,122,122)",
+                border: "1px solid rgb(122,122,122)",
+                borderRadius: "5px",
+                cursor: "pointer",
+            }
         };
     });
-    const {styles: {search,tab}} = useStyles();
+    const {styles: {search, tab}} = useStyles();
     const {mobile} = useResponsive();
 
     /**
@@ -77,7 +90,7 @@ const LeftTop: React.FC = () => {
             return item?.label?.includes(e?.target?.value)
         })
         setMenu(filterUserRouter)
-        if(!e?.target?.value){
+        if (!e?.target?.value) {
             setMenu(getUserMenuItems())
         }
         setValue(e?.target?.value);
@@ -88,7 +101,9 @@ const LeftTop: React.FC = () => {
             <>
                 <Popover autoAdjustOverflow={false}
                          placement="bottomLeft"
-                         content={<div style={{width: "400px", height: "300px"}} onClick={()=>{setOpen(false)}}>
+                         content={<div style={{width: "400px", height: "300px"}} onClick={() => {
+                             setOpen(false)
+                         }}>
                              <div style={{width: "100%"}}>
                                  <p style={{fontSize: 16, fontWeight: "bold", marginBottom: 8}}>最近访问</p>
                                  <div style={{width: "100%", display: "flex", flex: "wrap"}}>
@@ -122,7 +137,7 @@ const RightTop: React.FC = () => {
     /**
      * 样式
      */
-    const useStyles = createStyles(({css,token}): any => {
+    const useStyles = createStyles(({css, token}): any => {
         return {
             icon: {
                 fontSize: "17px",
@@ -144,6 +159,9 @@ const RightTop: React.FC = () => {
                 color: "rgb(122,122,122)",
                 fontWeight: "bold",
             },
+            content: {
+                width: "250px",
+            },
             profile: css`
                 margin-left: 10px;
                 margin-right: 20px;
@@ -160,59 +178,103 @@ const RightTop: React.FC = () => {
                 transition: background-color 0.5s ease;
                 cursor: pointer;
             `,
-            box:css`
-                .ant-popover-inner{
-                    box-shadow: 0 2px 8px 0 rgba(0,0,0,.15) !important;
+            popover: css`
+                .ant-popover-inner {
+                    padding: 0;
+                    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, .15) !important;
+                    border-radius: 5px !important;
                 }
+
                 .ant-popover-arrow:before {
-                    background-color: rgba(85, 126, 253, 1) !important;
+                    background-color: ${token?.colorPrimaryBorderHover} !important;
                 }
             `,
-            content_top: {
+            popBg: {
                 height: "70px",
-                width: "100%",
                 backgroundColor: token?.colorPrimaryBorderHover,
-                borderBottom:"1px solid gray",
                 overflow: "hidden",
-                backgroundImage: "url(https://www.xiaoke.cn/xk/static/bg_blue.a89f3e00.png)",
+                backgroundImage: "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIgAAACGBAMAAAD0nt8RAAAAD1BMVEVHcEz///////////////8T4DEaAAAABXRSTlMADAYJA8T7L0gAAALASURBVGjezVpbcoMwDCS2DxBhDgC0BwhNDoDb3v9MfaQQMLb1cqfVVz6YjbS7ks2IptnFCOD7RhcDfIafVRgGvqPVJ/IZmoLcD4YqFbuAgAIkrCCKeqYaICsGnP8WxP0bkE05F71hK4EoWvC0YHh9EwN0v93Fr9frs3aefP/PjdA9Pfo3F8xuxRk74LlaTBpLaPOATaRA0A+lBPAB6rBUNy2KVXwmDOF8YwSs3g1Ij8zYVgPi0PYjlGOppJVATmi9BgcZUJDH1PKokzIamwdGVkGDPGEeB2S+jU9lT2/4KFASip4edxgtfpxDidJiIpvmOsoTYfQEI8UPmR3GOFJuOLHGe0o97YYT8fYKNE4jSnYP7mUpH2x292SW0vKtIyQlNAeM4pEzpTQ0E3BAXOpJA4mYqZTcCx+BCRKOOg5JDE+m5AskjVECcfGzJoNRsokFanRkSgpxJlNSiAudEgmIoYPM+AVWAzKQMTzlzUAOwqCkq0FJV8FqBa9NFWzCsBrt2BLbhEEJ1KDE16DE16Ckq0FJV4GSrNc4lGS9xqEk6zUOJVmvcSgB/UAq2GSqAWJq2IQxpQsgpsZcY4h89Jpbf0xSr5kngBeuaSOv3f/9xuQ2LUnP4tanFWlZqfiMID1nHnQZry/Kv/FB3PF9giTz9foyju/vc6Spl7TQHW5IqDaAPBphKhn/hBogbqoAwpv7WRNKue2kkzI/ZoSpzPIjtTWZ1+03BkgfzRPJKdQupmjlo98v1hoVp9AyiGbFKdRSN0Wy1x56C6FLJKsuhiYzYZtleL0iu2zQtoROXQwqM3nlMmmLQWRm7BkHfSJ5mXkL6aAuJiszd5FsBc1Lkpm/ATbqYpIyS1bRcSo35U5dseLfT0rpXt3qE6GtUTjcKj4SWFNRfcPh9Kvs9bLRN7qY1B+k/HCrTeSL24saozF4MR+gwScpYNNOxQAAAABJRU5ErkJggg==)",
                 backgroundRepeat: "no-repeat",
-                backgroundSize: "100% 100%",
-                backgroundPosition: "center",
+                backgroundPosition: "right",
                 borderTopLeftRadius: "5px",
                 borderTopRightRadius: "5px",
-                lineHeight:"70px"
+                lineHeight: "70px"
             },
-            ava:{
+            avatar: {
                 height: "40px",
                 width: "40px",
                 marginLeft: "20px",
-                marginRight:"10px"
+                marginRight: "10px"
             },
-            top_text:{
-                color:"#fff",
+            popBgNickName: {
+                color: "white",
                 fontSize: "12px",
                 letterSpacing: "1px",
-                lineHeight:"100%",
+                lineHeight: "100%",
                 marginLeft: "12px",
             },
-            text: {
+            popBgNickNameTop: {
+                fontSize: 15,
+                fontWeight: "bolder",
+                marginTop: 18,
+                marginBottom: 10
+            },
+            regTime: {},
+
+            menu: {
+                listStyle: "none",
+                padding: 0,
+                margin: 0,
+                userSelect: "none",
+                "li:last-of-type": {
+                    borderTop: "0.5px solid rgba(189, 189, 189, 0.2)",
+                    borderRadius: "0px 0px 5px 5px",
+                    height: "45px",
+                    lineHeight: "45px",
+                }
+            },
+            menuItem: {
                 cursor: "pointer",
-                borderRadius: "5px",
                 letterSpacing: "1px",
                 height: "40px",
-                lineHeight:"40px",
-                color:"#000",
-                fontSize: "14px",
-                paddingLeft: "10px",
-                boxSizing: "border-box",
-                transition: "background-color 0.5s ease",
+                lineHeight: "40px",
+                fontSize: "12px",
+                padding: "0px 20px",
+                transition: "background-color 0.3s ease",
+                color: "rgb(115, 115, 115)",
+                display: "flex",
+                justifyContent: "space-between",
                 ":hover": {
-                    backgroundColor: "rgba(0, 0, 0, 0.1)",
+                    backgroundColor: "rgba(0, 0, 0, 0.03)",
+                },
+                ".anticon": {
+                    fontSize: "11px",
+                },
+                "div>.anticon": {
+                    fontSize: "12.5px",
+                    marginRight: "7px"
                 }
-            }
+            },
         };
     });
-    const {styles: {icon, img, nickname, profile, pop,content_top,ava,text,top_text,box}} = useStyles();
+    const {
+        styles: {
+            icon,
+            img,
+            nickname,
+            content,
+            profile,
+            pop,
+            popBg,
+            avatar,
+            popBgNickName,
+            popBgNickNameTop,
+            regTime,
+            popover,
+            menu,
+            menuItem
+        }
+    } = useStyles();
 
     return <>
         <Tooltip title={theme?.isDarkTheme() ? "暗夜模式" : "日间模式"}>
@@ -229,43 +291,50 @@ const RightTop: React.FC = () => {
         <Tooltip title="站内消息">
             <Icon type={Notice} className={icon}/>
         </Tooltip>
-        <Popover className={profile} overlayInnerStyle={{padding: 0}} overlayClassName={box} autoAdjustOverflow={false} placement="bottomRight"
-                 content={<div style={{width: "220px"}}>
-                     <Row className={content_top}>
-                         <Col span={6}><Avatar className={ava} src={user?.web?.avatar}/></Col>
-                         <Col span={8} className={top_text}>
-                             <div style={{
-                                 fontSize: 13,
-                                 marginTop: 18,
-                                 marginBottom: 10
-                             }}>{user?.web?.nick_name || "未设置"}</div>
-                             <div>测试内容...</div>
+        <Popover className={profile} overlayClassName={popover}
+                 autoAdjustOverflow={false} placement="bottomRight"
+                 content={<div className={content}>
+                     <Row className={popBg}>
+                         <Col span={6}><Avatar className={avatar} src={user?.web?.avatar}/></Col>
+                         <Col span={14} className={popBgNickName}>
+                             <div className={popBgNickNameTop}>{user?.web?.nick_name || "未设置"}</div>
+                             <div className={regTime}>+86 {user?.web?.phone || "未设置"}</div>
                          </Col>
                      </Row>
-                     <ul style={{listStyle: "none", padding: 0, margin: 0,borderBottom:"1px solid gray"}}>
-                         <li className={text}>账号设置</li>
-                         <li className={text}>系统公告</li>
-                         <li className={text}>联系我们</li>
-                     </ul>
-                     <ul style={{listStyle: "none", padding: 0, margin: 0}}>
-                         <li className={text} onClick={ async() => {
+                     <ul className={menu}>
+                         <li className={menuItem}>
+                             <div><Icon type={Setting}/>账号设置</div>
+                             <Icon type={Right}/>
+                         </li>
+                         <li className={menuItem}>
+                             <div><Icon type={PayLog}/>财务管理</div>
+                             <Icon type={Right}/>
+                         </li>
+                         <li className={menuItem}>
+                             <div><Icon type={Order}/>我的订单</div>
+                             <Icon type={Right}/>
+                         </li>
+                         <li className={menuItem} onClick={async () => {
                              message?.loading({content: '正在退出登录', duration: 600000, key: "outLogin"});
                              await outLogin({
                                  onSuccess: (res) => {
                                      if (res?.code == 200) {
                                          message?.success(res?.message)
-                                         localStorage.removeItem("sinking-token")
+                                         deleteHeader()
                                          historyPush("user.login")
                                      }
                                  },
                                  onFail: (res) => {
                                      message?.error(res?.message)
                                  },
-                                 onFinally:()=>{
+                                 onFinally: () => {
                                      message?.destroy("outLogin")
                                  }
                              })
-                         }}>退出登录</li>
+                         }}>
+                             <div><Icon type={Out}/>退出登录</div>
+                             <Icon type={Right}/>
+                         </li>
                      </ul>
                  </div>}>
             <div className={pop}>

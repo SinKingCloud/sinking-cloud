@@ -7,8 +7,24 @@ import {getCurrentMenus, getFirstMenuWithoutChildren, getParentList, historyPush
 import zhCN from 'antd/locale/zh_CN';
 import 'dayjs/locale/zh-cn';
 
-const useStyles = createStyles(({token}): any => {
+const useStyles = createStyles(({token, css}): any => {
     return {
+        fadeUp: css`
+            @keyframes fadeInUp {
+                0% {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+
+                100% {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            animation-name: fadeInUp;
+            animation-fill-mode: both;
+            animation-duration: 0.5s;
+        `,
         body: {
             padding: "10px",
         },
@@ -37,6 +53,7 @@ export type BodyProps = {
     loading?: boolean;//是否加载状态
     space?: boolean;//是否开启间距
     breadCrumb?: boolean;//面包屑
+    animation?: boolean;//动画
     style?: any;//样式
     className?: any;//样式名
     children?: any;//子内容
@@ -48,8 +65,17 @@ export type BodyProps = {
  * @constructor
  */
 const Body: React.FC<BodyProps> = (props) => {
-    const {children, loading, style, className, space = true, breadCrumb = true, themes = undefined} = props;
-    const {styles: {body, load, gutter, bread, breadStyle}} = useStyles();
+    const {
+        children,
+        loading,
+        style,
+        className,
+        space = true,
+        breadCrumb = true,
+        themes = undefined,
+        animation = true
+    } = props;
+    const {styles: {fadeUp, body, load, gutter, bread, breadStyle}} = useStyles();
     const systemTheme = useModel("theme");
 
     /**
@@ -103,7 +129,7 @@ const Body: React.FC<BodyProps> = (props) => {
             {(loading && <Spin spinning={true} size="large" className={load}></Spin>) ||
                 <Layout style={style}>
                     {breadCrumb && breadCrumbData?.length > 0 && <Breadcrumb className={bread} items={breadCrumbData}/>}
-                    <div className={className ? className : body}>
+                    <div className={(className ? className : body) + (animation ? ' ' + fadeUp : '')}>
                         {(space && <Space direction="vertical" size="middle" className={gutter}>
                             {children}
                         </Space>) || children}
