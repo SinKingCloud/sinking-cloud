@@ -316,16 +316,6 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uinInfo *model.AppUin, jobs []oicq.
 		cli.Mobile.Release()
 		cli.Mobile.Disconnect()
 	}(cli)
-	//查询cookie项
-	cookies := make(map[oicq.Job]string)
-	err, wsCookie := web_uin.GetUinCookies(uinInfo.Uin, "h5.weishi.qq.com", true)
-	if err == nil {
-		cookies[oicq.Ws] = wsCookie
-	}
-	err, musicCookie := web_uin.GetUinCookies(uinInfo.Uin, "y.qq.com", true)
-	if err == nil {
-		cookies[oicq.QQMusic] = musicCookie
-	}
 	//登陆手机
 	err, loginResponse := cli.AutoLogin()
 	log.Println("挂机登陆结果", uinInfo.Uin, err, loginResponse)
@@ -336,6 +326,16 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uinInfo *model.AppUin, jobs []oicq.
 	if !loginResponse.Success {
 		l.saveJobStatus(uinInfo, 0, nil)
 		return true, nil, nil
+	}
+	//查询cookie项
+	cookies := make(map[oicq.Job]string)
+	err, wsCookie := web_uin.GetUinCookies(uinInfo.Uin, "h5.weishi.qq.com", true)
+	if err == nil {
+		cookies[oicq.Ws] = wsCookie
+	}
+	err, musicCookie := web_uin.GetUinCookies(uinInfo.Uin, "y.qq.com", true)
+	if err == nil {
+		cookies[oicq.QQMusic] = musicCookie
 	}
 	//保存相关cookie
 	cookie := cli.Mobile.GetAllCookies()
