@@ -98,27 +98,25 @@ const LeftTop: React.FC = () => {
     }
     return <>
         {!mobile &&
-            <>
-                <Popover autoAdjustOverflow={false}
-                         placement="bottomLeft"
-                         content={<div style={{width: "400px", height: "300px"}} onClick={() => {
-                             setOpen(false)
-                         }}>
-                             <div style={{width: "100%"}}>
-                                 <p style={{fontSize: 16, fontWeight: "bold", marginBottom: 8}}>最近访问</p>
-                                 <div style={{width: "100%", display: "flex", flex: "wrap"}}>
-                                     {menu.map((item: any) => (
-                                         <Button className={tab} key={item?.key} onClick={() => {
-                                             historyPush(item?.name)
-                                         }}>{item?.label}</Button>
-                                     ))}
-                                 </div>
+            <Popover autoAdjustOverflow={false}
+                     placement="bottomLeft"
+                     content={<div style={{width: "400px", height: "300px"}} onClick={() => {
+                         setOpen(false)
+                     }}>
+                         <div style={{width: "100%"}}>
+                             <p style={{fontSize: 16, fontWeight: "bold", marginBottom: 8}}>最近访问</p>
+                             <div style={{width: "100%", display: "flex", flex: "wrap"}}>
+                                 {menu.map((item: any) => (
+                                     <Button className={tab} key={item?.key} onClick={() => {
+                                         historyPush(item?.name)
+                                     }}>{item?.label}</Button>
+                                 ))}
                              </div>
-                         </div>} trigger="click" open={open} onOpenChange={setOpen}>
-                    <Input className={search} value={value} prefix={<Icon type={Search}/>} placeholder="搜索菜单"
-                           onChange={handleChange}/>
-                </Popover>
-            </>
+                         </div>
+                     </div>} trigger="click" open={open} onOpenChange={setOpen}>
+                <Input className={search} value={value} prefix={<Icon type={Search}/>} placeholder="搜索菜单"
+                       onChange={handleChange}/>
+            </Popover>
         }
     </>
 }
@@ -133,7 +131,7 @@ const RightTop: React.FC = () => {
      */
     const user = useModel("user");//用户信息
     const theme = useModel("theme");//主题信息
-    const {message} = App.useApp()
+    const {message} = App.useApp();
     /**
      * 样式
      */
@@ -320,16 +318,16 @@ const RightTop: React.FC = () => {
                              await outLogin({
                                  onSuccess: (res) => {
                                      if (res?.code == 200) {
-                                         message?.success(res?.message)
-                                         deleteHeader()
-                                         historyPush("user.login")
+                                         message?.success(res?.message);
+                                         deleteHeader();
+                                         historyPush("user.login");
                                      }
                                  },
                                  onFail: (res) => {
-                                     message?.error(res?.message)
+                                     message?.error(res?.message);
                                  },
                                  onFinally: () => {
-                                     message?.destroy("outLogin")
+                                     message?.destroy("outLogin");
                                  }
                              })
                          }}>
