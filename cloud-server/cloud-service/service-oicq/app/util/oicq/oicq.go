@@ -94,7 +94,13 @@ func GetPcDevice(uin int64, deviceId int) *pc.DeviceInfo {
 func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
 	o.LoginTime = time.Now().Unix()
 	if !o.Mobile.Online.Load() {
-		if o.LoginToken == nil || len(o.LoginToken) <= 0 || o.TokenLogin() != nil {
+		if o.LoginToken == nil || len(o.LoginToken) <= 0 {
+			e := o.TokenLogin()
+			if e != nil && errors.Is(e, mobile.ErrNetwork) {
+				return e, &mobile.LoginResponse{
+					Success: false,
+				}
+			}
 			return nil, &mobile.LoginResponse{
 				Success: false,
 			}
