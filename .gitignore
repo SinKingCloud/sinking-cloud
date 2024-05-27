@@ -19,5 +19,6 @@
 */node_modules
 */dist
 */.vscode
-*/.umi/
+*/.umi
 */.rocketmq_client_go/
+/cloud-web/src/.umi/*
