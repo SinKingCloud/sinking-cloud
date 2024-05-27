@@ -5,8 +5,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_log_request"
 )
 
 // List 列表
@@ -86,9 +86,9 @@ func (ControllerLogRequest) List(c *sinking_server.Context) {
 	if form.RequestTimeEnd != "" {
 		where["request_time_end"] = form.RequestTimeEnd
 	}
-	data, total, err := system_log_request.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.SystemLogRequest.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看日志", "查看请求日志")
+		service.SystemLog.CreateByQueue(c, system_log.EventShow, "查看日志", "查看请求日志")
 		c.SuccessWithData("获取请求数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 		return
 	}
@@ -109,14 +109,14 @@ func (ControllerLogRequest) Info(c *sinking_server.Context) {
 	var err error
 	var data *model.SystemLogRequest
 	if form.Id != "" {
-		data, err = system_log_request.GetIns().FindById(form.Id)
+		data, err = service.SystemLogRequest.FindById(form.Id)
 	} else if form.RequestId != "" {
-		data, err = system_log_request.GetIns().FindByRequestId(form.RequestId)
+		data, err = service.SystemLogRequest.FindByRequestId(form.RequestId)
 	} else {
 		err = errors.New("field error")
 	}
 	if err == nil && data != nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看日志", "查看详细请求日志")
+		service.SystemLog.CreateByQueue(c, system_log.EventShow, "查看日志", "查看详细请求日志")
 		c.SuccessWithData("获取详情数据成功", data)
 	} else {
 		c.Error("获取详情数据失败")
@@ -134,9 +134,9 @@ func (ControllerLogRequest) Delete(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := system_log_request.GetIns().DeleteByRequestTime(form.RequestTimeStart, form.RequestTimeEnd)
+	err := service.SystemLogRequest.DeleteByRequestTime(form.RequestTimeStart, form.RequestTimeEnd)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "清理日志", "清理请求日志")
+		service.SystemLog.CreateByQueue(c, system_log.EventDelete, "清理日志", "清理请求日志")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

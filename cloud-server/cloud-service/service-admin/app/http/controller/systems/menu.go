@@ -4,8 +4,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_menu"
 )
 
 // List 获取菜单数据
@@ -41,9 +41,9 @@ func (ControllerMenu) List(c *sinking_server.Context) {
 	if form.Type != "" {
 		where["type"] = form.Type
 	}
-	data, total, err := system_menu.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.SystemMenu.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看菜单", "查看菜单列表")
+		service.SystemLog.CreateByQueue(c, system_log.EventShow, "查看菜单", "查看菜单列表")
 		c.Error("获取菜单数据失败")
 	} else {
 		c.SuccessWithData("获取菜单数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
@@ -89,9 +89,9 @@ func (ControllerMenu) Update(c *sinking_server.Context) {
 	if form.Status != "" {
 		data["status"] = form.Status
 	}
-	err := system_menu.GetIns().UpdateByIds(form.Ids, data)
+	err := service.SystemMenu.UpdateByIds(form.Ids, data)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "修改菜单", "修改菜单信息")
+		service.SystemLog.CreateByQueue(c, system_log.EventEdit, "修改菜单", "修改菜单信息")
 		c.Success("修改数据成功")
 	} else {
 		c.Error("修改数据失败")
@@ -116,7 +116,7 @@ func (ControllerMenu) Create(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := system_menu.GetIns().Create(&model.SystemMenu{
+	err := service.SystemMenu.Create(&model.SystemMenu{
 		Pid:      form.Pid,
 		Title:    form.Title,
 		Type:     form.Type,
@@ -128,7 +128,7 @@ func (ControllerMenu) Create(c *sinking_server.Context) {
 		Sort:     form.Sort,
 	})
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventCreate, "添加菜单", "添加菜单信息")
+		service.SystemLog.CreateByQueue(c, system_log.EventCreate, "添加菜单", "添加菜单信息")
 		c.Success("添加数据成功")
 	} else {
 		c.Error("添加数据失败")
@@ -145,9 +145,9 @@ func (ControllerMenu) Delete(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := system_menu.GetIns().DeleteByIds(form.Ids)
+	err := service.SystemMenu.DeleteByIds(form.Ids)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "删除菜单", "删除菜单记录")
+		service.SystemLog.CreateByQueue(c, system_log.EventDelete, "删除菜单", "删除菜单记录")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

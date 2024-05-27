@@ -5,6 +5,7 @@ import (
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_plugin/plugin"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_plugin/user_plugin"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -26,7 +27,7 @@ func FilterPlugins(isAdmin bool, s *sinking_web.RouterGroup) {
 			c.Abort()
 			return
 		}
-		app, err := plugin.GetIns().FindByUrlWithCache(temps[1], false)
+		app, err := service.Plugin.FindByUrlWithCache(temps[1], false)
 		if err != nil || app == nil {
 			c.Error("该应用不存在,请咨询管理员")
 			c.Abort()
@@ -47,7 +48,7 @@ func FilterPlugins(isAdmin bool, s *sinking_web.RouterGroup) {
 			//付费插件判断到期时间
 			if app.IsFree == int(plugin.IsFreeNo) {
 				//查询用户插件信息
-				userApp, err := user_plugin.GetIns().FindByUserIdAndPluginIdWithCache(user.Id, app.Id, false)
+				userApp, err := service.UserPlugin.FindByUserIdAndPluginIdWithCache(user.Id, app.Id, false)
 				if err != nil || userApp == nil {
 					c.NotAllow("您的账号未开通该应用,请先开通应用", nil)
 					c.Abort()

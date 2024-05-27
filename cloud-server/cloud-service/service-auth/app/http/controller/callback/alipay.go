@@ -4,7 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/order"
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service"
 	"github.com/go-pay/gopay"
 	"github.com/go-pay/gopay/alipay"
 	"net/http"
@@ -34,7 +34,7 @@ func (ControllerCallback) Alipay(c *sinking_server.Context) {
 		return
 	}
 	//执行业务逻辑
-	if order.GetIns().CallBack(bm.GetString("out_trade_no"),
+	if service2.Order.CallBack(bm.GetString("out_trade_no"),
 		bm.GetString("trade_no")) {
 		c.String(http.StatusOK, "success")
 	} else {

@@ -5,8 +5,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/web_user"
 )
 
 // List 列表
@@ -74,9 +74,9 @@ func (ControllerUser) List(c *sinking_server.Context) {
 	if form.UpdateTimeEnd != "" {
 		where["update_time_end"] = form.UpdateTimeEnd
 	}
-	data, total, err := web_user.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service2.WebUser.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看用户", "查看会员列表")
+		service2.SystemLog.CreateByQueue(c, system_log.EventShow, "查看用户", "查看会员列表")
 		c.SuccessWithData("获取用户数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 		return
 	}
@@ -117,11 +117,11 @@ func (ControllerUser) Update(c *sinking_server.Context) {
 		data["email"] = form.Email
 	}
 	if form.Phone != "" && len(form.Ids) == 1 {
-		if num, err := web_user.GetIns().CountByPhone(form.Phone); err == nil && num <= 0 {
+		if num, err := service2.WebUser.CountByPhone(form.Phone); err == nil && num <= 0 {
 			data["phone"] = form.Phone
 		}
 	}
-	err := web_user.GetIns().UpdateByIds(form.Ids, data)
+	err := service2.WebUser.UpdateByIds(form.Ids, data)
 	if err == nil {
 		//刷新缓存
 		go func() {
@@ -129,7 +129,7 @@ func (ControllerUser) Update(c *sinking_server.Context) {
 				service.GetWebUserServiceIns().ClearCache(v)
 			}
 		}()
-		system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "修改用户", "修改会员信息")
+		service2.SystemLog.CreateByQueue(c, system_log.EventEdit, "修改用户", "修改会员信息")
 		c.Success("修改数据成功")
 	} else {
 		c.Error("修改数据失败")

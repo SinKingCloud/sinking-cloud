@@ -4,7 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/jwt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/constant"
-	app2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_app"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_user"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"strconv"
@@ -26,13 +26,13 @@ func ApiCheck() sinking_web.HandlerFunc {
 			c.Abort()
 			return
 		}
-		app, err := app2.GetIns().FindByIdWithCache(appId, false)
+		app, err := service.WebApp.FindByIdWithCache(appId, false)
 		if err != nil || app == nil || app.Status != 0 || app.Key != appKey {
 			c.TokenError("获取应用状态异常,请检查应用状态及应用密匙", nil)
 			c.Abort()
 			return
 		}
-		u, err := web_user.GetIns().FindByIdWithCache(app.UserId, false)
+		u, err := service.WebUser.FindByIdWithCache(app.UserId, false)
 		if err != nil || u == nil || u.Status != web_user.Normal {
 			c.TokenError("获取应用所属账户异常,请检查账户状态", nil)
 			c.Abort()

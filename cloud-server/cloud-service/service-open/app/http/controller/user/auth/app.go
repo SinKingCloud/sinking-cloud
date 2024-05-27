@@ -3,8 +3,7 @@ package auth
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/auth_app"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/auth_version"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 	"strconv"
 )
 
@@ -18,7 +17,7 @@ func (ControllerAuth) AppInfo(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	app, err := auth_app.GetIns().FindByIdWithCache(form.Id, false)
+	app, err := service.AuthApp.FindByIdWithCache(form.Id, false)
 	if err != nil || app == nil {
 		c.Error("未查询到该应用信息")
 		return
@@ -40,7 +39,7 @@ func (ControllerAuth) AppVersion(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	app, err := auth_app.GetIns().FindByIdWithCache(form.AuthId, false)
+	app, err := service.UserAuth.FindByIdWithCache(form.AuthId, false)
 	if err != nil || app == nil {
 		c.Error("未查询到该应用信息")
 		return
@@ -49,7 +48,7 @@ func (ControllerAuth) AppVersion(c *sinking_server.Context) {
 	if form.VersionNumber != "" {
 		where["version_number"] = form.VersionNumber
 	}
-	data, total, err := auth_version.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.AuthVersion.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
 		c.Error("获取列表失败")
 	} else {

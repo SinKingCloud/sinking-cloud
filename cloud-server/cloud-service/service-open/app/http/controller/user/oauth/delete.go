@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_oauth/oauth"
 )
 
@@ -15,7 +16,7 @@ func (ControllerOauth) Delete(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	info, err := oauth.GetIns().FindByIdWithCache(form.Id, false)
+	info, err := service.Oauth.FindByIdWithCache(form.Id, false)
 	if err != nil || info == nil || info.UserId != c.GetWebUserInfo().Id {
 		c.Error("接入网站不存在")
 		return
@@ -24,7 +25,7 @@ func (ControllerOauth) Delete(c *sinking_server.Context) {
 		c.Error("该接入网站已被封禁，无法操作")
 		return
 	}
-	err = oauth.GetIns().DeleteById(form.Id)
+	err = service.Oauth.DeleteById(form.Id)
 	if err == nil {
 		c.Success("删除接入网站成功")
 	} else {

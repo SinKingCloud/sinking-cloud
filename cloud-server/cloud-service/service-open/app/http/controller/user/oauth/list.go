@@ -5,7 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_oauth/oauth"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 	"strconv"
 )
 
@@ -55,7 +55,7 @@ func (ControllerOauth) List(c *sinking_server.Context) {
 	if form.UpdateTimeEnd != "" {
 		where["update_time_end"] = form.UpdateTimeEnd
 	}
-	data, total, err := oauth.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.Oauth.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
 		c.Error("获取列表失败")
 	} else {

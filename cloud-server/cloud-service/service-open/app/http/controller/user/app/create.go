@@ -6,7 +6,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_app"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 	"strings"
 )
 
@@ -22,7 +22,7 @@ func (ControllerApp) Create(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := web_app.GetIns().Create(&model.UserApp{
+	err := service.WebApp.Create(&model.UserApp{
 		UserId:   c.GetWebUserInfo().Id,
 		Key:      strings.ToUpper(str.NewStringTool(str.GetSnowWorkIns().GetUuid()).Md5()),
 		Name:     form.Name,

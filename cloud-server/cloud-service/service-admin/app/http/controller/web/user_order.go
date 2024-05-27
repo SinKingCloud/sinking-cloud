@@ -3,8 +3,8 @@ package web
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/web_user_order"
 )
 
 // List 列表
@@ -80,9 +80,9 @@ func (ControllerUserOrder) List(c *sinking_server.Context) {
 	if form.UpdateTimeEnd != "" {
 		where["update_time_end"] = form.UpdateTimeEnd
 	}
-	data, total, err := web_user_order.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.WebUserOrder.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看订单", "查看订单列表")
+		service.SystemLog.CreateByQueue(c, system_log.EventShow, "查看订单", "查看订单列表")
 		c.SuccessWithData("获取订单数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 		return
 	}
@@ -123,9 +123,9 @@ func (ControllerUserOrder) Delete(c *sinking_server.Context) {
 	if form.CreateTimeEnd != "" {
 		where["create_time_end"] = form.CreateTimeEnd
 	}
-	err := web_user_order.GetIns().Delete(where)
+	err := service.WebUserOrder.Delete(where)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "清理订单", "清理用户订单")
+		service.SystemLog.CreateByQueue(c, system_log.EventDelete, "清理订单", "清理用户订单")
 		c.Success("删除订单成功")
 	} else {
 		c.Error("删除订单失败")

@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_app"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_oauth/oauth"
 	"strconv"
@@ -21,7 +22,7 @@ func (ControllerOauth) Update(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	info, err := oauth.GetIns().FindById(form.Id)
+	info, err := service.Oauth.FindById(form.Id)
 	if err != nil || info == nil || info.UserId != c.GetWebUserInfo().Id {
 		c.Error("接入网站不存在")
 		return
@@ -35,7 +36,7 @@ func (ControllerOauth) Update(c *sinking_server.Context) {
 		appId, _ := strconv.Atoi(form.AppId)
 		if appId != info.AppId {
 			//查询应用信息
-			if info, e := web_app.GetIns().FindByIdWithCache(appId, false); e != nil || info == nil || info.UserId != c.GetWebUserInfo().Id || info.Status != web_app.Normal {
+			if info, e := service.WebApp.FindByIdWithCache(appId, false); e != nil || info == nil || info.UserId != c.GetWebUserInfo().Id || info.Status != web_app.Normal {
 				c.Error("绑定应用不存在")
 				return
 			}
@@ -51,7 +52,7 @@ func (ControllerOauth) Update(c *sinking_server.Context) {
 	if form.Status != "" {
 		data["status"] = form.Status
 	}
-	err = oauth.GetIns().UpdateById(form.Id, data)
+	err = service.Oauth.UpdateById(form.Id, data)
 	if err == nil {
 		c.Success("修改接入网站信息成功")
 	} else {

@@ -5,7 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant/util"
 	util2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_rbac"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
@@ -17,7 +17,7 @@ func Rbac() sinking_web.HandlerFunc {
 			//获取用户信息
 			userInfo := c.GetSystemUserInfo()
 			//判断权限信息
-			if system_rbac.GetIns().Check(userInfo.Id, userInfo.RoleId, c.Request.URL.Path, c.Request.Method) {
+			if service.SystemRbac.Check(userInfo.Id, userInfo.RoleId, c.Request.URL.Path, c.Request.Method) {
 				c.Next()
 			} else {
 				c.NotAllow("您的帐户暂无权限操作", nil)

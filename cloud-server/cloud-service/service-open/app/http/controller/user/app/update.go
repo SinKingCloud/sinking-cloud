@@ -4,6 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_app"
 )
 
@@ -21,7 +22,7 @@ func (ControllerApp) Update(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	info, err := web_app.GetIns().FindById(form.Id)
+	info, err := service.WebApp.FindById(form.Id)
 	if err != nil || info == nil || info.UserId != c.GetWebUserInfo().Id {
 		c.Error("应用不存在")
 		return
@@ -43,7 +44,7 @@ func (ControllerApp) Update(c *sinking_server.Context) {
 	if form.Status != "" {
 		data["status"] = form.Status
 	}
-	err = web_app.GetIns().UpdateById(form.Id, data)
+	err = service.WebApp.UpdateById(form.Id, data)
 	if err == nil {
 		rpc.Log.CreateUser(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), log.UserEventEdit, "修改应用", "修改应用"+info.Name)
 		c.Success("修改应用信息成功")

@@ -2,7 +2,7 @@ package pay
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/order"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service"
 )
 
 // Status 支付状态查询
@@ -15,7 +15,7 @@ func (p ControllerPay) Status(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	userOrder, err := order.GetIns().FindByTradeNo(form.TradeNo)
+	userOrder, err := service.Order.FindByTradeNo(form.TradeNo)
 	if err != nil || userOrder == nil {
 		c.Error("未查询到有效订单")
 		return

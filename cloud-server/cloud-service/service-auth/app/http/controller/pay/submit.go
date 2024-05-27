@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/order"
 )
 
@@ -17,7 +18,7 @@ func (p ControllerPay) Submit(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	userOrder, err := order.GetIns().FindByTradeNo(form.TradeNo)
+	userOrder, err := service.Order.FindByTradeNo(form.TradeNo)
 	if err != nil || userOrder == nil || userOrder.Status != order.StatusUnPay {
 		c.Error("未查询到有效订单")
 		return

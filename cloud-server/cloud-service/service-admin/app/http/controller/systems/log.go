@@ -3,6 +3,7 @@ package systems
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_log"
 )
 
@@ -63,11 +64,11 @@ func (ControllerLog) List(c *sinking_server.Context) {
 	if form.CreateTimeEnd != "" {
 		where["create_time_end"] = form.CreateTimeEnd
 	}
-	data, total, err := system_log.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.SystemLog.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
 		c.Error("获取日志数据失败")
 	} else {
-		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看日志", "查看用户日志")
+		service.SystemLog.CreateByQueue(c, system_log.EventShow, "查看日志", "查看用户日志")
 		c.SuccessWithData("获取日志数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }
@@ -83,9 +84,9 @@ func (ControllerLog) Delete(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := system_log.GetIns().DeleteByRequestTime(form.RequestTimeStart, form.RequestTimeEnd)
+	err := service.SystemLog.DeleteByRequestTime(form.RequestTimeStart, form.RequestTimeEnd)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "清理日志", "清理用户日志")
+		service.SystemLog.CreateByQueue(c, system_log.EventDelete, "清理日志", "清理用户日志")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

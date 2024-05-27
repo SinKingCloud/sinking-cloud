@@ -17,7 +17,7 @@ import (
 )
 
 // AuthTicket 授权ticket
-func AuthTicket(userId int, ticket string, redirectUrl string) error {
+func (*Service) AuthTicket(userId int, ticket string, redirectUrl string) error {
 	//防止并发锁
 	key := constant.LockOauthAuthTicket + strconv.Itoa(userId)
 	if !util.Cache.Lock(key, constant.LockTimeOauthAuthTicket) {
@@ -73,7 +73,7 @@ func AuthTicket(userId int, ticket string, redirectUrl string) error {
 }
 
 // GenTicket 生成ticket
-func GenTicket(oauthId int) (string, error) {
+func (*Service) GenTicket(oauthId int) (string, error) {
 	ticket := str.NewStringTool(str.GetSnowWorkIns().GetUuid()).Md5()
 	err := oauth_log.GetIns().Create(&model.AppOauthLog{
 		OauthId: oauthId,

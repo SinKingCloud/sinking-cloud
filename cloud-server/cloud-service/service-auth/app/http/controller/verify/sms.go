@@ -2,8 +2,7 @@ package verify
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/auth"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/captcha"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service"
 )
 
 func (ControllerVerify) Sms(c *sinking_server.Context) {
@@ -17,11 +16,11 @@ func (ControllerVerify) Sms(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	if !captcha.Check(form.Token, form.Captcha) {
+	if !service.Captcha.Check(form.Token, form.Captcha) {
 		c.Error("验证码验证失败请重试")
 		return
 	}
-	if auth.SmsSend(form.Phone) {
+	if service.Auth.SmsSend(form.Phone) {
 		c.Success("验证码已发送")
 	} else {
 		c.Error("验证码发送失败")

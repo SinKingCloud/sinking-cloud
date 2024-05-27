@@ -4,6 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_app"
 )
 
@@ -17,7 +18,7 @@ func (ControllerApp) Delete(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	info, err := web_app.GetIns().FindById(form.Id)
+	info, err := service.WebApp.FindById(form.Id)
 	if err != nil || info == nil || info.UserId != c.GetWebUserInfo().Id {
 		c.Error("应用不存在")
 		return
@@ -26,7 +27,7 @@ func (ControllerApp) Delete(c *sinking_server.Context) {
 		c.Error("该应用已被封禁，无法操作")
 		return
 	}
-	err = web_app.GetIns().DeleteById(form.Id)
+	err = service.WebApp.DeleteById(form.Id)
 	if err == nil {
 		rpc.Log.CreateUser(c.GetWebUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), log.UserEventDelete, "删除应用", "删除应用"+info.Name)
 		c.Success("删除应用成功")

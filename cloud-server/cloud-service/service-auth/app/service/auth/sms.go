@@ -11,7 +11,7 @@ import (
 )
 
 // SmsCheck 判断验证码正确性
-func SmsCheck(phone string, code string) bool {
+func (s *Service) SmsCheck(phone string, code string) bool {
 	key := constant.CacheNameWithSmsPhone + phone
 	key2 := key + "Num"
 	util.Cache.Inc(key2)
@@ -36,7 +36,7 @@ func SmsCheck(phone string, code string) bool {
 }
 
 // SmsSend 发送短信验证码
-func SmsSend(phone string) bool {
+func (s *Service) SmsSend(phone string) bool {
 	//发送间隔
 	key := constant.CacheNameWithExpire + phone
 	_, exists := util.Cache.Get(key)

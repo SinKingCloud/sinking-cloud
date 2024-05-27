@@ -3,10 +3,7 @@ package auth
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/auth_app"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/auth_log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/auth_version"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/user_auth"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"strconv"
@@ -35,7 +32,7 @@ func (ControllerAuth) Check(c *sinking_server.Context) {
 		where["ip"] = form.Ip
 	}
 	where["user_id"] = strconv.Itoa(c.GetWebUserInfo().Id)
-	userAuth, e := user_auth.GetIns().Find(where)
+	userAuth, e := service.UserAuth.Find(where)
 	if e != nil || userAuth == nil {
 		c.Error("获取授权许可证失败，请前往官网下载正版产品")
 		return
@@ -44,13 +41,13 @@ func (ControllerAuth) Check(c *sinking_server.Context) {
 		c.Error("您的许可证已被封禁,请前往官网查看详情")
 		return
 	}
-	authApp, e := auth_app.GetIns().FindByIdWithCache(userAuth.AuthId, false)
+	authApp, e := service.AuthApp.FindByIdWithCache(userAuth.AuthId, false)
 	if e != nil || authApp == nil {
 		c.Error("获取应用信息失败,请前往官网查看详情")
 		return
 	}
 	ver := 0
-	authVersion, e := auth_version.GetIns().FindByIdWithCache(authApp.VersionId, false)
+	authVersion, e := service.AuthVersion.FindByIdWithCache(authApp.VersionId, false)
 	if e == nil && authVersion != nil {
 		ver = authVersion.VersionNumber
 	}
@@ -73,7 +70,7 @@ func (ControllerAuth) Log(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := auth_log.GetIns().Create(&model.AuthLog{
+	err := service.AuthLog.Create(&model.AuthLog{
 		Ip:      c.GetRequestIp(),
 		AuthId:  form.AuthId,
 		Content: form.Content,
@@ -96,7 +93,7 @@ func (ControllerAuth) Upgrade(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	userAuth, e := user_auth.GetIns().Find(map[string]string{"code": form.Code, "user_id": strconv.Itoa(c.GetWebUserInfo().Id)})
+	userAuth, e := service.UserAuth.Find(map[string]string{"code": form.Code, "user_id": strconv.Itoa(c.GetWebUserInfo().Id)})
 	if e != nil || userAuth == nil {
 		c.Error("获取授权许可证失败，请前往官网下载正版产品")
 		return
@@ -105,7 +102,7 @@ func (ControllerAuth) Upgrade(c *sinking_server.Context) {
 		c.Error("您的许可证已被封禁,请前往官网查看详情")
 		return
 	}
-	list, err := auth_version.GetIns().SelectUpgrade(userAuth.AuthId, form.VersionNumber)
+	list, err := service.AuthVersion.SelectUpgrade(userAuth.AuthId, form.VersionNumber)
 	if err != nil || list == nil {
 		c.Error("获取更新信息失败,请前往官网查看详情")
 		return
@@ -125,7 +122,7 @@ func (ControllerAuth) Package(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	userAuth, e := user_auth.GetIns().Find(map[string]string{"code": form.Code, "user_id": strconv.Itoa(c.GetWebUserInfo().Id)})
+	userAuth, e := service.UserAuth.Find(map[string]string{"code": form.Code, "user_id": strconv.Itoa(c.GetWebUserInfo().Id)})
 	if e != nil || userAuth == nil {
 		c.Error("获取授权许可证失败，请前往官网下载正版产品")
 		return
@@ -134,7 +131,7 @@ func (ControllerAuth) Package(c *sinking_server.Context) {
 		c.Error("您的许可证已被封禁,请前往官网查看详情")
 		return
 	}
-	authVersion, err := auth_version.GetIns().FindByAuthIdVerNum(userAuth.AuthId, form.VersionNumber)
+	authVersion, err := service.AuthVersion.FindByAuthIdVerNum(userAuth.AuthId, form.VersionNumber)
 	if err != nil || authVersion == nil {
 		c.Error("获取文件失败,请前往官网查看详情")
 		return
@@ -142,9 +139,9 @@ func (ControllerAuth) Package(c *sinking_server.Context) {
 	var url string
 	var err2 error
 	if form.Types == "release" {
-		url, err2 = web_auth.Package.BuildRelease(authVersion.Id, userAuth)
+		url, err2 = service.WebAuthPackage.BuildRelease(authVersion.Id, userAuth)
 	} else {
-		url, err2 = web_auth.Package.BuildUpdate(authVersion.Id, userAuth)
+		url, err2 = service.WebAuthPackage.BuildUpdate(authVersion.Id, userAuth)
 	}
 	if err2 != nil {
 		c.Error(err2.Error())

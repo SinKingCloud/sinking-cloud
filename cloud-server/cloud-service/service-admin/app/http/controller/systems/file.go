@@ -3,7 +3,7 @@ package systems
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	system_file "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_flie"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_log"
 )
 
@@ -48,7 +48,7 @@ func (ControllerFile) List(c *sinking_server.Context) {
 	if form.UpdateTimeEnd != "" {
 		where["update_time_end"] = form.UpdateTimeEnd
 	}
-	data, total, err := system_file.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.SystemFile.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
 		c.Error("获取附件数据失败")
 	} else {
@@ -67,11 +67,11 @@ func (ControllerFile) Delete(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	paths := system_file.GetIns().SelectPathByIds(form.Ids)
-	err := system_file.GetIns().DeleteByIds(form.Ids)
+	paths := service.SystemFile.SelectPathByIds(form.Ids)
+	err := service.SystemFile.DeleteByIds(form.Ids)
 	if err == nil {
-		go system_file.GetIns().DeleteFiles(paths)
-		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "删除附件", "删除系统附件")
+		go service.SystemFile.DeleteFiles(paths)
+		service.SystemLog.CreateByQueue(c, system_log.EventDelete, "删除附件", "删除系统附件")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

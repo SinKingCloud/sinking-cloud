@@ -10,12 +10,31 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/constant"
 	"strconv"
+	"sync"
 	"time"
 )
 
+// Service 单例对象
+type Service struct {
+}
+
+// obj 单例对象
+var (
+	obj  *Service
+	once sync.Once
+)
+
+// GetIns 获取单例
+func GetIns() *Service {
+	once.Do(func() {
+		obj = &Service{}
+	})
+	return obj
+}
+
 // GetWebUserInfoByPhone 根据短信验证码获取网站用户信息
-func GetWebUserInfoByPhone(phone string, code string) (u *model.WebUser, e error) {
-	if !SmsCheck(phone, code) {
+func (s2 *Service) GetWebUserInfoByPhone(phone string, code string) (u *model.WebUser, e error) {
+	if !s2.SmsCheck(phone, code) {
 		e = errors.New("短信验证码验证失败")
 		return
 	}
@@ -50,7 +69,7 @@ func GetWebUserInfoByPhone(phone string, code string) (u *model.WebUser, e error
 }
 
 // GetWebUserInfoByPwd 根据用户名密码获取网站用户信息
-func GetWebUserInfoByPwd(account string, pwd string) (u *model.WebUser, e error) {
+func (s2 *Service) GetWebUserInfoByPwd(account string, pwd string) (u *model.WebUser, e error) {
 	e = util.Database.Db.Where("`account` = ?", account).First(&u).Error
 	if e != nil || u == nil {
 		e = util.Database.Db.Where("`phone` = ?", account).First(&u).Error
@@ -71,7 +90,7 @@ func GetWebUserInfoByPwd(account string, pwd string) (u *model.WebUser, e error)
 }
 
 // GetSystemUserInfoByPwd 根据用户名密码获取系统用户信息
-func GetSystemUserInfoByPwd(account string, pwd string) (u *model.SystemUser, e error) {
+func (s2 *Service) GetSystemUserInfoByPwd(account string, pwd string) (u *model.SystemUser, e error) {
 	e = util.Database.Db.Where("`account`= ?", account).First(&u).Error
 	if e != nil || u == nil {
 		e = errors.New("用户不存在")
@@ -89,7 +108,7 @@ func GetSystemUserInfoByPwd(account string, pwd string) (u *model.SystemUser, e 
 }
 
 // OutLogin 注销登录
-func OutLogin(types string, u *model.SystemUser, u2 *model.WebUser) {
+func (s2 *Service) OutLogin(types string, u *model.SystemUser, u2 *model.WebUser) {
 	fun := func(types string, newToken string, oldToken string) string {
 		temp := make(map[string]string)
 		_ = json.Unmarshal([]byte(oldToken), &temp)
@@ -118,7 +137,7 @@ func OutLogin(types string, u *model.SystemUser, u2 *model.WebUser) {
 }
 
 // GetJwtToken 生成jwtToken
-func GetJwtToken(types string, u *model.SystemUser, u2 *model.WebUser, ip string) (s string, e error) {
+func (s2 *Service) GetJwtToken(types string, u *model.SystemUser, u2 *model.WebUser, ip string) (s string, e error) {
 	//生成token
 	token := str.NewStringTool(strconv.FormatInt(time.Now().UnixMilli(), 10)).Md5()
 	loginTime := str.DateTime(time.Now())

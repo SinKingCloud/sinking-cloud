@@ -25,7 +25,7 @@ type UserInfo struct {
 }
 
 // GetUserInfo 获取用户信息
-func GetUserInfo(oauthId int, ticket string) (*UserInfo, error) {
+func (*Service) GetUserInfo(oauthId int, ticket string) (*UserInfo, error) {
 	//查询ticket
 	info, err := oauth_log.GetIns().FindByTicket(ticket)
 	if err != nil || info.OauthId != oauthId {
@@ -69,7 +69,7 @@ func GetUserInfo(oauthId int, ticket string) (*UserInfo, error) {
 }
 
 // GetOauthInfo 获取接入网站信息
-func GetOauthInfo(oauthId int, userId int) (*model.AppOauth, error) {
+func (*Service) GetOauthInfo(oauthId int, userId int) (*model.AppOauth, error) {
 	oauthInfo, err := oauth.GetIns().FindByIdWithCache(oauthId, false)
 	if err != nil || oauthInfo == nil || oauthInfo.UserId != userId {
 		return nil, errors.New("该网站不存在")

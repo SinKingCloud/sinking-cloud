@@ -4,8 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/auth"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/captcha"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service"
 )
 
 func (ControllerSystem) Login(c *sinking_server.Context) {
@@ -21,16 +20,16 @@ func (ControllerSystem) Login(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	if !captcha.Check(form.Token, form.Captcha) {
+	if !service.Captcha.Check(form.Token, form.Captcha) {
 		c.Error("验证码验证失败请重试")
 		return
 	}
-	user, err := auth.GetSystemUserInfoByPwd(form.Account, form.Password)
+	user, err := service.Auth.GetSystemUserInfoByPwd(form.Account, form.Password)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	token, err := auth.GetJwtToken(form.Device, user, nil, c.GetRequestIp())
+	token, err := service.Auth.GetJwtToken(form.Device, user, nil, c.GetRequestIp())
 	if err != nil {
 		c.Error(err.Error())
 		return

@@ -5,9 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/auth_app"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/auth_version"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/user_auth"
 	"strconv"
 )
@@ -59,7 +57,7 @@ func (ControllerAuth) List(c *sinking_server.Context) {
 	if form.UpdateTimeEnd != "" {
 		where["update_time_end"] = form.UpdateTimeEnd
 	}
-	data, total, err := user_auth.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.UserAuth.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
 		c.Error("获取列表失败")
 	} else {
@@ -78,7 +76,7 @@ func (ControllerAuth) Download(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	userAuth, e := user_auth.GetIns().FindById(form.Id)
+	userAuth, e := service.UserAuth.FindById(form.Id)
 	if e != nil || userAuth == nil || userAuth.UserId != c.GetWebUserInfo().Id {
 		c.Error("获取授权许可证失败")
 		return
@@ -87,17 +85,17 @@ func (ControllerAuth) Download(c *sinking_server.Context) {
 		c.Error("您的许可证已被封禁")
 		return
 	}
-	authApp, e := auth_app.GetIns().FindByIdWithCache(userAuth.AuthId, false)
+	authApp, e := service.AuthApp.FindByIdWithCache(userAuth.AuthId, false)
 	if e != nil || authApp == nil {
 		c.Error("获取应用信息失败")
 		return
 	}
-	authVersion, err := auth_version.GetIns().FindByIdWithCache(authApp.VersionId, false)
+	authVersion, err := service.AuthVersion.FindByIdWithCache(authApp.VersionId, false)
 	if err != nil || authVersion == nil {
 		c.Error("获取版本信息失败")
 		return
 	}
-	url, err2 := web_auth.Package.BuildRelease(authVersion.Id, userAuth)
+	url, err2 := service.WebAuthPackage.BuildRelease(authVersion.Id, userAuth)
 	if err2 != nil {
 		c.Error(err2.Error())
 		return

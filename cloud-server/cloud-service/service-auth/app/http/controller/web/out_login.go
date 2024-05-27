@@ -6,14 +6,14 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service/auth"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-auth/app/service"
 )
 
 // OutLogin 退出登录
 func (ControllerWeb) OutLogin(c *sinking_server.Context) {
 	user, err := service2.GetWebUserServiceIns().FindByIdWithCache(c.GetWebUserInfo().Id, true)
 	if err == nil && user != nil {
-		auth.OutLogin(c.Request.Header.Get(util.JwtTokenNameType), nil, user)
+		service.Auth.OutLogin(c.Request.Header.Get(util.JwtTokenNameType), nil, user)
 	}
 	rpc.Log.CreateUser(user.Id, c.GetRequestId(), c.GetRequestIp(), log.UserEventLogin, "注销登录", "注销登陆成功")
 	c.Success("注销登录成功")

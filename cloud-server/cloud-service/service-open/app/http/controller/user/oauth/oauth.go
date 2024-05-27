@@ -2,7 +2,7 @@ package oauth
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_oauth"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 )
 
 type ControllerOauth struct {
@@ -18,13 +18,13 @@ func (ControllerOauth) GenTicket(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	oauthInfo, err := web_oauth.GetOauthInfo(form.OauthId, c.GetWebUserInfo().Id)
+	oauthInfo, err := service.WebOauth.GetOauthInfo(form.OauthId, c.GetWebUserInfo().Id)
 	if err != nil || oauthInfo == nil {
 		c.Error(err.Error())
 		return
 	}
 	//生成授权码
-	ticket, err := web_oauth.GenTicket(oauthInfo.Id)
+	ticket, err := service.WebOauth.GenTicket(oauthInfo.Id)
 	if err != nil {
 		c.Error("生成授权码失败")
 	} else {
@@ -43,12 +43,12 @@ func (ControllerOauth) GetUserInfo(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	oauthInfo, err := web_oauth.GetOauthInfo(form.OauthId, c.GetWebUserInfo().Id)
+	oauthInfo, err := service.WebOauth.GetOauthInfo(form.OauthId, c.GetWebUserInfo().Id)
 	if err != nil || oauthInfo == nil {
 		c.Error(err.Error())
 		return
 	}
-	data, err := web_oauth.GetUserInfo(oauthInfo.Id, form.Ticket)
+	data, err := service.WebOauth.GetUserInfo(oauthInfo.Id, form.Ticket)
 	if err != nil {
 		c.Error(err.Error())
 	} else {

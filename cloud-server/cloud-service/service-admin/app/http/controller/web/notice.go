@@ -4,8 +4,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/web_notice"
 )
 
 // List 获取数据
@@ -49,11 +49,11 @@ func (ControllerNotice) List(c *sinking_server.Context) {
 	if form.Title != "" {
 		where["title"] = form.Title
 	}
-	data, total, err := web_notice.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.WebNotice.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
 		c.Error("获取公告列表失败")
 	} else {
-		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看公告", "查看公告列表")
+		service.SystemLog.CreateByQueue(c, system_log.EventShow, "查看公告", "查看公告列表")
 		c.SuccessWithData("获取公告列表成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }
@@ -68,9 +68,9 @@ func (ControllerNotice) Info(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	data, err := web_notice.GetIns().FindById(form.Id)
+	data, err := service.WebNotice.FindById(form.Id)
 	if err == nil && data != nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看公告", "查看公告"+data.Title)
+		service.SystemLog.CreateByQueue(c, system_log.EventShow, "查看公告", "查看公告"+data.Title)
 		c.SuccessWithData("获取详情数据成功", data)
 	} else {
 		c.Error("获取详情数据失败")
@@ -108,9 +108,9 @@ func (ControllerNotice) Update(c *sinking_server.Context) {
 	if form.Status != "" {
 		data["status"] = form.Status
 	}
-	err := web_notice.GetIns().UpdateByIds(form.Ids, data)
+	err := service.WebNotice.UpdateByIds(form.Ids, data)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "修改公告", "修改公告信息")
+		service.SystemLog.CreateByQueue(c, system_log.EventEdit, "修改公告", "修改公告信息")
 		c.Success("修改数据成功")
 	} else {
 		c.Error("修改数据失败")
@@ -131,7 +131,7 @@ func (ControllerNotice) Create(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := web_notice.GetIns().Create(&model.WebNotice{
+	err := service.WebNotice.Create(&model.WebNotice{
 		Place:   form.Place,
 		Title:   form.Title,
 		Content: form.Content,
@@ -140,7 +140,7 @@ func (ControllerNotice) Create(c *sinking_server.Context) {
 		LookNum: 0,
 	})
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventCreate, "添加公告", "添加公告信息")
+		service.SystemLog.CreateByQueue(c, system_log.EventCreate, "添加公告", "添加公告信息")
 		c.Success("添加数据成功")
 	} else {
 		c.Error("添加数据失败")
@@ -157,9 +157,9 @@ func (ControllerNotice) Delete(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := web_notice.GetIns().DeleteByIds(form.Ids)
+	err := service.WebNotice.DeleteByIds(form.Ids)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "删除公告", "删除公告数据")
+		service.SystemLog.CreateByQueue(c, system_log.EventDelete, "删除公告", "删除公告数据")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")

@@ -3,8 +3,8 @@ package oauth
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/model"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_app"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_oauth/oauth"
 )
 
 // Create 添加信息
@@ -21,11 +21,11 @@ func (ControllerOauth) Create(c *sinking_server.Context) {
 		return
 	}
 	//查询应用信息
-	if info, e := web_app.GetIns().FindByIdWithCache(form.AppId, false); e != nil || info == nil || info.UserId != c.GetWebUserInfo().Id || info.Status != web_app.Normal {
+	if info, e := service.WebApp.FindByIdWithCache(form.AppId, false); e != nil || info == nil || info.UserId != c.GetWebUserInfo().Id || info.Status != web_app.Normal {
 		c.Error("绑定应用不存在")
 		return
 	}
-	err := oauth.GetIns().Create(&model.AppOauth{
+	err := service.Oauth.Create(&model.AppOauth{
 		UserId: c.GetWebUserInfo().Id,
 		AppId:  form.AppId,
 		Name:   form.Name,

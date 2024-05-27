@@ -3,8 +3,7 @@ package auth
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service/web_auth/auth_app"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-open/app/service"
 )
 
 // ShopList 商品列表
@@ -44,7 +43,7 @@ func (ControllerAuth) ShopList(c *sinking_server.Context) {
 	if form.UpdateTimeEnd != "" {
 		where["update_time_end"] = form.UpdateTimeEnd
 	}
-	data, total, err := auth_app.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.AuthApp.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
 		c.Error("获取列表失败")
 	} else {
@@ -63,12 +62,12 @@ func (ControllerAuth) ShopBuy(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	app, err := auth_app.GetIns().FindByIdWithCache(form.Id, false)
+	app, err := service.AuthApp.FindByIdWithCache(form.Id, false)
 	if err != nil || app == nil {
 		c.Error("未查询到该应用信息")
 		return
 	}
-	e := web_auth.Shop.Buy(c.GetWebUserInfo().Id, form.Id, form.Domain)
+	e := service.WebAuthShop.Buy(c.GetWebUserInfo().Id, form.Id, form.Domain)
 	if e != nil {
 		c.Error(e.Error())
 		return

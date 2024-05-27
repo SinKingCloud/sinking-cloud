@@ -5,10 +5,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_menu"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_role"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-admin/app/service/system_user"
 )
 
 // List 列表
@@ -52,9 +50,9 @@ func (ControllerRole) List(c *sinking_server.Context) {
 	if form.UpdateTimeEnd != "" {
 		where["update_time_end"] = form.UpdateTimeEnd
 	}
-	data, total, err := system_role.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.SystemRole.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventShow, "查看角色", "查看角色列表")
+		service.SystemLog.CreateByQueue(c, system_log.EventShow, "查看角色", "查看角色列表")
 		c.SuccessWithData("获取角色数据成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 		return
 	}
@@ -92,9 +90,9 @@ func (r ControllerRole) Update(c *sinking_server.Context) {
 	if form.Status != "" {
 		data["status"] = form.Status
 	}
-	err := system_role.GetIns().UpdateByIds(form.Ids, data)
+	err := service.SystemRole.UpdateByIds(form.Ids, data)
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "修改角色", "修改角色信息")
+		service.SystemLog.CreateByQueue(c, system_log.EventEdit, "修改角色", "修改角色信息")
 		c.Success("修改数据成功")
 	} else {
 		c.Error("修改数据失败")
@@ -114,7 +112,7 @@ func (r ControllerRole) Create(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	err := system_role.GetIns().Create(&model.SystemRole{
+	err := service.SystemRole.Create(&model.SystemRole{
 		Name:     form.Name,
 		Describe: form.Describe,
 		Menus:    form.Menus,
@@ -122,7 +120,7 @@ func (r ControllerRole) Create(c *sinking_server.Context) {
 		Status:   form.Status,
 	})
 	if err == nil {
-		system_log.GetIns().CreateByQueue(c, system_log.EventCreate, "添加角色", "添加角色信息")
+		service.SystemLog.CreateByQueue(c, system_log.EventCreate, "添加角色", "添加角色信息")
 		c.Success("添加数据成功")
 	} else {
 		c.Error("添加数据失败")
@@ -139,14 +137,14 @@ func (r ControllerRole) Delete(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	if total, err := system_user.GetIns().CountByIds(form.Ids); err != nil || total > 0 {
+	if total, err := service.SystemUser.CountByIds(form.Ids); err != nil || total > 0 {
 		c.Error("请先删除该角色下的账户")
 		return
 	}
-	err := system_role.GetIns().DeleteByIds(form.Ids)
+	err := service.SystemRole.DeleteByIds(form.Ids)
 	if err == nil {
 		go r.resetAllRoleAccess()
-		system_log.GetIns().CreateByQueue(c, system_log.EventDelete, "删除角色", "删除角色记录")
+		service.SystemLog.CreateByQueue(c, system_log.EventDelete, "删除角色", "删除角色记录")
 		c.Success("删除数据成功")
 	} else {
 		c.Error("删除数据失败")
@@ -159,7 +157,7 @@ func (ControllerRole) getRoleIdsBYMenuIds(menus string) string {
 	var ids []int
 	err := json.Unmarshal([]byte(menus), &ids)
 	if err == nil {
-		accesses, tempErr := system_menu.GetIns().GetAccessIdsByMenuIds(ids)
+		accesses, tempErr := service.SystemMenu.GetAccessIdsByMenuIds(ids)
 		if tempErr == nil {
 			text, tempErr := json.Marshal(accesses)
 			if tempErr == nil {
@@ -172,13 +170,13 @@ func (ControllerRole) getRoleIdsBYMenuIds(menus string) string {
 
 // resetAllRoleAccess 刷新角色关联权限
 func (ControllerRole) resetAllRoleAccess() {
-	roles, err := system_role.GetIns().SelectAll()
+	roles, err := service.SystemRole.SelectAll()
 	if err == nil {
 		for _, v := range roles {
 			go func(v *model.SystemRole) {
-				_ = system_role.GetIns().UpdateById(v.Id, map[string]interface{}{"accesses": v.Menus})
-				system_menu.GetIns().ClearRoleMenuCache(v.Id)
-				system_role.GetIns().ClearRoleCache(v.Id)
+				_ = service.SystemRole.UpdateById(v.Id, map[string]interface{}{"accesses": v.Menus})
+				service.SystemMenu.ClearRoleMenuCache(v.Id)
+				service.SystemRole.ClearRoleCache(v.Id)
 			}(v)
 		}
 	}
@@ -187,6 +185,6 @@ func (ControllerRole) resetAllRoleAccess() {
 // ResetAllRoleAccess 刷新角色关联权限
 func (r ControllerRole) ResetAllRoleAccess(c *sinking_server.Context) {
 	go r.resetAllRoleAccess()
-	system_log.GetIns().CreateByQueue(c, system_log.EventEdit, "刷新角色", "刷新角色权限")
+	service.SystemLog.CreateByQueue(c, system_log.EventEdit, "刷新角色", "刷新角色权限")
 	c.Success("更新权限数据成功")
 }
