@@ -13,7 +13,6 @@ const Captcha = React.forwardRef<CaptchaRef>((props, ref) => {
      * @param onSuccess 成功回调
      * @param onFail 失败回调
      */
-    //@ts-ignore
     const show = (onSuccess: (res: any) => void = undefined, onFail: (res: any) => void = undefined) => {
         // @ts-ignore
         const captcha = new TencentCaptcha('2046626881', (res) => {

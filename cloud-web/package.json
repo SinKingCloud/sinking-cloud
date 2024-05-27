@@ -14,7 +14,7 @@
     "antd": "^5.14.1",
     "antd-style": "^3.6.1",
     "react-load-script": "^0.0.6",
-    "umi": "^4.1.8",
+    "umi": "^4.2.5",
     "umi-request": "^1.4.0"
   },
   "devDependencies": {
