@@ -2,7 +2,7 @@
   "private": true,
   "author": "",
   "scripts": {
-    "dev": "umi dev",
+    "dev": "PORT=9001 umi dev",
     "build": "umi build",
     "postinstall": "umi setup",
     "setup": "umi setup",
@@ -13,6 +13,7 @@
     "@umijs/plugins": "^4.1.1",
     "antd": "^5.14.1",
     "antd-style": "^3.6.1",
+    "pinyin-pro": "^3.21.0",
     "react-load-script": "^0.0.6",
     "umi": "^4.2.5",
     "umi-request": "^1.4.0"

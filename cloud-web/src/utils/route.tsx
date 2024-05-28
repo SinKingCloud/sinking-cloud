@@ -110,6 +110,7 @@ export function getParentList(data: any[], name: string): any[] {
         return parentCache[name];
     }
     let parents: any[] = [];
+
     function findParent(data: any, name: string): boolean {
         if (data?.children && data?.children?.length > 0) {
             if (data.name === name) {
@@ -230,3 +231,57 @@ export function getFirstMenuWithoutChildren(menu: any[]): any | null {
     }
     return null;
 }
+
+/**
+ * 获取菜单所有仔鸡(排除含有children)
+ * @param menuData 菜单数据
+ */
+export function getAllMenuDataWithoutChildren(menuData) {
+    const flatData = [];
+
+    function recursive(data) {
+        data.forEach(item => {
+            if (item.children && Array.isArray(item.children)) {
+                recursive(item.children);
+            } else {
+                flatData.push(item);
+            }
+        });
+    }
+
+    recursive(menuData);
+    return flatData;
+}
+
+/**
+ * 获取所有含有children的菜单
+ * @param obj
+ */
+export function getAllMenuDataWithChildren(obj) {
+    const result = [];
+    if (obj.children && obj.children.length > 0) {
+        const transformedObj = {
+            ...obj,
+            children: obj.children.filter(child => !child.children || child.children.length === 0).map(child => ({
+                ...child,
+                children: undefined
+            }))
+        };
+        if (transformedObj.children.length > 0) {
+            result.push(transformedObj);
+        }
+        obj.children.forEach(child => {
+            if (child.children && child.children.length > 0) {
+                const flattenedChildren = getAllMenuDataWithChildren(child);
+                result.push(...flattenedChildren);
+            }
+        });
+    }
+    return result;
+}
+
+
+
+
+
+

@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import Layout from "@/layouts/components";
-import {getUserMenuItems} from "@/utils/route";
+import {getAllMenuDataWithChildren, getUserMenuItems} from "@/utils/route";
 import defaultSettings from "@/../config/defaultSettings";
 import {
     Doc,
@@ -14,7 +14,7 @@ import {
     Setting,
     Right,
     PayLog,
-    Order, Out, Exit
+    Order, Out, Exit, Add
 } from "@/components/icon";
 import {Icon} from "@/components";
 import {useModel} from "umi";
@@ -22,9 +22,10 @@ import {useState} from "react";
 import {deleteHeader, getLoginToken} from "@/utils/auth";
 import {historyPush} from "@/utils/route";
 import request from "@/utils/request";
-import {App, Avatar, Button, Col, Divider, Empty, Input, Popover, Row, Space, Tag, Tooltip} from "antd";
+import {App, Avatar, Col, Divider, Empty, Input, Popover, Row, Tag, Tooltip} from "antd";
 import {createStyles, useResponsive} from "antd-style";
 import {outLogin} from "@/service/login";
+import {pinyin} from "pinyin-pro";
 
 /**
  * 中间件
@@ -85,22 +86,32 @@ const LeftTop: React.FC = () => {
                 }
             `,
             panelSearch: {
-                //padding: "-10px 0"
+                padding: "0"
             },
             panelList: {
                 padding: "5px 0",
             },
             line: {
-                height: "35px",
-                lineHeight: "35px",
+                height: "40px",
+                lineHeight: "40px",
             },
-            title: {
-                fontSize: "13px",
-                fontWeight: "bolder",
-                float: "left"
-            },
+            title: css`
+                font-size: 13px;
+                font-weight: bolder;
+                float: left;
+
+                div {
+                    width: 5px;
+                    background-color: ${token?.colorPrimary};
+                    border-radius: 0 5px 5px 0;
+                    height: 20px;
+                    float: left;
+                    margin-top: 14.7%;
+                    margin-right: 7px;
+                }
+            `,
             divider: {
-                margin: "10px 0px 0px 0px"
+                margin: "0"
             },
             btn: {
                 margin: "5px",
@@ -118,6 +129,7 @@ const LeftTop: React.FC = () => {
                 margin: "0 0 10px 0"
             },
             icon: {
+                marginTop: "5px",
                 float: "right",
                 fontSize: "14px",
                 padding: "6px",
@@ -128,13 +140,52 @@ const LeftTop: React.FC = () => {
                     backgroundColor: "rgba(0, 0, 0, 0.1)",
                 }
             },
+
             menu: css`
                 max-height: 300px;
                 overflow-y: auto;
 
+
+                h4 {
+                    color: rgb(119, 119, 119);
+                    margin-bottom: 0;
+                    margin-top: 5px;
+                    margin-left: 5px;
+                }
+
+                ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0 0 10px 0;
+
+                    .ant-empty {
+                        margin: 10px !important;
+                    }
+
+                    li {
+                        padding: 3px 0 3px 10px;
+                        cursor: pointer;
+                        font-size: 11px;
+                        color: rgb(119, 119, 119);
+                        margin: 3px 10px 3px 0;
+                        transition: background-color 0.5s ease;
+                        border-radius: 5px;
+                        display: flex;
+                        justify-content: space-between;
+
+                        :hover {
+                            background-color: rgba(0, 0, 0, 0.1);
+                        }
+
+                        .anticon {
+                            margin-right: 5px;
+                            font-size: 8px;
+                        }
+                    }
+                }
+
                 ::-webkit-scrollbar {
                     width: 5px !important; /* 纵向滚动条 */
-                    height: 0 !important; /* 横向滚动条 */
                     background-color: transparent;
                 }
 
@@ -144,7 +195,7 @@ const LeftTop: React.FC = () => {
                 }
 
                 ::-webkit-scrollbar-thumb {
-                    background-color: #d2d2d2;
+                    background-color: rgba(210, 210, 210, 0.11);
                     border-radius: 10px;
                     box-shadow: inset 0 0 6px rgba(0, 0, 0, 0);
                 }
@@ -169,6 +220,14 @@ const LeftTop: React.FC = () => {
     } = useStyles();
     const {mobile} = useResponsive();
     /**
+     * 显示控制
+     */
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState("");
+    const handleChange = (e: any) => {
+        setValue(e?.target?.value);
+    }
+    /**
      * 快捷功能操作
      */
     const [edit, setEdit] = useState(false);
@@ -176,16 +235,38 @@ const LeftTop: React.FC = () => {
         setEdit(!edit);
     }
     const [list, setList] = useState<any>([{name: "test"}]);
-
     /**
-     * 显示控制
+     * 系统功能操作
      */
-    const [open, setOpen] = useState(false);
-    const [value, setValue] = useState("");
-    const handleChange = (e: any) => {
-        setValue(e?.target?.value);
-        setOpen(e?.target?.value != "");
+    const [menus, setMenus] = useState<any>(getAllMenuDataWithChildren({
+        "label": "系统首页",
+        children: getUserMenuItems()
+    }));
+    const Menu: React.FC<{ num?: any, index?: any }> = (props) => {
+        return <>{menus.map((x, d) => {
+            if (d % (props?.num || 0) == (props?.index || 0)) {
+                let liNum = 0
+                return <div key={"menu-ul-" + d}>
+                    <h4>{x?.label}</h4>
+                    <ul>{x?.children?.map((a, b) => {
+                        if (value && a?.label && !a?.label?.includes(value) && !pinyin(a?.label, {toneType: 'none'})?.includes(value)) {
+                            return;
+                        }
+                        liNum++
+                        return <Tooltip placement={"right"} key={"menu-tooltip-" + d + "-" + b}
+                                        title={edit ? "添加到快捷功能" : ""}>
+                            <li key={"menu-li-" + d + "-" + b}>{a?.label}<Icon type={edit ? Add : Right}/></li>
+                        </Tooltip>
+                    })}
+                        {liNum <= 0 && <Empty key={"menu-empty-" + d}
+                                              image={Empty.PRESENTED_IMAGE_SIMPLE}/>}
+                    </ul>
+                </div>
+            }
+        })}</>;
     }
+
+
     return <>
         {!mobile &&
             <Popover autoAdjustOverflow={false}
@@ -197,23 +278,35 @@ const LeftTop: React.FC = () => {
                      content={<div className={content}>
                          <div className={panelList}>
                              <div className={line}>
-                                 <div className={title}>功能列表</div>
+                                 <div className={title}>
+                                     <div/>
+                                     功能列表
+                                 </div>
                                  <Tooltip title={edit ? "保存功能并退出" : "编辑或删除功能"}>
                                      <Icon type={edit ? Exit : Setting} className={icon} onClick={editToggle}/>
                                  </Tooltip>
                              </div>
                              <div className={menu}>
-                                 <Space size={7} wrap>
-                                     {new Array(200).fill(null).map((_, index) => (
-                                         <Button size={"small"} block className={btn} key={index}>系统首页</Button>
-                                     ))}
-                                 </Space>
+                                 <Row align="top">
+                                     <Col span={8}>
+                                         <Menu num={3} index={0}/>
+                                     </Col>
+                                     <Col span={8}>
+                                         <Menu num={3} index={1}/>
+                                     </Col>
+                                     <Col span={8}>
+                                         <Menu num={3} index={2}/>
+                                     </Col>
+                                 </Row>
                              </div>
                              <Divider className={divider}/>
                          </div>
                          <div className={panelSearch}>
                              <div className={line}>
-                                 <div className={title}>快捷功能</div>
+                                 <div className={title}>
+                                     <div/>
+                                     快捷功能
+                                 </div>
                              </div>
                              {((list?.length || 0) <= 0 &&
                                  <Empty className={empty}

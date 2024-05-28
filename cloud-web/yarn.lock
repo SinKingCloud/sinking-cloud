@@ -6349,6 +6349,11 @@ pino@7.11.0:
     sonic-boom "^2.2.1"
     thread-stream "^0.15.1"
 
+pinyin-pro@^3.21.0:
+  version "3.21.0"
+  resolved "https://registry.yarnpkg.com/pinyin-pro/-/pinyin-pro-3.21.0.tgz#1ea1d42b95c7c7ad8861ab5349f5a7e23db528c2"
+  integrity sha512-3vhDqWbfjLcJAdLQGECtu8nsKI3bJva1AuqaG+c7Lgvs93Dvuqg8OhvanarrQ7QDGcg/k+aLnoSIf3VWIyjiUw==
+
 pirates@^4.0.4:
   version "4.0.6"
   resolved "https://registry.yarnpkg.com/pirates/-/pirates-4.0.6.tgz#3018ae32ecfcff6c29ba2267cbf21166ac1f36b9"
