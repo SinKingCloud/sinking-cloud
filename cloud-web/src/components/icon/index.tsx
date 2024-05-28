@@ -4,7 +4,7 @@ import {createFromIconfontCN} from '@ant-design/icons';
  * 图标组件(生产环境需使用本地资源)
  */
 const Icon = createFromIconfontCN({
-    scriptUrl: '//at.alicdn.com/t/c/font_4443635_kbv1qz4vie.js', // 在 iconfont.cn 上生成
+    scriptUrl: '//at.alicdn.com/t/c/font_4443635_pjb0tz7rchm.js', // 在 iconfont.cn 上生成
 });
 
 /**
@@ -23,6 +23,8 @@ const Setting = "icon-set";
 const PayLog = "icon-pay";
 const Right = "icon-right";
 const Out = "icon-out";
+const Exit = "icon-exit";
+const X = "icon-x"
 /**
  * 图标数组
  */
@@ -39,7 +41,9 @@ const Icons = [
     Setting,
     PayLog,
     Right,
-    Out
+    Out,
+    Exit,
+    X
 ]
 
 export {
@@ -57,5 +61,7 @@ export {
     Setting,
     PayLog,
     Right,
-    Out
+    Out,
+    Exit,
+    X
 }

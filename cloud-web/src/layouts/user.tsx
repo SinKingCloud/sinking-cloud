@@ -14,7 +14,7 @@ import {
     Setting,
     Right,
     PayLog,
-    Order, Out
+    Order, Out, Exit
 } from "@/components/icon";
 import {Icon} from "@/components";
 import {useModel} from "umi";
@@ -22,7 +22,7 @@ import {useState} from "react";
 import {deleteHeader, getLoginToken} from "@/utils/auth";
 import {historyPush} from "@/utils/route";
 import request from "@/utils/request";
-import {App, Avatar, Button, Col, Input, Popover, Row, Tooltip} from "antd";
+import {App, Avatar, Button, Col, Divider, Empty, Input, Popover, Row, Space, Tag, Tooltip} from "antd";
 import {createStyles, useResponsive} from "antd-style";
 import {outLogin} from "@/service/login";
 
@@ -48,7 +48,7 @@ const LeftTop: React.FC = () => {
     /**
      * 样式
      */
-    const useStyles = createStyles(({css}): any => {
+    const useStyles = createStyles(({css, token}): any => {
         return {
             search: css`
                 margin-left: 5px;
@@ -64,56 +64,164 @@ const LeftTop: React.FC = () => {
                     width: 180px;
                 }
             `,
-            tab: {
-                padding: "4px",
-                boxSizing: "border-box",
-                marginRight: "40px",
-                color: "rgb(122,122,122)",
-                border: "1px solid rgb(122,122,122)",
+            content: {
+                width: "450px"
+            },
+            popover: css`
+                user-select: none;
+
+                .ant-popover-inner {
+                    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, .15) !important;
+                    border-radius: 5px !important;
+                }
+
+                .ant-popover-content {
+                    margin-left: -25px !important;
+                }
+
+                .ant-popover-inner-content {
+                    margin-top: -20px !important;
+                    padding: 10px 5px 0 5px;
+                }
+            `,
+            panelSearch: {
+                //padding: "-10px 0"
+            },
+            panelList: {
+                padding: "5px 0",
+            },
+            line: {
+                height: "35px",
+                lineHeight: "35px",
+            },
+            title: {
+                fontSize: "13px",
+                fontWeight: "bolder",
+                float: "left"
+            },
+            divider: {
+                margin: "10px 0px 0px 0px"
+            },
+            btn: {
+                margin: "5px",
+                fontSize: "10px",
+                color: "gray",
+                border: "1px solid gray",
+                padding: "0 5px",
+                transition: "background-color 0.3s ease",
+                cursor: "pointer",
+                ":hover": {
+                    backgroundColor: "rgba(0, 0, 0, 0.1)",
+                }
+            },
+            empty: {
+                margin: "0 0 10px 0"
+            },
+            icon: {
+                float: "right",
+                fontSize: "14px",
+                padding: "6px",
                 borderRadius: "5px",
                 cursor: "pointer",
-            }
-        };
+                transition: "background-color 0.3s ease",
+                ":hover": {
+                    backgroundColor: "rgba(0, 0, 0, 0.1)",
+                }
+            },
+            menu: css`
+                max-height: 300px;
+                overflow-y: auto;
+
+                ::-webkit-scrollbar {
+                    width: 5px !important; /* 纵向滚动条 */
+                    height: 0 !important; /* 横向滚动条 */
+                    background-color: transparent;
+                }
+
+                ::-webkit-scrollbar-track {
+                    background-color: transparent;
+                    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0);
+                }
+
+                ::-webkit-scrollbar-thumb {
+                    background-color: #d2d2d2;
+                    border-radius: 10px;
+                    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0);
+                }
+            `,
+        }
     });
-    const {styles: {search, tab}} = useStyles();
+    const {
+        styles: {
+            content,
+            panelSearch,
+            panelList,
+            search,
+            popover,
+            line,
+            title,
+            divider,
+            btn,
+            icon,
+            empty,
+            menu
+        }
+    } = useStyles();
     const {mobile} = useResponsive();
+    /**
+     * 快捷功能操作
+     */
+    const [edit, setEdit] = useState(false);
+    const editToggle = () => {
+        setEdit(!edit);
+    }
+    const [list, setList] = useState<any>([{name: "test"}]);
 
     /**
      * 显示控制
      */
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState("");
-    const [menu, setMenu] = useState<any>(getUserMenuItems())
-    const userRouter = getUserMenuItems()
     const handleChange = (e: any) => {
-        const filterUserRouter = userRouter.filter((item: any) => {
-            return item?.label?.includes(e?.target?.value)
-        })
-        setMenu(filterUserRouter)
-        if (!e?.target?.value) {
-            setMenu(getUserMenuItems())
-        }
         setValue(e?.target?.value);
-        setOpen(e?.target?.value != "")
+        setOpen(e?.target?.value != "");
     }
     return <>
         {!mobile &&
             <Popover autoAdjustOverflow={false}
                      placement="bottomLeft"
-                     content={<div style={{width: "400px", height: "300px"}} onClick={() => {
-                         setOpen(false)
-                     }}>
-                         <div style={{width: "100%"}}>
-                             <p style={{fontSize: 16, fontWeight: "bold", marginBottom: 8}}>最近访问</p>
-                             <div style={{width: "100%", display: "flex", flex: "wrap"}}>
-                                 {menu.map((item: any) => (
-                                     <Button className={tab} key={item?.key} onClick={() => {
-                                         historyPush(item?.name)
-                                     }}>{item?.label}</Button>
-                                 ))}
+                     trigger="click"
+                     open={open}
+                     onOpenChange={setOpen}
+                     overlayClassName={popover}
+                     content={<div className={content}>
+                         <div className={panelList}>
+                             <div className={line}>
+                                 <div className={title}>功能列表</div>
+                                 <Tooltip title={edit ? "保存功能并退出" : "编辑或删除功能"}>
+                                     <Icon type={edit ? Exit : Setting} className={icon} onClick={editToggle}/>
+                                 </Tooltip>
                              </div>
+                             <div className={menu}>
+                                 <Space size={7} wrap>
+                                     {new Array(200).fill(null).map((_, index) => (
+                                         <Button size={"small"} block className={btn} key={index}>系统首页</Button>
+                                     ))}
+                                 </Space>
+                             </div>
+                             <Divider className={divider}/>
                          </div>
-                     </div>} trigger="click" open={open} onOpenChange={setOpen}>
+                         <div className={panelSearch}>
+                             <div className={line}>
+                                 <div className={title}>快捷功能</div>
+                             </div>
+                             {((list?.length || 0) <= 0 &&
+                                 <Empty className={empty}
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}/>) || new Array(10).fill(null).map((_, index) => (
+                                 <Tag size={"small"} className={btn} key={index} closable={edit}>系统首页</Tag>
+                             ))}
+                         </div>
+                     </div>}>
                 <Input className={search} value={value} prefix={<Icon type={Search}/>} placeholder="搜索菜单"
                        onChange={handleChange}/>
             </Popover>
@@ -361,7 +469,7 @@ export default () => {
     /**
      * 初始化用户信息
      */
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const initUser = () => {
         setLoading(true);
         if (getLoginToken() == "") {
@@ -378,7 +486,7 @@ export default () => {
      * 搜索菜单栏
      */
     useEffect(() => {
-        initUser();
+        //initUser();
     }, []);
 
     return (
