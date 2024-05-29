@@ -49,7 +49,7 @@ const useLayoutStyles = createStyles((): any => {
             userSelect: "none",
         },
         content: {
-            minHeight: "calc(100vh - 110px)",
+            minHeight: "calc(100vh - 120px)",
             maxWidth: "100%",
             height: "100%",
             overflow: "auto"

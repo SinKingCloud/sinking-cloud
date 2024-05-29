@@ -31,6 +31,9 @@ const useStyles = createStyles(({token}): any => {
                 height: "60% !important",
                 borderRightWidth: "5px !important",
                 borderRadius: "10px 0 0 10px",
+            },
+            ".ant-menu-item,.ant-menu-submenu-title": {
+                transition: "border-color 0.3s,background 0.3s !important"
             }
         },
         menuTop: {

@@ -178,7 +178,7 @@ const LeftTop: React.FC = () => {
                         }
 
                         .anticon {
-                            margin-right: 5px;
+                            margin-right: 10px;
                             font-size: 8px;
                         }
                     }
@@ -562,7 +562,7 @@ export default () => {
     /**
      * 初始化用户信息
      */
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const initUser = () => {
         setLoading(true);
         if (getLoginToken() == "") {
@@ -579,7 +579,7 @@ export default () => {
      * 搜索菜单栏
      */
     useEffect(() => {
-        //initUser();
+        initUser();
     }, []);
 
     return (
