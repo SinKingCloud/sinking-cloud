@@ -10,7 +10,7 @@ import {App, Button, ConfigProvider, Drawer, Layout} from "antd";
 import zhCN from 'antd/locale/zh_CN';
 import 'dayjs/locale/zh-cn';
 
-const useLayoutStyles = createStyles((): any => {
+const useLayoutStyles = createStyles(({isDarkMode}): any => {
     return {
         sider: {
             zIndex: 2,
@@ -36,7 +36,7 @@ const useLayoutStyles = createStyles((): any => {
         body: {
             transition: "margin-left 0.2s !important",
             transform: "translateY(1px)",
-            backgroundColor: "none"
+            backgroundColor: isDarkMode ? "black" : "transparent"
         },
         header: {
             padding: 0,
