@@ -9,7 +9,7 @@ const getLightTheme = (): any => {
             colorPrimary: "rgba(7,53,237,1)",
             colorInfo: "rgba(7,53,237,1)",
         },
-        algorithm: [theme.defaultAlgorithm, theme.compactAlgorithm],
+        algorithm: [theme.compactAlgorithm],
         components: {
             Menu: {
                 itemMarginBlock: 0,
@@ -31,7 +31,6 @@ const getDarkTheme = (): any => {
     let themes = getLightTheme()
     themes.mode = "dark"
     themes.components.Layout.headerBg = "#141414"
-    themes.algorithm = [theme.darkAlgorithm, theme.compactAlgorithm]
     return themes
 }
 
