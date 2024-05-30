@@ -15,10 +15,11 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-.idea
 */node_modules
 */dist
 */.vscode
 */.umi
 */.rocketmq_client_go/
 /cloud-web/src/.umi/*
+/cloud-web/src/.umi-production/*
+/.idea/

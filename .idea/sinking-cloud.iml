@@ -11,6 +11,13 @@
       <excludeFolder url="file://$MODULE_DIR$/cloud-web_bak/cloud-admin/src/.umi-production" />
       <excludeFolder url="file://$MODULE_DIR$/cloud-web_bak/cloud-user/dist" />
       <excludeFolder url="file://$MODULE_DIR$/cloud-web_bak/cloud-user/src/.umi" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/httpRequests" />
+      <excludeFolder url="file://$MODULE_DIR$/cloud-web/src/.umi-production/core" />
+      <excludeFolder url="file://$MODULE_DIR$/cloud-web/src/.umi-production/plugin-model" />
+      <excludeFolder url="file://$MODULE_DIR$/cloud-web/src/.umi/core" />
+      <excludeFolder url="file://$MODULE_DIR$/cloud-web/src/.umi/plugin-model" />
+      <excludeFolder url="file://$MODULE_DIR$/cloud-web_bak/cloud-user/src/.umi-production" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
