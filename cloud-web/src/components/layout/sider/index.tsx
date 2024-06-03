@@ -43,11 +43,11 @@ const useStyles = createStyles(({token}): any => {
             lineHeight: "100px !important",
             width: "100%",
             padding: "10px !important",
-            textAlign: "center",
             overflow: "hidden",
-            position: "sticky",
             cursor: "pointer",
-            top: 0,
+            display:"flex",
+            justifyContent:"center",
+            alignItems:"center"
         },
         menuBottom: {
             background: token?.colorBgContainer,
