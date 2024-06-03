@@ -1,5 +1,4 @@
 import React, {useEffect} from "react";
-import Layout from "@/layouts/components";
 import {getAllMenuDataWithChildren, getUserMenuItems} from "@/utils/route";
 import defaultSettings from "@/../config/defaultSettings";
 import {
@@ -16,7 +15,7 @@ import {
     PayLog,
     Order, Out, Exit, Add
 } from "@/components/icon";
-import {Icon} from "@/components";
+import {Icon, Layout} from "@/components";
 import {useModel} from "umi";
 import {useState} from "react";
 import {deleteHeader, getLoginToken} from "@/utils/auth";

@@ -1,6 +1,6 @@
 import React from "react";
-import {Body} from "@/layouts/components";
-import {App, Button, Form} from "antd";
+import {Body} from "@/components";
+import {App, Button} from "antd";
 
 export default () => {
     const {message} = App.useApp();

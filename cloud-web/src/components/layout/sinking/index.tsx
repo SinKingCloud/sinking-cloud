@@ -1,6 +1,6 @@
-import Footer from "@/layouts/components/footer";
-import Header from "@/layouts/components/header";
-import Sider from "@/layouts/components/sider";
+import Footer from "../footer";
+import Header from "../header";
+import Sider from "../sider";
 import {createStyles, useResponsive} from "antd-style";
 import React, {useState} from "react";
 import {Outlet} from "umi";

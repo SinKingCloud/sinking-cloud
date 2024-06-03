@@ -1,5 +1,4 @@
 import React, {useEffect, useRef, useState} from "react";
-import {Body} from "@/layouts/components";
 import {createStyles, useResponsive} from "antd-style";
 import {App, Button, Checkbox, Col, Form, Input, Row, Tabs} from "antd";
 import defaultSettings from "../../../config/defaultSettings";
@@ -9,7 +8,7 @@ import {LeftOutlined} from "@ant-design/icons";
 import {getSms, webLogin} from "@/service/login";
 import {setLoginToken} from "@/utils/auth";
 import {useModel} from "umi";
-import {Captcha} from "@/components";
+import {Captcha, Body} from "@/components";
 import {CaptchaRef} from "@/components/captcha";
 
 const useStyles = createStyles(({token, css, responsive}): any => {

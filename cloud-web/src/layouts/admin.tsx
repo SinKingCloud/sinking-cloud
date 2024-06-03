@@ -1,9 +1,9 @@
 import React from "react";
-import Layout from "@/layouts/components";
 import {getAdminMenuItems, historyPush} from "@/utils/route";
 import defaultSettings from "../../config/defaultSettings";
 import {deleteHeader} from "@/utils/auth";
 import request from "@/utils/request";
+import {Layout} from "@/components";
 
 
 /**

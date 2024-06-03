@@ -1,5 +1,5 @@
 import React from "react";
-import {Body} from "@/layouts/components";
+import {Body} from "@/components";
 
 const DocsPage = () => {
     return (

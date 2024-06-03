@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {App, Card, Col, Modal, Row} from "antd";
 import {useModel} from "umi";
-import {Body} from "@/layouts/components";
+import {Body} from "@/components";
 import {historyPush} from "@/utils/route";
 
 export default function HomePage() {
