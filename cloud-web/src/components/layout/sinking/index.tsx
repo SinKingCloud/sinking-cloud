@@ -10,7 +10,7 @@ import {App, Button, ConfigProvider, Drawer, Layout} from "antd";
 import zhCN from 'antd/locale/zh_CN';
 import 'dayjs/locale/zh-cn';
 
-const useLayoutStyles = createStyles(({isDarkMode}): any => {
+const useLayoutStyles = createStyles(({isDarkMode, token}): any => {
     return {
         sider: {
             zIndex: 2,
@@ -18,6 +18,9 @@ const useLayoutStyles = createStyles(({isDarkMode}): any => {
             height: '100vh',
             position: "fixed !important",
             bottom: 0,
+            ".ant-layout-header": {
+                backgroundColor: token?.colorBgContainer
+            }
         },
         menuBtn: {
             width: "55px !important",
@@ -49,6 +52,7 @@ const useLayoutStyles = createStyles(({isDarkMode}): any => {
             top: 0,
             userSelect: "none",
             transform: "translateY(-1px)",
+            background: token?.colorBgContainer + " !important"
         },
         content: {
             minHeight: "calc(100vh - 117px)",

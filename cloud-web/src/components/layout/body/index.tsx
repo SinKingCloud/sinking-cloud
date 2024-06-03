@@ -44,6 +44,7 @@ export type BodyProps = {
     className?: any;//样式名
     children?: any;//子内容
     themes?: any;//主题
+    mode?: any;//模式
 };
 /**
  * 页面主体部分
@@ -59,6 +60,7 @@ const Body: React.FC<BodyProps> = (props) => {
         space = true,
         breadCrumb = true,
         themes = undefined,
+        mode = undefined,
         animation = true
     } = props;
     const {styles: {body, load, gutter, bread, breadStyle}} = useStyles();
@@ -110,7 +112,7 @@ const Body: React.FC<BodyProps> = (props) => {
      * 页面容器
      */
     return (
-        <Theme theme={themes}>
+        <Theme theme={themes} mode={mode}>
             <ConfigProvider locale={zhCN}>
                 <App>
                     {(loading && <Spin spinning={true} size="large" className={load}></Spin>) ||

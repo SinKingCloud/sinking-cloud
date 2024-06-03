@@ -299,7 +299,7 @@ export default () => {
     }, []);
 
     return (
-        <Body className={body} themes={theme?.getLightTheme()} loading={false} breadCrumb={false} space={false}>
+        <Body className={body} mode={theme?.lightMode} loading={false} breadCrumb={false} space={false}>
             <Captcha ref={captcha}/>
             <Row className={main}>
                 <Col xs={24} sm={24} md={11} className={left}>

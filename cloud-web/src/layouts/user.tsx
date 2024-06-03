@@ -13,7 +13,7 @@ import {
     Setting,
     Right,
     PayLog,
-    Order, Out, Exit, Add
+    Order, Out, Exit, Add, Auto
 } from "@/components/icon";
 import {Icon, Layout} from "@/components";
 import {useModel} from "umi";
@@ -483,10 +483,11 @@ const RightTop: React.FC = () => {
     } = useStyles();
 
     return <>
-        <Tooltip title={theme?.isDarkTheme() ? "暗夜模式" : "日间模式"}>
-            <Icon type={theme?.isDarkTheme() ? Dark : Light} className={icon} onClick={() => {
-                theme?.toggle?.();
-            }}/>
+        <Tooltip title={theme?.getModeName(theme?.mode)}>
+            <Icon type={theme?.isDarkMode() ? Dark : (theme?.isAutoMode() ? Auto : Light)} className={icon}
+                  onClick={() => {
+                      theme?.toggle?.();
+                  }}/>
         </Tooltip>
         <Tooltip title="我要反馈">
             <Icon type={FeedBack} className={icon}/>
