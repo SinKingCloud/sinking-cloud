@@ -6,7 +6,8 @@ import {Spin, Space, Breadcrumb, App} from "antd";
 import {getCurrentMenus, getFirstMenuWithoutChildren, getParentList, historyPush} from "@/utils/route";
 import zhCN from 'antd/locale/zh_CN';
 import 'dayjs/locale/zh-cn';
-import {Theme} from "@/components";
+import {Animation, Theme} from "@/components";
+import {Animate} from "@/components/animation";
 
 const useStyles = createStyles(({token}): any => {
     return {
@@ -116,10 +117,12 @@ const Body: React.FC<BodyProps> = (props) => {
                         <Layout style={style}>
                             {breadCrumb && breadCrumbData?.length > 0 &&
                                 <Breadcrumb className={bread} items={breadCrumbData}/>}
-                            <div className={(className ? className : body) + (animation ? ' fadeInUp' : '')}>
-                                {(space && <Space direction="vertical" size="middle" className={gutter}>
-                                    {children}
-                                </Space>) || children}
+                            <div className={className ? className : body}>
+                                <Animation animate={animation ? Animate.FadeUp : Animate.None}>
+                                    {(space && <Space direction="vertical" size="middle" className={gutter}>
+                                        {children}
+                                    </Space>) || children}
+                                </Animation>
                             </div>
                         </Layout>}
                 </App>

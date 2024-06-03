@@ -43,7 +43,7 @@ const useLayoutStyles = createStyles(({isDarkMode}): any => {
             height: "55px",
             lineHeight: "55px !important",
             width: "100%",
-            zIndex: 1,
+            zIndex: 3,
             boxShadow: "0 2px 8px 0 rgba(29, 35, 41, 0.05)",
             position: "sticky",
             top: 0,

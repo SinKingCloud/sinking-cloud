@@ -249,7 +249,14 @@ const LeftTop: React.FC = () => {
                 return <div key={"menu-ul-" + d}>
                     <h4>{x?.label}</h4>
                     <ul>{x?.children?.map((a, b) => {
-                        if (value && a?.label && !a?.label?.includes(value) && !pinyin(a?.label, {toneType: 'none'})?.includes(value)) {
+                        if (value && a?.label && !a?.label?.includes(value) && !pinyin(a?.label, {
+                            toneType: 'none',
+                            separator: ''
+                        })?.includes(value) && !pinyin(a?.label, {
+                            pattern: 'first',
+                            toneType: 'none',
+                            separator: ''
+                        })?.includes(value)) {
                             return;
                         }
                         liNum++

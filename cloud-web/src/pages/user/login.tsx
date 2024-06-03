@@ -261,7 +261,7 @@ export default () => {
     };
     const getCode = (phone: any) => {
         if (phone == undefined || phone == "") {
-            return message?.error("请输入手机号")
+            return message?.info("请输入手机号");
         }
         if (countdown > 0) return
         captcha?.current?.Show?.(async (res) => {

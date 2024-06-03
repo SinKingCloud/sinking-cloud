@@ -35,6 +35,7 @@ function errorHandle(): void {
             styles: {
                 mask: {
                     WebkitBackdropFilter: "blur(10px)",
+                    backdropFilter: "blur(10px)",
                 },
             },
         });
