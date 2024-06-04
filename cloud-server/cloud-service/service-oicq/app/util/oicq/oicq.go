@@ -84,6 +84,7 @@ func GetMobileDevice(uin int64, deviceId int, proto mobile.ClientProtocol) *mobi
 
 func GetPcDevice(uin int64, deviceId int) *pc.DeviceInfo {
 	device := pc.SystemDeviceInfo
+	device.Protocol = pc.Tim
 	device.Name = []byte("PC-" + strconv.FormatInt(uin, 10) + "-" + strconv.Itoa(deviceId))
 	t := md5.Sum(device.Name)
 	device.Guid = t[:]
@@ -96,13 +97,16 @@ func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
 	if !o.Mobile.Online.Load() {
 		if o.LoginToken != nil && len(o.LoginToken) >= 0 {
 			e := o.TokenLogin()
-			if e != nil && strings.Contains(e.Error(), "tcp connect error") {
-				return e, &mobile.LoginResponse{
-					Success: false,
+			if e != nil {
+				if strings.Contains(e.Error(), "tcp connect error") {
+					return nil, &mobile.LoginResponse{
+						Success: false,
+					}
+				} else {
+					return e, &mobile.LoginResponse{
+						Success: false,
+					}
 				}
-			}
-			return nil, &mobile.LoginResponse{
-				Success: false,
 			}
 		}
 	}
