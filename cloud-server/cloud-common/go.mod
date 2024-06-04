@@ -3,8 +3,8 @@ module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 go 1.20
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240429092826-ed2ea6f81e66
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240429092826-ed2ea6f81e66
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240604031830-81baab5b4124
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240604031830-81baab5b4124
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/aliyun/alibaba-cloud-sdk-go v1.62.736
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
@@ -16,7 +16,7 @@ require (
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gomodule/redigo v1.9.2
-	github.com/spf13/viper v1.18.2
+	github.com/spf13/viper v1.19.0
 	golang.org/x/crypto v0.23.0
 	gorm.io/driver/mysql v1.5.6
 	gorm.io/gorm v1.25.10
@@ -48,9 +48,9 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
-	github.com/pelletier/go-toml/v2 v2.2.1 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/sagikazarmark/locafero v0.4.0 // indirect
+	github.com/sagikazarmark/locafero v0.5.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sirupsen/logrus v1.4.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
@@ -63,9 +63,9 @@ require (
 	github.com/tidwall/pretty v1.2.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
+	golang.org/x/exp v0.0.0-20240531132922-fd00a4e0eefc // indirect
 	golang.org/x/image v0.10.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/term v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
