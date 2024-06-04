@@ -69,6 +69,7 @@ export default () => {
     const setLightMode = () => {
         setMode(lightMode);
         setMode2(lightMode)
+        setAppearance(lightMode);
     }
 
     /**
@@ -77,6 +78,7 @@ export default () => {
     const setDarkMode = () => {
         setMode(darkMode);
         setMode2(darkMode);
+        setAppearance(darkMode);
     }
 
     /**
@@ -85,6 +87,7 @@ export default () => {
     const setAutoMode = () => {
         setMode(autoMode);
         setMode2(autoMode);
+        setAppearance(null);
     }
 
     /**
