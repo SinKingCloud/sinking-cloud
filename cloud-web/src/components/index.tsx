@@ -1,9 +1,9 @@
-import {Icon} from "@/components/icon";
-import Antd, {Message, Notification, Modal} from "@/components/antd";
-import Captcha from "@/components/captcha";
-import Theme from "@/components/theme";
-import Animation from "@/components/animation";
-import Layout, {Body, Header, Footer, Sider} from "@/components/layout";
+import {Icon} from "./icon";
+import Antd, {Message, Notification, Modal} from "./antd";
+import Captcha from "./captcha";
+import Theme from "./theme";
+import Animation from "./animation";
+import Layout, {Body, Header, Footer, Sider} from "./layout";
 
 export {
     Icon,

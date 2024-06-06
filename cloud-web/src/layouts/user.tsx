@@ -16,7 +16,7 @@ import {
     Order, Out, Exit, Add, Auto
 } from "@/components/icon";
 import {Icon, Layout} from "@/components";
-import {useModel} from "umi";
+import {useModel, useLocation, useSelectedRoutes} from "umi";
 import {useState} from "react";
 import {deleteHeader, getLoginToken} from "@/utils/auth";
 import {historyPush} from "@/utils/route";
@@ -25,6 +25,7 @@ import {App, Avatar, Col, Divider, Empty, Input, Popover, Row, Tag, Tooltip} fro
 import {createStyles, useResponsive} from "antd-style";
 import {outLogin} from "@/service/login";
 import {pinyin} from "pinyin-pro";
+import {Title} from "./components";
 
 /**
  * 中间件
@@ -583,44 +584,49 @@ export default () => {
         });
     }
     /**
-     * 搜索菜单栏
+     * 初始化用户
      */
     useEffect(() => {
         initUser();
     }, []);
 
     return (
-        <Layout loading={loading}
-                menus={getUserMenuItems()}
-                footer={<>©{new Date().getFullYear()} All Right Revered {web?.info?.name || defaultSettings?.title}</>}
-                headerLeft={<LeftTop/>}
-                headerRight={<RightTop/>}
-                menuBottomBtnIcon={Doc}
-                menuBottomBtnText={"开发文档"}
-                onMenuBottomBtnClick={() => {
-                    console.log("点击了底部按钮")
-                }}
-                menuCollapsedWidth={60}
-                menuUnCollapsedWidth={210}
-                onLogoClick={() => {
-                    console.log("点击了logo")
-                }}
-                onMenuClick={(item) => {
-                    console.log("点击了菜单", item)
-                }}
-                collapsedLogo={() => {
-                    return <img src={(defaultSettings?.basePath || "/") + "logo.svg"} width="39"
-                                alt={defaultSettings?.title}/>;
-                }}
-                unCollapsedLogo={(isLight) => {
-                    return <img
-                        src={(defaultSettings?.basePath || "/") + (isLight ? "logo_light.png" : "logo_dark.png")}
-                        width="130"
-                        alt={defaultSettings?.title}/>;
-                }}
-                onMenuBtnClick={(state) => {
-                    console.log("点击了菜单按钮", state)
-                }}
-        />
+        <>
+            <Title/>
+            <Layout loading={loading}
+                    menus={getUserMenuItems()}
+                    footer={<>©{new Date().getFullYear()} All Right
+                        Revered {web?.info?.name || defaultSettings?.title}</>}
+                    headerLeft={<LeftTop/>}
+                    headerRight={<RightTop/>}
+                    menuBottomBtnIcon={Doc}
+                    menuBottomBtnText={"开发文档"}
+                    onMenuBottomBtnClick={() => {
+                        console.log("点击了底部按钮")
+                    }}
+                    menuCollapsedWidth={60}
+                    menuUnCollapsedWidth={210}
+                    onLogoClick={() => {
+                        console.log("点击了logo")
+                    }}
+                    onMenuClick={(item) => {
+                        console.log("点击了菜单", item)
+                    }}
+                    collapsedLogo={() => {
+                        return <img src={(defaultSettings?.basePath || "/") + "logo.svg"} width="39"
+                                    alt={defaultSettings?.title}/>;
+                    }}
+                    unCollapsedLogo={(isLight) => {
+                        return <img
+                            src={(defaultSettings?.basePath || "/") + (isLight ? "logo_light.png" : "logo_dark.png")}
+                            width="130"
+                            alt={defaultSettings?.title}/>;
+                    }}
+                    onMenuBtnClick={(state) => {
+                        console.log("点击了菜单按钮", state)
+                    }}
+            />
+        </>
+
     );
 }
