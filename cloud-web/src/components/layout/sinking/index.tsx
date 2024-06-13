@@ -39,7 +39,6 @@ const useLayoutStyles = createStyles(({isDarkMode, token}): any => {
         },
         body: {
             transition: "margin-left 0.2s !important",
-            transform: "translateY(1px)",
             backgroundColor: isDarkMode ? "black" : "transparent"
         },
         header: {
@@ -52,7 +51,6 @@ const useLayoutStyles = createStyles(({isDarkMode, token}): any => {
             position: "sticky",
             top: 0,
             userSelect: "none",
-            transform: "translateY(-1px)",
             background: token?.colorBgContainer + " !important"
         },
         content: {
@@ -60,11 +58,9 @@ const useLayoutStyles = createStyles(({isDarkMode, token}): any => {
             maxWidth: "100%",
             height: "100%",
             overflow: "auto",
-            transform: "translateY(-1px)",
         },
         footer: {
             textAlign: 'center',
-            transform: "translateY(-1px)",
         },
     };
 });
