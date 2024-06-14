@@ -48,7 +48,7 @@ const useStyles = createStyles(({token}): any => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            background: token?.colorBgContainer + " !important"
+            background: token?.colorBgContainer + " !important",
         },
         menuBottom: {
             background: token?.colorBgContainer,
@@ -73,6 +73,12 @@ const useStyles = createStyles(({token}): any => {
         logoClose: {
             margin: "0px -10px",
         },
+        menu2: {
+            fontSize: "13px",
+            flex: "auto",
+            height: "55px",
+            borderBottom: "none !important",
+        }
     };
 });
 
@@ -86,6 +92,7 @@ export type SiderProps = {
     menuBottomBtnIcon?: string;//底部按钮图标
     menuBottomBtnText?: string;//底部按钮文字
     onMenuBottomBtnClick?: () => void;//点击底部按钮回调
+    layout?: string,
 };
 
 const Sider: React.FC<SiderProps> = (props) => {
@@ -99,10 +106,11 @@ const Sider: React.FC<SiderProps> = (props) => {
         menuBottomBtnIcon = null,
         menuBottomBtnText = null,
         onMenuBottomBtnClick,
+        layout = "inline",
     } = props;
     const {mobile} = useResponsive();
     const systemTheme = useTheme();
-    const {styles: {left, menu, menuTop, menuBottom}} = useStyles();
+    const {styles: {left, menu, menuTop, menuBottom, menu2}} = useStyles();
     const [selectedKeys, setSelectedKeys] = useState<any>([]);
     const location = useLocation();
     const match = useSelectedRoutes();
@@ -118,7 +126,6 @@ const Sider: React.FC<SiderProps> = (props) => {
     useEffect(() => {
         initSelectMenu();
     }, [location]);
-
     /**
      * 只展开一个子集
      */
@@ -150,55 +157,75 @@ const Sider: React.FC<SiderProps> = (props) => {
             setStateOpenKeys(openKeys);
         }
     }
-
     const {token} = theme?.useToken();
     return (
-        <Layout className={left}>
-            <Layout.Header className={menuTop} onClick={() => {
-                onLogoClick?.();
-            }}>
-                {(mobile || (!mobile && !collapsed)) &&
-                    unCollapsedLogo?.(!systemTheme?.isDarkMode)
-                }
-                {!mobile && collapsed &&
-                    collapsedLogo?.(systemTheme?.isDarkMode)
-                }
-            </Layout.Header>
-            <Layout.Content>
-                <ConfigProvider theme={{
-                    components: {
-                        Menu: {
-                            itemSelectedColor: token?.colorPrimaryText,
-                            itemColor: token?.colorTextSecondary,
-                            itemHoverColor: token?.colorTextSecondary,
-                            fontSize: 13,
-                            itemMarginBlock: 0,
-                            itemMarginInline: 0,
-                            itemBorderRadius: 0,
-                            activeBarWidth: 4,
-                            itemHeight: 45,
-                            subMenuItemBg: "rgba(255, 255, 255, 0)",
-                        }
-                    }
+        <>
+            {(layout == "inline" && <Layout className={left}>
+                <Layout.Header className={menuTop} onClick={() => {
+                    onLogoClick?.();
                 }}>
-                    <Menu selectedKeys={selectedKeys}
-                          mode="inline"
-                          items={menus} className={menu}
-                          openKeys={stateOpenKeys}
-                          onOpenChange={onOpenChange}
-                          onClick={(item: any) => {
-                              history?.push(item?.key);
-                              setSelectedKeys([item?.key]);
-                              onMenuClick?.(item);
-                          }}/>
-                </ConfigProvider>
-            </Layout.Content>
-            {(menuBottomBtnIcon || menuBottomBtnText) &&
-                <Layout.Footer className={menuBottom} onClick={onMenuBottomBtnClick}>
-                    {menuBottomBtnIcon && <Icon type={menuBottomBtnIcon}/>}
-                    {(mobile || (!mobile && !collapsed)) && menuBottomBtnText}
-                </Layout.Footer>}
-        </Layout>)
+                    {(mobile || (!mobile && !collapsed)) &&
+                        unCollapsedLogo?.(!systemTheme?.isDarkMode)
+                    }
+                    {!mobile && collapsed &&
+                        collapsedLogo?.(systemTheme?.isDarkMode)
+                    }
+                </Layout.Header>
+                <Layout.Content>
+                    <ConfigProvider theme={{
+                        components: {
+                            Menu: {
+                                itemSelectedColor: token?.colorPrimaryText,
+                                itemColor: token?.colorTextSecondary,
+                                itemHoverColor: token?.colorTextSecondary,
+                                fontSize: 13,
+                                itemMarginBlock: 0,
+                                itemMarginInline: 0,
+                                itemBorderRadius: 0,
+                                activeBarWidth: 4,
+                                itemHeight: 45,
+                                subMenuItemBg: "rgba(255, 255, 255, 0)",
+                            }
+                        }
+                    }}>
+                        <Menu selectedKeys={selectedKeys}
+                              mode={"inline"}
+                              items={menus} className={menu}
+                              openKeys={stateOpenKeys}
+                              onOpenChange={onOpenChange}
+                              onClick={(item: any) => {
+                                  history.push(item?.key);
+                                  setSelectedKeys([item?.key]);
+                                  onMenuClick?.(item);
+                              }}/>
+                    </ConfigProvider>
+                </Layout.Content>
+                {(menuBottomBtnIcon || menuBottomBtnText) &&
+                    <Layout.Footer className={menuBottom} onClick={onMenuBottomBtnClick}>
+                        {menuBottomBtnIcon && <Icon type={menuBottomBtnIcon}/>}
+                        {(mobile || (!mobile && !collapsed)) && menuBottomBtnText}
+                    </Layout.Footer>}
+            </Layout>) || <ConfigProvider theme={{
+                components: {
+                    Menu: {
+                        horizontalItemSelectedColor: token?.colorPrimaryText,
+                        horizontalItemColor: token?.colorTextSecondary,
+                        horizontalItemHoverColor: token?.colorTextSecondary,
+                        fontSize: 13,
+                        itemMarginBlock: 0,
+                        itemMarginInline: 0,
+                        itemBorderRadius: 0,
+                        activeBarWidth: 4,
+                        itemHeight: 45,
+                        subMenuItemBg: "rgba(255, 255, 255, 0)",
+                    }
+                }
+            }}><Menu mode={"horizontal"} selectedKeys={selectedKeys}
+                     items={menus} className={menu2} onClick={(item: any) => {
+                history.push(item?.key);
+            }}/></ConfigProvider>}
+        </>
+    )
 }
 
 export default Sider

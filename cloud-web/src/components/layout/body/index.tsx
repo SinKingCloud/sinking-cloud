@@ -9,11 +9,11 @@ import 'dayjs/locale/zh-cn';
 import {Animation, Theme} from "@/components";
 import {Animate} from "@/components/animation";
 
-const useStyles = createStyles(({token}): any => {
+const useStyles = createStyles(({token,css,responsive}): any => {
     return {
-        body: {
-            padding: "10px",
-        },
+        body: css`
+            padding: 10px;
+        `,
         load: {
             margin: "0 auto",
             width: "100%",

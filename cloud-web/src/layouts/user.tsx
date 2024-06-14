@@ -15,8 +15,8 @@ import {
     PayLog,
     Order, Out, Exit, Add, Auto
 } from "@/components/icon";
-import {Icon, Layout} from "@/components";
-import {useModel, useLocation, useSelectedRoutes} from "umi";
+import {Icon, Layout, Title as TitleText} from "@/components";
+import {useModel} from "umi";
 import {useState} from "react";
 import {deleteHeader, getLoginToken} from "@/utils/auth";
 import {historyPush} from "@/utils/route";
@@ -100,15 +100,7 @@ const LeftTop: React.FC = () => {
                 font-weight: bolder;
                 float: left;
 
-                div {
-                    width: 5px;
-                    background-color: ${token?.colorPrimary};
-                    border-radius: 0 5px 5px 0;
-                    height: 20px;
-                    float: left;
-                    margin-top: 14.7%;
-                    margin-right: 7px;
-                }
+
             `,
             divider: {
                 margin: "0"
@@ -286,8 +278,7 @@ const LeftTop: React.FC = () => {
                          <div className={panelList}>
                              <div className={line}>
                                  <div className={title}>
-                                     <div/>
-                                     功能列表
+                                     <TitleText>功能列表</TitleText>
                                  </div>
                                  <Tooltip title={edit ? "保存功能并退出" : "编辑或删除功能"}>
                                      <Icon type={edit ? Exit : Setting} className={icon} onClick={editToggle}/>
@@ -311,8 +302,7 @@ const LeftTop: React.FC = () => {
                          <div className={panelSearch}>
                              <div className={line}>
                                  <div className={title}>
-                                     <div/>
-                                     快捷功能
+                                     <TitleText>快捷功能</TitleText>
                                  </div>
                              </div>
                              {((list?.length || 0) <= 0 &&
