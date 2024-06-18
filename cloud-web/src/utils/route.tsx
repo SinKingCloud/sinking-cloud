@@ -15,16 +15,16 @@ function getPathByName(routes: any, name: any, params: any = {}, currentPath = '
         let finalPath = currentPath + (currentPath && !currentPath.endsWith('/') ? '/' : '') + (route.path.startsWith('/') ? route.path.slice(1) : route.path);
         if (params && Object.keys(params).length > 0) {
             for (const key in params) {
-                if (route.path.includes(`:${key}`)) {
+                if (route?.path?.includes(`:${key}`)) {
                     finalPath = finalPath.replace(`:${key}`, params[key]);
                 }
             }
         }
-        if (route.name === name) {
-            return finalPath.startsWith('/') ? finalPath : `/${finalPath}`;
+        if (route?.name === name) {
+            return finalPath?.startsWith('/') ? finalPath : `/${finalPath}`;
         }
-        if (route.routes) {
-            const foundPath = getPathByName(route.routes, name, params, finalPath);
+        if (route?.routes) {
+            const foundPath = getPathByName(route?.routes, name, params, finalPath);
             if (foundPath) {
                 return foundPath;
             }
@@ -45,10 +45,10 @@ const routeCache: any = {}
  */
 export function getFullPathByName(name: any, params: any = {}): string {
     if (Object.keys(params).length <= 0 && routeCache?.[name] != undefined) {
-        return routeCache[name];
+        return routeCache?.[name];
     }
     routeCache[name] = getPathByName(route, name, params, '');
-    return routeCache[name];
+    return routeCache?.[name];
 }
 
 /**
@@ -78,17 +78,17 @@ function getMenuItems(routes: any, parentPath = '/') {
         if (route?.icon) {
             menuItem.icon = <Icon type={route?.icon}/>;
         }
-        if (parentPath != '/' && !route.path.startsWith('/')) {
+        if (parentPath != '/' && !route?.path?.startsWith('/')) {
             menuItem.key = `${parentPath}/${route.path}`;
         } else {
-            if (parentPath == '/' && route.path != '/') {
-                menuItem.key = `/${route.path}`;
+            if (parentPath == '/' && route?.path != '/') {
+                menuItem.key = `/${route?.path}`;
             } else {
-                menuItem.key = `${route.path}`;
+                menuItem.key = `${route?.path}`;
             }
         }
-        if (route.routes) {
-            const children = getMenuItems(route.routes, menuItem.key);
+        if (route?.routes) {
+            const children = getMenuItems(route?.routes, menuItem?.key);
             if (children.length > 0) {
                 menuItem.children = children;
             }
@@ -113,18 +113,18 @@ export function getParentList(data: any[], name: string): any[] {
 
     function findParent(data: any, name: string): boolean {
         if (data?.children && data?.children?.length > 0) {
-            if (data.name === name) {
+            if (data?.name === name) {
                 parents.push(data);
                 return true;
             }
         } else {
             for (const item of data) {
-                if (item.name === name) {
+                if (item?.name === name) {
                     parents.push(item);
                     return true;
                 }
-                if (item.children) {
-                    if (findParent(item.children, name)) {
+                if (item?.children) {
+                    if (findParent(item?.children, name)) {
                         parents.push(item);
                         return true;
                     }
