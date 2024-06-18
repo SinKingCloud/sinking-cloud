@@ -90,6 +90,9 @@ const useLayoutStyles = createStyles(({isDarkMode, token, css, responsive}): any
             alignItems: "center",
             width: "220px",
             height: "55px",
+        },
+        darkColor: {
+            backgroundColor: "#001529 !important"
         }
     };
 });
@@ -110,11 +113,12 @@ export type LayoutProps = {
     menuBottomBtnIcon?: string;//底部按钮图标
     menuBottomBtnText?: string;//底部按钮文字
     onMenuBottomBtnClick?: () => void;//点击底部按钮回调
-    layout?: string,
+    layout?: string;//布局
+    menuTheme?: string;//菜单主题
 };
 
 const SinKing: React.FC<LayoutProps> = (props) => {
-    const {
+    let {
         loading = false,
         menus,
         onMenuClick,
@@ -130,6 +134,7 @@ const SinKing: React.FC<LayoutProps> = (props) => {
         menuBottomBtnText = undefined,
         onMenuBottomBtnClick,
         layout = 'inline',
+        menuTheme = "light",
     } = props;
     const systemTheme = useTheme();
     /*
@@ -148,7 +153,8 @@ const SinKing: React.FC<LayoutProps> = (props) => {
             drawMenu,
             menuBtn,
             flow,
-            logo
+            logo,
+            darkColor
         }
     } = useLayoutStyles();
     const {mobile, md} = useResponsive();
@@ -168,12 +174,21 @@ const SinKing: React.FC<LayoutProps> = (props) => {
     }
 
     /**
+     * 获取菜单主题颜色
+     */
+    const getColor = () => {
+        const mode = systemTheme?.isDarkMode ? "light" : (menuTheme == "dark" ? menuTheme : "light");
+        return !systemTheme?.isDarkMode && mode == "dark" ? ' ' + darkColor : '';
+    }
+
+    /**
      * 获取菜单
      * @param mode 布局模式
      */
     const getSider = (mode) => {
         mode = mode == "horizontal" ? mode : "inline";
-        return <Sider layout={mode} collapsed={collapsed}
+        menuTheme = menuTheme == "dark" ? menuTheme : "light";
+        return <Sider layout={mode} theme={menuTheme} collapsed={collapsed}
                       onLogoClick={onLogoClick}
                       collapsedLogo={collapsedLogo}
                       unCollapsedLogo={unCollapsedLogo}
@@ -182,6 +197,7 @@ const SinKing: React.FC<LayoutProps> = (props) => {
                       onMenuBottomBtnClick={onMenuBottomBtnClick}
                       menus={menus}
                       onMenuClick={(item) => {
+                          setOpen(false);
                           onMenuClick?.(item);
                       }}/>;
     }
@@ -236,7 +252,7 @@ const SinKing: React.FC<LayoutProps> = (props) => {
                 {headerLeft}
             </div>} right={headerRight}/>}
             {(!md && drawer) ||
-                <div className={flow}>
+                <div className={flow + getColor()}>
                     <div className={logo}>
                         {unCollapsedLogo?.(!systemTheme?.isDarkMode)}
                     </div>
