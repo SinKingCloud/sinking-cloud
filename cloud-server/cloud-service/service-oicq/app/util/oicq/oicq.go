@@ -99,11 +99,11 @@ func (o *Oicq) AutoLogin() (error, *mobile.LoginResponse) {
 			e := o.TokenLogin()
 			if e != nil {
 				if strings.Contains(e.Error(), "tcp connect error") {
-					return nil, &mobile.LoginResponse{
+					return e, &mobile.LoginResponse{
 						Success: false,
 					}
 				} else {
-					return e, &mobile.LoginResponse{
+					return nil, &mobile.LoginResponse{
 						Success: false,
 					}
 				}
