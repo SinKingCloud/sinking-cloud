@@ -1,4 +1,4 @@
-FROM golang:1.20 as sinking-builder
+FROM --platform=linux/amd64 golang:1.20 as sinking-builder
 
 #作者
 MAINTAINER sinkingcloud 1178710004@qq.com
@@ -10,8 +10,8 @@ ENV GOPROXY=https://goproxy.cn
 ENV GOPRIVATE=github.com/SinKingCloud
 #RUN git config --global http.proxy socks5://admin:123456@155.94.205.173:8786
 #RUN git config --global https.proxy socks5://admin:123456@155.94.205.173:8786
-RUN git config --global http.proxy socks5://host.docker.internal:10808
-RUN git config --global https.proxy socks5://host.docker.internal:10808
+RUN git config --global http.proxy socks5://host.docker.internal:1080
+RUN git config --global https.proxy socks5://host.docker.internal:1080
 RUN git config --global url."https://SinKingCloud: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@github.com".insteadOf "https://github.com"
 RUN apt install apt-transport-https
 
@@ -48,7 +48,7 @@ RUN go build
 #RUN go build
 
 #################网关服务镜像####################
-FROM alpine as cloud-gateway
+FROM --platform=linux/amd64 alpine as cloud-gateway
 RUN echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/main' > /etc/apk/repositories && echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/community' >>/etc/apk/repositories && apk update && apk add tzdata && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 WORKDIR /data/sinking
 COPY --from=sinking-builder /data/sinking/cloud-gateway/cloud-gateway .
@@ -57,7 +57,7 @@ EXPOSE 1000
 ENTRYPOINT  ["./cloud-gateway"]
 
 #################推送服务镜像####################
-FROM alpine as cloud-websocket
+FROM --platform=linux/amd64 alpine as cloud-websocket
 RUN echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/main' > /etc/apk/repositories && echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/community' >>/etc/apk/repositories && apk update && apk add tzdata && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 WORKDIR /data/sinking
 COPY --from=sinking-builder /data/sinking/cloud-websocket/cloud-websocket .
@@ -66,7 +66,7 @@ EXPOSE 1005
 ENTRYPOINT  ["./cloud-websocket"]
 
 #################用户服务镜像####################
-FROM alpine as service-user
+FROM --platform=linux/amd64 alpine as service-user
 RUN echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/main' > /etc/apk/repositories && echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/community' >>/etc/apk/repositories && apk update && apk add tzdata && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 WORKDIR /data/sinking
 COPY --from=sinking-builder /data/sinking/cloud-service/service-user/service-user .
@@ -75,7 +75,7 @@ EXPOSE 1002
 ENTRYPOINT  ["./service-user"]
 
 #################后台服务镜像####################
-FROM alpine as service-admin
+FROM --platform=linux/amd64 alpine as service-admin
 RUN echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/main' > /etc/apk/repositories && echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/community' >>/etc/apk/repositories && apk update && apk add tzdata && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 WORKDIR /data/sinking
 COPY --from=sinking-builder /data/sinking/cloud-service/service-admin/service-admin .
@@ -84,7 +84,7 @@ EXPOSE 1001
 ENTRYPOINT  ["./service-admin"]
 
 #################授权服务镜像####################
-FROM alpine as service-auth
+FROM --platform=linux/amd64 alpine as service-auth
 RUN echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/main' > /etc/apk/repositories && echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/community' >>/etc/apk/repositories && apk update && apk add tzdata && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 WORKDIR /data/sinking
 COPY --from=sinking-builder /data/sinking/cloud-service/service-auth/service-auth .
@@ -93,7 +93,7 @@ EXPOSE 1003
 ENTRYPOINT  ["./service-auth"]
 
 #################开放服务镜像####################
-FROM alpine as service-open
+FROM --platform=linux/amd64 alpine as service-open
 RUN echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/main' > /etc/apk/repositories && echo 'http://mirrors.ustc.edu.cn/alpine/v3.5/community' >>/etc/apk/repositories && apk update && apk add tzdata && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 WORKDIR /data/sinking
 COPY --from=sinking-builder /data/sinking/cloud-service/service-open/service-open .
