@@ -12,7 +12,6 @@ type AppPlugin struct {
 	Name         string       `gorm:"column:name" json:"name"`
 	Describe     string       `gorm:"column:describe" json:"describe"`
 	Icon         string       `gorm:"column:icon" json:"icon"`
-	DescImgs     string       `gorm:"column:desc_imgs" json:"desc_imgs"`
 	Price        float64      `gorm:"column:price" json:"price"`
 	FilterUrl    string       `gorm:"column:filter_url" json:"filter_url"`
 	ServiceGroup string       `gorm:"column:service_group" json:"service_group"`
