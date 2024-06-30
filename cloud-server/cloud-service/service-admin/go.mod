@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240604031830-81baab5b4124
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240630013516-3a38297dcc84
 )
 
 require (

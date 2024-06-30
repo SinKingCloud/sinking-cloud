@@ -48,8 +48,8 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240604031830-81baab5b4124 h1:xlwUc0kOuH5XZ49b0RURFquo6nfYmlEt1/0fKY8pJCQ=
 github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20240604031830-81baab5b4124/go.mod h1:ki/h7vU3A8SjBweUkBvpFUqIL3eYrW9MejQJUt06rG4=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240604031830-81baab5b4124 h1:mYAyzVaRDChVT/KdaHyRmjrA7D2F2Dtrf1VBKH7ftXA=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240604031830-81baab5b4124/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240630013516-3a38297dcc84 h1:gRaYh9TDUe1nJyrJEvShBf73m/JDBSDHYyDLzLc6KDE=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240630013516-3a38297dcc84/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/apache/rocketmq-client-go/v2 v2.1.2 h1:yt73olKe5N6894Dbm+ojRf/JPiP0cxfDNNffKwhpJVg=
 github.com/apache/rocketmq-client-go/v2 v2.1.2/go.mod h1:6I6vgxHR3hzrvn+6n/4mrhS+UTulzK/X9LB2Vk1U5gE=
