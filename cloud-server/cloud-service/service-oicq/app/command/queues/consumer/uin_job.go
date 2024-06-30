@@ -79,33 +79,33 @@ var (
 	authThreadWait     = &sync.WaitGroup{} //动态协程池并发锁
 	authThreadWaitLock = &sync.RWMutex{}
 	taskWait           = &sync.WaitGroup{} //任务并发锁
-	taskWaitLock       = &sync.RWMutex{}
 )
 
 // autoStartThread 动态协程池
 func (l *uinJob) autoStartThread() {
 	go func(l *uinJob) {
 		for {
-			//上锁,禁止新增任务
-			authThreadWaitLock.RLock()
-			authThreadWait.Add(1)
-			authThreadWaitLock.RUnlock()
-			taskWaitLock.RLock()
-			taskWait.Wait() //等待协程内所有任务执行完毕
-			taskWaitLock.RUnlock()
-			//查询所有挂机服务器
-			list, err := server2.GetIns().SelectAllServer()
-			if err == nil {
-				for _, server := range list {
-					l.restartThread(server)
-				}
-			}
-			authThreadWaitLock.RLock()
-			authThreadWait.Done()
-			authThreadWaitLock.RUnlock()
+			l.RestartThread()
 			time.Sleep(24 * time.Hour) //每24小时根据账号数量更新协程池
 		}
 	}(l)
+}
+
+// RestartThread 重启携程
+func (l *uinJob) RestartThread() {
+	//上锁,禁止新增任务
+	authThreadWait.Add(1)
+	defer authThreadWait.Done()
+	authThreadWaitLock.Lock()
+	defer authThreadWaitLock.Unlock()
+	taskWait.Wait() //等待协程内所有任务执行完毕
+	//查询所有挂机服务器
+	list, err := server2.GetIns().SelectAllServer()
+	if err == nil {
+		for _, server := range list {
+			l.restartThread(server)
+		}
+	}
 }
 
 // restartThread 重启协程池
@@ -145,17 +145,13 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 		}, Consumer: func(param interface{}) {
 			if param != nil {
 				//执行挂机任务
-				taskWaitLock.RLock()
 				taskWait.Add(1) //任务数量+1
-				taskWaitLock.RUnlock()
 				sinking_web.Try(func() {
 					l.speed(param.(*uin2.AppUinJob))
 				}, func(i interface{}) {
 					log.Println("执行出错", param, "错误", i)
 				})
-				taskWaitLock.RLock()
 				taskWait.Done()
-				taskWaitLock.RUnlock()
 			}
 		}, Thread: threadNum}).Run()
 	}(g, l)

@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240604031830-81baab5b4124
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240630013516-3a38297dcc84
 	github.com/go-rod/rod v0.102.1
 )
 
