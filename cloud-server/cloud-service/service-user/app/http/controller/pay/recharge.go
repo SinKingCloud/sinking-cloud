@@ -6,6 +6,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/order"
 	"strconv"
 )
@@ -28,7 +29,7 @@ func (ControllerPay) Recharge(c *sinking_server.Context) {
 	}
 	//创建订单
 	tradeNo := strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10)
-	err := order.GetIns().Create(&model.WebUserOrder{
+	err := service2.Order.Create(&model.WebUserOrder{
 		UserId:    c.GetWebUserInfo().Id,
 		PayType:   form.Type,
 		OrderType: order.OrdersTypeRecharge,

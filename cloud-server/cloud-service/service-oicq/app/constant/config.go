@@ -19,4 +19,10 @@ const (
 	AppUinBuyYearGift     = "buy.year.gift"        //系统云端挂机购买12月赠送天数
 	AppUinUpdateLevel     = "uin.update.level"     //系统云端挂机最低允许挂机等级
 	AppUinUpdateDays      = "uin.update.days"      //系统云端挂机最低允许挂机天数
+	AppUinRefundOpen      = "refund.open"          //系统云端挂机退单功能是否开启
+	AppUinRefundPoint     = "refund.point"         //系统云端挂机退单功能手续费(百分比)
+	AppUinRefundMin       = "refund.min"           //系统云端挂机退单功能手续费(单笔最低)
+	AppUinRefundMax       = "refund.max"           //系统云端挂机退单功能手续费(单笔最高)
+	AppUinRefundDay       = "refund.day"           //系统云端挂机退单功能最久退单日期
+	AppUinRefundFree      = "refund.free"          //系统云端挂机退单功能免费退单日期
 )

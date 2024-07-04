@@ -3,6 +3,7 @@ package person
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/log"
 	"strconv"
 )
@@ -48,11 +49,11 @@ func (ControllerPerson) Log(c *sinking_server.Context) {
 	if form.CreateTimeEnd != "" {
 		where["create_time_end"] = form.CreateTimeEnd
 	}
-	data, total, err := log.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.Log.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
 		c.Error("获取操作记录失败")
 	} else {
-		log.GetIns().CreateByQueue(c, log.EventShow, "查看日志", "查看操作日志")
+		service.Log.CreateByQueue(c, log.EventShow, "查看日志", "查看操作日志")
 		c.SuccessWithData("获取操作记录成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }

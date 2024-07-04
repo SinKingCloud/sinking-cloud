@@ -568,7 +568,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		return
 	}
 	var resp *client.LoginResponse
-	request := func(uinInfo *model.AppUin, fun func() (*client.LoginResponse, error)) (resp *client.LoginResponse, err error) {
+	request := func(uinInfo *uin.AppUinJob, fun func() (*client.LoginResponse, error)) (resp *client.LoginResponse, err error) {
 		resp, err = fun()
 		log2.Println(uinInfo.Uin, resp, err)
 		if err != nil {
@@ -633,7 +633,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("登陆发生错误,请使用扫码登陆重试")
 		return
 	}
-	response := func(uinInfo *model.AppUin, resp *client.LoginResponse) (code int32, message interface{}, data interface{}) {
+	response := func(uinInfo *uin.AppUinJob, resp *client.LoginResponse) (code int32, message interface{}, data interface{}) {
 		if resp.Success {
 			return 200, "更新状态成功", nil
 		} else if resp.Error == client.SliderNeededError {
@@ -686,7 +686,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	if code == 200 {
 		token := ins.GenToken()
 		if web_uin.SaveLoginToken(uinInfo, token) == nil {
-			go func(uinInfo *model.AppUin) {
+			go func(uinInfo *uin.AppUinJob) {
 				//写入QQ操作记录
 				_ = log.GetIns().Create(&model.AppUinLog{
 					UserId:  uinInfo.UserId,
@@ -876,7 +876,7 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 			}
 			token := cli.Mobile.GenToken()
 			if web_uin.SaveLoginToken(uinInfo, token) == nil {
-				go func(uinInfo *model.AppUin) {
+				go func(uinInfo *uin.AppUinJob) {
 					//写入QQ操作记录
 					_ = log.GetIns().Create(&model.AppUinLog{
 						UserId:  uinInfo.UserId,
@@ -1045,7 +1045,7 @@ func (ControllerUin) Delete(c *sinking_server.Context) {
 		c.Error("删除QQ失败")
 		return
 	}
-	go func(uinInfo *model.AppUin) {
+	go func(uinInfo *uin.AppUinJob) {
 		if uinInfo.UinStatus == uin.Normal {
 			_ = web_uin.ServerUinDelete(uinInfo.Id)
 		}

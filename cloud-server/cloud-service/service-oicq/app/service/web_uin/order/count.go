@@ -17,6 +17,9 @@ func (s *Service) Count(where map[string]string) (total int64) {
 	if where["uin_id"] != "" {
 		query.Where("`uin_id` = ?", where["uin_id"])
 	}
+	if where["trade_no"] != "" {
+		query.Where("`trade_no` = ?", where["trade_no"])
+	}
 	if where["type"] != "" {
 		query.Where("`type` = ?", where["type"])
 	}

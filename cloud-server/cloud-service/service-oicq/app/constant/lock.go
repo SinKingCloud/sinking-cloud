@@ -24,4 +24,7 @@ const (
 
 	LockUinInfo     = "LockUinInfo_" //QQ更新详情并发锁
 	LockTimeUinInfo = 1 * 60 * 1000  //QQ更新详情并发锁最大时间
+
+	LockUinRefund     = "LockUinRefund_" //挂机应用退单并发锁
+	LockTimeUinRefund = 1 * 60 * 1000    //挂机应用退单并发锁最大时间
 )

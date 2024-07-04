@@ -3,7 +3,7 @@ package notice
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/model"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/notice"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service"
 )
 
 // Info 获取详情
@@ -16,11 +16,11 @@ func (ControllerNotice) Info(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	data, err := notice.GetIns().FindById(form.Id)
+	data, err := service.Notice.FindById(form.Id)
 	if err == nil && data != nil {
 		//查看次数自增
 		go func(data *model.WebNotice) {
-			_ = notice.GetIns().UpdateByLookNumInc(data.Id, 1)
+			_ = service.Notice.UpdateByLookNumInc(data.Id, 1)
 		}(data)
 		c.SuccessWithData("获取详情数据成功", data)
 	} else {

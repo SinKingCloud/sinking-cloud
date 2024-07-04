@@ -8,10 +8,29 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/aliyun"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"strconv"
+	"sync"
 )
 
+// Service 单例对象
+type Service struct {
+}
+
+// obj 单例对象
+var (
+	obj  *Service
+	once sync.Once
+)
+
+// GetIns 获取单例
+func GetIns() *Service {
+	once.Do(func() {
+		obj = &Service{}
+	})
+	return obj
+}
+
 // FaceInit 初始化人脸识别
-func FaceInit(userId int, cardType string, cardNo string, cardName string, jumpUrl string, callbackUrl string) (string, string, error) {
+func (s *Service) FaceInit(userId int, cardType string, cardNo string, cardName string, jumpUrl string, callbackUrl string) (string, string, error) {
 	type Form struct {
 		UserId   int    `form:"user_id" json:"user_id"`
 		CardNo   string `form:"card_no" json:"card_no"`
@@ -54,7 +73,7 @@ func FaceInit(userId int, cardType string, cardNo string, cardName string, jumpU
 }
 
 // FaceCheck 判断人脸识别
-func FaceCheck(id string) (res bool, userId int, cardNo string, cardName string) {
+func (s *Service) FaceCheck(id string) (res bool, userId int, cardNo string, cardName string) {
 	configs := service.GetSystemConfigServiceIns().GetGroupByCache(config.AliyunGroup, false)
 	res, err := aliyun.NewFace(configs[config.AliyunAccessKey], configs[config.AliyunAccessSecret]).
 		Query(configs[config.AliyunAuthSceneId], id)

@@ -3,8 +3,8 @@ package pay
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/order"
 	"strconv"
 )
 
@@ -58,7 +58,7 @@ func (ControllerPay) OrderList(c *sinking_server.Context) {
 	if form.UpdateTimeEnd != "" {
 		where["update_time_end"] = form.UpdateTimeEnd
 	}
-	data, total, err := order.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.Order.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
 		c.Error("获取订单记录失败")
 	} else {

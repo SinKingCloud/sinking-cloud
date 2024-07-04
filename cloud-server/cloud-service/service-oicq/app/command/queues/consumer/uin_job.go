@@ -200,7 +200,7 @@ func (l *uinJob) speed(uin *uin2.AppUinJob) {
 				}
 			}(serverId)
 		}
-		uinInfo, err := uin2.GetIns().FindById(uin.Id)
+		uinInfo, err := uin2.GetIns().FindByIdAll(uin.Id)
 		if err != nil || uinInfo == nil {
 			log.Println("获取uinInfo失败", err, uinInfo)
 			return

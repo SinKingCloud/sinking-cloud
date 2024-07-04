@@ -86,6 +86,9 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 	firstBuy := 1
 	//赠送天数
 	giftDays := 0
+	giftDays = GetGiftDays(month)
+	//实际到账天数
+	days := month*30*firstBuy + giftDays
 	//写入qq记录失败,退回余额
 	if err != nil || uinInfo == nil {
 		orderErr = err
@@ -105,10 +108,6 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 				}
 			}
 		}
-		//赠送天数
-		giftDays = GetGiftDays(month)
-		//实际到账天数
-		days := month*30*firstBuy + giftDays
 		//更改到期时间
 		if types == 0 || types == 1 {
 			data["player_day"] = gorm.Expr("`player_day`+" + strconv.Itoa(days))
@@ -164,13 +163,15 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 			Content: content,
 		})
 		_ = order.GetIns().Create(&model.AppUinOrder{
-			UserId: user.Id,
-			AppId:  appId,
-			UinId:  uinInfo.Id,
-			Type:   types,
-			Money:  price,
-			Name:   content,
-			Status: 0,
+			UserId:  user.Id,
+			AppId:   appId,
+			UinId:   uinInfo.Id,
+			Type:    types,
+			TradeNo: strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10),
+			Money:   price,
+			Days:    days,
+			Name:    content,
+			Status:  0,
 		})
 		if cost {
 			rpc.WebUserPayLog.Create(user.Id, 1, 1, price, "在线消费", "为QQ"+uinInfo.Uin+"在线下单"+strconv.Itoa(month)+"月"+typeName)

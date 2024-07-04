@@ -33,7 +33,7 @@ func ServerUinDelete(u int) error {
 	if err == nil {
 		oicq.DelOicqInstance(q) //删除实例
 	}
-	go func(uinInfo *model.AppUin) {
+	go func(uinInfo *uin.AppUinJob) {
 		//写入QQ操作记录
 		_ = log.GetIns().Create(&model.AppUinLog{
 			UserId:  uinInfo.UserId,
@@ -111,7 +111,7 @@ func ChangePassword(uinId int, pwd string) error {
 }
 
 // SaveLoginToken 保存登陆token
-func SaveLoginToken(uinInfo *model.AppUin, token []byte) error {
+func SaveLoginToken(uinInfo *uin.AppUinJob, token []byte) error {
 	data := make(map[string]interface{})
 	data["server_id"] = uinInfo.ServerId
 	data["server_key"] = uinInfo.ServerKey

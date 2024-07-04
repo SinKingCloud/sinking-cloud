@@ -8,16 +8,19 @@ import (
 
 // AppUinOrder QQ订单记录
 type AppUinOrder struct {
-	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
-	UserId     int          `gorm:"column:user_id" json:"user_id"`
-	AppId      int          `gorm:"column:app_id" json:"app_id"`
-	UinId      int          `gorm:"column:uin_id" json:"uin_id"`
-	Type       int          `gorm:"column:type" json:"type"`
-	Money      float64      `gorm:"column:money" json:"money"`
-	Name       string       `gorm:"column:name" json:"name"`
-	Status     int          `gorm:"column:status" json:"status"`
-	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
-	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
+	Id          int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
+	UserId      int          `gorm:"column:user_id" json:"user_id"`
+	AppId       int          `gorm:"column:app_id" json:"app_id"`
+	UinId       int          `gorm:"column:uin_id" json:"uin_id"`
+	Type        int          `gorm:"column:type" json:"type"`
+	TradeNo     string       `gorm:"column:trade_no" json:"trade_no"`
+	Money       float64      `gorm:"column:money" json:"money"`
+	RefundMoney float64      `gorm:"column:refund_money" json:"refund_money"`
+	Days        int          `gorm:"column:days" json:"days"`
+	Name        string       `gorm:"column:name" json:"name"`
+	Status      int          `gorm:"column:status" json:"status"`
+	CreateTime  str.DateTime `gorm:"column:create_time" json:"create_time"`
+	UpdateTime  str.DateTime `gorm:"column:update_time" json:"update_time"`
 }
 
 // TableName 获取表名

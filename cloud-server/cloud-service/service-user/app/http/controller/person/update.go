@@ -4,6 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/user"
 	"regexp"
@@ -25,13 +26,13 @@ func (ControllerPerson) Update(c *sinking_server.Context) {
 	}
 	data := make(map[string]interface{})
 	if form.Account != "" {
-		webUser := user.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, true)
+		webUser := service.User.GetCurrentUserInfo(c.GetWebUserInfo().Id, true)
 		if webUser.Account == "" {
 			if ok, _ := regexp.MatchString("^[a-zA-Z0-9]{5,25}$", form.Account); !ok {
 				c.Error("该账户名不合法")
 				return
 			}
-			if num, err := user.GetIns().CountByAccount(form.Account); err != nil || num > 0 {
+			if num, err := service.User.CountByAccount(form.Account); err != nil || num > 0 {
 				c.Error("该账户名已被占用")
 				return
 			}
@@ -47,8 +48,8 @@ func (ControllerPerson) Update(c *sinking_server.Context) {
 	if form.Avatar != "" {
 		data["avatar"] = form.Avatar
 	}
-	if err := user.GetIns().UpdateById(c.GetWebUserInfo().Id, data); err == nil {
-		log.GetIns().CreateByQueue(c, log.EventEdit, "修改资料", "修改账户资料")
+	if err := service.User.UpdateById(c.GetWebUserInfo().Id, data); err == nil {
+		service.Log.CreateByQueue(c, log.EventEdit, "修改资料", "修改账户资料")
 		c.Success("更新资料成功")
 	} else {
 		c.Error("更新资料失败")
@@ -66,14 +67,14 @@ func (ControllerPerson) Password(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	u := user.GetIns().GetCurrentUserInfo(c.GetWebUserInfo().Id, false)
+	u := service.User.GetCurrentUserInfo(c.GetWebUserInfo().Id, false)
 	if !rpc.Sms.Check(strconv.FormatInt(u.Phone, 10), form.Code) {
 		c.Error("短信验证码校验失败")
 		return
 	}
-	if err := user.GetIns().UpdateById(c.GetWebUserInfo().Id,
+	if err := service.User.UpdateById(c.GetWebUserInfo().Id,
 		map[string]interface{}{"password": str.NewStringTool(form.Password).GetPassword()}); err == nil {
-		log.GetIns().CreateByQueue(c, log.EventEdit, "修改密码", "修改账户密码")
+		service.Log.CreateByQueue(c, log.EventEdit, "修改密码", "修改账户密码")
 		c.Success("修改密码成功")
 	} else {
 		c.Error("修改密码失败")

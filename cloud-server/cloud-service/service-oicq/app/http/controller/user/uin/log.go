@@ -4,6 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/web_uin/log"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/web_uin/uin"
 	"strconv"
 )
 
@@ -16,7 +17,7 @@ func (ControllerLog) List(c *sinking_server.Context) {
 		OrderByField string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id" label:"排序字段"`
 		OrderByType  string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
 		AppId        string `form:"app_id" json:"app_id" default:"" validate:"omitempty,numeric" label:"应用ID"`
-		UinId        string `form:"uin_id" json:"uin_id" default:"" validate:"omitempty,numeric" label:"QQID"`
+		Uin          string `form:"uin" json:"uin" default:"" json:"uin" validate:"required,numeric,min=5,max=10" label:"QQ账号"`
 		Title        string `form:"title" json:"title" default:"" validate:"omitempty,max=50" label:"标题"`
 		Content      string `form:"content" json:"content" default:"" validate:"omitempty,max=50" label:"描述"`
 	}
@@ -25,13 +26,16 @@ func (ControllerLog) List(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
+	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	if err != nil || uinInfo == nil {
+		c.Error("未查询到QQ信息,请先添加QQ")
+		return
+	}
 	where := make(map[string]string)
 	where["user_id"] = strconv.Itoa(c.GetWebUserInfo().Id)
+	where["uin_id"] = strconv.Itoa(uinInfo.Id)
 	if form.AppId != "" {
 		where["app_id"] = form.AppId
-	}
-	if form.UinId != "" {
-		where["uin_id"] = form.UinId
 	}
 	if form.Title != "" {
 		where["title"] = form.Title

@@ -3,8 +3,8 @@ package pay
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/log"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/pay_log"
 	"strconv"
 )
 
@@ -37,11 +37,11 @@ func (ControllerPay) LogList(c *sinking_server.Context) {
 	if form.CreateTimeEnd != "" {
 		where["create_time_end"] = form.CreateTimeEnd
 	}
-	data, total, err := pay_log.GetIns().Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.PayLog.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
 		c.Error("获取消费记录失败")
 	} else {
-		log.GetIns().CreateByQueue(c, log.EventShow, "查看消费", "查看消费记录")
+		service.Log.CreateByQueue(c, log.EventShow, "查看消费", "查看消费记录")
 		c.SuccessWithData("获取消费记录成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }

@@ -6,7 +6,7 @@ import (
 )
 
 // Select 查询
-func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*model.AppUinOrder, total int64, err error) {
+func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*AppUinOrder, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.AppUinOrder{})
 	if where["user_id"] != "" {
@@ -20,6 +20,9 @@ func (s *Service) Select(where map[string]string, orderByField string, orderByTy
 	}
 	if where["type"] != "" {
 		query.Where("`type` = ?", where["type"])
+	}
+	if where["trade_no"] != "" {
+		query.Where("`trade_no` = ?", where["trade_no"])
 	}
 	if where["status"] != "" {
 		query.Where("`status` = ?", where["status"])

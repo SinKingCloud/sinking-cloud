@@ -60,7 +60,9 @@ type AppUinJob struct {
 	AppId      int          `gorm:"column:app_id" json:"app_id"`
 	ServerId   int          `gorm:"column:server_id" json:"server_id"`
 	ServerKey  string       `gorm:"column:server_key" json:"server_key"`
+	Proto      int          `gorm:"column:proto" json:"proto"`
 	Uin        string       `gorm:"column:uin" json:"uin"`
+	Password   string       `gorm:"column:password" json:"password"`
 	UinStatus  int          `gorm:"column:uin_status" json:"uin_status"`
 	Device     int          `gorm:"column:device" json:"device"`
 	SignDay    int          `gorm:"column:sign_day" json:"sign_day"`

@@ -27,7 +27,7 @@ func GetServer(key string) (data *model.AppUinServer, err error) {
 
 // GetOicqIns 获取QQ操作实例
 func GetOicqIns(u string, newIns bool) (*oicq.Oicq, error) {
-	uinInfo, err := uin.GetIns().FindByUin(u)
+	uinInfo, err := uin.GetIns().FindByUinAll(u)
 	if err != nil || uinInfo == nil {
 		return nil, errors.New("未查询到QQ信息")
 	}
@@ -42,7 +42,7 @@ func GetOicqIns(u string, newIns bool) (*oicq.Oicq, error) {
 
 // GetOicqInsById 获取QQ操作实例
 func GetOicqInsById(id int, newIns bool) (*oicq.Oicq, error) {
-	uinInfo, err := uin.GetIns().FindById(id)
+	uinInfo, err := uin.GetIns().FindByIdAll(id)
 	if err != nil || uinInfo == nil {
 		return nil, errors.New("未查询到QQ信息")
 	}

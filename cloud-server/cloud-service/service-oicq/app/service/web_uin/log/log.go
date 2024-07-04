@@ -30,4 +30,5 @@ const (
 	Delete          //删除挂机
 	Status          //修改状态
 	Reset           //重置设备
+	Refund          //在线退单
 )

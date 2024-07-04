@@ -2,7 +2,7 @@ package face
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service/aliyun"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-user/app/service"
 )
 
 type ControllerFace struct {
@@ -10,7 +10,7 @@ type ControllerFace struct {
 
 func (ControllerFace) Check(c *sinking_server.Context) {
 	data := c.GetRpcData()
-	res, userId, cardNo, cardName := aliyun.FaceCheck(data["id"].(string))
+	res, userId, cardNo, cardName := service.AliYun.FaceCheck(data["id"].(string))
 	type Response struct {
 		UserId   int    `json:"user_id"`
 		Result   bool   `json:"result"`
