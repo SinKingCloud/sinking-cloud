@@ -45,7 +45,7 @@ func (l *uinJob) Listen() {
 	})
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("209297792")
+	//	list, _ := uin2.GetIns().SelectByUin("3514040007")
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 && v.UinStatus == 0 {
 	//			l.run(v)
@@ -370,9 +370,13 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uinInfo *model.AppUin, jobs []oicq.
 	if resCookie[oicq.QQMusic] != "" && (musicCookie == "" || resCookie[oicq.QQMusic] != musicCookie) {
 		_ = web_uin.SetUinCookies(uinInfo.Uin, "y.qq.com", resCookie[oicq.QQMusic])
 	}
+	//_, b := cli.Mobile.Speed.Info()
+	//fmt.Println("开始加速小世界,当前状态", b.ISmallShare)
+	//fmt.Println(cli.Mobile.Speed.FeedCloud())
 	//保存加速状态
 	if e, s := cli.Mobile.Speed.Info(); e == nil {
 		l.saveJobStatus(uinInfo, 1, s)
+		//fmt.Println("小世界加速结果", s.ISmallShare)
 	}
 	//延迟刷新状态
 	refreshTask.Push(150*time.Minute, func() {
