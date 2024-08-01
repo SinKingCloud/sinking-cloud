@@ -97,6 +97,12 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					}
 					_, status = o.Mobile.Speed.CmsShow()
 					break
+				case SmallWorldShare:
+					if o.Mobile.Proto() != mobile.AndroidPad && o.Mobile.Proto() != mobile.IPad && o.Mobile.Proto() != mobile.AndroidPhone {
+						break
+					}
+					_, status = o.Mobile.Speed.FeedCloud()
+					break
 				case Pc: //电脑加速
 					if o.Mobile.Proto() != mobile.AndroidPhone && o.Mobile.Proto() != mobile.AndroidPad && o.Mobile.Proto() != mobile.IPad {
 						break

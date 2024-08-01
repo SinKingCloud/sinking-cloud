@@ -7,25 +7,26 @@ import (
 type JobName string
 
 const (
-	Mobile      JobName = "mobile"
-	Pc          JobName = "pc"
-	Ws          JobName = "ws"
-	MobileClock JobName = "mobile_clock"
-	ZoneClock   JobName = "zone_clock"
-	Login       JobName = "login"
-	Friend      JobName = "friend"
-	QQMusic     JobName = "qq_music"
-	CmsShowPro  JobName = "cms_show_pro"
-	Vip         JobName = "vip"
-	BigVip      JobName = "big_vip"
-	Hz          JobName = "hz"
-	Lz          JobName = "lz"
-	Ld          JobName = "ld"
-	GameCenter  JobName = "game_center"
-	QQGame      JobName = "qq_game"
-	Sweet       JobName = "sweet"
-	Video       JobName = "video"
-	WeiYun      JobName = "weiyun"
+	Mobile          JobName = "mobile"
+	Pc              JobName = "pc"
+	Ws              JobName = "ws"
+	MobileClock     JobName = "mobile_clock"
+	ZoneClock       JobName = "zone_clock"
+	Login           JobName = "login"
+	Friend          JobName = "friend"
+	QQMusic         JobName = "qq_music"
+	CmsShowPro      JobName = "cms_show_pro"
+	SmallWorldShare JobName = "small_world_share"
+	Vip             JobName = "vip"
+	BigVip          JobName = "big_vip"
+	Hz              JobName = "hz"
+	Lz              JobName = "lz"
+	Ld              JobName = "ld"
+	GameCenter      JobName = "game_center"
+	QQGame          JobName = "qq_game"
+	Sweet           JobName = "sweet"
+	Video           JobName = "video"
+	WeiYun          JobName = "weiyun"
 )
 
 type JobType string
@@ -37,39 +38,41 @@ const (
 
 // Setting 功能设置
 var Setting = map[JobName]string{
-	Mobile:      "1",
-	Pc:          "0",
-	Ws:          "1",
-	MobileClock: "1",
-	ZoneClock:   "1",
-	Login:       "1",
-	Friend:      "1",
-	QQMusic:     "1",
-	CmsShowPro:  "0",
-	Vip:         "1",
-	BigVip:      "1",
-	Hz:          "1",
-	Lz:          "1",
-	Ld:          "1",
-	GameCenter:  "1",
-	QQGame:      "1",
-	Sweet:       "1",
-	Video:       "1",
-	WeiYun:      "1",
+	Mobile:          "1",
+	Pc:              "0",
+	Ws:              "1",
+	MobileClock:     "1",
+	ZoneClock:       "1",
+	Login:           "1",
+	Friend:          "1",
+	QQMusic:         "1",
+	CmsShowPro:      "0",
+	SmallWorldShare: "0",
+	Vip:             "1",
+	BigVip:          "1",
+	Hz:              "1",
+	Lz:              "1",
+	Ld:              "1",
+	GameCenter:      "1",
+	QQGame:          "1",
+	Sweet:           "1",
+	Video:           "1",
+	WeiYun:          "1",
 }
 
 // JobMap 映射表
 var JobMap = map[JobType]map[JobName]oicq.Job{
 	Speed: {
-		Mobile:      oicq.None,
-		Pc:          oicq.Pc,
-		Ws:          oicq.Ws,
-		MobileClock: oicq.MobileClock,
-		ZoneClock:   oicq.ZoneClock,
-		Login:       oicq.None,
-		Friend:      oicq.Friend,
-		QQMusic:     oicq.QQMusic,
-		CmsShowPro:  oicq.CmsShowPro,
+		Mobile:          oicq.None,
+		Pc:              oicq.Pc,
+		Ws:              oicq.Ws,
+		MobileClock:     oicq.MobileClock,
+		ZoneClock:       oicq.ZoneClock,
+		Login:           oicq.None,
+		Friend:          oicq.Friend,
+		QQMusic:         oicq.QQMusic,
+		CmsShowPro:      oicq.CmsShowPro,
+		SmallWorldShare: oicq.SmallWorldShare,
 	},
 	Sign: {
 		Vip:        oicq.Vip,
@@ -158,6 +161,14 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"name":     "QQ秀换装",
 			"describe": "每日QQ秀换装加速0.5天",
 			"logo":     "https://cdn.clwl.online/app/uin/img/cm.png",
+			"edit":     "true",
+		},
+		SmallWorldShare: {
+			"sort":     "16",
+			"type":     "speed",
+			"name":     "小世界分享",
+			"describe": "每日小世界发布并分享加速0.5天",
+			"logo":     "https://cdn.clwl.online/app/uin/img/xsj.png",
 			"edit":     "true",
 		},
 	},

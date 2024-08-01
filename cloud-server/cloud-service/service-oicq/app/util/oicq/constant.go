@@ -13,15 +13,16 @@ const (
 type Job int //挂机项目
 
 const (
-	None        Job = iota //空占位
-	Pc                     //Pc加速
-	Ws                     //微视加速
-	Word                   //小世界加速
-	MobileClock            //手Q打卡
-	ZoneClock              //空间打卡
-	Friend                 //加好友加速
-	QQMusic                //音乐签到
-	CmsShowPro             //厘米秀换装
+	None            Job = iota //空占位
+	Pc                         //Pc加速
+	Ws                         //微视加速
+	Word                       //小世界加速
+	MobileClock                //手Q打卡
+	ZoneClock                  //空间打卡
+	Friend                     //加好友加速
+	QQMusic                    //音乐签到
+	CmsShowPro                 //厘米秀换装
+	SmallWorldShare            //小世界分享
 
 	Vip        //会员签到
 	BigVip     //大会员签到
