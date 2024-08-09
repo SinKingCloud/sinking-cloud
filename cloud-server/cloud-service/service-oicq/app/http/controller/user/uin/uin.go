@@ -507,29 +507,43 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	}
 	if form.Step == "normal" {
 		appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
-		minLevel := 0
-		if appConfig[constant.AppUinUpdateLevel] != "" {
-			num, e := strconv.Atoi(appConfig[constant.AppUinUpdateLevel])
-			if e == nil {
-				minLevel = num
+		if appConfig[constant.AppUinLoginPwd] == "1" {
+			c.Error("系统已关闭密码更新")
+			return
+		}
+		checkMin := true
+		if appConfig[constant.AppUinUpdateDate] != "" {
+			t1, e1 := time.Parse("2006-01-02 15:04:05", appConfig[constant.AppUinUpdateDate])
+			t2, e2 := time.Parse("2006-01-02 15:04:05", uinInfo.CreateTime.String())
+			if e1 == nil && e2 == nil && t2.Before(t1) {
+				checkMin = false
 			}
 		}
-		if minLevel > 0 {
-			minDays := 0
-			if appConfig[constant.AppUinUpdateDays] != "" {
-				num, e := strconv.Atoi(appConfig[constant.AppUinUpdateDays])
+		if checkMin {
+			minLevel := 0
+			if appConfig[constant.AppUinUpdateLevel] != "" {
+				num, e := strconv.Atoi(appConfig[constant.AppUinUpdateLevel])
 				if e == nil {
-					minDays = num
+					minLevel = num
 				}
 			}
-			u, _ := strconv.ParseInt(uinInfo.Uin, 10, 64)
-			levelInfo := web_uin.GetGuestUinInfo(u)
-			if levelInfo == nil {
-				levelInfo = web_uin.GetGuestUinInfoBak(u)
-			}
-			if levelInfo != nil && levelInfo.Level <= minLevel && uinInfo.PlayerDay < minDays && uinInfo.SignDay < minDays {
-				c.Error("您的剩余挂机天数低于" + strconv.Itoa(minDays) + "天。请续费至高于" + strconv.Itoa(minDays) + "天再更新状态")
-				return
+			if minLevel > 0 {
+				minDays := 0
+				if appConfig[constant.AppUinUpdateDays] != "" {
+					num, e := strconv.Atoi(appConfig[constant.AppUinUpdateDays])
+					if e == nil {
+						minDays = num
+					}
+				}
+				u, _ := strconv.ParseInt(uinInfo.Uin, 10, 64)
+				levelInfo := web_uin.GetGuestUinInfo(u)
+				if levelInfo == nil {
+					levelInfo = web_uin.GetGuestUinInfoBak(u)
+				}
+				if levelInfo != nil && levelInfo.Level <= minLevel && uinInfo.PlayerDay < minDays && uinInfo.SignDay < minDays {
+					c.Error("您的剩余挂机天数低于" + strconv.Itoa(minDays) + "天。请续费至高于" + strconv.Itoa(minDays) + "天再更新状态")
+					return
+				}
 			}
 		}
 	}
@@ -775,29 +789,43 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 	}
 	if form.Step == "code" {
 		appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
-		minLevel := 0
-		if appConfig[constant.AppUinUpdateLevel] != "" {
-			num, e := strconv.Atoi(appConfig[constant.AppUinUpdateLevel])
-			if e == nil {
-				minLevel = num
+		if appConfig[constant.AppUinLoginQrCode] == "1" {
+			c.Error("系统已关闭扫码更新")
+			return
+		}
+		checkMin := true
+		if appConfig[constant.AppUinUpdateDate] != "" {
+			t1, e1 := time.Parse("2006-01-02 15:04:05", appConfig[constant.AppUinUpdateDate])
+			t2, e2 := time.Parse("2006-01-02 15:04:05", uinInfo.CreateTime.String())
+			if e1 == nil && e2 == nil && t2.Before(t1) {
+				checkMin = false
 			}
 		}
-		if minLevel > 0 {
-			minDays := 0
-			if appConfig[constant.AppUinUpdateDays] != "" {
-				num, e := strconv.Atoi(appConfig[constant.AppUinUpdateDays])
+		if checkMin {
+			minLevel := 0
+			if appConfig[constant.AppUinUpdateLevel] != "" {
+				num, e := strconv.Atoi(appConfig[constant.AppUinUpdateLevel])
 				if e == nil {
-					minDays = num
+					minLevel = num
 				}
 			}
-			u, _ := strconv.ParseInt(uinInfo.Uin, 10, 64)
-			levelInfo := web_uin.GetGuestUinInfo(u)
-			if levelInfo == nil {
-				levelInfo = web_uin.GetGuestUinInfoBak(u)
-			}
-			if levelInfo != nil && levelInfo.Level <= minLevel && uinInfo.PlayerDay < minDays && uinInfo.SignDay < minDays {
-				c.Error("您的剩余挂机天数低于" + strconv.Itoa(minDays) + "天。请续费至高于" + strconv.Itoa(minDays) + "天再更新状态")
-				return
+			if minLevel > 0 {
+				minDays := 0
+				if appConfig[constant.AppUinUpdateDays] != "" {
+					num, e := strconv.Atoi(appConfig[constant.AppUinUpdateDays])
+					if e == nil {
+						minDays = num
+					}
+				}
+				u, _ := strconv.ParseInt(uinInfo.Uin, 10, 64)
+				levelInfo := web_uin.GetGuestUinInfo(u)
+				if levelInfo == nil {
+					levelInfo = web_uin.GetGuestUinInfoBak(u)
+				}
+				if levelInfo != nil && levelInfo.Level <= minLevel && uinInfo.PlayerDay < minDays && uinInfo.SignDay < minDays {
+					c.Error("您的剩余挂机天数低于" + strconv.Itoa(minDays) + "天。请续费至高于" + strconv.Itoa(minDays) + "天再更新状态")
+					return
+				}
 			}
 		}
 		rsp, e := cli.Mobile.FetchQRCode()
@@ -1533,7 +1561,7 @@ func (ControllerUin) LevelInfo(c *sinking_server.Context) {
 		if info != nil {
 			bytes1, e := json.Marshal(info)
 			if e == nil {
-				util.Cache.SetWithExpire(key, string(bytes1), 600*1000)
+				util.Cache.SetWithExpire(key, string(bytes1), 3600*1000)
 			}
 		}
 	}
