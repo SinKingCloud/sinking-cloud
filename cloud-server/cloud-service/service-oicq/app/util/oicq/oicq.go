@@ -56,18 +56,30 @@ func NewOicq(uin int64, password [16]byte, proxy *Proxy, device int, loginToken 
 
 // GetMobileDevice 获取手机设备信息
 func GetMobileDevice(uin int64, deviceId int, proto mobile.ClientProtocol) *mobile.DeviceInfo {
+	key := "SK-" + strconv.Itoa(deviceId)
+	if proto != mobile.AndroidPad {
+		key += "_" + strconv.Itoa(GetOicqProtoCode(proto))
+	}
+	name := "HUAWEI MatePad"
+	if proto == mobile.AndroidWatch {
+		name = "HUAWEI Watch Gt"
+	}
 	device := mobile.SystemDeviceInfo
-	s := str.NewStringTool("SK-" + strconv.Itoa(deviceId) + strconv.FormatInt(uin, 10)).Md5()
+	s := str.NewStringTool(key + strconv.FormatInt(uin, 10)).Md5()
 	md5Lower := strings.ToLower(s)
-	s2 := str.NewStringTool("SK-" + strconv.Itoa(deviceId) + md5Lower).Md5()
+	s2 := str.NewStringTool(key + md5Lower).Md5()
 	md52Lower := strings.ToLower(s2)
 	md5Upper := strings.ToUpper(s)
 	md52Upper := strings.ToUpper(s2)
 	md5Twice := md5.Sum([]byte(s))
+	device.Product = []byte(name)
+	device.Device = []byte(name)
+	device.Model = []byte(name)
+	device.Board = []byte(name)
 	device.Display = []byte("388" + md5Lower[0:13])
 	device.Bootloader = []byte("G9550" + md5Upper[0:8])
 	device.FingerPrint = []byte("samsung/dream2qltezh/dream2qltechn:7.1/" + md5Upper[6:12] + "/" + string(device.Bootloader) + ":user/release-keys")
-	device.ProcVersion = []byte("Linux version 4.4.88-" + md5Lower[13:26] + " (android-build@wpiu5.hot.corp.google.com) (Android clang version 5.0.300080 (based on LLVM 5.0.300080)) #1 SMP PREEMPT Thu May 17 20:37:50 UTC 2018")
+	device.ProcVersion = []byte("Linux version 4.4.88-" + md5Lower[13:26] + " (android-build@huawei.com) (Android clang version 5.1." + strconv.Itoa(deviceId) + " (based on LLVM 5.1." + strconv.Itoa(deviceId) + ")) #1 SMP PREEMPT Thu May 17 10:32:10 UTC 2024")
 	device.BootId = []byte(fmt.Sprintf("%s-%s-%s-%s-%s", md52Lower[0:8], md5Lower[8:12], md52Lower[12:16], md5Lower[16:20], md52Lower[20:32]))
 	device.MacAddress = []byte(fmt.Sprintf("%s:%s:%s:%s:%s:%s", md5Upper[1:3], md52Upper[3:5], md5Upper[5:7], md52Upper[7:9], md5Upper[9:11], md52Upper[11:13]))
 	device.IpAddress = []byte{172, 16, byte(rand.Intn(255)), byte(rand.Intn(255))}

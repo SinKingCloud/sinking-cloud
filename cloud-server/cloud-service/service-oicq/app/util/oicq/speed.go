@@ -28,6 +28,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 			o.LoginTime = time.Now().Unix()
 			status := mobile.SpeedError
 			cookie := ""
+			version := o.Mobile.Proto()
 			utils.Try(func() {
 				switch v {
 				case Vip: //会员签到
@@ -92,19 +93,19 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					_, status = o.Mobile.Speed.Friend()
 					break
 				case CmsShowPro:
-					if o.Mobile.Proto() != mobile.AndroidPhone && o.Mobile.Proto() != mobile.AndroidPad && o.Mobile.Proto() != mobile.IPad {
+					if version.Protocol != mobile.AndroidPhone && version.Protocol != mobile.AndroidPad && version.Protocol != mobile.IPad {
 						break
 					}
 					_, status = o.Mobile.Speed.CmsShow()
 					break
 				case SmallWorldShare:
-					if o.Mobile.Proto() != mobile.AndroidPad && o.Mobile.Proto() != mobile.IPad && o.Mobile.Proto() != mobile.AndroidPhone {
+					if version.Protocol != mobile.AndroidPad && version.Protocol != mobile.IPad && version.Protocol != mobile.AndroidPhone {
 						break
 					}
 					_, status = o.Mobile.Speed.FeedCloud()
 					break
 				case Pc: //电脑加速
-					if o.Mobile.Proto() != mobile.AndroidPhone && o.Mobile.Proto() != mobile.AndroidPad && o.Mobile.Proto() != mobile.IPad {
+					if version.Protocol != mobile.AndroidPhone && version.Protocol != mobile.AndroidPad && version.Protocol != mobile.IPad {
 						break
 					}
 					d := time.Now()
@@ -205,7 +206,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 							o.Mobile.Release()
 							o.Mobile.Disconnect()
 							time.Sleep(500 * time.Millisecond)
-							o.Mobile = mobile.NewClientMd5(o.Mobile.Uin, o.Password).UseDevice(GetMobileDevice(o.Mobile.Uin, 100000+rand.Intn(899999), o.Mobile.Proto()))
+							o.Mobile = mobile.NewClientMd5(o.Mobile.Uin, o.Password).UseDevice(GetMobileDevice(o.Mobile.Uin, 100000+rand.Intn(899999), version.Protocol))
 							err, loginResponse := o.AutoLogin()
 							if err == nil && loginResponse.Success {
 								log.Println(o.Mobile.Uin, "重置设备登录成功，重新登录pc")

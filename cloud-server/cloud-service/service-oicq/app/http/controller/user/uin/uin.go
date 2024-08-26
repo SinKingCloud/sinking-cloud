@@ -28,7 +28,6 @@ import (
 	"gorm.io/gorm"
 	"image/png"
 	log2 "log"
-	"math/rand"
 	"strconv"
 	"time"
 )
@@ -496,7 +495,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("该对接账户未完成实名认证,请完成实名认证")
 		return
 	}
-	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	uinInfo, err := uin.GetIns().FindByUserIdWithUinAll(c.GetWebUserInfo().Id, form.Uin)
 	if err != nil || uinInfo == nil {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
@@ -505,6 +504,18 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
+	srv, err := server2.GetIns().FindByIdWithCache(uinInfo.ServerId, false)
+	if err != nil || srv == nil || srv.Status != server2.Normal {
+		c.Error("未查询到挂机地区信息,请更换挂机地区")
+		return
+	}
+	var proxy *oicq.Proxy
+	err = json.Unmarshal([]byte(srv.Proxy), &proxy)
+	if err != nil || proxy == nil {
+		c.Error("该挂机地区未初始化,请联系管理员")
+		return
+	}
+	//风控限制判断
 	if form.Step == "normal" {
 		appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
 		if appConfig[constant.AppUinLoginPwd] == "1" {
@@ -535,11 +546,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 						minDays = num
 					}
 				}
-				u, _ := strconv.ParseInt(uinInfo.Uin, 10, 64)
-				levelInfo := web_uin.GetGuestUinInfo(u)
-				if levelInfo == nil {
-					levelInfo = web_uin.GetGuestUinInfoBak(u)
-				}
+				levelInfo := web_uin.GetLevelInfo(uinInfo.Uin)
 				if levelInfo != nil && levelInfo.Level <= minLevel && uinInfo.PlayerDay < minDays && uinInfo.SignDay < minDays {
 					c.Error("您的剩余挂机天数低于" + strconv.Itoa(minDays) + "天。请续费至高于" + strconv.Itoa(minDays) + "天再更新状态")
 					return
@@ -547,73 +554,20 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			}
 		}
 	}
-	srv, err := server2.GetIns().FindById(uinInfo.ServerId)
-	if err != nil || srv == nil || srv.Status != server2.Normal {
-		c.Error("未查询到挂机地区信息,请更换挂机地区")
-		return
-	}
-	changeProto := func(protos client.ClientProtocol) {
-		//判断是否切换协议
-		proto := oicq.GetOicqProtoCode(protos)
-		if uinInfo.Proto != proto {
-			err = uin.GetIns().UpdateByUin(uinInfo.Uin, map[string]interface{}{"proto": proto})
-			if err != nil {
-				return
-			}
-			uinInfo.Proto = proto
-		}
-	}
-	//更换协议
-	changeProto(client.AndroidPad)
-	//获取单例
-	cli, err := web_uin.GetOicqInsById(uinInfo.Id, true)
+	uinInfo.Proto = oicq.GetOicqProtoCode(client.AndroidPad)
+	cli, err := web_uin.GetOicqInsWithOption(uinInfo, proxy, true)
 	if err != nil {
 		c.Error("连接服务器失败")
 		return
 	}
 	cli.LoginTime = time.Now().Unix()
 	ins := cli.Mobile
-	if form.Step == "get_sms" {
-		if ins.RequestSMS() {
-			c.Return(200, "获取验证码成功,请提交验证码", nil)
-		} else {
-			c.Return(500, "获取验证码失败,请稍后重试", nil)
-		}
-		return
-	}
 	var resp *client.LoginResponse
-	request := func(uinInfo *uin.AppUinJob, fun func() (*client.LoginResponse, error)) (resp *client.LoginResponse, err error) {
+	request := func(uinInfo *model.AppUin, fun func() (*client.LoginResponse, error)) (resp *client.LoginResponse, err error) {
 		resp, err = fun()
 		log2.Println(uinInfo.Uin, resp, err)
 		if err != nil {
 			log2.Println(uinInfo.Uin, "登陆错误-1", resp, err)
-			ins.Release()
-			ins.Disconnect()
-			time.Sleep(100 * time.Millisecond)
-			_ = ins.Connect()
-			time.Sleep(100 * time.Millisecond)
-			resp, err = fun()
-			if err != nil {
-				log2.Println(uinInfo.Uin, "登陆错误-2", resp, err)
-			}
-		}
-		//设备异常,生成新的设备信息
-		if err == nil && resp.Error == client.DeviceVersionError {
-			field := "device"
-			if uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{field: 100000 + rand.Intn(899999)}) == nil {
-				q, e := strconv.ParseInt(uinInfo.Uin, 10, 64)
-				if e == nil {
-					oicq.DelOicqInstance(q) //删除实例
-					oicq.DelTempOicqInstance(q)
-					cli, err = web_uin.GetOicqInsById(uinInfo.Id, true)
-					if err != nil {
-						return nil, err
-					}
-					ins = cli.Mobile
-					resp, err = fun()
-					return resp, err
-				}
-			}
 		}
 		return resp, err
 	}
@@ -623,6 +577,13 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			return ins.Login()
 		})
 		break
+	case "get_sms":
+		if ins.RequestSMS() {
+			c.Return(200, "获取验证码成功,请提交验证码", nil)
+		} else {
+			c.Return(500, "获取验证码失败,请稍后重试", nil)
+		}
+		return
 	case "captcha":
 		if form.Ticket == "" {
 			c.Error("ticket不能为空")
@@ -647,7 +608,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		c.Error("登陆发生错误,请使用扫码登陆重试")
 		return
 	}
-	response := func(uinInfo *uin.AppUinJob, resp *client.LoginResponse) (code int32, message interface{}, data interface{}) {
+	response := func(uinInfo *model.AppUin, resp *client.LoginResponse) (code int32, message interface{}, data interface{}) {
 		if resp.Success {
 			return 200, "更新状态成功", nil
 		} else if resp.Error == client.SliderNeededError {
@@ -689,18 +650,12 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			return 500, resp.ErrorMessage, nil
 		}
 	}
-	delIns := func(uin string) {
-		q, e := strconv.ParseInt(uin, 10, 64)
-		if e == nil {
-			oicq.DelOicqInstance(q) //删除实例
-			oicq.DelTempOicqInstance(q)
-		}
-	}
 	code, message, data := response(uinInfo, resp)
 	if code == 200 {
 		token := ins.GenToken()
 		if web_uin.SaveLoginToken(uinInfo, token) == nil {
-			go func(uinInfo *uin.AppUinJob) {
+			go func(uinInfo *model.AppUin) {
+				_ = ins.Init(true, false)
 				//写入QQ操作记录
 				_ = log.GetIns().Create(&model.AppUinLog{
 					UserId:  uinInfo.UserId,
@@ -711,8 +666,11 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 					Title:   "更新状态",
 					Content: "密码更新账号状态",
 				})
-				_ = ins.Init(true, false)
-				delIns(uinInfo.Uin)
+				q, e := strconv.ParseInt(uinInfo.Uin, 10, 64)
+				if e == nil {
+					oicq.DelOicqInstance(q) //删除实例
+					oicq.DelTempOicqInstance(q)
+				}
 			}(uinInfo)
 			code, message, data = 200, "更新状态成功", nil
 		}
@@ -740,7 +698,7 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 		c.Error("该对接账户未完成实名认证,请完成实名认证")
 		return
 	}
-	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	uinInfo, err := uin.GetIns().FindByUserIdWithUinAll(c.GetWebUserInfo().Id, form.Uin)
 	if err != nil || uinInfo == nil {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
@@ -749,9 +707,15 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
-	srv, err := server2.GetIns().FindById(uinInfo.ServerId)
+	srv, err := server2.GetIns().FindByIdWithCache(uinInfo.ServerId, false)
 	if err != nil || srv == nil || srv.Status != server2.Normal {
 		c.Error("未查询到挂机地区信息,请更换挂机地区")
+		return
+	}
+	var proxy *oicq.Proxy
+	err = json.Unmarshal([]byte(srv.Proxy), &proxy)
+	if err != nil || proxy == nil {
+		c.Error("该挂机地区未初始化,请联系管理员")
 		return
 	}
 	key := "QrLogin_" + strconv.Itoa(user.Id) + "_" + form.Uin
@@ -765,28 +729,7 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 	}
 	util.Cache.Inc(key)
 	util.Cache.SetExpire(key, int64(1000))
-	if form.Step == "code" {
-		changeProto := func(protos client.ClientProtocol) {
-			//判断是否切换协议
-			proto := oicq.GetOicqProtoCode(protos)
-			if uinInfo.Proto != proto {
-				err = uin.GetIns().UpdateByUin(uinInfo.Uin, map[string]interface{}{"proto": proto})
-				if err != nil {
-					return
-				}
-				uinInfo.Proto = proto
-			}
-		}
-		//更换协议
-		changeProto(client.AndroidWatch)
-	}
-	//获取单例
-	cli, err := web_uin.GetOicqInsById(uinInfo.Id, true)
-	cli.LoginTime = time.Now().Unix()
-	if err != nil {
-		c.Error("连接服务器失败")
-		return
-	}
+	//风险控制
 	if form.Step == "code" {
 		appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
 		if appConfig[constant.AppUinLoginQrCode] == "1" {
@@ -817,17 +760,22 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 						minDays = num
 					}
 				}
-				u, _ := strconv.ParseInt(uinInfo.Uin, 10, 64)
-				levelInfo := web_uin.GetGuestUinInfo(u)
-				if levelInfo == nil {
-					levelInfo = web_uin.GetGuestUinInfoBak(u)
-				}
+				levelInfo := web_uin.GetLevelInfo(uinInfo.Uin)
 				if levelInfo != nil && levelInfo.Level <= minLevel && uinInfo.PlayerDay < minDays && uinInfo.SignDay < minDays {
 					c.Error("您的剩余挂机天数低于" + strconv.Itoa(minDays) + "天。请续费至高于" + strconv.Itoa(minDays) + "天再更新状态")
 					return
 				}
 			}
 		}
+	}
+	uinInfo.Proto = oicq.GetOicqProtoCode(client.AndroidWatch)
+	cli, err := web_uin.GetOicqInsWithOption(uinInfo, proxy, true)
+	cli.LoginTime = time.Now().Unix()
+	if err != nil {
+		c.Error("连接服务器失败")
+		return
+	}
+	if form.Step == "code" {
 		rsp, e := cli.Mobile.FetchQRCode()
 		if e != nil || rsp.ImageData == nil {
 			c.Error("获取二维码失败(-1)")
@@ -882,19 +830,13 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 				return
 			}
 			if !res.Success {
-				//设备异常,生成新的设备信息
-				if res.Error == client.DeviceVersionError {
-					if uin.GetIns().UpdateById(uinInfo.Id, map[string]interface{}{"device": 100000 + rand.Intn(899999)}) == nil {
-						q, e := strconv.ParseInt(uinInfo.Uin, 10, 64)
-						if e == nil {
-							oicq.DelOicqInstance(q) //删除实例
-							oicq.DelTempOicqInstance(q)
-						}
-					}
-					c.SuccessWithData("获取状态成功", sinking_web.H{"status": 505, "message": "登陆失败,请获取二维码重试"})
+				msg := "登陆失败，"
+				if res.ErrorMessage != "" {
+					msg += res.ErrorMessage
 				} else {
-					c.SuccessWithData("获取状态成功", sinking_web.H{"status": 505, "message": res.ErrorMessage})
+					msg += "请稍后重试"
 				}
+				c.SuccessWithData("获取状态成功", sinking_web.H{"status": 505, "message": msg})
 				return
 			}
 			if strconv.FormatInt(cli.Mobile.Uin, 10) != uinInfo.Uin {
@@ -904,7 +846,8 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 			}
 			token := cli.Mobile.GenToken()
 			if web_uin.SaveLoginToken(uinInfo, token) == nil {
-				go func(uinInfo *uin.AppUinJob) {
+				go func(uinInfo *model.AppUin) {
+					_ = cli.Mobile.Init(true, false)
 					//写入QQ操作记录
 					_ = log.GetIns().Create(&model.AppUinLog{
 						UserId:  uinInfo.UserId,
@@ -915,7 +858,6 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 						Title:   "更新状态",
 						Content: "扫码更新账号状态",
 					})
-					_ = cli.Mobile.Init(true, false)
 					q, e := strconv.ParseInt(uinInfo.Uin, 10, 64)
 					if e == nil {
 						cli.QrLoginSig = nil
@@ -999,7 +941,11 @@ func (ControllerUin) Sms(c *sinking_server.Context) {
 			}
 		}
 		if e != nil {
-			c.Error("初始化验证失败")
+			msg := "初始化失败"
+			if e.Error() != "" {
+				msg += ":" + e.Error()
+			}
+			c.Error(msg)
 		} else {
 			c.SuccessWithData("滑动验证码验证成功,请输入完整手机号", data)
 		}
@@ -1542,29 +1488,7 @@ func (ControllerUin) LevelInfo(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	u, err := strconv.ParseInt(form.Uin, 10, 64)
-	if err != nil || u <= 10000 || u >= 9999999999 {
-		c.Error("获取信息失败")
-		return
-	}
-	var info *web_uin.UinInfo
-	key := "LevelInfo_" + form.Uin
-	a, exists := util.Cache.Get(key)
-	if exists {
-		_ = json.Unmarshal([]byte(a), &info)
-	}
-	if info == nil {
-		info = web_uin.GetGuestUinInfo(u)
-		if info == nil {
-			info = web_uin.GetGuestUinInfoBak(u)
-		}
-		if info != nil {
-			bytes1, e := json.Marshal(info)
-			if e == nil {
-				util.Cache.SetWithExpire(key, string(bytes1), 3600*1000)
-			}
-		}
-	}
+	info := web_uin.GetLevelInfo(form.Uin)
 	if info == nil {
 		c.Error("获取信息失败")
 		return

@@ -30,6 +30,9 @@ func loadApiRoute(s *sinking_web.Engine) {
 	uinGroup.GET("/activity", sinking_server.HandleFunc(handleUin.Activity))            //活动列表
 	uinGroup.POST("/test", sinking_server.HandleFunc(handleUin.Test))                   //测试加速
 	uinGroup.POST("/experience", sinking_server.HandleFunc(handleUin.Experience))       //体验套装
+	handleOrder := &uin.ControllerOrder{}
+	uinGroup.GET("/orders", sinking_server.HandleFunc(handleOrder.List))    //订单列表
+	uinGroup.POST("/refund", sinking_server.HandleFunc(handleOrder.Refund)) //在线退单
 	uinSetGroup := uinGroup.Group("/operate")
 	uinSetGroup.POST("/info", sinking_server.HandleFunc(handleUin.Info))                    //挂机QQ详情
 	uinSetGroup.POST("/reset", sinking_server.HandleFunc(handleUin.ReSetDevice))            //重置设备
@@ -91,7 +94,8 @@ func loadUserRoute(s *sinking_web.Engine) {
 	uinGroup.GET("/levels", sinking_server.HandleFunc(handleLevel.List)) //折扣列表
 	uinGroup.POST("/shop", sinking_server.HandleFunc(handleLevel.Buy))   //开通等级
 	handleOrder := &uin.ControllerOrder{}
-	uinGroup.GET("/orders", sinking_server.HandleFunc(handleOrder.List)) //订单列表
+	uinGroup.GET("/orders", sinking_server.HandleFunc(handleOrder.List))    //订单列表
+	uinGroup.POST("/refund", sinking_server.HandleFunc(handleOrder.Refund)) //在线退单
 	handleLog := &uin.ControllerLog{}
 	uinGroup.GET("/logs", sinking_server.HandleFunc(handleLog.List)) //日志列表
 }

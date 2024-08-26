@@ -111,7 +111,7 @@ func ChangePassword(uinId int, pwd string) error {
 }
 
 // SaveLoginToken 保存登陆token
-func SaveLoginToken(uinInfo *uin.AppUinJob, token []byte) error {
+func SaveLoginToken(uinInfo *model.AppUin, token []byte) error {
 	data := make(map[string]interface{})
 	data["server_id"] = uinInfo.ServerId
 	data["server_key"] = uinInfo.ServerKey

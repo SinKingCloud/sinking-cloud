@@ -74,7 +74,7 @@ func GetOicqInstance(uin int64, password [16]byte, proxy *Proxy, proto int, devi
 		return oicq
 	} else {
 		oicq := data.(*Oicq)
-		if oicq.DeviceId != device || oicq.Mobile.Proto() != GetOicqProto(proto) {
+		if oicq.DeviceId != device || oicq.Mobile.Proto().Protocol != GetOicqProto(proto) {
 			oicq.Mobile = mobile.NewClientMd5(uin, password).UseDevice(GetMobileDevice(uin, device, GetOicqProto(proto)))
 		}
 		//检查是否更改代理
