@@ -888,7 +888,7 @@ func (ControllerUin) Sms(c *sinking_server.Context) {
 		c.Error(msg)
 		return
 	}
-	uinInfo, err := uin.GetIns().FindByUserIdWithUin(c.GetWebUserInfo().Id, form.Uin)
+	uinInfo, err := uin.GetIns().FindByUserIdWithUinAll(c.GetWebUserInfo().Id, form.Uin)
 	if err != nil || uinInfo == nil {
 		c.Error("未查询到QQ信息,请先添加QQ")
 		return
@@ -901,16 +901,24 @@ func (ControllerUin) Sms(c *sinking_server.Context) {
 		c.Error("该QQ未下单或已过期,无法操作")
 		return
 	}
-	srv, err := server2.GetIns().FindById(uinInfo.ServerId)
+	srv, err := server2.GetIns().FindByIdWithCache(uinInfo.ServerId, false)
 	if err != nil || srv == nil || srv.Status != server2.Normal {
 		c.Error("未查询到挂机地区信息,请更换挂机地区")
 		return
 	}
-	cli, err := web_uin.GetOicqInsById(uinInfo.Id, true)
+	var proxy *oicq.Proxy
+	err = json.Unmarshal([]byte(srv.Proxy), &proxy)
+	if err != nil || proxy == nil {
+		c.Error("该挂机地区未初始化,请联系管理员")
+		return
+	}
+	uinInfo.Proto = oicq.GetOicqProtoCode(client.AndroidPad)
+	cli, err := web_uin.GetOicqInsWithOption(uinInfo, proxy, true)
 	if err != nil {
 		c.Error("连接服务器失败")
 		return
 	}
+	cli.LoginTime = time.Now().Unix()
 	ins := cli.Mobile
 	key := "UinLoginSms" + uinInfo.Uin
 	d := make(map[string]string)
