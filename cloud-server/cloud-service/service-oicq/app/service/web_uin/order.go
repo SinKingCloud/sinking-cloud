@@ -18,7 +18,6 @@ import (
 
 // Refund 退单
 func Refund(tradeNo string) error {
-	// todo uin_order新增trade_no refund_money days等字段
 	if tradeNo == "" {
 		return errors.New("订单号不能为空")
 	}
