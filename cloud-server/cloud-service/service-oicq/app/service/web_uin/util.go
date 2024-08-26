@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type UinInfo struct {
@@ -549,7 +550,12 @@ func GetLevelInfo(uin string) *UinInfo {
 		if info != nil {
 			bytes1, e := json.Marshal(info)
 			if e == nil {
-				util.Cache.SetWithExpire(key, string(bytes1), 3600*1000)
+				t := str.NewTimeTool().GetZeroTime(time.Now()).Unix() + 86400 - time.Now().Unix()
+				t2 := int64(3600 * 2)
+				if t >= t2 {
+					t = t2
+				}
+				util.Cache.SetWithExpire(key, string(bytes1), t*1000)
 			}
 		}
 	}
