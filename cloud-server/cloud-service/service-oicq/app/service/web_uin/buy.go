@@ -8,7 +8,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/model"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/app_config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/web_uin/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/web_uin/order"
 	server2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/web_uin/server"
@@ -100,12 +99,9 @@ func Buy(userId int, appId int, serverKey string, uin string, pwd string, types 
 		}
 		//判断是否首次下单,首次下单赠送天数
 		if log.GetIns().Count(map[string]string{"user_id": strconv.Itoa(user.Id), "uin": uinInfo.Uin}) <= 0 {
-			appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
-			if appConfig[constant.AppUinFirstBuyGift] != "" {
-				n, e := strconv.Atoi(appConfig[constant.AppUinFirstBuyGift])
-				if e == nil && n > 0 {
-					firstBuy = n
-				}
+			n := GetAppConfigInt(constant.AppUinFirstBuyGift)
+			if n > 0 {
+				firstBuy = n
 			}
 		}
 		//更改到期时间
@@ -190,8 +186,7 @@ func Experience(userId int, appId int, serverKey string, uin string, pwd string)
 		return errors.New("系统繁忙,请稍后下单")
 	}
 	defer util.Cache.UnLock(key) //释放并发锁
-	appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
-	if appConfig[constant.AppUinExperienceOpen] != "1" {
+	if GetAppConfigString(constant.AppUinExperienceOpen) != "1" {
 		return errors.New("体验活动未开启")
 	}
 	user := web_user.GetIns().GetCurrentUserInfo(userId, false)
@@ -252,13 +247,7 @@ func Experience(userId int, appId int, serverKey string, uin string, pwd string)
 	if serverKey != "" && serverKey != uinInfo.ServerKey {
 		_ = ChangeServer(uinInfo.Id, serverKey)
 	}
-	num := 1
-	if appConfig[constant.AppUinExperienceDays] != "" {
-		n, e := strconv.Atoi(appConfig[constant.AppUinExperienceDays])
-		if e == nil {
-			num = n
-		}
-	}
+	num := GetAppConfigInt(constant.AppUinExperienceDays)
 	data["player_day"] = gorm.Expr("`player_day`+" + strconv.Itoa(num))
 	data["sign_day"] = gorm.Expr("`sign_day`+" + strconv.Itoa(num))
 	data["update_time"] = str.DateTime(time.Now())

@@ -13,14 +13,12 @@ import (
 )
 
 var (
-	oicqMap         = sync.Map{} // map[int64]*Oicq
-	oicqMapLock     = sync.RWMutex{}
-	oicqMapTemp     = sync.Map{} // map[int64]*Oicq
-	oicqMapTempLock = sync.RWMutex{}
-	heart           = atomic.Bool{}
-	heartPc         = make(chan *Oicq, 100000)
-	releasePc       = make(chan *Oicq, 100000)
-	reConnPc        = make(chan *Oicq, 100000)
+	oicqMap     = sync.Map{} // map[int64]*Oicq
+	oicqMapTemp = sync.Map{} // map[int64]*Oicq
+	heart       = atomic.Bool{}
+	heartPc     = make(chan *Oicq, 100000)
+	releasePc   = make(chan *Oicq, 100000)
+	reConnPc    = make(chan *Oicq, 100000)
 )
 
 // GetOicqProto 获取协议类型
@@ -34,8 +32,6 @@ func GetOicqProto(proto int) mobile.ClientProtocol {
 		protos = mobile.AndroidPad
 	} else if proto == 3 {
 		protos = mobile.AndroidWatch
-	} else if proto == 4 {
-		protos = mobile.MacOS
 	}
 	return protos
 }
@@ -51,7 +47,7 @@ func GetOicqProtoCode(proto mobile.ClientProtocol) int {
 	} else if proto == mobile.AndroidWatch {
 		return 3
 	} else {
-		return 4
+		return 2
 	}
 }
 
@@ -99,8 +95,6 @@ func GetOicqInstance(uin int64, password [16]byte, proxy *Proxy, proto int, devi
 
 // DelOicqInstance 删除QQ操作实例
 func DelOicqInstance(uin int64) {
-	oicqMapLock.RLock()
-	defer oicqMapLock.RUnlock()
 	data, ok := oicqMap.Load(uin)
 	if ok && data != nil {
 		ins := data.(*Oicq)
@@ -114,8 +108,6 @@ func DelOicqInstance(uin int64) {
 
 // DelTempOicqInstance 删除QQ操作实例
 func DelTempOicqInstance(uin int64) {
-	oicqMapTempLock.RLock()
-	defer oicqMapTempLock.RLock()
 	data, ok := oicqMapTemp.Load(uin)
 	if ok {
 		ins := data.(*Oicq)
@@ -331,7 +323,6 @@ func startDoHeartbeat() {
 					log.Println("开始发送心跳")
 					//发送数据到通道
 					num := 0
-					oicqMapLock.RLock()
 					oicqMap.Range(func(key, value any) bool {
 						utils.Try(func() {
 							if value != nil {
@@ -344,19 +335,14 @@ func startDoHeartbeat() {
 						num++
 						return true
 					})
-					oicqMapLock.RUnlock()
 					num2 := 0
-					oicqMapTempLock.RLock()
 					oicqMapTemp.Range(func(key, value any) bool {
 						num2++
 						return true
 					})
-					oicqMapTempLock.RUnlock()
 					log.Println("当前挂机实例数量", num, "临时实例数量", num2)
 				}, func(i interface{}) {
 					log.Println("发送心跳出错", i)
-					oicqMapLock.RUnlock()
-					oicqMapTempLock.RUnlock()
 				})
 				time.Sleep(1 * time.Minute) //心跳周期1m
 			}
@@ -366,7 +352,6 @@ func startDoHeartbeat() {
 			for true {
 				utils.Try(func() {
 					log.Println("开始删除实例")
-					oicqMapTempLock.RLock()
 					oicqMapTemp.Range(func(key, value any) bool {
 						utils.Try(func() {
 							if value != nil {
@@ -386,8 +371,6 @@ func startDoHeartbeat() {
 						})
 						return true
 					})
-					oicqMapTempLock.RUnlock()
-					oicqMapLock.RLock()
 					oicqMap.Range(func(key, value any) bool {
 						utils.Try(func() {
 							if value != nil {
@@ -404,11 +387,8 @@ func startDoHeartbeat() {
 						})
 						return true
 					})
-					oicqMapLock.RUnlock()
 				}, func(i interface{}) {
 					log.Println("删除实例出错", i)
-					oicqMapLock.RUnlock()
-					oicqMapTempLock.RUnlock()
 				})
 				time.Sleep(1 * time.Minute)
 			}

@@ -44,6 +44,15 @@ func (l *uinJob) Listen() {
 		uinJobIns = sinking.GetRocketConsumerServer(constant.UinJobGroup, false)
 	})
 	l.autoStartThread()
+	//go func() {
+	//	list, _ := uin2.GetIns().SelectByUin("1065341348")
+	//	for _, v := range list {
+	//		if v.PlayerDay > 0 {
+	//			l.run(v)
+	//			break
+	//		}
+	//	}
+	//}()
 	err := uinJobIns.ListenReceiveMsgDo(constant.UinJobTopic, "", func(mqMsg queue.MqMsg) {
 		sinking_web.Try(func() {
 			s := &uin2.AppUinJob{}
@@ -121,8 +130,8 @@ func (l *uinJob) restartThread(server *model.AppUinServer) {
 	server2.GetIns().ServerJobReset(strconv.Itoa(server.Id))
 	var proxy *oicq.Proxy
 	_ = json.Unmarshal([]byte(server.Proxy), &proxy)
-	serverLock.RLock()
-	defer serverLock.RUnlock()
+	serverLock.Lock()
+	defer serverLock.Unlock()
 	if servers[server.Id] != nil {
 		close(servers[server.Id])
 	}
@@ -316,11 +325,11 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uinInfo *model.AppUin, jobs []oicq.
 	}
 	//查询cookie项
 	cookies := make(map[oicq.Job]string)
-	err, wsCookie := web_uin.GetUinCookies(uinInfo.Uin, "h5.weishi.qq.com", true)
+	err, wsCookie := web_uin.GetUinCookies(uinInfo.Uin, "h5.weishi.qq.com", false)
 	if err == nil {
 		cookies[oicq.Ws] = wsCookie
 	}
-	err, musicCookie := web_uin.GetUinCookies(uinInfo.Uin, "y.qq.com", true)
+	err, musicCookie := web_uin.GetUinCookies(uinInfo.Uin, "y.qq.com", false)
 	if err == nil {
 		cookies[oicq.QQMusic] = musicCookie
 	}
@@ -329,10 +338,35 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uinInfo *model.AppUin, jobs []oicq.
 	for k, v := range cookie {
 		_ = web_uin.SetUinCookies(uinInfo.Uin, k, v)
 	}
-	if !isFirst {
-		//获取未执行的项目
-		e, s := cli.Mobile.Speed.Info()
-		if e == nil {
+	e, s := cli.Mobile.Speed.Info()
+	if e == nil {
+		//判断是否需要钱包实名
+		level := web_uin.GetAppConfigInt(constant.AppUinTaskLevelRealAuth)
+		if level >= 0 {
+			uLevel, uE := strconv.Atoi(s.IQQLevel)
+			if uE != nil {
+				uLevel = 0
+			}
+			if uLevel <= level {
+				uE2, walletCookie := web_uin.GetUinCookies(uinInfo.Uin, "qianbao.qq.com", false)
+				if uE2 == nil {
+					walletCookie = ""
+				}
+				c, authStatus, uE2 := cli.Mobile.GetWalletRealAuth(walletCookie)
+				if c == "" {
+					c, authStatus, uE2 = cli.Mobile.GetWalletRealAuth("")
+				}
+				if uE2 == nil {
+					_ = web_uin.SetUinCookies(uinInfo.Uin, "qianbao.qq.com", c)
+					if !authStatus {
+						return true, nil, nil
+					}
+					log.Println(uinInfo.Uin, "账号等级：", s.IQQLevel, "实名状态：", authStatus, uE2)
+				}
+			}
+		}
+		//非当日首次挂机获取未执行项目
+		if !isFirst {
 			jobs = l.getUnDoJobs(jobs, s, isSys)
 			if len(jobs) <= 0 {
 				//保存加速状态
@@ -341,7 +375,6 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uinInfo *model.AppUin, jobs []oicq.
 		}
 	}
 	log.Println("获取挂机任务", uinInfo.Uin, jobs)
-	//jobs = []oicq.Job{oicq.Pc}
 	if len(jobs) <= 0 {
 		return false, nil, cli.LoginToken
 	}
@@ -361,13 +394,9 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uinInfo *model.AppUin, jobs []oicq.
 	if resCookie[oicq.QQMusic] != "" && (musicCookie == "" || resCookie[oicq.QQMusic] != musicCookie) {
 		_ = web_uin.SetUinCookies(uinInfo.Uin, "y.qq.com", resCookie[oicq.QQMusic])
 	}
-	//_, b := cli.Mobile.Speed.Info()
-	//fmt.Println("开始加速小世界,当前状态", b.ISmallShare)
-	//fmt.Println(cli.Mobile.Speed.FeedCloud())
 	//保存加速状态
-	if e, s := cli.Mobile.Speed.Info(); e == nil {
+	if e, s = cli.Mobile.Speed.Info(); e == nil {
 		l.saveJobStatus(uinInfo, 1, s)
-		//fmt.Println("小世界加速结果", s.ISmallShare)
 	}
 	//延迟刷新状态
 	refreshTask.Push(150*time.Minute, func() {

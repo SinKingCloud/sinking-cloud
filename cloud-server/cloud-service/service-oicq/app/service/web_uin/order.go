@@ -7,7 +7,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/model"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/app_config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/web_uin/log"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/web_uin/order"
 	uin2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-service/service-oicq/app/service/web_uin/uin"
@@ -28,18 +27,11 @@ func Refund(tradeNo string) error {
 	}
 	defer util.Cache.UnLock(key)
 	//获取退单设置
-	appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
-	if appConfig[constant.AppUinRefundOpen] != "1" {
+	if GetAppConfigString(constant.AppUinRefundOpen) != "1" {
 		return errors.New("退单功能未开启")
 	}
-	day, err := strconv.Atoi(appConfig[constant.AppUinRefundDay])
-	if err != nil {
-		day = 0
-	}
-	freeDay, err := strconv.Atoi(appConfig[constant.AppUinRefundFree])
-	if err != nil {
-		freeDay = 0
-	}
+	day := GetAppConfigInt(constant.AppUinRefundDay)
+	freeDay := GetAppConfigInt(constant.AppUinRefundFree)
 	//根据订单号查找订单信息
 	orderInfo, err := order.GetIns().FindByTradeNo(tradeNo)
 	if err != nil || orderInfo == nil {
@@ -66,18 +58,9 @@ func Refund(tradeNo string) error {
 	//计算价格
 	money := orderInfo.Money
 	if !isFree {
-		point, err := strconv.ParseFloat(appConfig[constant.AppUinRefundPoint], 64)
-		if err != nil {
-			point = 0
-		}
-		min, err := strconv.ParseFloat(appConfig[constant.AppUinRefundMin], 64)
-		if err != nil {
-			min = 0
-		}
-		max, err := strconv.ParseFloat(appConfig[constant.AppUinRefundMax], 64)
-		if err != nil {
-			max = 0
-		}
+		point := GetAppConfigFloat64(constant.AppUinRefundPoint)
+		min := GetAppConfigFloat64(constant.AppUinRefundMin)
+		max := GetAppConfigFloat64(constant.AppUinRefundMax)
 		if point > 0 {
 			costMoney := orderInfo.Money / 100 * point
 			if min > 0 && costMoney < min {

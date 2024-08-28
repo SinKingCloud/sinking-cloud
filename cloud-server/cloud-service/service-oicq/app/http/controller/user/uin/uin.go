@@ -117,25 +117,12 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 		c.Error("未获取到可用节点,请更换挂机节点")
 		return
 	}
-	appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
-	if appConfig[constant.AppUinSpeedTest] != "1" {
+	if web_uin.GetAppConfigString(constant.AppUinSpeedTest) != "1" {
 		c.Error("系统已关闭测试功能")
 		return
 	}
-	qps := 0
-	if appConfig[constant.AppUinSpeedQps] != "" {
-		num, e := strconv.Atoi(appConfig[constant.AppUinSpeedQps])
-		if e == nil {
-			qps = num
-		}
-	}
-	num := 0
-	if appConfig[constant.AppUinSpeedNum] != "" {
-		n, e := strconv.Atoi(appConfig[constant.AppUinSpeedNum])
-		if e == nil {
-			num = n
-		}
-	}
+	qps := web_uin.GetAppConfigInt(constant.AppUinSpeedQps)
+	num := web_uin.GetAppConfigInt(constant.AppUinSpeedNum)
 	var proxy *oicq.Proxy
 	_ = json.Unmarshal([]byte(s.Proxy), &proxy)
 	if proxy == nil {
@@ -517,35 +504,22 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	}
 	//风控限制判断
 	if form.Step == "normal" {
-		appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
-		if appConfig[constant.AppUinLoginPwd] == "1" {
+		if web_uin.GetAppConfigString(constant.AppUinLoginPwd) == "1" {
 			c.Error("系统已关闭密码更新")
 			return
 		}
 		checkMin := true
-		if appConfig[constant.AppUinUpdateDate] != "" {
-			t1, e1 := time.Parse("2006-01-02 15:04:05", appConfig[constant.AppUinUpdateDate])
+		if web_uin.GetAppConfigString(constant.AppUinUpdateDate) != "" {
+			t1, e1 := time.Parse("2006-01-02 15:04:05", web_uin.GetAppConfigString(constant.AppUinUpdateDate))
 			t2, e2 := time.Parse("2006-01-02 15:04:05", uinInfo.CreateTime.String())
 			if e1 == nil && e2 == nil && t2.Before(t1) {
 				checkMin = false
 			}
 		}
 		if checkMin {
-			minLevel := 0
-			if appConfig[constant.AppUinUpdateLevel] != "" {
-				num, e := strconv.Atoi(appConfig[constant.AppUinUpdateLevel])
-				if e == nil {
-					minLevel = num
-				}
-			}
+			minLevel := web_uin.GetAppConfigInt(constant.AppUinUpdateLevel)
 			if minLevel > 0 {
-				minDays := 0
-				if appConfig[constant.AppUinUpdateDays] != "" {
-					num, e := strconv.Atoi(appConfig[constant.AppUinUpdateDays])
-					if e == nil {
-						minDays = num
-					}
-				}
+				minDays := web_uin.GetAppConfigInt(constant.AppUinUpdateDays)
 				levelInfo := web_uin.GetLevelInfo(uinInfo.Uin)
 				if levelInfo != nil && levelInfo.Level <= minLevel && uinInfo.PlayerDay < minDays && uinInfo.SignDay < minDays {
 					c.Error("您的剩余挂机天数低于" + strconv.Itoa(minDays) + "天。请续费至高于" + strconv.Itoa(minDays) + "天再更新状态")
@@ -554,7 +528,8 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			}
 		}
 	}
-	uinInfo.Proto = oicq.GetOicqProtoCode(client.AndroidPad)
+	proto := oicq.GetOicqProto(web_uin.GetAppConfigInt(constant.AppUinLoginPwdProto))
+	uinInfo.Proto = oicq.GetOicqProtoCode(proto)
 	cli, err := web_uin.GetOicqInsWithOption(uinInfo, proxy, true)
 	if err != nil {
 		c.Error("连接服务器失败")
@@ -731,35 +706,22 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 	util.Cache.SetExpire(key, int64(1000))
 	//风险控制
 	if form.Step == "code" {
-		appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
-		if appConfig[constant.AppUinLoginQrCode] == "1" {
+		if web_uin.GetAppConfigString(constant.AppUinLoginQrCode) == "1" {
 			c.Error("系统已关闭扫码更新")
 			return
 		}
 		checkMin := true
-		if appConfig[constant.AppUinUpdateDate] != "" {
-			t1, e1 := time.Parse("2006-01-02 15:04:05", appConfig[constant.AppUinUpdateDate])
+		if web_uin.GetAppConfigString(constant.AppUinUpdateDate) != "" {
+			t1, e1 := time.Parse("2006-01-02 15:04:05", web_uin.GetAppConfigString(constant.AppUinUpdateDate))
 			t2, e2 := time.Parse("2006-01-02 15:04:05", uinInfo.CreateTime.String())
 			if e1 == nil && e2 == nil && t2.Before(t1) {
 				checkMin = false
 			}
 		}
 		if checkMin {
-			minLevel := 0
-			if appConfig[constant.AppUinUpdateLevel] != "" {
-				num, e := strconv.Atoi(appConfig[constant.AppUinUpdateLevel])
-				if e == nil {
-					minLevel = num
-				}
-			}
+			minLevel := web_uin.GetAppConfigInt(constant.AppUinUpdateLevel)
 			if minLevel > 0 {
-				minDays := 0
-				if appConfig[constant.AppUinUpdateDays] != "" {
-					num, e := strconv.Atoi(appConfig[constant.AppUinUpdateDays])
-					if e == nil {
-						minDays = num
-					}
-				}
+				minDays := web_uin.GetAppConfigInt(constant.AppUinUpdateDays)
 				levelInfo := web_uin.GetLevelInfo(uinInfo.Uin)
 				if levelInfo != nil && levelInfo.Level <= minLevel && uinInfo.PlayerDay < minDays && uinInfo.SignDay < minDays {
 					c.Error("您的剩余挂机天数低于" + strconv.Itoa(minDays) + "天。请续费至高于" + strconv.Itoa(minDays) + "天再更新状态")
@@ -768,7 +730,8 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 			}
 		}
 	}
-	uinInfo.Proto = oicq.GetOicqProtoCode(client.AndroidWatch)
+	proto := oicq.GetOicqProto(web_uin.GetAppConfigInt(constant.AppUinLoginQrCodeProto))
+	uinInfo.Proto = oicq.GetOicqProtoCode(proto)
 	cli, err := web_uin.GetOicqInsWithOption(uinInfo, proxy, true)
 	cli.LoginTime = time.Now().Unix()
 	if err != nil {
@@ -1506,20 +1469,15 @@ func (ControllerUin) LevelInfo(c *sinking_server.Context) {
 
 // Activity 活动列表
 func (ControllerUin) Activity(c *sinking_server.Context) {
-	appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
 	// 首次购买活动
-	firstBuy := 0
+	firstBuy := web_uin.GetAppConfigInt(constant.AppUinFirstBuyGift)
 	firstBuyOpen := 0
-	if appConfig[constant.AppUinFirstBuyGift] != "" {
-		n, e := strconv.Atoi(appConfig[constant.AppUinFirstBuyGift])
-		if e == nil && n > 0 {
-			firstBuy = n
-			firstBuyOpen = 1
-		}
+	if firstBuy > 0 {
+		firstBuyOpen = 1
 	}
 	// 开通赠送活动
 	buyOpen := 0
-	if appConfig[constant.AppUinBuyActivityOpen] == "1" {
+	if web_uin.GetAppConfigString(constant.AppUinBuyActivityOpen) == "1" {
 		buyOpen = 1
 	}
 	fun := func(value string, d int) int {
@@ -1534,25 +1492,25 @@ func (ControllerUin) Activity(c *sinking_server.Context) {
 	}
 	//扫码加速活动
 	testOpen := 0
-	if appConfig[constant.AppUinSpeedTest] == "1" {
+	if web_uin.GetAppConfigString(constant.AppUinSpeedTest) == "1" {
 		testOpen = 1
 	}
 	//领取体验套装活动
 	experienceOpen := 0
-	if appConfig[constant.AppUinExperienceOpen] == "1" {
+	if web_uin.GetAppConfigString(constant.AppUinExperienceOpen) == "1" {
 		experienceOpen = 1
 	}
 	c.SuccessWithData("获取成功", sinking_web.H{
-		"test_speed":         testOpen,                                         //测试扫码加速
-		"experience_open":    experienceOpen,                                   //领取体验套装活动
-		"experience_days":    fun(appConfig[constant.AppUinExperienceDays], 0), //领取体验套装活动天数
-		"first_buy_open":     firstBuyOpen,                                     //首次购买活动开关
-		"first_buy_multiple": firstBuy,                                         //首次购买到账倍数
-		"buy_open":           buyOpen,                                          //购买赠送活动开关
-		"buy_month_gift":     fun(appConfig[constant.AppUinBuyMonthGift], 0),   //购买1月赠送天数
-		"buy_quarter_gift":   fun(appConfig[constant.AppUinBuyQuarterGift], 0), //购买3月赠送天数
-		"buy_half_gift":      fun(appConfig[constant.AppUinBuyHalfGift], 0),    //购买6月赠送天数
-		"buy_year_gift":      fun(appConfig[constant.AppUinBuyYearGift], 0),    //购买12月赠送天数
+		"test_speed":         testOpen,                                                          //测试扫码加速
+		"experience_open":    experienceOpen,                                                    //领取体验套装活动
+		"experience_days":    fun(web_uin.GetAppConfigString(constant.AppUinExperienceDays), 0), //领取体验套装活动天数
+		"first_buy_open":     firstBuyOpen,                                                      //首次购买活动开关
+		"first_buy_multiple": firstBuy,                                                          //首次购买到账倍数
+		"buy_open":           buyOpen,                                                           //购买赠送活动开关
+		"buy_month_gift":     fun(web_uin.GetAppConfigString(constant.AppUinBuyMonthGift), 0),   //购买1月赠送天数
+		"buy_quarter_gift":   fun(web_uin.GetAppConfigString(constant.AppUinBuyQuarterGift), 0), //购买3月赠送天数
+		"buy_half_gift":      fun(web_uin.GetAppConfigString(constant.AppUinBuyHalfGift), 0),    //购买6月赠送天数
+		"buy_year_gift":      fun(web_uin.GetAppConfigString(constant.AppUinBuyYearGift), 0),    //购买12月赠送天数
 	})
 }
 

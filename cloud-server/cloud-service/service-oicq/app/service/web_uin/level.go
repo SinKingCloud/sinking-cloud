@@ -191,20 +191,9 @@ func GetPrice(data *model.AppUinLevel, types int, month int) (price float64) {
 
 // GetGiftDays 获取赠送天数
 func GetGiftDays(month int) int {
-	appConfig := app_config.GetIns().GetAppConfigs(constant.AppUinId, false)
 	//判断是否开启活动
-	if appConfig[constant.AppUinBuyActivityOpen] != "1" {
+	if GetAppConfigString(constant.AppUinBuyActivityOpen) != "1" {
 		return 0
-	}
-	fun := func(appConfig map[string]string, key string) int {
-		days := 0
-		if appConfig[key] != "" {
-			n, e := strconv.Atoi(appConfig[key])
-			if e == nil && n > 0 {
-				days = n
-			}
-		}
-		return days
 	}
 	key := ""
 	switch month {
@@ -224,5 +213,5 @@ func GetGiftDays(month int) int {
 	if key == "" {
 		return 0
 	}
-	return fun(appConfig, key)
+	return GetAppConfigInt(key)
 }
