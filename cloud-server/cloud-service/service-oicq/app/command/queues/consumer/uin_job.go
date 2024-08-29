@@ -45,7 +45,7 @@ func (l *uinJob) Listen() {
 	})
 	l.autoStartThread()
 	//go func() {
-	//	list, _ := uin2.GetIns().SelectByUin("1065341348")
+	//	list, _ := uin2.GetIns().SelectByUin("2710911512")
 	//	for _, v := range list {
 	//		if v.PlayerDay > 0 {
 	//			l.run(v)
@@ -356,12 +356,12 @@ func (l *uinJob) speedJob(proxy *oicq.Proxy, uinInfo *model.AppUin, jobs []oicq.
 				if c == "" {
 					c, authStatus, uE2 = cli.Mobile.GetWalletRealAuth("")
 				}
+				log.Println(uinInfo.Uin, "账号等级：", s.IQQLevel, "实名状态：", authStatus, uE2)
 				if uE2 == nil {
 					_ = web_uin.SetUinCookies(uinInfo.Uin, "qianbao.qq.com", c)
 					if !authStatus {
 						return true, nil, nil
 					}
-					log.Println(uinInfo.Uin, "账号等级：", s.IQQLevel, "实名状态：", authStatus, uE2)
 				}
 			}
 		}

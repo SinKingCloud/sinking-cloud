@@ -9,7 +9,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-websocket/app/http/websocket"
 	sinking_websocket "github.com/SinKingCloud/sinking-go/sinking-websocket"
-	"log"
 	"sync"
 )
 
@@ -46,7 +45,7 @@ func (l *messageSender) Listen() {
 			if conn != nil {
 				err = conn.WriteMessage(1, []byte(data.Message))
 				if err != nil {
-					log.Println(err)
+					util.Log.Println(err)
 				}
 			}
 		}
