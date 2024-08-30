@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Alert, message, Modal, Spin} from "antd";
+import {Alert, Button, message, Modal, Spin} from "antd";
 // @ts-ignore
 import {history, useModel} from "umi";
 // @ts-ignore
@@ -11,6 +11,8 @@ import QRCode from "qrcode.react/lib";
 
 import styles from './style.less';
 import {uinQrLogin} from "@/services/open/uin/uin";
+import {checkMobile} from "@/util/device";
+import {qqJumpUrl} from "@/util/string";
 
 export type QrLoginProps = {
   uin?: string;
@@ -120,6 +122,15 @@ const QrLogin: React.FC<QrLoginProps> = (props) => {
         </div>
         <div style={{textAlign: "center", margin: "15px auto -5px auto", color: "#8c8c8c"}}>
           {qrcodeMessage || "请扫描二维码"}
+        </div>
+        <div hidden={!checkMobile() || qrCode == ""} style={{textAlign: "center", marginTop: "10px"}}>
+          <Button type='primary' style={{maxWidth: "200px", marginTop: "10px"}} htmlType='button' block
+                  onClick={() => {
+                    qqJumpUrl(qrCode);
+                    message.warning("验证完毕请回到此页面");
+                  }}>
+            快捷登陆
+          </Button>
         </div>
       </Modal>
     </>

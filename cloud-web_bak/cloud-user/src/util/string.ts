@@ -79,3 +79,45 @@ export function implode(glue: string, pieces: any) {
   }
   return pieces;
 }
+
+
+/**
+ * 跳转QQ网址
+ * @param qrurl 网址
+ */
+export function qqJumpUrl(qrurl: string) {
+  const ua = window.navigator.userAgent.toLowerCase();
+  const is_ios = ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1;
+  let schemacallback = '';
+  if (is_ios) {
+    schemacallback = 'weixin://';
+  } else if (ua.indexOf('ucbrowser') > -1) {
+    schemacallback = 'ucweb://';
+  } else if (ua.indexOf('meizu') > -1) {
+    schemacallback = 'mzbrowser://';
+  } else if (ua.indexOf('liebaofast') > -1) {
+    schemacallback = 'lb://';
+  } else if (ua.indexOf('baidubrowser') > -1) {
+    schemacallback = 'bdbrowser://';
+  } else if (ua.indexOf('baiduboxapp') > -1) {
+    schemacallback = 'bdapp://';
+  } else if (ua.indexOf('mqqbrowser') > -1) {
+    schemacallback = 'mqqbrowser://';
+  } else if (ua.indexOf('qihoobrowser') > -1) {
+    schemacallback = 'qihoobrowser://';
+  } else if (ua.indexOf('chrome') > -1) {
+    schemacallback = 'googlechrome://';
+  } else if (ua.indexOf('sogoumobilebrowser') > -1) {
+    schemacallback = 'SogouMSE://';
+  } else if (ua.indexOf('xiaomi') > -1) {
+    schemacallback = 'miuibrowser://';
+  } else {
+    schemacallback = 'googlechrome://';
+  }
+  if (is_ios) {
+    window.location.href = 'wtloginmqq3://ptlogin/qlogin?qrcode=' + encodeURIComponent(qrurl) + '&schemacallback=' + encodeURIComponent(schemacallback);
+  } else {
+    window.location.href = 'wtloginmqq://ptlogin/qlogin?qrcode=' + encodeURIComponent(qrurl) + '&schemacallback=' + encodeURIComponent(schemacallback);
+  }
+}
+
