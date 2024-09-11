@@ -547,7 +547,7 @@ func GetLevelInfo(uin string) *UinInfo {
 		if info == nil {
 			info = GetGuestUinInfoBak(u)
 		}
-		if info != nil {
+		if info != nil && info.Level > 0 {
 			bytes1, e := json.Marshal(info)
 			if e == nil {
 				t := str.NewTimeTool().GetZeroTime(time.Now()).Unix() + 86400 - time.Now().Unix()
