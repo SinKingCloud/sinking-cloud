@@ -84,10 +84,7 @@ func (o *Oicq) ActiveProject(jobs []Job, cookies map[Job]string) (res map[Job]mo
 					}
 					break
 				case ZoneClock: //说说加速
-					_, status = o.Mobile.Speed.QZone()
-					if status == mobile.SpeedCookieExpire {
-						_, status = o.Mobile.Speed.QZone()
-					}
+					_, status = o.Mobile.Speed.QZoneBak()
 					break
 				case Friend: //加好友加速
 					_, status = o.Mobile.Speed.Friend()
