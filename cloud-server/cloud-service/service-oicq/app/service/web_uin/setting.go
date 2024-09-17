@@ -235,6 +235,7 @@ func SetUinSpeedStatus(uin string, status *client.SpeedStatus) error {
 		"cms_show_pro":      status.ICmsShowPro,
 		"qbox_answer":       status.IQBoxAnswer,
 		"small_world_share": status.ISmallShare,
+		"zone_magic":        status.IQzoneMagic,
 	}
 	return uin_info.GetIns().Save(info, speedInfo)
 }

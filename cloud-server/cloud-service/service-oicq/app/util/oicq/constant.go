@@ -23,6 +23,7 @@ const (
 	QQMusic                    //音乐签到
 	CmsShowPro                 //厘米秀换装
 	SmallWorldShare            //小世界分享
+	ZoneMagic                  //魔法世界
 
 	Vip        //会员签到
 	BigVip     //大会员签到

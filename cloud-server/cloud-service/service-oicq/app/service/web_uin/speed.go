@@ -17,6 +17,7 @@ const (
 	QQMusic         JobName = "qq_music"
 	CmsShowPro      JobName = "cms_show_pro"
 	SmallWorldShare JobName = "small_world_share"
+	ZoneMagic       JobName = "zone_magic"
 	Vip             JobName = "vip"
 	BigVip          JobName = "big_vip"
 	Hz              JobName = "hz"
@@ -42,12 +43,13 @@ var Setting = map[JobName]string{
 	Pc:              "0",
 	Ws:              "1",
 	MobileClock:     "1",
-	ZoneClock:       "1",
+	ZoneClock:       "0",
 	Login:           "1",
 	Friend:          "1",
 	QQMusic:         "1",
 	CmsShowPro:      "0",
 	SmallWorldShare: "0",
+	ZoneMagic:       "0",
 	Vip:             "1",
 	BigVip:          "1",
 	Hz:              "1",
@@ -73,6 +75,7 @@ var JobMap = map[JobType]map[JobName]oicq.Job{
 		QQMusic:         oicq.QQMusic,
 		CmsShowPro:      oicq.CmsShowPro,
 		SmallWorldShare: oicq.SmallWorldShare,
+		ZoneMagic:       oicq.ZoneMagic,
 	},
 	Sign: {
 		Vip:        oicq.Vip,
@@ -169,6 +172,14 @@ var Project = map[JobType]map[JobName]map[string]string{
 			"name":     "小世界分享",
 			"describe": "每日小世界发布并分享加速0.5天",
 			"logo":     "https://cdn.clwl.online/app/uin/img/xsj.png",
+			"edit":     "true",
+		},
+		ZoneMagic: {
+			"sort":     "16",
+			"type":     "speed",
+			"name":     "魔法世界",
+			"describe": "每日发布说说魔法世界加速0.5天",
+			"logo":     "https://cdn.clwl.online/app/uin/img/magic.png",
 			"edit":     "true",
 		},
 	},

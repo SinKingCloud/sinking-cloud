@@ -469,6 +469,9 @@ func (l *uinJob) getUnDoJobs(jobs []oicq.Job, status *client.SpeedStatus, isSys 
 			case oicq.SmallWorldShare:
 				isCheck = status.ISmallShare != "1"
 				break
+			case oicq.ZoneMagic:
+				isCheck = status.IQzoneMagic != "1"
+				break
 			default:
 				isCheck = !isSys //用户提交则补挂签到
 				break
