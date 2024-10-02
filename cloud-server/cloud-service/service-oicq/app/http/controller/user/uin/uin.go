@@ -580,7 +580,7 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	}
 	if err != nil || resp == nil {
 		log2.Println(uinInfo.Uin, "登陆错误", resp, err)
-		c.Error("登陆发生错误,请使用扫码登陆重试")
+		c.Error("登陆发生错误,请稍后重试")
 		return
 	}
 	response := func(uinInfo *model.AppUin, resp *client.LoginResponse) (code int32, message interface{}, data interface{}) {
