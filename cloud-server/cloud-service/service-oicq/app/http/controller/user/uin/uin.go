@@ -554,9 +554,9 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		break
 	case "get_sms":
 		if ins.RequestSMS() {
-			c.Return(200, "获取验证码成功,请提交验证码", nil)
+			c.Success("获取验证码成功,请提交验证码")
 		} else {
-			c.Return(500, "获取验证码失败,请稍后重试", nil)
+			c.Error("获取验证码失败,请稍后重试")
 		}
 		return
 	case "captcha":
@@ -650,7 +650,15 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 			code, message, data = 200, "更新状态成功", nil
 		}
 	}
-	c.Return(code, message, data)
+	if code == 200 {
+		c.Success(message)
+	} else {
+		c.ErrorWithData("更新状态失败", sinking_web.H{
+			"code":    code,
+			"message": message,
+			"data":    data,
+		})
+	}
 }
 
 // QrLogin 扫码登陆
