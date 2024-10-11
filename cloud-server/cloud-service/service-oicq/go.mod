@@ -5,11 +5,11 @@ go 1.20
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20240630013516-3a38297dcc84
-	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20241007092744-5c43f5188774
+	github.com/SinKingCloud/sinking-oicq/binary-mobile v0.0.0-20241011040450-1cfad923b8da
 	github.com/SinKingCloud/sinking-oicq/binary-pc v0.0.0-20240619092611-22bf8d33b65b
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/pkg/errors v0.9.1
-	golang.org/x/net v0.23.0
+	golang.org/x/net v0.30.0
 	gorm.io/gorm v1.25.10
 )
 
@@ -57,11 +57,11 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.23.0 // indirect
+	golang.org/x/crypto v0.28.0 // indirect
 	golang.org/x/exp v0.0.0-20240531132922-fd00a4e0eefc // indirect
-	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/text v0.19.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
