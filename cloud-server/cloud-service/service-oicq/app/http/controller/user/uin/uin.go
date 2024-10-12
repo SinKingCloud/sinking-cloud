@@ -27,7 +27,6 @@ import (
 	"github.com/makiuchi-d/gozxing/qrcode"
 	"gorm.io/gorm"
 	"image/png"
-	log2 "log"
 	"strconv"
 	"time"
 )
@@ -540,10 +539,6 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 	var resp *client.LoginResponse
 	request := func(uinInfo *model.AppUin, fun func() (*client.LoginResponse, error)) (resp *client.LoginResponse, err error) {
 		resp, err = fun()
-		log2.Println(uinInfo.Uin, resp, err)
-		if err != nil {
-			log2.Println(uinInfo.Uin, "登陆错误-1", resp, err)
-		}
 		return resp, err
 	}
 	switch form.Step {
@@ -579,7 +574,6 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		break
 	}
 	if err != nil || resp == nil {
-		log2.Println(uinInfo.Uin, "登陆错误", resp, err)
 		c.Error("登陆发生错误,请稍后重试")
 		return
 	}
@@ -612,13 +606,11 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 		} else if resp.Error == client.SMSNeededError {
 			return 500, "登陆环境异常,请稍后重试", nil
 		} else if resp.Error == client.OtherLoginError {
-			log2.Println(uinInfo.Uin, "登陆异常", resp, err)
 			if resp.ErrorMessage == "" {
 				resp.ErrorMessage = "登陆异常,请重试"
 			}
 			return 500, resp.ErrorMessage, nil
 		} else {
-			log2.Println(uinInfo.Uin, "登陆失败", resp, err)
 			if resp.ErrorMessage == "" {
 				resp.ErrorMessage = "登陆失败,请重试"
 			}
