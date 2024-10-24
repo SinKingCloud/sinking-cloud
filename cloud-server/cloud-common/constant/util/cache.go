@@ -14,5 +14,5 @@ const (
 	CacheTimeWebSocketUser = 600 * 1000       //默认websocket 用户缓存时间
 
 	CacheNameWebSocketAuth = "WebSocketAuth_" //websocket token缓存
-	CacheTimeWebSocketAuth = 86400 * 1000     //默认websocket token缓存时间
+	CacheTimeWebSocketAuth = 3600 * 2 * 1000  //默认websocket token缓存时间
 )

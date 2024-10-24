@@ -8,11 +8,20 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/sinking_server"
 	"github.com/SinKingCloud/sinking-go/sinking-websocket"
+	"github.com/gorilla/websocket"
 	"net/http"
 	"time"
 )
 
 var Connection *sinking_websocket.WebSocketConnections
+
+// setAddr 设置连接地址
+func setAddr(id string) {
+	addr := util.Conf.GetString(config.ConfApplicationAddr) + ":" + util.Conf.GetString(config.ConfApplicationPort)
+	if !util.Cache.SetWithExpire(util2.CacheNameWebSocketAuth+id, addr, util2.CacheTimeWebSocketAuth) {
+		Connection.Delete(id)
+	}
+}
 
 // onError 监听错误
 func onError(id string, err error) {
@@ -23,10 +32,7 @@ func onError(id string, err error) {
 // onConnect 监听连接
 func onConnect(id string, ws *sinking_websocket.Conn) {
 	Connection.Set(id, ws)
-	addr := util.Conf.GetString(config.ConfApplicationAddr) + ":" + util.Conf.GetString(config.ConfApplicationPort)
-	if !util.Cache.SetWithExpire(util2.CacheNameWebSocketAuth+id, addr, util2.CacheTimeWebSocketAuth) {
-		Connection.Delete(id)
-	}
+	setAddr(id)
 }
 
 // onClose 监听关闭
@@ -44,10 +50,8 @@ func onMessage(id string, ws *sinking_websocket.Conn, messageType int, data []by
 	}
 	switch req.Cmd {
 	case "ping":
-		_ = ws.Conn.WriteMessage(1, response(req.Id, req.Cmd, time.Now().Format("2006-01-02 15:04:05")))
-		break
-	case "time":
-		_ = ws.Conn.WriteMessage(1, response(req.Id, req.Cmd, time.Now().UnixMilli()))
+		go setAddr(id)
+		_ = ws.Conn.WriteMessage(websocket.TextMessage, response(req.Id, req.Cmd, time.Now().Format("2006-01-02 15:04:05")))
 		break
 	}
 }
