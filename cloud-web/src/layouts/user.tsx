@@ -217,6 +217,7 @@ const LeftTop: React.FC = () => {
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState("");
     const handleChange = (e: any) => {
+        setOpen(true);
         setValue(e?.target?.value);
     }
     /**

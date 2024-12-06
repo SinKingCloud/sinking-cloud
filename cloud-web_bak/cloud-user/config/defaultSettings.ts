@@ -23,7 +23,7 @@ const isDev = process.env.NODE_ENV === 'development';
 Settings = Object.assign(Settings, {
   title: '云开放平台',
   logo: '/logo.svg',
-  api: isDev ? 'https://gateway.clwl.online' : 'https://gateway.clwl.online',
+  api: isDev ? 'http://192.168.0.102:1000' : 'https://gateway.clwl.online',
   ws: isDev ? 'ws://127.0.0.1:1000/ws/server' : 'wss://gateway.clwl.online/ws/server',
   base: '/admin/',
   publicPath: '/admin/',

@@ -18,7 +18,7 @@
       "prefix": "sinking_"
     },
     "mysql": {
-      "host": "111.180.205.222",
+      "host": "222.187.238.201",
       "port": "3306",
       "user": "root",
       "pwd": "Qq@1178710004...",
@@ -32,7 +32,7 @@
     }
   },
   "servers": {
-    "cluster": "111.180.205.222:1817",
+    "cluster": "222.187.238.201:1817",
     "tokenName": "sinking-server-token",
     "token": "97cb316ec237b3937307d94c38d21785",
     "heartTime": 5,
