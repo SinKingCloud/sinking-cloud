@@ -32,9 +32,9 @@ func GetIns() *Service {
 // FaceInit 初始化人脸识别
 func (s *Service) FaceInit(userId int, cardType string, cardNo string, cardName string, jumpUrl string, callbackUrl string) (string, string, error) {
 	type Form struct {
-		UserId   int    `form:"user_id" json:"user_id"`
-		CardNo   string `form:"card_no" json:"card_no"`
-		CardName string `form:"card_name" json:"card_name"`
+		UserId   int    `json:"user_id"`
+		CardNo   string `json:"card_no"`
+		CardName string `json:"card_name"`
 	}
 	form := &Form{
 		UserId:   userId,
@@ -84,9 +84,9 @@ func (s *Service) FaceCheck(id string) (res bool, userId int, cardNo string, car
 		data, exists := util.Cache.Get("Face_" + id)
 		if exists {
 			type Form struct {
-				UserId   int    `form:"user_id" json:"user_id"`
-				CardNo   string `form:"card_no" json:"card_no"`
-				CardName string `form:"card_name" json:"card_name"`
+				UserId   int    `json:"user_id"`
+				CardNo   string `json:"card_no"`
+				CardName string `json:"card_name"`
 			}
 			form := &Form{}
 			err = json.Unmarshal([]byte(data), &form)

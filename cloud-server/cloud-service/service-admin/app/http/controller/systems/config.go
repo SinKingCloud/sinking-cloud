@@ -13,18 +13,18 @@ import (
 func (ControllerConfig) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"sort" validate:"oneof=id sort update_time create_time" label:"排序字段"`
-		OrderByType     string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		Pid             string `form:"pid" json:"pid" default:"" validate:"omitempty,numeric" label:"父级ID"`
-		Name            string `form:"name" json:"name" default:"" validate:"omitempty,max=20" label:"名称"`
-		Describe        string `form:"describe" json:"describe" default:"" validate:"omitempty,max=100" label:"描述"`
-		Key             string `form:"key" json:"key" default:"" validate:"omitempty,max=50" label:"配置标识"`
-		Value           string `form:"value" json:"value" default:"" validate:"omitempty,max=500" label:"配置内容"`
-		Control         string `form:"control" json:"control" default:"" validate:"omitempty,max=500" label:"控件类型"`
-		CreateTimeStart string `form:"create_time_start" json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
-		UpdateTimeStart string `form:"update_time_start" json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
-		UpdateTimeEnd   string `form:"update_time_end" json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
+		OrderByField    string `json:"order_by_field" default:"sort" validate:"oneof=id sort update_time create_time" label:"排序字段"`
+		OrderByType     string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
+		Pid             string `json:"pid" default:"" validate:"omitempty,numeric" label:"父级ID"`
+		Name            string `json:"name" default:"" validate:"omitempty,max=20" label:"名称"`
+		Describe        string `json:"describe" default:"" validate:"omitempty,max=100" label:"描述"`
+		Key             string `json:"key" default:"" validate:"omitempty,max=50" label:"配置标识"`
+		Value           string `json:"value" default:"" validate:"omitempty,max=500" label:"配置内容"`
+		Control         string `json:"control" default:"" validate:"omitempty,max=500" label:"控件类型"`
+		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		UpdateTimeStart string `json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
+		UpdateTimeEnd   string `json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -74,13 +74,13 @@ func (ControllerConfig) List(c *sinking_server.Context) {
 // Update 修改信息
 func (ControllerConfig) Update(c *sinking_server.Context) {
 	type Form struct {
-		Ids      []int  `form:"ids" json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
-		Pid      string `form:"pid" json:"pid" default:"" validate:"required,numeric" label:"父级ID"`
-		Name     string `form:"name" json:"name" default:"" validate:"omitempty,max=20" label:"名称"`
-		Describe string `form:"describe" json:"describe" default:"" validate:"omitempty,max=100" label:"描述"`
-		Value    string `form:"value" json:"value" default:"" validate:"omitempty" label:"配置内容"`
-		Control  string `form:"control" json:"control" default:"" validate:"omitempty,max=999" label:"控件类型"`
-		Sort     string `form:"sort" json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
+		Ids      []int  `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
+		Pid      string `json:"pid" default:"" validate:"required,numeric" label:"父级ID"`
+		Name     string `json:"name" default:"" validate:"omitempty,max=20" label:"名称"`
+		Describe string `json:"describe" default:"" validate:"omitempty,max=100" label:"描述"`
+		Value    string `json:"value" default:"" validate:"omitempty" label:"配置内容"`
+		Control  string `json:"control" default:"" validate:"omitempty,max=999" label:"控件类型"`
+		Sort     string `json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -118,13 +118,13 @@ func (ControllerConfig) Update(c *sinking_server.Context) {
 // Create 添加信息
 func (ControllerConfig) Create(c *sinking_server.Context) {
 	type Form struct {
-		Pid      int    `form:"pid" json:"pid" default:"" validate:"numeric" label:"父级ID"`
-		Name     string `form:"name" json:"name" validate:"required,max=20" label:"名称"`
-		Describe string `form:"describe" json:"describe" validate:"required,max=100" label:"描述"`
-		Key      string `form:"key" json:"key" default:"" validate:"required,max=50" label:"配置标识"`
-		Value    string `form:"value" json:"value" default:"" validate:"required,max=500" label:"配置内容"`
-		Control  string `form:"control" json:"control" default:"" validate:"required,max=500" label:"控件类型"`
-		Sort     int    `form:"sort" json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
+		Pid      int    `json:"pid" default:"" validate:"numeric" label:"父级ID"`
+		Name     string `json:"name" validate:"required,max=20" label:"名称"`
+		Describe string `json:"describe" validate:"required,max=100" label:"描述"`
+		Key      string `json:"key" default:"" validate:"required,max=50" label:"配置标识"`
+		Value    string `json:"value" default:"" validate:"required,max=500" label:"配置内容"`
+		Control  string `json:"control" default:"" validate:"required,max=500" label:"控件类型"`
+		Sort     int    `json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -156,7 +156,7 @@ func (ControllerConfig) Create(c *sinking_server.Context) {
 // Delete 删除信息
 func (ControllerConfig) Delete(c *sinking_server.Context) {
 	type Form struct {
-		Ids []int `form:"ids" json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
+		Ids []int `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -176,16 +176,16 @@ func (ControllerConfig) Delete(c *sinking_server.Context) {
 // Updates 修改信息
 func (ControllerConfig) Updates(c *sinking_server.Context) {
 	type Config struct {
-		Pid      string `form:"pid" json:"pid" default:"" validate:"omitempty,numeric" label:"父级ID"`
-		Name     string `form:"name" json:"name" default:"" validate:"omitempty,max=20" label:"名称"`
-		Describe string `form:"describe" json:"describe" default:"" validate:"omitempty,max=100" label:"描述"`
-		Key      string `form:"key" json:"key" default:"" validate:"required,max=50" label:"配置标识"`
-		Value    string `form:"value" json:"value" default:"" validate:"omitempty,max=999" label:"配置内容"`
-		Control  string `form:"control" json:"control" default:"" validate:"omitempty,max=999" label:"控件类型"`
-		Sort     string `form:"sort" json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
+		Pid      string `json:"pid" default:"" validate:"omitempty,numeric" label:"父级ID"`
+		Name     string `json:"name" default:"" validate:"omitempty,max=20" label:"名称"`
+		Describe string `json:"describe" default:"" validate:"omitempty,max=100" label:"描述"`
+		Key      string `json:"key" default:"" validate:"required,max=50" label:"配置标识"`
+		Value    string `json:"value" default:"" validate:"omitempty,max=999" label:"配置内容"`
+		Control  string `json:"control" default:"" validate:"omitempty,max=999" label:"控件类型"`
+		Sort     string `json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
 	}
 	type Form struct {
-		Configs []*Config `form:"configs" json:"configs" default:"" validate:"gte=1" label:"配置标识"`
+		Configs []*Config `json:"configs" default:"" validate:"gte=1" label:"配置标识"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

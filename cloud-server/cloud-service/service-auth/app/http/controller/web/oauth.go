@@ -8,8 +8,8 @@ import (
 // Oauth 授权登录
 func (ControllerWeb) Oauth(c *sinking_server.Context) {
 	type Form struct {
-		Ticket      string `form:"ticket" json:"ticket" default:"" validate:"required,len=32" label:"授权码"`
-		RedirectUrl string `form:"redirect_url" json:"redirect_url" default:"" validate:"required,uri" label:"回调网址"`
+		Ticket      string `json:"ticket" default:"" validate:"required,len=32" label:"授权码"`
+		RedirectUrl string `json:"redirect_url" default:"" validate:"required,uri" label:"回调网址"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

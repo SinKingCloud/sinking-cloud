@@ -14,12 +14,12 @@ type ControllerLog struct {
 func (ControllerLog) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id" label:"排序字段"`
-		OrderByType  string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		AppId        string `form:"app_id" json:"app_id" default:"" validate:"omitempty,numeric" label:"应用ID"`
-		Uin          string `form:"uin" json:"uin" default:"" json:"uin" validate:"required,numeric,min=5,max=10" label:"QQ账号"`
-		Title        string `form:"title" json:"title" default:"" validate:"omitempty,max=50" label:"标题"`
-		Content      string `form:"content" json:"content" default:"" validate:"omitempty,max=50" label:"描述"`
+		OrderByField string `json:"order_by_field" default:"id" validate:"oneof=id" label:"排序字段"`
+		OrderByType  string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
+		AppId        string `json:"app_id" default:"" validate:"omitempty,numeric" label:"应用ID"`
+		Uin          string `json:"uin" default:"" json:"uin" validate:"required,numeric,min=5,max=10" label:"QQ账号"`
+		Title        string `json:"title" default:"" validate:"omitempty,max=50" label:"标题"`
+		Content      string `json:"content" default:"" validate:"omitempty,max=50" label:"描述"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

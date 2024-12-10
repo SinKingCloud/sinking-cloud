@@ -10,10 +10,10 @@ import (
 // Create 添加信息
 func (ControllerOauth) Create(c *sinking_server.Context) {
 	type Form struct {
-		AppId  int    `form:"app_id" json:"app_id" default:"" validate:"min=1" label:"应用ID"`
-		Name   string `form:"name" json:"name" validate:"required,max=20" label:"名称"`
-		Domain string `form:"domain" json:"domain" validate:"required,max=200" label:"域名"`
-		Status int    `form:"status" json:"status" validate:"oneof=0 1" label:"状态"`
+		AppId  int    `json:"app_id" default:"" validate:"min=1" label:"应用ID"`
+		Name   string `json:"name" validate:"required,max=20" label:"名称"`
+		Domain string `json:"domain" validate:"required,max=200" label:"域名"`
+		Status int    `json:"status" validate:"oneof=0 1" label:"状态"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

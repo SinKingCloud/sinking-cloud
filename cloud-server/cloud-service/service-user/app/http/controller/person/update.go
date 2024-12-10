@@ -14,10 +14,10 @@ import (
 // Update 修改资料
 func (ControllerPerson) Update(c *sinking_server.Context) {
 	type Form struct {
-		Account  string `form:"account" json:"account" default:"" validate:"omitempty,min=5,max=25" label:"账号"`
-		Email    string `form:"email" json:"email" default:"" validate:"omitempty,email,max=30" label:"邮箱"`
-		NickName string `form:"nick_name" json:"nick_name" default:"" validate:"omitempty,min=1,max=15" label:"用户昵称"`
-		Avatar   string `form:"avatar" json:"avatar" default:"" validate:"omitempty,uri" label:"用户头像"`
+		Account  string `json:"account" default:"" validate:"omitempty,min=5,max=25" label:"账号"`
+		Email    string `json:"email" default:"" validate:"omitempty,email,max=30" label:"邮箱"`
+		NickName string `json:"nick_name" default:"" validate:"omitempty,min=1,max=15" label:"用户昵称"`
+		Avatar   string `json:"avatar" default:"" validate:"omitempty,uri" label:"用户头像"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -59,8 +59,8 @@ func (ControllerPerson) Update(c *sinking_server.Context) {
 // Password 修改密码
 func (ControllerPerson) Password(c *sinking_server.Context) {
 	type Form struct {
-		Code     string `form:"code" json:"code" default:"" validate:"required,len=6" label:"短信验证码"`
-		Password string `form:"password" json:"password" default:"" validate:"required,min=6,max=20" label:"密码"`
+		Code     string `json:"code" default:"" validate:"required,len=6" label:"短信验证码"`
+		Password string `json:"password" default:"" validate:"required,min=6,max=20" label:"密码"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -84,9 +84,9 @@ func (ControllerPerson) Password(c *sinking_server.Context) {
 // Phone 修改手机号
 func (ControllerPerson) Phone(c *sinking_server.Context) {
 	type Form struct {
-		Phone    string `form:"phone" json:"phone" default:"" validate:"required,len=11" label:"手机号码"`
-		Code     string `form:"code" json:"code" default:"" validate:"required,len=6" label:"短信验证码"`
-		Password string `form:"password" json:"password" default:"" validate:"required,min=6,max=20" label:"密码"`
+		Phone    string `json:"phone" default:"" validate:"required,len=11" label:"手机号码"`
+		Code     string `json:"code" default:"" validate:"required,len=6" label:"短信验证码"`
+		Password string `json:"password" default:"" validate:"required,min=6,max=20" label:"密码"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

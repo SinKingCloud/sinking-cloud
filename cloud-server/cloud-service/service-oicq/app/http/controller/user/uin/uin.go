@@ -38,19 +38,19 @@ type ControllerUin struct {
 func (ControllerUin) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id" label:"排序字段"`
-		OrderByType     string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		AppId           string `form:"app_id" json:"app_id" default:"" validate:"omitempty,numeric" label:"应用ID"`
-		ServerKey       string `form:"server_key" json:"server_key" default:"" validate:"omitempty,max=50" label:"地区标识"`
-		UinStatus       string `form:"uin_status" json:"uin_status" default:"" validate:"omitempty,numeric" label:"挂机状态"`
-		Uin             string `form:"uin" json:"uin" default:"" validate:"omitempty,numeric" label:"QQ账号"`
-		Status          string `form:"status" json:"status" default:"" validate:"omitempty,oneof=0 1 2" label:"QQ状态"`
-		RunTimeStart    string `form:"run_time_start" json:"run_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"挂机起始时间"`
-		RunTimeEnd      string `form:"run_time_end" json:"run_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"挂机结束时间"`
-		CreateTimeStart string `form:"create_time_start" json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
-		UpdateTimeStart string `form:"update_time_start" json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
-		UpdateTimeEnd   string `form:"update_time_end" json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
+		OrderByField    string `json:"order_by_field" default:"id" validate:"oneof=id" label:"排序字段"`
+		OrderByType     string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
+		AppId           string `json:"app_id" default:"" validate:"omitempty,numeric" label:"应用ID"`
+		ServerKey       string `json:"server_key" default:"" validate:"omitempty,max=50" label:"地区标识"`
+		UinStatus       string `json:"uin_status" default:"" validate:"omitempty,numeric" label:"挂机状态"`
+		Uin             string `json:"uin" default:"" validate:"omitempty,numeric" label:"QQ账号"`
+		Status          string `json:"status" default:"" validate:"omitempty,oneof=0 1 2" label:"QQ状态"`
+		RunTimeStart    string `json:"run_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"挂机起始时间"`
+		RunTimeEnd      string `json:"run_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"挂机结束时间"`
+		CreateTimeStart string `son:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		UpdateTimeStart string `json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
+		UpdateTimeEnd   string `json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -104,7 +104,7 @@ func (ControllerUin) List(c *sinking_server.Context) {
 // Test 测试加速
 func (ControllerUin) Test(c *sinking_server.Context) {
 	type Form struct {
-		ServerKey string `form:"server_key" json:"server_key" validate:"required,max=10" label:"挂机地区"`
+		ServerKey string `json:"server_key" validate:"required,max=10" label:"挂机地区"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -218,10 +218,10 @@ func (ControllerUin) Test(c *sinking_server.Context) {
 // Experience 领取体验
 func (ControllerUin) Experience(c *sinking_server.Context) {
 	type Form struct {
-		Uin       string `form:"uin" json:"uin" validate:"required,numeric,min=5,max=10" label:"QQ账号"`
-		ServerKey string `form:"server_key" json:"server_key" validate:"omitempty,max=10" label:"挂机地区"`
-		AppId     int    `form:"app_id" json:"app_id" validate:"omitempty,numeric,gte=0" label:"应用ID"`
-		Pwd       string `form:"pwd" json:"pwd" validate:"omitempty,len=32" label:"QQ密码"`
+		Uin       string `json:"uin" validate:"required,numeric,min=5,max=10" label:"QQ账号"`
+		ServerKey string `json:"server_key" validate:"omitempty,max=10" label:"挂机地区"`
+		AppId     int    `json:"app_id" validate:"omitempty,numeric,gte=0" label:"应用ID"`
+		Pwd       string `json:"pwd" validate:"omitempty,len=32" label:"QQ密码"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -261,12 +261,12 @@ func (ControllerUin) Experience(c *sinking_server.Context) {
 // Buy 下单
 func (ControllerUin) Buy(c *sinking_server.Context) {
 	type Form struct {
-		Uin       string `form:"uin" json:"uin" validate:"required,numeric,min=5,max=10" label:"QQ账号"`
-		ServerKey string `form:"server_key" json:"server_key" validate:"omitempty,max=10" label:"挂机地区"`
-		AppId     int    `form:"app_id" json:"app_id" validate:"omitempty,numeric,gte=0" label:"应用ID"`
-		Pwd       string `form:"pwd" json:"pwd" validate:"omitempty,len=32" label:"QQ密码"`
-		Type      int    `form:"type" json:"type" validate:"oneof=0 1 2" label:"下单类型"`
-		Month     int    `form:"month" json:"month" validate:"oneof=1 3 6 12 999" label:"下单月数"`
+		Uin       string `json:"uin" validate:"required,numeric,min=5,max=10" label:"QQ账号"`
+		ServerKey string `json:"server_key" validate:"omitempty,max=10" label:"挂机地区"`
+		AppId     int    `json:"app_id" validate:"omitempty,numeric,gte=0" label:"应用ID"`
+		Pwd       string `json:"pwd" validate:"omitempty,len=32" label:"QQ密码"`
+		Type      int    `json:"type" validate:"oneof=0 1 2" label:"下单类型"`
+		Month     int    `json:"month" validate:"oneof=1 3 6 12 999" label:"下单月数"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -306,8 +306,8 @@ func (ControllerUin) Buy(c *sinking_server.Context) {
 // ChangePassword 更改挂机QQ密码
 func (ControllerUin) ChangePassword(c *sinking_server.Context) {
 	type Form struct {
-		Uin string `form:"uin" json:"uin" validate:"required,numeric" label:"QQ账号"`
-		Pwd string `form:"pwd" json:"pwd" validate:"required,len=32" label:"QQ密码"`
+		Uin string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Pwd string `json:"pwd" validate:"required,len=32" label:"QQ密码"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -342,8 +342,8 @@ func (ControllerUin) ChangePassword(c *sinking_server.Context) {
 // ChangeServer 更改挂机地区
 func (ControllerUin) ChangeServer(c *sinking_server.Context) {
 	type Form struct {
-		Uin       string `form:"uin" json:"uin" validate:"required,numeric" label:"QQ账号"`
-		ServerKey string `form:"server_key" json:"server_key" validate:"required,max=32" label:"挂机地区"`
+		Uin       string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		ServerKey string `json:"server_key" validate:"required,max=32" label:"挂机地区"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -374,8 +374,8 @@ func (ControllerUin) ChangeServer(c *sinking_server.Context) {
 // ChangeTiming 修改挂机时间
 func (ControllerUin) ChangeTiming(c *sinking_server.Context) {
 	type Form struct {
-		Uin    string `form:"uin" json:"uin" validate:"required,numeric" label:"QQ账号"`
-		Timing int    `form:"timing" json:"timing" validate:"numeric,gt=0,lt=1440" label:"挂机时间"`
+		Uin    string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Timing int    `json:"timing" validate:"numeric,gt=0,lt=1440" label:"挂机时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -406,7 +406,7 @@ func (ControllerUin) ChangeTiming(c *sinking_server.Context) {
 // ReSetDevice 重置挂机设备
 func (ControllerUin) ReSetDevice(c *sinking_server.Context) {
 	type Form struct {
-		Uin string `form:"uin" json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Uin string `json:"uin" validate:"required,numeric" label:"QQ账号"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -433,8 +433,8 @@ func (ControllerUin) ReSetDevice(c *sinking_server.Context) {
 // ChangeStatus 修改挂机状态
 func (ControllerUin) ChangeStatus(c *sinking_server.Context) {
 	type Form struct {
-		Uin    string `form:"uin" json:"uin" validate:"required,numeric" label:"QQ账号"`
-		Status int    `form:"status" json:"status" validate:"oneof=0 1" label:"挂机状态"`
+		Uin    string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Status int    `json:"status" validate:"oneof=0 1" label:"挂机状态"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -461,11 +461,11 @@ func (ControllerUin) ChangeStatus(c *sinking_server.Context) {
 // Login 登陆QQ
 func (ControllerUin) Login(c *sinking_server.Context) {
 	type Form struct {
-		Uin    string `form:"uin" json:"uin" validate:"required,numeric" label:"QQ账号"`
-		Step   string `form:"step" json:"step" validate:"oneof=normal captcha get_sms sms" label:"登陆步骤"`
-		Rand   string `form:"rand" json:"rand" validate:"omitempty,max=500" label:"登陆rand"`
-		Ticket string `form:"ticket" json:"ticket" validate:"omitempty,max=500" label:"登陆ticket"`
-		Code   string `form:"code" json:"code" validate:"omitempty,numeric,len=6" label:"短信验证码"`
+		Uin    string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Step   string `json:"step" validate:"oneof=normal captcha get_sms sms" label:"登陆步骤"`
+		Rand   string `json:"rand" validate:"omitempty,max=500" label:"登陆rand"`
+		Ticket string `json:"ticket" validate:"omitempty,max=500" label:"登陆ticket"`
+		Code   string `json:"code" validate:"omitempty,numeric,len=6" label:"短信验证码"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -656,8 +656,8 @@ func (ControllerUin) Login(c *sinking_server.Context) {
 // QrLogin 扫码登陆
 func (ControllerUin) QrLogin(c *sinking_server.Context) {
 	type Form struct {
-		Uin  string `form:"uin" json:"uin" validate:"required,numeric" label:"QQ账号"`
-		Step string `form:"step" json:"step" validate:"required,oneof=code query" label:"验证步骤"`
+		Uin  string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Step string `json:"step" validate:"required,oneof=code query" label:"验证步骤"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -840,11 +840,11 @@ func (ControllerUin) QrLogin(c *sinking_server.Context) {
 // Sms 短信验证
 func (ControllerUin) Sms(c *sinking_server.Context) {
 	type Form struct {
-		Uin    string `form:"uin" json:"uin" validate:"required,numeric" label:"QQ账号"`
-		Step   string `form:"step" json:"step" validate:"required,oneof=1 2 3" label:"验证步骤"`
-		Rand   string `form:"rand" json:"rand" validate:"required,max=500" label:"登陆rand"`
-		Ticket string `form:"ticket" json:"ticket" validate:"required,max=500" label:"登陆ticket"`
-		Phone  string `form:"phone" json:"phone" validate:"omitempty,numeric" label:"手机号码"`
+		Uin    string `json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Step   string `json:"step" validate:"required,oneof=1 2 3" label:"验证步骤"`
+		Rand   string `json:"rand" validate:"required,max=500" label:"登陆rand"`
+		Ticket string `json:"ticket" validate:"required,max=500" label:"登陆ticket"`
+		Phone  string `json:"phone" validate:"omitempty,numeric" label:"手机号码"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -969,7 +969,7 @@ func (ControllerUin) Sms(c *sinking_server.Context) {
 // Delete 删除QQ
 func (ControllerUin) Delete(c *sinking_server.Context) {
 	type Form struct {
-		Uin string `form:"uin" json:"uin" validate:"required,numeric" label:"QQ账号"`
+		Uin string `json:"uin" validate:"required,numeric" label:"QQ账号"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

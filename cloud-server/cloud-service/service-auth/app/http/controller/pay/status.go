@@ -8,7 +8,7 @@ import (
 // Status 支付状态查询
 func (p ControllerPay) Status(c *sinking_server.Context) {
 	type Form struct {
-		TradeNo string `form:"trade_no" json:"trade_no" default:"" validate:"required,numeric" label:"订单号"`
+		TradeNo string `json:"trade_no" default:"" validate:"required,numeric" label:"订单号"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

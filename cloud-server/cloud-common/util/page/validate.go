@@ -5,8 +5,8 @@ import (
 )
 
 type ValidatePage struct {
-	Page     int `form:"page" json:"page" default:"1" validate:"omitempty,gte=1" label:"页码编号"`
-	PageSize int `form:"page_size" json:"page_size" default:"20" validate:"omitempty,default=10,lte=1000" label:"每页数量"`
+	Page     int `json:"page" default:"1" validate:"omitempty,gte=1" label:"页码编号"`
+	PageSize int `json:"page_size" default:"20" validate:"omitempty,default=10,lte=1000" label:"每页数量"`
 }
 
 // ValidatePageDefault 默认分页验证

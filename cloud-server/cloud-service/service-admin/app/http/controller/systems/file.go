@@ -11,15 +11,15 @@ import (
 func (ControllerFile) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id hash ext create_time update_time" label:"排序字段"`
-		OrderByType     string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		Type            string `form:"type" json:"type" default:"" validate:"omitempty,numeric" label:"所属类别"`
-		Hash            string `form:"hash" json:"hash" default:"" validate:"omitempty,len=32" label:"文件指纹"`
-		Ext             string `form:"ext" json:"ext" default:"" validate:"omitempty,max=10" label:"文件类型"`
-		CreateTimeStart string `form:"create_time_start" json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
-		UpdateTimeStart string `form:"update_time_start" json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
-		UpdateTimeEnd   string `form:"update_time_end" json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
+		OrderByField    string `json:"order_by_field" default:"id" validate:"oneof=id hash ext create_time update_time" label:"排序字段"`
+		OrderByType     string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
+		Type            string `json:"type" default:"" validate:"omitempty,numeric" label:"所属类别"`
+		Hash            string `json:"hash" default:"" validate:"omitempty,len=32" label:"文件指纹"`
+		Ext             string `json:"ext" default:"" validate:"omitempty,max=10" label:"文件类型"`
+		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		UpdateTimeStart string `json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
+		UpdateTimeEnd   string `json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -60,7 +60,7 @@ func (ControllerFile) List(c *sinking_server.Context) {
 // Delete 删除信息
 func (ControllerFile) Delete(c *sinking_server.Context) {
 	type Form struct {
-		Ids []int `form:"ids" json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
+		Ids []int `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

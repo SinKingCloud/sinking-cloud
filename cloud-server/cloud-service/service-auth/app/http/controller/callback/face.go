@@ -9,7 +9,7 @@ import (
 // Face 实人验证回调
 func (ControllerCallback) Face(c *sinking_server.Context) {
 	type Form struct {
-		CertifyId string `form:"certifyId" json:"certifyId" validate:"required,len=32" label:"认证ID"`
+		CertifyId string `json:"certifyId" validate:"required,len=32" label:"认证ID"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

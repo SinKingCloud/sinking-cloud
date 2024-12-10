@@ -11,7 +11,7 @@ import (
 // Enum 获取枚举数据
 func (ControllerPage) Enum(c *sinking_server.Context) {
 	type Form struct {
-		Keys string `form:"keys" json:"keys" default:"" validate:"required" label:"标识"`
+		Keys string `json:"keys" default:"" validate:"required" label:"标识"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

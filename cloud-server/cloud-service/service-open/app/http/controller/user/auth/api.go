@@ -12,9 +12,9 @@ import (
 // Check 授权检测
 func (ControllerAuth) Check(c *sinking_server.Context) {
 	type Form struct {
-		Domain string `form:"domain" json:"domain" default:"" validate:"omitempty,max=50" label:"域名"`
-		Code   string `form:"code" json:"code" default:"" validate:"required,len=36" label:"授权码"`
-		Ip     string `form:"ip" json:"ip" default:"" validate:"omitempty,ip" label:"绑定IP"`
+		Domain string `json:"domain" default:"" validate:"omitempty,max=50" label:"域名"`
+		Code   string `json:"code" default:"" validate:"required,len=36" label:"授权码"`
+		Ip     string `json:"ip" default:"" validate:"omitempty,ip" label:"绑定IP"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -85,8 +85,8 @@ func (ControllerAuth) Log(c *sinking_server.Context) {
 // Upgrade 获取升级信息
 func (ControllerAuth) Upgrade(c *sinking_server.Context) {
 	type Form struct {
-		Code          string `form:"code" json:"code" default:"" validate:"required,len=36" label:"授权码"`
-		VersionNumber int    `form:"version_number" json:"version_number" default:"" validate:"min=0" label:"当前版本号"`
+		Code          string `json:"code" default:"" validate:"required,len=36" label:"授权码"`
+		VersionNumber int    `json:"version_number" default:"" validate:"min=0" label:"当前版本号"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -113,9 +113,9 @@ func (ControllerAuth) Upgrade(c *sinking_server.Context) {
 // Package 获取程序下载地址
 func (ControllerAuth) Package(c *sinking_server.Context) {
 	type Form struct {
-		Code          string `form:"code" json:"code" default:"" validate:"required,len=36" label:"授权码"`
-		VersionNumber int    `form:"version_number" json:"version_number" default:"" validate:"min=0" label:"当前版本号"`
-		Types         string `form:"type" json:"type" default:"upgrade" validate:"required,oneof=upgrade release" label:"包类型"`
+		Code          string `json:"code" default:"" validate:"required,len=36" label:"授权码"`
+		VersionNumber int    `json:"version_number" default:"" validate:"min=0" label:"当前版本号"`
+		Types         string `json:"type" default:"upgrade" validate:"required,oneof=upgrade release" label:"包类型"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

@@ -14,17 +14,17 @@ import (
 func (ControllerAuth) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id status create_time" label:"排序字段"`
-		OrderByType     string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		AuthId          string `form:"auth_id" json:"auth_id" default:"" validate:"omitempty,numeric" label:"程序ID"`
-		Domain          string `form:"domain" json:"domain" default:"" validate:"omitempty,max=50" label:"域名"`
-		Code            string `form:"code" json:"code" default:"" validate:"omitempty,len=36" label:"授权码"`
-		Ip              string `form:"ip" json:"ip" default:"" validate:"omitempty,ip" label:"绑定IP"`
-		Status          string `form:"status" json:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`
-		CreateTimeStart string `form:"create_time_start" json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
-		UpdateTimeStart string `form:"update_time_start" json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"修改起始时间"`
-		UpdateTimeEnd   string `form:"update_time_end" json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"修改结束时间"`
+		OrderByField    string `json:"order_by_field" default:"id" validate:"oneof=id status create_time" label:"排序字段"`
+		OrderByType     string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
+		AuthId          string `json:"auth_id" default:"" validate:"omitempty,numeric" label:"程序ID"`
+		Domain          string `json:"domain" default:"" validate:"omitempty,max=50" label:"域名"`
+		Code            string `json:"code" default:"" validate:"omitempty,len=36" label:"授权码"`
+		Ip              string `json:"ip" default:"" validate:"omitempty,ip" label:"绑定IP"`
+		Status          string `json:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`
+		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		UpdateTimeStart string `json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"修改起始时间"`
+		UpdateTimeEnd   string `json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"修改结束时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -69,7 +69,7 @@ func (ControllerAuth) List(c *sinking_server.Context) {
 // Download 获取程序下载地址
 func (ControllerAuth) Download(c *sinking_server.Context) {
 	type Form struct {
-		Id int `form:"id" json:"id" default:"" validate:"min=0" label:"用户程序ID"`
+		Id int `json:"id" default:"" validate:"min=0" label:"用户程序ID"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

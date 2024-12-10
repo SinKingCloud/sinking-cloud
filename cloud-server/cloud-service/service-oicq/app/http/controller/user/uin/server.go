@@ -12,7 +12,7 @@ type ControllerServer struct {
 func (ControllerServer) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		Key string `form:"key" json:"key" default:"" validate:"omitempty,max=32" label:"地区标识"`
+		Key string `json:"key" default:"" validate:"omitempty,max=32" label:"地区标识"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

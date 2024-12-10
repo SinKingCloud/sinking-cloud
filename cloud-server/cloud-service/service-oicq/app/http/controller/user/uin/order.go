@@ -15,16 +15,16 @@ type ControllerOrder struct {
 func (ControllerOrder) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField    string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id" label:"排序字段"`
-		OrderByType     string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		AppId           string `form:"app_id" json:"app_id" default:"" validate:"omitempty,numeric" label:"应用ID"`
-		Uin             string `form:"uin" json:"uin" default:"" json:"uin" validate:"required,numeric,min=5,max=10" label:"QQ账号"`
-		Type            string `form:"type" json:"type" default:"" validate:"omitempty,oneof=0 1 2" label:"订单类型"`
-		Name            string `form:"name" json:"name" default:"" validate:"omitempty,max=50" label:"标题"`
-		TradeNo         string `form:"trade_no" json:"trade_no" default:"" validate:"omitempty,numeric" label:"订单号"`
-		Status          string `form:"status" json:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`
-		CreateTimeStart string `form:"create_time_start" json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
-		CreateTimeEnd   string `form:"create_time_end" json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		OrderByField    string `json:"order_by_field" default:"id" validate:"oneof=id" label:"排序字段"`
+		OrderByType     string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
+		AppId           string `json:"app_id" default:"" validate:"omitempty,numeric" label:"应用ID"`
+		Uin             string `json:"uin" default:"" json:"uin" validate:"required,numeric,min=5,max=10" label:"QQ账号"`
+		Type            string `json:"type" default:"" validate:"omitempty,oneof=0 1 2" label:"订单类型"`
+		Name            string `json:"name" default:"" validate:"omitempty,max=50" label:"标题"`
+		TradeNo         string `json:"trade_no" default:"" validate:"omitempty,numeric" label:"订单号"`
+		Status          string `json:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`
+		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorGet(form); !ok {
@@ -67,7 +67,7 @@ func (ControllerOrder) List(c *sinking_server.Context) {
 
 func (ControllerOrder) Refund(c *sinking_server.Context) {
 	type Form struct {
-		TradeNo string `form:"trade_no" json:"trade_no" default:"" validate:"required,numeric" label:"订单号"`
+		TradeNo string `json:"trade_no" default:"" validate:"required,numeric" label:"订单号"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorJson(form); !ok {

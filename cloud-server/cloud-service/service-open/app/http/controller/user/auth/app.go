@@ -10,7 +10,7 @@ import (
 // AppInfo 程序信息
 func (ControllerAuth) AppInfo(c *sinking_server.Context) {
 	type Form struct {
-		Id int `form:"id" json:"id" default:"" validate:"min=0" label:"程序ID"`
+		Id int `json:"id" default:"" validate:"min=0" label:"程序ID"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -29,10 +29,10 @@ func (ControllerAuth) AppInfo(c *sinking_server.Context) {
 func (ControllerAuth) AppVersion(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField  string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id status create_time" label:"排序字段"`
-		OrderByType   string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		AuthId        int    `form:"auth_id" json:"auth_id" default:"" validate:"min=0" label:"程序ID"`
-		VersionNumber string `form:"version_number" json:"version_number" default:"" validate:"omitempty,numeric" label:"程序ID"`
+		OrderByField  string `json:"order_by_field" default:"id" validate:"oneof=id status create_time" label:"排序字段"`
+		OrderByType   string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
+		AuthId        int    `json:"auth_id" default:"" validate:"min=0" label:"程序ID"`
+		VersionNumber string `json:"version_number" default:"" validate:"omitempty,numeric" label:"程序ID"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

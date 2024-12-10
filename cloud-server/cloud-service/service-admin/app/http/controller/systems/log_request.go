@@ -13,24 +13,24 @@ import (
 func (ControllerLogRequest) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField     string `form:"order_by_field" json:"order_by_field" default:"id" validate:"oneof=id request_id request_time" label:"排序字段"`
-		OrderByType      string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		RequestId        string `form:"request_id" json:"request_id" default:"" validate:"omitempty,len=36" label:"请求ID"`
-		RequestIp        string `form:"request_ip" json:"request_ip" default:"" validate:"omitempty,max=20" label:"请求IP"`
-		RequestUrl       string `form:"request_url" json:"request_url" default:"" validate:"omitempty,max=200" label:"请求地址"`
-		RequestMethod    string `form:"request_method" json:"request_method" default:"" validate:"omitempty,oneof=GET POST PUT UPDATE" label:"请求类型"`
-		RequestHeader    string `form:"request_header" json:"request_header" default:"" validate:"omitempty" label:"请求头"`
-		RequestBody      string `form:"request_body" json:"request_body" default:"" validate:"omitempty" label:"请求体"`
-		ResponseCode     string `form:"response_code" json:"response_code" default:"" validate:"omitempty,numeric" label:"响应码"`
-		ResponseHeader   string `form:"response_header" json:"response_header" default:"" validate:"omitempty" label:"响应头"`
-		ResponseBody     string `form:"response_body" json:"response_body" default:"" validate:"omitempty" label:"响应体"`
-		ResponseTimeMax  string `form:"response_time_max" json:"response_time_max" default:"" validate:"omitempty,numeric" label:"最大响应时间"`
-		ResponseTimeMin  string `form:"response_time_min" json:"response_time_min" default:"" validate:"omitempty,numeric" label:"最小响应时间"`
-		GroupName        string `form:"group_name" json:"group_name" default:"" validate:"omitempty" label:"服务组名"`
-		AppName          string `form:"app_name" json:"app_name" default:"" validate:"omitempty" label:"服务名"`
-		AppAddr          string `form:"app_addr" json:"app_addr" default:"" validate:"omitempty" label:"服务地址"`
-		RequestTimeStart string `form:"request_time_start" json:"request_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
-		RequestTimeEnd   string `form:"request_time_end" json:"request_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+		OrderByField     string `json:"order_by_field" default:"id" validate:"oneof=id request_id request_time" label:"排序字段"`
+		OrderByType      string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
+		RequestId        string `json:"request_id" default:"" validate:"omitempty,len=36" label:"请求ID"`
+		RequestIp        string `json:"request_ip" default:"" validate:"omitempty,max=20" label:"请求IP"`
+		RequestUrl       string `json:"request_url" default:"" validate:"omitempty,max=200" label:"请求地址"`
+		RequestMethod    string `json:"request_method" default:"" validate:"omitempty,oneof=GET POST PUT UPDATE" label:"请求类型"`
+		RequestHeader    string `json:"request_header" default:"" validate:"omitempty" label:"请求头"`
+		RequestBody      string `json:"request_body" default:"" validate:"omitempty" label:"请求体"`
+		ResponseCode     string `json:"response_code" default:"" validate:"omitempty,numeric" label:"响应码"`
+		ResponseHeader   string `json:"response_header" default:"" validate:"omitempty" label:"响应头"`
+		ResponseBody     string `json:"response_body" default:"" validate:"omitempty" label:"响应体"`
+		ResponseTimeMax  string `json:"response_time_max" default:"" validate:"omitempty,numeric" label:"最大响应时间"`
+		ResponseTimeMin  string `json:"response_time_min" default:"" validate:"omitempty,numeric" label:"最小响应时间"`
+		GroupName        string `json:"group_name" default:"" validate:"omitempty" label:"服务组名"`
+		AppName          string `json:"app_name" default:"" validate:"omitempty" label:"服务名"`
+		AppAddr          string `json:"app_addr" default:"" validate:"omitempty" label:"服务地址"`
+		RequestTimeStart string `json:"request_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		RequestTimeEnd   string `json:"request_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -98,8 +98,8 @@ func (ControllerLogRequest) List(c *sinking_server.Context) {
 // Info 请求记录详情
 func (ControllerLogRequest) Info(c *sinking_server.Context) {
 	type Form struct {
-		Id        string `form:"id" json:"id" default:"" validate:"omitempty,max=36" label:"记录ID"`
-		RequestId string `form:"request_id" json:"request_id" default:"" validate:"omitempty,len=36" label:"请求ID"`
+		Id        string `json:"id" default:"" validate:"omitempty,max=36" label:"记录ID"`
+		RequestId string `json:"request_id" default:"" validate:"omitempty,len=36" label:"请求ID"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -126,8 +126,8 @@ func (ControllerLogRequest) Info(c *sinking_server.Context) {
 // Delete 删除请求记录
 func (ControllerLogRequest) Delete(c *sinking_server.Context) {
 	type Form struct {
-		RequestTimeStart string `form:"request_time_start" json:"request_time_start" default:"" validate:"required" label:"创建起始时间"`
-		RequestTimeEnd   string `form:"request_time_end" json:"request_time_end" default:"" validate:"required" label:"创建结束时间"`
+		RequestTimeStart string `json:"request_time_start" default:"" validate:"required" label:"创建起始时间"`
+		RequestTimeEnd   string `json:"request_time_end" default:"" validate:"required" label:"创建结束时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

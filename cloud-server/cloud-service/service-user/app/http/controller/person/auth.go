@@ -23,9 +23,9 @@ func (ControllerPerson) AuthInfo(c *sinking_server.Context) {
 // AuthInit 初始化实名信息
 func (ControllerPerson) AuthInit(c *sinking_server.Context) {
 	type Form struct {
-		CardType string `form:"card_type" json:"card_type" default:"" validate:"required,oneof=IDENTITY_CARD HOME_VISIT_PERMIT_HK_MC HOME_VISIT_PERMIT_TAIWAN RESIDENCE_PERMIT_HK_MC RESIDENCE_PERMIT_TAIWAN" label:"身份证号"`
-		CardNo   string `form:"card_no" json:"card_no" default:"" validate:"required" label:"身份证号"`
-		CardName string `form:"card_name" json:"card_name" default:"" validate:"required" label:"姓名"`
+		CardType string `json:"card_type" default:"" validate:"required,oneof=IDENTITY_CARD HOME_VISIT_PERMIT_HK_MC HOME_VISIT_PERMIT_TAIWAN RESIDENCE_PERMIT_HK_MC RESIDENCE_PERMIT_TAIWAN" label:"身份证号"`
+		CardNo   string `json:"card_no" default:"" validate:"required" label:"身份证号"`
+		CardName string `json:"card_name" default:"" validate:"required" label:"姓名"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -51,7 +51,7 @@ func (ControllerPerson) AuthInit(c *sinking_server.Context) {
 // AuthCheck 实人验证结果
 func (ControllerPerson) AuthCheck(c *sinking_server.Context) {
 	type Form struct {
-		CertifyId string `form:"certifyId" json:"certifyId" validate:"required,len=32" label:"认证ID"`
+		CertifyId string `json:"certifyId" validate:"required,len=32" label:"认证ID"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

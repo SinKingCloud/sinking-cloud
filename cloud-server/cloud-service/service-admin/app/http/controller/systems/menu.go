@@ -12,13 +12,13 @@ import (
 func (ControllerMenu) List(c *sinking_server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField string `form:"order_by_field" json:"order_by_field" default:"sort" validate:"oneof=id sort update_time create_time status" label:"排序字段"`
-		OrderByType  string `form:"order_by_type" json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
-		Title        string `form:"title" json:"title" default:"" validate:"omitempty,max=100" label:"标题"`
-		Key          string `form:"key" json:"key" default:"" validate:"omitempty,max=50" label:"标识"`
-		Path         string `form:"path" json:"path" default:"" validate:"omitempty,max=50" label:"目录"`
-		Type         string `form:"type" json:"type" default:"" validate:"omitempty,oneof=0 1" label:"类型"`
-		Status       string `form:"status" json:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`
+		OrderByField string `json:"order_by_field" default:"sort" validate:"oneof=id sort update_time create_time status" label:"排序字段"`
+		OrderByType  string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
+		Title        string `json:"title" default:"" validate:"omitempty,max=100" label:"标题"`
+		Key          string `json:"key" default:"" validate:"omitempty,max=50" label:"标识"`
+		Path         string `json:"path" default:"" validate:"omitempty,max=50" label:"目录"`
+		Type         string `json:"type" default:"" validate:"omitempty,oneof=0 1" label:"类型"`
+		Status       string `json:"status" default:"" validate:"omitempty,oneof=0 1" label:"状态"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -53,14 +53,14 @@ func (ControllerMenu) List(c *sinking_server.Context) {
 // Update 修改菜单数据
 func (ControllerMenu) Update(c *sinking_server.Context) {
 	type Form struct {
-		Ids      []int  `form:"ids" json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
-		Title    string `form:"title" json:"title" default:"" validate:"omitempty,max=100" label:"标题"`
-		Key      string `form:"key" json:"key" default:"" validate:"omitempty,max=50" label:"标识"`
-		Path     string `form:"path" json:"path" default:"" validate:"omitempty,max=50" label:"目录"`
-		Icon     string `form:"icon" json:"icon" default:"" validate:"omitempty" label:"图标"`
-		Accesses string `form:"accesses" json:"accesses" default:"" validate:"omitempty" label:"关联权限"`
-		Sort     string `form:"sort" json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
-		Status   string `form:"status" json:"status" default:"" validate:"omitempty,numeric,oneof=0 1" label:"状态"`
+		Ids      []int  `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
+		Title    string `json:"title" default:"" validate:"omitempty,max=100" label:"标题"`
+		Key      string `json:"key" default:"" validate:"omitempty,max=50" label:"标识"`
+		Path     string `json:"path" default:"" validate:"omitempty,max=50" label:"目录"`
+		Icon     string `json:"icon" default:"" validate:"omitempty" label:"图标"`
+		Accesses string `json:"accesses" default:"" validate:"omitempty" label:"关联权限"`
+		Sort     string `json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
+		Status   string `json:"status" default:"" validate:"omitempty,numeric,oneof=0 1" label:"状态"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -101,15 +101,15 @@ func (ControllerMenu) Update(c *sinking_server.Context) {
 // Create 添加菜单数据
 func (ControllerMenu) Create(c *sinking_server.Context) {
 	type Form struct {
-		Pid      int    `form:"pid" json:"pid" default:"" validate:"numeric" label:"父级id"`
-		Type     int    `form:"type" json:"type" default:"" validate:"numeric,oneof=0 1" label:"类型"`
-		Title    string `form:"title" json:"title" default:"" validate:"required,max=100" label:"标题"`
-		Key      string `form:"key" json:"key" default:"" validate:"required,max=50" label:"标识"`
-		Path     string `form:"path" json:"path" default:"" validate:"omitempty,max=50" label:"目录"`
-		Icon     string `form:"icon" json:"icon" default:"" validate:"omitempty" label:"图标"`
-		Accesses string `form:"accesses" json:"accesses" default:"" validate:"omitempty" label:"关联权限"`
-		Sort     int    `form:"sort" json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
-		Status   int    `form:"status" json:"status" default:"" validate:"numeric,oneof=0 1" label:"状态"`
+		Pid      int    `json:"pid" default:"" validate:"numeric" label:"父级id"`
+		Type     int    `json:"type" default:"" validate:"numeric,oneof=0 1" label:"类型"`
+		Title    string `json:"title" default:"" validate:"required,max=100" label:"标题"`
+		Key      string `json:"key" default:"" validate:"required,max=50" label:"标识"`
+		Path     string `json:"path" default:"" validate:"omitempty,max=50" label:"目录"`
+		Icon     string `json:"icon" default:"" validate:"omitempty" label:"图标"`
+		Accesses string `json:"accesses" default:"" validate:"omitempty" label:"关联权限"`
+		Sort     int    `json:"sort" default:"" validate:"omitempty,numeric" label:"排序"`
+		Status   int    `json:"status" default:"" validate:"numeric,oneof=0 1" label:"状态"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -138,7 +138,7 @@ func (ControllerMenu) Create(c *sinking_server.Context) {
 // Delete 添加菜单信息
 func (ControllerMenu) Delete(c *sinking_server.Context) {
 	type Form struct {
-		Ids []int `form:"ids" json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
+		Ids []int `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
