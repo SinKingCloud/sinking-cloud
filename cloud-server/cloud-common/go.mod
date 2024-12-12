@@ -3,10 +3,10 @@ module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 go 1.22.0
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20241210130028-0c8d813fa4c6
+	github.com/SinKingCloud/sinking-go/sinking-sdk/sinking-sdk-go v0.0.0-20241212110323-5850fdbcbfd6
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20241210130028-0c8d813fa4c6
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
-	github.com/aliyun/alibaba-cloud-sdk-go v1.63.65
+	github.com/aliyun/alibaba-cloud-sdk-go v1.63.67
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
 	github.com/apache/rocketmq-client-go/v2 v2.1.2
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
@@ -18,7 +18,7 @@ require (
 	github.com/gomodule/redigo v1.9.2
 	github.com/spf13/viper v1.19.0
 	golang.org/x/crypto v0.30.0
-	gorm.io/driver/mysql v1.5.6
+	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.10
 )
 
@@ -61,7 +61,7 @@ require (
 	github.com/tidwall/pretty v1.2.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/exp v0.0.0-20241204233417-43b7b7cde48d // indirect
+	golang.org/x/exp v0.0.0-20241210194714-1829a127f884 // indirect
 	golang.org/x/image v0.22.0 // indirect
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
