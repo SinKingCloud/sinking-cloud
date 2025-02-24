@@ -120,7 +120,7 @@ func (ControllerNotice) Update(c *sinking_server.Context) {
 // Create 添加信息
 func (ControllerNotice) Create(c *sinking_server.Context) {
 	type Form struct {
-		Place   string `json:"place" json:"place" default:"" validate:"required,max=20" label:"位置"`
+		Place   string `json:"place" default:"" validate:"required,max=20" label:"位置"`
 		Title   string `json:"title" default:"" validate:"required,max=100" label:"名称"`
 		Content string `json:"content" default:"" validate:"required" label:"内容"`
 		Sort    int    `json:"sort" default:"" validate:"numeric" label:"排序"`
