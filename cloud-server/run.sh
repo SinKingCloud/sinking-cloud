@@ -9,7 +9,6 @@ DIRS=(
   "cloud-websocket"
   "cloud-service/service-admin"
   "cloud-service/service-auth"
-  "cloud-service/service-oicq"
   "cloud-service/service-open"
   "cloud-service/service-user"
 )
