@@ -12,7 +12,7 @@ func (s *Service) DeleteByIds(ids []int) (err error) {
 }
 
 // DeleteById 通过ID删除
-func (s *Service) DeleteById(id []int) (err error) {
+func (s *Service) DeleteById(id int) (err error) {
 	err = util.Database.Db.Where("`id` = ? ", id).Delete(&model.WebNotice{}).Error
 	return
 }
