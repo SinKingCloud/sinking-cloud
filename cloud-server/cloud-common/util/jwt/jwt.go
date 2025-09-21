@@ -17,9 +17,9 @@ type MyClaims struct {
 // User 会员用户表
 type User struct {
 	Id         int          `json:"id"`
-	LoginToken string       ` json:"login_token"`
-	LoginIp    string       ` json:"login_ip"`
-	LoginTime  str.DateTime ` json:"login_time"`
+	LoginToken string       `json:"login_token"`
+	LoginIp    string       `json:"login_ip"`
+	LoginTime  str.DateTime `json:"login_time"`
 }
 
 // getKey 获取加密key
