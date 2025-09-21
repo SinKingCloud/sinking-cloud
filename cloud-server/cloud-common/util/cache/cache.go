@@ -1,6 +1,6 @@
 package cache
 
-type Cache interface {
+type Interface interface {
 	Get(key string) (string, bool)
 	SetWithExpire(key string, value string, ttl int64) bool
 	SetExpire(key string, ttl int64) bool

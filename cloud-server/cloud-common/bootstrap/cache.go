@@ -19,7 +19,7 @@ func LoadCache() {
 		util.Log.Println("redis连接失败", err)
 		panic("redis连接失败: " + err.Error())
 	}
-	var cacheInterface cache.Cache = client
+	var cacheInterface cache.Interface = client
 	util.Cache = &cacheInterface
 	util.Redis = client
 	util.Log.Println("redis连接成功")
