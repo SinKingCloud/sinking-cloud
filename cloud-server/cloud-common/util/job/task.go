@@ -48,7 +48,7 @@ func NewTask() *Task {
 	return &Task{
 		Thread:   1,
 		wg:       &sync.WaitGroup{},
-		doneChan: make(chan struct{}),
+		doneChan: make(chan struct{}, 1), // 改为缓冲通道，避免阻塞
 	}
 }
 
@@ -84,7 +84,7 @@ func (task *Task) GetStats() TaskStats {
 	defer task.mutex.RUnlock()
 
 	stats := task.stats
-	stats.ActiveWorkers = atomic.LoadInt32(&stats.ActiveWorkers)
+	stats.ActiveWorkers = atomic.LoadInt32(&task.stats.ActiveWorkers)
 	return stats
 }
 
@@ -102,9 +102,15 @@ func (task *Task) Start() error {
 // StartWithContext 使用指定上下文启动任务
 func (task *Task) StartWithContext(ctx context.Context) error {
 	// 检查是否已经在运行
-	if !atomic.CompareAndSwapInt32(&task.status, int32(TaskStopped), int32(TaskRunning)) &&
-		!atomic.CompareAndSwapInt32(&task.status, int32(TaskCompleted), int32(TaskRunning)) {
-		return fmt.Errorf("任务已经在运行中，当前状态: %v", task.GetStatus())
+	for {
+		currentStatus := atomic.LoadInt32(&task.status)
+		if currentStatus == int32(TaskRunning) || currentStatus == int32(TaskStopping) {
+			return fmt.Errorf("任务已经在运行中，当前状态: %v", TaskStatus(currentStatus))
+		}
+		if atomic.CompareAndSwapInt32(&task.status, currentStatus, int32(TaskRunning)) {
+			break
+		}
+		// CAS失败，重试
 	}
 
 	// 创建新的上下文和取消函数
@@ -132,12 +138,12 @@ func (task *Task) StartWithContext(ctx context.Context) error {
 func (task *Task) startWorkers() {
 	for i := 0; i < task.Thread; i++ {
 		task.wg.Add(1)
-		go task.worker(i)
+		go task.worker()
 	}
 }
 
 // worker 工作协程
-func (task *Task) worker(id int) {
+func (task *Task) worker() {
 	defer task.wg.Done()
 	atomic.AddInt32(&task.stats.ActiveWorkers, 1)
 	defer atomic.AddInt32(&task.stats.ActiveWorkers, -1)
@@ -149,10 +155,6 @@ func (task *Task) worker(id int) {
 		case job, ok := <-task.taskChan:
 			if !ok {
 				return
-			}
-
-			if job == nil {
-				continue
 			}
 
 			// 处理任务
@@ -169,28 +171,24 @@ func (task *Task) worker(id int) {
 
 // runProducer 运行生产者
 func (task *Task) runProducer() {
-	defer close(task.taskChan)
-
-	if task.Producer == nil {
+	defer func() {
+		close(task.taskChan)
+		// 等待所有工作协程完成
+		task.wg.Wait()
+		// 更新状态和统计信息
 		atomic.StoreInt32(&task.status, int32(TaskCompleted))
-		return
-	}
+		task.mutex.Lock()
+		task.stats.EndTime = time.Now()
+		task.mutex.Unlock()
+		// 通知任务完成
+		select {
+		case task.doneChan <- struct{}{}:
+		default:
+		}
+	}()
 
-	task.Producer(task.ctx, task.taskChan)
-
-	// 等待所有工作协程完成
-	task.wg.Wait()
-
-	// 更新状态和统计信息
-	atomic.StoreInt32(&task.status, int32(TaskCompleted))
-	task.mutex.Lock()
-	task.stats.EndTime = time.Now()
-	task.mutex.Unlock()
-
-	// 通知任务完成
-	select {
-	case task.doneChan <- struct{}{}:
-	default:
+	if task.Producer != nil {
+		task.Producer(task.ctx, task.taskChan)
 	}
 }
 
@@ -238,6 +236,10 @@ func (task *Task) StopWithTimeout(timeout time.Duration) error {
 	}
 	task.mutex.Unlock()
 
+	// 清理资源
+	task.ctx = nil
+	task.cancel = nil
+
 	return nil
 }
 
@@ -246,11 +248,7 @@ func (task *Task) Wait() {
 	if !task.IsRunning() {
 		return
 	}
-
-	select {
-	case <-task.doneChan:
-	case <-task.ctx.Done():
-	}
+	<-task.doneChan
 }
 
 // WaitWithTimeout 在指定时间内等待任务完成
@@ -262,8 +260,6 @@ func (task *Task) WaitWithTimeout(timeout time.Duration) error {
 	select {
 	case <-task.doneChan:
 		return nil
-	case <-task.ctx.Done():
-		return task.ctx.Err()
 	case <-time.After(timeout):
 		return fmt.Errorf("等待任务完成超时 (%v)", timeout)
 	}

@@ -136,3 +136,8 @@ func (c *Client) Dec(key string) int {
 	}
 	return int(reply)
 }
+
+// GetClient 自减
+func (c *Client) GetClient() *redis.Client {
+	return c.client
+}
