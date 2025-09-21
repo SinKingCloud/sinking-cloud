@@ -4,6 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/redis"
 	"github.com/spf13/viper"
 	"log"
 )
@@ -11,8 +12,9 @@ import (
 var (
 	Database *database.Database //数据库
 	Conf     *viper.Viper       //配置文件
-	Cache    cache.Cache        //缓存系统
+	Cache    *cache.Cache       //缓存系统
 	Log      *log.Logger        //日志系统
+	Redis    *redis.Client      //redis客户端
 )
 
 // IsDebug 是否debug模式

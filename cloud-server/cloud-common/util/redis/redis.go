@@ -1,4 +1,4 @@
-package cache
+package redis
 
 import (
 	"context"
@@ -8,14 +8,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-var RedisClient *redis.Client
-
-type Redis struct {
-	Client *redis.Client
+type Client struct {
+	client *redis.Client
 }
 
-// NewRedis 实例化redis
-func NewRedis(host string, port string, pwd string, db int64) (*Redis, error) {
+// NewClient 实例化redis
+func NewClient(host string, port string, pwd string, db int64) (*Client, error) {
 	address := fmt.Sprintf("%v:%v", host, port)
 
 	client := redis.NewClient(&redis.Options{
@@ -38,15 +36,13 @@ func NewRedis(host string, port string, pwd string, db int64) (*Redis, error) {
 
 	// 清空db,防止污染系统
 	client.FlushDB(ctx)
-
-	RedisClient = client
-	return &Redis{Client: client}, nil
+	return &Client{client: client}, nil
 }
 
 // Get 获取缓存
-func (client *Redis) Get(key string) (string, bool) {
+func (c *Client) Get(key string) (string, bool) {
 	ctx := context.Background()
-	reply, err := client.Client.Get(ctx, key).Result()
+	reply, err := c.client.Get(ctx, key).Result()
 	if err != nil || reply == "" {
 		return "", false
 	}
@@ -54,45 +50,45 @@ func (client *Redis) Get(key string) (string, bool) {
 }
 
 // SetWithExpire 设置缓存(带过期时间)
-func (client *Redis) SetWithExpire(key string, value string, ttl int64) bool {
+func (c *Client) SetWithExpire(key string, value string, ttl int64) bool {
 	ctx := context.Background()
 	expiration := time.Duration(ttl) * time.Millisecond
-	err := client.Client.Set(ctx, key, value, expiration).Err()
+	err := c.client.Set(ctx, key, value, expiration).Err()
 	return err == nil
 }
 
 // Set 设置缓存(不过期)
-func (client *Redis) Set(key string, value string) bool {
+func (c *Client) Set(key string, value string) bool {
 	ctx := context.Background()
-	err := client.Client.Set(ctx, key, value, 0).Err()
+	err := c.client.Set(ctx, key, value, 0).Err()
 	return err == nil
 }
 
 // SetExpire 设置过期时间
-func (client *Redis) SetExpire(key string, ttl int64) bool {
+func (c *Client) SetExpire(key string, ttl int64) bool {
 	ctx := context.Background()
 	expiration := time.Duration(ttl) * time.Millisecond
-	result := client.Client.PExpire(ctx, key, expiration).Val()
+	result := c.client.PExpire(ctx, key, expiration).Val()
 	return result
 }
 
 // Lock 上锁
-func (client *Redis) Lock(key string, ttl int64) bool {
+func (c *Client) Lock(key string, ttl int64) bool {
 	ctx := context.Background()
 	expiration := time.Duration(ttl) * time.Millisecond
-	result := client.Client.SetNX(ctx, key, 1, expiration).Val()
+	result := c.client.SetNX(ctx, key, 1, expiration).Val()
 	return result
 }
 
 // UnLock 解锁
-func (client *Redis) UnLock(key string) bool {
-	return client.Delete(key)
+func (c *Client) UnLock(key string) bool {
+	return c.Delete(key)
 }
 
 // IsLock 是否lock状态
-func (client *Redis) IsLock(key string) bool {
+func (c *Client) IsLock(key string) bool {
 	ctx := context.Background()
-	reply, err := client.Client.Get(ctx, key).Int()
+	reply, err := c.client.Get(ctx, key).Int()
 	if err == nil && reply == 1 {
 		return true
 	}
@@ -100,31 +96,31 @@ func (client *Redis) IsLock(key string) bool {
 }
 
 // Remember 获取缓存,不存在则设置
-func (client *Redis) Remember(key string, fun func() string, ttl int64) string {
-	value, exists := client.Get(key)
+func (c *Client) Remember(key string, fun func() string, ttl int64) string {
+	value, exists := c.Get(key)
 	if !exists {
 		value = fun()
-		client.SetWithExpire(key, value, ttl)
+		c.SetWithExpire(key, value, ttl)
 	}
 	return value
 }
 
 // Delete 删除缓存
-func (client *Redis) Delete(key string) bool {
+func (c *Client) Delete(key string) bool {
 	ctx := context.Background()
-	err := client.Client.Del(ctx, key).Err()
+	err := c.client.Del(ctx, key).Err()
 	return err == nil
 }
 
 // Close 关闭连接
-func (client *Redis) Close() error {
-	return client.Client.Close()
+func (c *Client) Close() error {
+	return c.client.Close()
 }
 
 // Inc 自增
-func (client *Redis) Inc(key string) int {
+func (c *Client) Inc(key string) int {
 	ctx := context.Background()
-	reply, err := client.Client.Incr(ctx, key).Result()
+	reply, err := c.client.Incr(ctx, key).Result()
 	if err != nil {
 		return 0
 	}
@@ -132,9 +128,9 @@ func (client *Redis) Inc(key string) int {
 }
 
 // Dec 自减
-func (client *Redis) Dec(key string) int {
+func (c *Client) Dec(key string) int {
 	ctx := context.Background()
-	reply, err := client.Client.Decr(ctx, key).Result()
+	reply, err := c.client.Decr(ctx, key).Result()
 	if err != nil {
 		return 0
 	}

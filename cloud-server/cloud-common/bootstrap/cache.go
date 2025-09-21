@@ -4,11 +4,12 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/redis"
 )
 
 // LoadCache 初始化缓存
 func LoadCache() {
-	redis, err := cache.NewRedis(
+	client, err := redis.NewClient(
 		util.Conf.GetString(constant.RedisHost),
 		util.Conf.GetString(constant.RedisPort),
 		util.Conf.GetString(constant.RedisPwd),
@@ -18,6 +19,8 @@ func LoadCache() {
 		util.Log.Println("redis连接失败", err)
 		panic("redis连接失败: " + err.Error())
 	}
-	util.Cache = redis
+	var cacheInterface cache.Cache = client
+	util.Cache = &cacheInterface
+	util.Redis = client
 	util.Log.Println("redis连接成功")
 }
