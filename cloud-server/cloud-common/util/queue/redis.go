@@ -9,6 +9,8 @@ import (
 type RedisQueue struct {
 	client       *redis.Client
 	subscription *redis.PubSub
+	ctx          context.Context
+	cancel       context.CancelFunc
 }
 
 func (r *RedisQueue) ListenReceiveMsgDo(topic string, receiveDo func(mqMsg MqMsg)) error {
@@ -20,18 +22,36 @@ func (r *RedisQueue) ListenReceiveMsgDo(topic string, receiveDo func(mqMsg MqMsg
 	if r.subscription != nil {
 		_ = r.subscription.Close()
 	}
+	if r.cancel != nil {
+		r.cancel()
+	}
 
-	ctx := context.Background()
-	r.subscription = r.client.Subscribe(ctx, topic)
+	// 创建新的context
+	r.ctx, r.cancel = context.WithCancel(context.Background())
+	r.subscription = r.client.Subscribe(r.ctx, topic)
 
 	go func() {
+		defer func() {
+			if r.subscription != nil {
+				r.subscription.Close()
+			}
+		}()
+
 		ch := r.subscription.Channel()
-		for msg := range ch {
-			receiveDo(MqMsg{
-				RunType: ReceiveMsg,
-				Topic:   msg.Channel,
-				Body:    msg.Payload,
-			})
+		for {
+			select {
+			case <-r.ctx.Done():
+				return
+			case msg, ok := <-ch:
+				if !ok {
+					return
+				}
+				receiveDo(MqMsg{
+					RunType: ReceiveMsg,
+					Topic:   msg.Channel,
+					Body:    msg.Payload,
+				})
+			}
 		}
 	}()
 	return nil
@@ -58,6 +78,10 @@ func (r *RedisQueue) SendMsg(topic string, body string) (mqMsg MqMsg, err error)
 
 // Close 关闭Redis队列连接
 func (r *RedisQueue) Close() {
+	if r.cancel != nil {
+		r.cancel()
+		r.cancel = nil
+	}
 	if r.subscription != nil {
 		_ = r.subscription.Close()
 		r.subscription = nil

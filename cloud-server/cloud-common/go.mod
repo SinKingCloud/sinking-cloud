@@ -1,6 +1,6 @@
 module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 
-go 1.25.0
+go 1.24.0
 
 require (
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250918033152-26819b35da37
@@ -12,6 +12,7 @@ require (
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/nats-io/nats.go v1.45.0
+	github.com/redis/go-redis/v9 v9.14.0
 	github.com/sevlyar/go-daemon v0.1.6
 	github.com/spf13/viper v1.21.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
@@ -45,7 +46,6 @@ require (
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
-	github.com/redis/go-redis/v9 v9.14.0
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect

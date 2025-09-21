@@ -15,7 +15,7 @@ type Redis struct {
 }
 
 // NewRedis 实例化redis
-func NewRedis(host string, port string, pwd string, db int64) *Redis {
+func NewRedis(host string, port string, pwd string, db int64) (*Redis, error) {
 	address := fmt.Sprintf("%v:%v", host, port)
 
 	client := redis.NewClient(&redis.Options{
@@ -29,19 +29,18 @@ func NewRedis(host string, port string, pwd string, db int64) *Redis {
 		ConnMaxIdleTime: 1 * time.Minute, // 连接最大空闲时间
 	})
 
-	RedisClient = client
-
 	// 测试连接
 	ctx := context.Background()
 	_, err := client.Ping(ctx).Result()
 	if err != nil {
-		panic(fmt.Sprintf("Redis连接失败: %v", err))
+		return nil, fmt.Errorf("Redis连接失败: %v", err)
 	}
 
 	// 清空db,防止污染系统
 	client.FlushDB(ctx)
 
-	return &Redis{Client: client}
+	RedisClient = client
+	return &Redis{Client: client}, nil
 }
 
 // Get 获取缓存
