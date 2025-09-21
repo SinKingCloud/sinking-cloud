@@ -108,6 +108,12 @@ func (l *Client) Stop() error {
 			err = stopErr
 		}
 	}
+
+	// 关闭底层队列连接
+	if l.topic != nil {
+		l.topic.Close()
+	}
+
 	return err
 }
 
@@ -191,6 +197,20 @@ func RegisterRedis(topicName string, producerThreadNum int, consumerThreadNum in
 	topic, err := RegisterRedisQueueClient(cache.RedisClient) //注册消费实例
 	if err != nil {
 		return nil, errors.New("注册" + topicName + "消费实例失败")
+	}
+	return register(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
+}
+
+// RegisterNats 注册NATS消息队列实例
+// topicName 队列名称
+// producerThreadNum 发送者协程数量
+// consumerThreadNum 消费者协程数量
+// natsURL NATS服务器地址 (如: nats://localhost:4222)
+// options NATS连接选项 (可选)
+func RegisterNats(topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string), natsURL string, options ...interface{}) (*Client, error) {
+	topic, err := RegisterNatsQueueClient(natsURL, options...) //注册消费实例
+	if err != nil {
+		return nil, errors.New("注册" + topicName + "消费实例失败: " + err.Error())
 	}
 	return register(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
 }

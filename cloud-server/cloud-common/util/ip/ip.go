@@ -3,7 +3,7 @@ package ip
 import (
 	"errors"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/public"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/resource"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/file"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb"
 	"io"
@@ -102,7 +102,7 @@ func initIPFile(name string) (string, error) {
 	f := file.NewDisk(path)
 	if !f.Exists(name) {
 		_ = f.AutoCreate(name)
-		open, err := public.Ip.Open("ip/" + name)
+		open, err := resource.Ip.Open("ip/" + name)
 		if err == nil {
 			defer func() {
 				_ = open.Close()

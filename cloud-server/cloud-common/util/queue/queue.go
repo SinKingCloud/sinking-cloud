@@ -3,6 +3,7 @@ package queue
 type Queue interface {
 	SendMsg(topic string, body string) (mqMsg MqMsg, err error)
 	ListenReceiveMsgDo(topic string, receiveDo func(mqMsg MqMsg)) (err error)
+	Close()
 }
 
 const (

@@ -14,11 +14,7 @@ func LoadCache() {
 		util.Conf.GetString(constant.RedisPwd),
 		util.Conf.GetInt64(constant.RedisDb),
 	)
-	if _, err := redis.Pool.Dial(); err != nil {
-		util.Log.Println("redis连接失败", err)
-		panic("redis连接失败")
-		return
-	}
+	// Redis 连接测试已在 NewRedis 中完成
 	util.Cache = redis
 	util.Log.Println("redis连接成功")
 }
