@@ -9,12 +9,16 @@ github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20250921064411-6
 github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20250921064411-60df7a58860b/go.mod h1:hHe/rvo7Cd+TgS813aAVCKZgHx5HgnE56KfevC0dox8=
 github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20250921125942-bd51ee596736 h1:BIktDY6gPcb1aiCpM7N6XkgfdSN7tcn7TGzlgWDBv7I=
 github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20250921125942-bd51ee596736/go.mod h1:hHe/rvo7Cd+TgS813aAVCKZgHx5HgnE56KfevC0dox8=
+github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20250921155725-9f3e9beedb9e h1:GgkwN3U8PnclkyHP+ee6ixZdqimrzSKZh1EH7ARJ3XQ=
+github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20250921155725-9f3e9beedb9e/go.mod h1:hHe/rvo7Cd+TgS813aAVCKZgHx5HgnE56KfevC0dox8=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250918033152-26819b35da37 h1:deaedaMptrdf74+nSRq829AQE+FuTRkqvQC1KDfl8MQ=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250918033152-26819b35da37/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250921064411-60df7a58860b h1:RhWTJaPahJP9QBlQhyCQcjDKrJkWkIzf5PH2S30tQ6U=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250921064411-60df7a58860b/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250921125942-bd51ee596736 h1:MwspyMki8DPDNWwivyO6oC+PN7cvQaRh/HfGAOrlDSY=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250921125942-bd51ee596736/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250921155725-9f3e9beedb9e h1:EECnRJDPT5GZjH3azyrB7CGXrnTQYOkdFBAPNsxMumU=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250921155725-9f3e9beedb9e/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868 h1:uFrPOl1VBt/Abfl2z+A/DFc+AwmFLxEHR1+Yq6cXvww=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868/go.mod h1:srphKZ1i+yGXxl/LpBS7ZIECTjCTPzZzAMtJWoG3sLo=
 github.com/ajstarks/svgo v0.0.0-20180226025133-644b8db467af/go.mod h1:K08gAheRH3/J6wwsYMMT4xOr94bZjxIelGM0+d/wbFw=

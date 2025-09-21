@@ -28,5 +28,5 @@ func LoadConf() {
 		return
 	}
 	//赋值到util
-	global.Conf = config
+	global.Config = config
 }
