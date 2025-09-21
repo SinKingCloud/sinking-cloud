@@ -6,6 +6,7 @@ require (
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250918033152-26819b35da37
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
+	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
