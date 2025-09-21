@@ -3,7 +3,7 @@ module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 go 1.24.0
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250921064411-60df7a58860b
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250921125942-bd51ee596736
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
@@ -27,7 +27,7 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/BurntSushi/toml v1.5.0 // indirect
-	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20250921064411-60df7a58860b // indirect
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20250921125942-bd51ee596736 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
