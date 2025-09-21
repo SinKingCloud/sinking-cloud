@@ -1,4 +1,4 @@
-package server
+package context
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"

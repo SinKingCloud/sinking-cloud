@@ -3,7 +3,7 @@ module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 go 1.24.0
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250918033152-26819b35da37
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250921064411-60df7a58860b
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
@@ -26,6 +26,8 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/BurntSushi/toml v1.5.0 // indirect
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20250921064411-60df7a58860b // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
@@ -41,6 +43,7 @@ require (
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
+	github.com/magiconair/properties v1.8.10 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/nats-io/nkeys v0.4.11 // indirect
@@ -58,4 +61,5 @@ require (
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
