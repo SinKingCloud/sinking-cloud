@@ -2,7 +2,7 @@ package bootstrap
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/file"
 	"github.com/spf13/viper"
 	"strings"
@@ -28,5 +28,5 @@ func LoadConf() {
 		return
 	}
 	//赋值到util
-	util.Conf = config
+	global.Conf = config
 }

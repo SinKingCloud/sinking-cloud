@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/job"
 )
 
@@ -194,7 +194,7 @@ func RegisterMemory(topicName string, producerThreadNum int, consumerThreadNum i
 // producerThreadNum 发送者协程数量
 // consumerThreadNum 消费者协程数量
 func RegisterRedis(topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string)) (*Client, error) {
-	topic, err := RegisterRedisQueueClient(util.Redis.GetClient()) //注册消费实例
+	topic, err := RegisterRedisQueueClient(global.Redis.GetClient()) //注册消费实例
 	if err != nil {
 		return nil, errors.New("注册" + topicName + "消费实例失败")
 	}

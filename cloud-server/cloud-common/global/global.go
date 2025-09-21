@@ -1,4 +1,4 @@
-package util
+package global
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"

@@ -1,10 +1,10 @@
 package bootstrap
 
 import (
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"log"
 )
 
 func LoadLog() {
-	util.Log = log.Default()
+	global.Log = log.Default()
 }
