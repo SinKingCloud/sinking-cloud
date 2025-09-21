@@ -137,7 +137,7 @@ func (c *Client) Dec(key string) int {
 	return int(reply)
 }
 
-// GetClient 自减
+// GetClient 获取底层Redis客户端
 func (c *Client) GetClient() *redis.Client {
 	return c.client
 }
