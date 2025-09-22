@@ -38,7 +38,7 @@ func (s *Server) init() {
 	if global.Config != nil {
 		debugMode = global.Config.GetString(constant.ServerMode) == "debug"
 	}
-	sinking_web.SetDebugMode(debugMode)
+	s.engine.SetDebugMode(debugMode)
 	s.engine = sinking_web.Default()
 	s.engine.SetErrorHandle(&sinking_web.ErrorHandel{
 		NotFound: func(c *sinking_web.Context) {
