@@ -12,7 +12,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
-	github.com/nats-io/nats.go v1.45.0
+	github.com/nats-io/nats.go v1.46.0
 	github.com/redis/go-redis/v9 v9.14.0
 	github.com/sevlyar/go-daemon v0.1.6
 	github.com/spf13/viper v1.21.0
@@ -27,7 +27,7 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/BurntSushi/toml v1.5.0 // indirect
-	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20250921161249-a41a71269015 // indirect
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20250922154853-84c8e5835b76 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
