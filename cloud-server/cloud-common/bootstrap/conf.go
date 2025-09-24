@@ -18,7 +18,6 @@ func LoadConf() {
 	disk := file.NewDisk(path)
 	_ = disk.AutoCreate(fileName)
 	config := viper.New()
-	config.AutomaticEnv() //读取环境变量
 	config.AddConfigPath(path)
 	config.SetConfigName(fileName)
 	config.SetConfigType("yaml")
@@ -27,6 +26,20 @@ func LoadConf() {
 		panic(err)
 		return
 	}
-	//赋值到util
+	config.AutomaticEnv() //读取环境变量
+	config.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	keys := []string{
+		constant.ServerPort,
+		constant.ServerHost,
+		constant.ServerMode,
+		constant.ConsulAddress,
+		constant.ConsulGroup,
+		constant.ConsulName,
+		constant.ConsulLocal,
+		constant.ConsulToken,
+	}
+	for _, key := range keys {
+		_ = config.BindEnv(key)
+	}
 	global.Config = config
 }
