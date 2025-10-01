@@ -3,7 +3,7 @@ module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 go 1.24.0
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250923154044-6026cce0348b
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250930152933-11361fda6ebd
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
@@ -12,7 +12,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
-	github.com/nats-io/nats.go v1.46.0
+	github.com/nats-io/nats.go v1.46.1
 	github.com/redis/go-redis/v9 v9.14.0
 	github.com/sevlyar/go-daemon v0.1.6
 	github.com/spf13/viper v1.21.0
@@ -27,7 +27,7 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/BurntSushi/toml v1.5.0 // indirect
-	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20250923154044-6026cce0348b // indirect
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20250930152933-11361fda6ebd // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
