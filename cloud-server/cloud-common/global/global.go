@@ -13,7 +13,7 @@ import (
 var (
 	Database *database.Database //数据库
 	Config   *viper.Viper       //配置文件
-	Cache    *cache.Interface   //缓存系统
+	Cache    cache.Interface    //缓存系统
 	Log      *log.Logger        //日志系统
 	Redis    *redis.Client      //redis客户端
 	Consul   *consul.Client     //consul客户端
