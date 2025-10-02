@@ -34,12 +34,12 @@ func (s *Server) init() {
 	if s.engine != nil {
 		return
 	}
+	s.engine = sinking_web.Default()
 	debugMode := false
 	if global.Config != nil {
 		debugMode = global.Config.GetString(constant.ServerMode) == "debug"
 	}
 	s.engine.SetDebugMode(debugMode)
-	s.engine = sinking_web.Default()
 	s.engine.SetErrorHandle(&sinking_web.ErrorHandel{
 		NotFound: func(c *sinking_web.Context) {
 			c.JSON(404, sinking_web.H{"code": 404, "message": "请求资源不存在"})
