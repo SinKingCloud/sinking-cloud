@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"net/http"
 	"sync"
@@ -14,16 +12,21 @@ import (
 
 // Server HTTP服务器
 type Server struct {
-	engine   *sinking_web.Engine
-	server   *http.Server
-	running  bool
-	mutex    sync.RWMutex
-	handlers []func(engine *sinking_web.Engine)
+	addr        string
+	debug       bool
+	engine      *sinking_web.Engine
+	server      *http.Server
+	running     bool
+	mutex       sync.RWMutex
+	handlers    []func(engine *sinking_web.Engine)
+	errorHandle *sinking_web.ErrorHandel
 }
 
 // NewServer 创建新的HTTP服务器实例
-func NewServer() *Server {
+func NewServer(addr string, debug bool) *Server {
 	return &Server{
+		addr:     addr,
+		debug:    debug,
 		running:  false,
 		handlers: make([]func(engine *sinking_web.Engine), 0),
 	}
@@ -35,19 +38,10 @@ func (s *Server) init() {
 		return
 	}
 	s.engine = sinking_web.Default()
-	debugMode := false
-	if global.Config != nil {
-		debugMode = global.Config.GetString(constant.ServerMode) == "debug"
+	s.engine.SetDebugMode(s.debug)
+	if s.errorHandle != nil {
+		s.engine.SetErrorHandle(s.errorHandle)
 	}
-	s.engine.SetDebugMode(debugMode)
-	s.engine.SetErrorHandle(&sinking_web.ErrorHandel{
-		NotFound: func(c *sinking_web.Context) {
-			c.JSON(404, sinking_web.H{"code": 404, "message": "请求资源不存在"})
-		},
-		Fail: func(c *sinking_web.Context, code int, message string) {
-			c.JSON(500, sinking_web.H{"code": code, "message": message})
-		},
-	})
 	for _, handler := range s.handlers {
 		handler(s.engine)
 	}
@@ -64,6 +58,11 @@ func (s *Server) Handle(handler func(engine *sinking_web.Engine)) *Server {
 	return s
 }
 
+// ErrorHandle 设置错误处理回调
+func (s *Server) ErrorHandle(handle *sinking_web.ErrorHandel) {
+	s.errorHandle = handle
+}
+
 // Start 启动服务器
 func (s *Server) Start() error {
 	s.mutex.Lock()
@@ -72,19 +71,11 @@ func (s *Server) Start() error {
 		return fmt.Errorf("服务器已经在运行中")
 	}
 	s.init()
-	host := "0.0.0.0"
-	port := "5678"
-	if global.Config != nil {
-		if h := global.Config.GetString(constant.ServerHost); h != "" {
-			host = h
-		}
-		if p := global.Config.GetString(constant.ServerPort); p != "" {
-			port = p
-		}
+	if s.addr == "" {
+		s.addr = ":5678"
 	}
-	addr := host + ":" + port
 	s.server = &http.Server{
-		Addr:    addr,
+		Addr:    s.addr,
 		Handler: s.engine,
 	}
 	s.running = true
