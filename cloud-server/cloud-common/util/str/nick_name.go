@@ -3,7 +3,6 @@ package str
 import (
 	"fmt"
 	"math/rand"
-	"time"
 )
 
 // NickTool 昵称工具
@@ -59,7 +58,6 @@ func (n *NickTool) getFirstName() []string {
 
 // GetRand 获取随机昵称
 func (n *NickTool) GetRand() string {
-	rand.Seed(time.Now().UnixNano())
 	n1 := n.getFirstName()
 	n2 := n.getLastName()
 	a := len(n.getFirstName())
