@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9/maintnotifications"
 )
 
 type Client struct {
@@ -15,7 +16,6 @@ type Client struct {
 // NewClient 实例化redis
 func NewClient(host string, port string, pwd string, db int64) (*Client, error) {
 	address := fmt.Sprintf("%v:%v", host, port)
-
 	client := redis.NewClient(&redis.Options{
 		Addr:            address,
 		Password:        pwd,
@@ -25,15 +25,16 @@ func NewClient(host string, port string, pwd string, db int64) (*Client, error) 
 		MaxIdleConns:    50,              // 最大空闲连接数
 		ConnMaxLifetime: 5 * time.Minute, // 连接最大生存时间
 		ConnMaxIdleTime: 1 * time.Minute, // 连接最大空闲时间
+		MaintNotificationsConfig: &maintnotifications.Config{
+			Mode: maintnotifications.ModeDisabled, // 显式禁用维护通知
+		},
 	})
-
 	// 测试连接
 	ctx := context.Background()
 	_, err := client.Ping(ctx).Result()
 	if err != nil {
 		return nil, fmt.Errorf("Redis连接失败: %v", err)
 	}
-
 	// 清空db,防止污染系统
 	client.FlushDB(ctx)
 	return &Client{client: client}, nil
