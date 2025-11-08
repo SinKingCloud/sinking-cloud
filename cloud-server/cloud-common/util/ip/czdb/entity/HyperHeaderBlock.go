@@ -1,6 +1,6 @@
 package entity
 
-import "server/app/util/ip/czdb/byteUtil"
+import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb/byteUtil"
 
 // HyperHeaderBlock 表示HyperHeader结构的头块。
 // HyperHeaderBlock类封装了以下信息：

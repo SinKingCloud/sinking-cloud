@@ -3,7 +3,6 @@ package ip
 import (
 	"errors"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/embed"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/file"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb"
 	"io"
@@ -87,7 +86,7 @@ func init() {
 	if err == nil && v4 != "" {
 		v4Search, err = czdb.NewDbSearcher(v4, "MEMORY", key)
 	}
-	v6, err := initIPFile("ipv4")
+	v6, err := initIPFile("ipv6")
 	if err == nil && v6 != "" {
 		v6Search, err = czdb.NewDbSearcher(v6, "MEMORY", key)
 	}
@@ -102,7 +101,7 @@ func initIPFile(name string) (string, error) {
 	f := file.NewDisk(path)
 	if !f.Exists(name) {
 		_ = f.AutoCreate(name)
-		open, err := embed.Ip.Open("ip/" + name)
+		open, err := czdb.Ip.Open("data/" + name)
 		if err == nil {
 			defer func() {
 				_ = open.Close()

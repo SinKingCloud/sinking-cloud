@@ -2,8 +2,8 @@ package entity
 
 import (
 	"encoding/base64"
-	"server/app/util/ip/czdb/aesECB"
-	"server/app/util/ip/czdb/byteUtil"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb/aesECB"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb/byteUtil"
 )
 
 /*DecryptedBlock

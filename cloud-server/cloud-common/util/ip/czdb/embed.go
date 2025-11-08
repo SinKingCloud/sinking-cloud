@@ -1,10 +1,10 @@
-package embed
+package czdb
 
 import (
 	"embed"
 )
 
 var (
-	//go:embed ip/*
+	//go:embed data/*
 	Ip embed.FS
 )

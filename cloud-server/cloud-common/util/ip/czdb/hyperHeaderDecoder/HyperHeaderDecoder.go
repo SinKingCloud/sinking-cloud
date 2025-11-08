@@ -2,9 +2,9 @@ package hyperHeaderDecoder
 
 import (
 	"fmt"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb/byteUtil"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb/entity"
 	"io"
-	"server/app/util/ip/czdb/byteUtil"
-	"server/app/util/ip/czdb/entity"
 	"strconv"
 	"time"
 )
