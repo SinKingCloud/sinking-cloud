@@ -17,7 +17,7 @@ func LoadDatabase() {
 		panic("从consul获取配置失败: " + err.Error())
 		return
 	}
-	global.Database = database.NewMysql(
+	global.Database = database.NewPostgresSql(
 		config.GetString(constant.MysqlHost),
 		config.GetString(constant.MysqlPort),
 		config.GetString(constant.MysqlUser),
