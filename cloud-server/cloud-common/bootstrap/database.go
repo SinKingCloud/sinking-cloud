@@ -18,11 +18,11 @@ func LoadDatabase() {
 		return
 	}
 	global.Database = database.NewPostgresSql(
-		config.GetString(constant.MysqlHost),
-		config.GetString(constant.MysqlPort),
-		config.GetString(constant.MysqlUser),
-		config.GetString(constant.MysqlPwd),
-		config.GetString(constant.MysqlName),
+		config.GetString(constant.PostgresHost),
+		config.GetString(constant.PostgresPort),
+		config.GetString(constant.PostgresUser),
+		config.GetString(constant.PostgresPwd),
+		config.GetString(constant.PostgresName),
 	)
 	if global.Database.DbError != nil {
 		global.Log.Println("mysql连接失败", global.Database.DbError)

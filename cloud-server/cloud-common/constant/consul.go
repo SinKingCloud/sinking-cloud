@@ -2,14 +2,16 @@ package constant
 
 // 云端配置
 const (
-	MysqlHost = "mysql.host" //mysql地址
-	MysqlPort = "mysql.port" //mysql端口
-	MysqlUser = "mysql.user" //mysql用户
-	MysqlPwd  = "mysql.pwd"  //mysql密码
-	MysqlName = "mysql.name" //mysql数据库名称
+	Postgres     = "postgres"         //postgres配置前缀
+	PostgresHost = Postgres + ".host" //postgres地址
+	PostgresPort = Postgres + ".port" //postgres端口
+	PostgresUser = Postgres + ".user" //postgres用户
+	PostgresPwd  = Postgres + ".pwd"  //postgres密码
+	PostgresName = Postgres + ".name" //postgres数据库名称
 
-	RedisHost = "redis.host" //redis地址
-	RedisPort = "redis.port" //redis端口
-	RedisPwd  = "redis.pwd"  //redis密码
-	RedisDb   = "redis.db"   //redis编号
+	Redis     = "redis"         //redis配置前缀
+	RedisHost = Redis + ".host" //redis地址
+	RedisPort = Redis + ".port" //redis端口
+	RedisPwd  = Redis + ".pwd"  //redis密码
+	RedisDb   = Redis + ".db"   //redis编号
 )
