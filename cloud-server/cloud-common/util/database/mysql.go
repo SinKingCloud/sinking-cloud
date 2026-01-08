@@ -3,9 +3,10 @@ package database
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"time"
 )
 
 // NewMysql 实例化一个mysql连接

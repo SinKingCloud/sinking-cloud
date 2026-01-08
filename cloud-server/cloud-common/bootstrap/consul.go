@@ -1,10 +1,11 @@
 package bootstrap
 
 import (
+	"strings"
+
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	consul "github.com/SinKingCloud/sinking-go/sinking-consul/client"
-	"strings"
 )
 
 func LoadConsul() {
@@ -23,6 +24,7 @@ func LoadConsul() {
 		global.Config.GetString(constant.ConsulToken))
 	err := cli.Connect()
 	if err != nil {
+		global.Log.Println("consul连接失败", err)
 		panic(err)
 		return
 	}

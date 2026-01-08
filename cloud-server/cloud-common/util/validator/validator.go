@@ -1,12 +1,13 @@
 package validator
 
 import (
+	"reflect"
+	"sync"
+
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	zhTrans "github.com/go-playground/validator/v10/translations/zh"
-	"reflect"
-	"sync"
 )
 
 var (

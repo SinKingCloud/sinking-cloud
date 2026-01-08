@@ -1,11 +1,12 @@
 package bootstrap
 
 import (
+	"strings"
+
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/file"
 	"github.com/spf13/viper"
-	"strings"
 )
 
 // LoadConf 加载本地配置

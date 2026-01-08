@@ -2,11 +2,12 @@ package hyperHeaderDecoder
 
 import (
 	"fmt"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb/byteUtil"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb/entity"
 	"io"
 	"strconv"
 	"time"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb/byteUtil"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb/entity"
 )
 
 // package HyperHeaderDecoder 提供用于解码HyperHeaderBlock对象的实用方法。

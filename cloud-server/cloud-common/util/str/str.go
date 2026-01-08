@@ -10,12 +10,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/axgle/mahonia"
-	"golang.org/x/crypto/bcrypt"
 	"io"
 	rand2 "math/rand"
 	"strings"
-	"time"
+
+	"github.com/axgle/mahonia"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // StringTool 字符串工具
@@ -147,16 +147,14 @@ func (stringTool *StringTool) CheckPassword(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(stringTool.string), []byte(password)) //验证（对比）
 	if err != nil {
 		return false
-	} else {
-		return true
 	}
+	return true
 }
 
 // GenValidateCode 生成指定位数验证码
 func (stringTool *StringTool) GenValidateCode(width int) string {
 	numeric := [10]byte{1, 2, 3, 4, 5, 6, 7, 8, 9}
 	r := len(numeric)
-	rand2.Seed(time.Now().UnixNano())
 	var sb strings.Builder
 	for i := 0; i < width; i++ {
 		_, err := fmt.Fprintf(&sb, "%d", numeric[rand2.Intn(r)])

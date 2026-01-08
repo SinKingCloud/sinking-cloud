@@ -2,16 +2,16 @@ package constant
 
 // 云端配置
 const (
-	Postgres     = "postgres"         //postgres配置前缀
-	PostgresHost = Postgres + ".host" //postgres地址
-	PostgresPort = Postgres + ".port" //postgres端口
-	PostgresUser = Postgres + ".user" //postgres用户
-	PostgresPwd  = Postgres + ".pwd"  //postgres密码
-	PostgresName = Postgres + ".name" //postgres数据库名称
+	Postgres     = "postgres"         //postgres 配置前缀
+	PostgresHost = Postgres + ".host" //postgres 地址
+	PostgresPort = Postgres + ".port" //postgres 端口
+	PostgresUser = Postgres + ".user" //postgres 用户
+	PostgresPwd  = Postgres + ".pwd"  //postgres 密码
+	PostgresName = Postgres + ".name" //postgres 数据库名称
 
-	Redis     = "redis"         //redis配置前缀
-	RedisHost = Redis + ".host" //redis地址
-	RedisPort = Redis + ".port" //redis端口
-	RedisPwd  = Redis + ".pwd"  //redis密码
-	RedisDb   = Redis + ".db"   //redis编号
+	Redis     = "redis"         //redis 配置前缀
+	RedisHost = Redis + ".host" //redis 地址
+	RedisPort = Redis + ".port" //redis 端口
+	RedisPwd  = Redis + ".pwd"  //redis 密码
+	RedisDb   = Redis + ".db"   //redis 编号
 )

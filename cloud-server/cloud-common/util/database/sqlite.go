@@ -2,6 +2,7 @@ package database
 
 import (
 	"errors"
+
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )

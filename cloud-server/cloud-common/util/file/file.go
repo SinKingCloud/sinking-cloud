@@ -85,12 +85,12 @@ func (d *Disk) Rename(oldName, newName string) error {
 			return fmt.Errorf("回退复制目录失败: %w", err)
 		}
 		return os.RemoveAll(srcPath)
-	} else {
-		if err := d.copyFile(srcPath, destPath); err != nil {
-			return fmt.Errorf("回退复制文件失败: %w", err)
-		}
-		return os.Remove(srcPath)
 	}
+
+	if err := d.copyFile(srcPath, destPath); err != nil {
+		return fmt.Errorf("回退复制文件失败: %w", err)
+	}
+	return os.Remove(srcPath)
 }
 
 // AutoCreate 智能创建文件或目录

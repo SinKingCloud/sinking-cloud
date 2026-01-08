@@ -9,7 +9,7 @@ import (
 // LoadCache 初始化缓存
 func LoadCache() {
 	if global.Consul == nil {
-		panic("Consul未初始化")
+		panic("consul 未初始化")
 		return
 	}
 	config, err := global.Consul.GetConfig(global.Config.GetString(constant.ConsulName))
@@ -24,10 +24,10 @@ func LoadCache() {
 		config.GetInt64(constant.RedisDb),
 	)
 	if err != nil {
-		global.Log.Println("redis连接失败", err)
-		panic("redis连接失败: " + err.Error())
+		global.Log.Println("redis 连接失败", err)
+		panic("redis 连接失败: " + err.Error())
+		return
 	}
 	global.Cache = client
 	global.Redis = client
-	global.Log.Println("redis连接成功")
 }

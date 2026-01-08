@@ -2,13 +2,14 @@ package ip
 
 import (
 	"errors"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/file"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb"
 	"io"
 	"net"
 	"os"
 	"strings"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/file"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb"
 )
 
 type Info struct {

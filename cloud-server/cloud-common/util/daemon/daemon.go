@@ -3,11 +3,12 @@ package daemon
 import (
 	"errors"
 	"fmt"
-	"github.com/sevlyar/go-daemon"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/sevlyar/go-daemon"
 )
 
 type UnixDaemon struct {

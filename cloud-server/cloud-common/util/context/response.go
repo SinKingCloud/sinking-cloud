@@ -1,14 +1,15 @@
 package context
 
 import (
-	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"net/http"
+
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 const (
 	SuccessCode    = 200 //请求成功
 	ErrorCode      = 500 //请求失败
-	TokenErrorCode = 503 //token认证失败
+	TokenErrorCode = 503 //认证失败
 	NotLoginCode   = 403 //未登录
 	NotAllowCode   = 401 //无权限
 )

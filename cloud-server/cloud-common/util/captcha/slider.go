@@ -2,10 +2,11 @@ package captcha
 
 import (
 	"errors"
+	"log"
+
 	images "github.com/wenlng/go-captcha-assets/resources/images_v2"
 	"github.com/wenlng/go-captcha-assets/resources/tiles"
 	"github.com/wenlng/go-captcha/v2/slide"
-	"log"
 )
 
 var slideCapt slide.Captcha
@@ -68,5 +69,5 @@ func CheckSlide(x int, y int, result *slide.Block) bool {
 	if result == nil {
 		return false
 	}
-	return slide.CheckPoint(int64(x), int64(y), int64(result.X), int64(result.Y), 4)
+	return slide.Validate(x, y, result.X, result.Y, 4)
 }

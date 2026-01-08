@@ -1,8 +1,9 @@
 package bootstrap
 
 import (
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"log"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 )
 
 func LoadLog() {

@@ -2,6 +2,7 @@ package entity
 
 import (
 	"encoding/base64"
+
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb/aesECB"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb/byteUtil"
 )

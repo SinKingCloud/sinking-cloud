@@ -1,8 +1,9 @@
 package entity
 
 import (
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb/byteUtil"
 	"math"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip/czdb/byteUtil"
 )
 
 // HeaderBlock 表示数据库中的一个头块。

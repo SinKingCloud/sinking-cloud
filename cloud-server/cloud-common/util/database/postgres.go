@@ -3,9 +3,10 @@ package database
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"time"
 )
 
 // NewPostgresSql 实例化一个postgres连接

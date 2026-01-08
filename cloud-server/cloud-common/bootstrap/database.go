@@ -9,7 +9,7 @@ import (
 // LoadDatabase 初始化数据库
 func LoadDatabase() {
 	if global.Consul == nil {
-		panic("consul未初始化")
+		panic("consul 未初始化")
 		return
 	}
 	config, err := global.Consul.GetConfig(global.Config.GetString(constant.ConsulName))
@@ -25,9 +25,8 @@ func LoadDatabase() {
 		config.GetString(constant.PostgresName),
 	)
 	if global.Database.DbError != nil {
-		global.Log.Println("mysql连接失败", global.Database.DbError)
-		panic("mysql连接失败")
+		global.Log.Println("数据库连接失败", global.Database.DbError)
+		panic(global.Database.DbError)
 		return
 	}
-	global.Log.Println("mysql连接成功")
 }

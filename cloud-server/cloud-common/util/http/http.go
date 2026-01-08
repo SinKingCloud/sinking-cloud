@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 // Server HTTP服务器
@@ -41,6 +42,15 @@ func (s *Server) init() {
 	s.engine.SetDebugMode(s.debug)
 	if s.errorHandle != nil {
 		s.engine.SetErrorHandle(s.errorHandle)
+	} else {
+		s.engine.SetErrorHandle(&sinking_web.ErrorHandel{
+			NotFound: func(c *sinking_web.Context) {
+				c.JSON(404, sinking_web.H{"code": 404, "message": "请求资源不存在"})
+			},
+			Fail: func(c *sinking_web.Context, code int, message string) {
+				c.JSON(500, sinking_web.H{"code": code, "message": message})
+			},
+		})
 	}
 	for _, handler := range s.handlers {
 		handler(s.engine)

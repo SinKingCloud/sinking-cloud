@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"errors"
+
 	"github.com/redis/go-redis/v9"
 )
 

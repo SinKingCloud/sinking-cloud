@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"sync"
 	"time"
+
+	"golang.org/x/crypto/ssh"
 )
 
 // NewClient 创建一个ssh客户端

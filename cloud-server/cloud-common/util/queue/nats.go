@@ -2,6 +2,7 @@ package queue
 
 import (
 	"errors"
+
 	"github.com/nats-io/nats.go"
 )
 

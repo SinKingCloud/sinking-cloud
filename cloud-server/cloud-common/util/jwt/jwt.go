@@ -2,10 +2,11 @@ package jwt
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/golang-jwt/jwt/v5"
-	"time"
 )
 
 // MyClaims jwt载体

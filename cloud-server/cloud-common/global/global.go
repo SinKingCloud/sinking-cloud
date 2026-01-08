@@ -1,13 +1,14 @@
 package global
 
 import (
+	"log"
+
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/redis"
 	consul "github.com/SinKingCloud/sinking-go/sinking-consul/client"
 	"github.com/spf13/viper"
-	"log"
 )
 
 var (
@@ -15,8 +16,8 @@ var (
 	Config   *viper.Viper       //配置文件
 	Cache    cache.Interface    //缓存系统
 	Log      *log.Logger        //日志系统
-	Redis    *redis.Client      //redis客户端
-	Consul   *consul.Client     //consul客户端
+	Redis    *redis.Client      //redis
+	Consul   *consul.Client     //consul
 )
 
 // IsDebug 是否debug模式
