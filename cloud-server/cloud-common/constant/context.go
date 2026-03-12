@@ -1,6 +1,6 @@
 package constant
 
 const (
-	RequestId = "request.id"
-	UserInfo  = "user.info"
+	RequestId = "Request-ID"
+	UserInfo  = "User-Info"
 )
