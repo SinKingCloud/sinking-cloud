@@ -45,10 +45,10 @@ func (s *Server) init() {
 	} else {
 		s.engine.SetErrorHandle(&sinking_web.ErrorHandel{
 			NotFound: func(c *sinking_web.Context) {
-				c.JSON(404, sinking_web.H{"code": 404, "message": "请求资源不存在"})
+				c.JSON(200, sinking_web.H{"code": 404, "message": "请求资源不存在"})
 			},
 			Fail: func(c *sinking_web.Context, code int, message string) {
-				c.JSON(500, sinking_web.H{"code": code, "message": message})
+				c.JSON(200, sinking_web.H{"code": code, "message": message})
 			},
 		})
 	}
@@ -69,8 +69,9 @@ func (s *Server) Handle(handler func(engine *sinking_web.Engine)) *Server {
 }
 
 // ErrorHandle 设置错误处理回调
-func (s *Server) ErrorHandle(handle *sinking_web.ErrorHandel) {
+func (s *Server) ErrorHandle(handle *sinking_web.ErrorHandel) *Server {
 	s.errorHandle = handle
+	return s
 }
 
 // Start 启动服务器
