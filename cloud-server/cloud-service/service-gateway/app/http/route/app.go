@@ -61,8 +61,7 @@ func loadGateway(s *sinking_web.Engine) {
 			url = "http://" + node.Address
 		}
 		_ = c.Proxy(url, nil, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
-			r.URL.Path = targetPath
-			r.URL.RawPath, r.RequestURI = targetPath, targetPath
+			r.URL.Path, r.URL.RawPath, r.RequestURI = targetPath, targetPath, targetPath
 			r.Header.Set("X-Forwarded-For", clientIp)
 			r.Header.Set("X-Real-Ip", clientIp)
 			r.Header.Set("X-Forwarded-Host", r.Host)
