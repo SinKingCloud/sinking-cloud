@@ -9,11 +9,16 @@ type Context struct {
 	*sinking_web.Context
 }
 
+// New 实例化上下文对象
+func New(c *sinking_web.Context) *Context {
+	return &Context{
+		Context: c,
+	}
+}
+
 // HandleFunc 方法转换
 func HandleFunc(handler func(c *Context)) func(ctx *sinking_web.Context) {
 	return func(c *sinking_web.Context) {
-		handler(&Context{
-			Context: c,
-		})
+		handler(New(c))
 	}
 }

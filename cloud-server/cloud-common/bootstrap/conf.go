@@ -35,7 +35,6 @@ func LoadConf() {
 		constant.ServerMode,
 		constant.ConsulAddress,
 		constant.ConsulGroup,
-		constant.ConsulName,
 		constant.ConsulLocal,
 		constant.ConsulToken,
 	}

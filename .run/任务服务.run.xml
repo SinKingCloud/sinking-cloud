@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="任务服务" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="sinking-cloud" />
+    <working_directory value="$PROJECT_DIR$/cloud-server/cloud-service/service-cron" />
+    <kind value="PACKAGE" />
+    <package value="service-cron" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/cloud-server/cloud-service/service-cron/main.go" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -1,9 +1,11 @@
 package bootstrap
 
-func Load() {
+// Load 初始化加载
+// name 服务名称
+func Load(name string) {
 	LoadLog()
 	LoadConf()
-	LoadConsul()
-	LoadDatabase()
-	LoadCache()
+	LoadConsul(name)
+	LoadDatabase(name)
+	LoadCache(name)
 }

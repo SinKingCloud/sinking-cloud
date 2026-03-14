@@ -11,7 +11,6 @@ const (
 	ServerPort = "server.port" //绑定端口
 
 	ConsulGroup   = "consul.group"   //服务分组
-	ConsulName    = "consul.name"    //服务名称
 	ConsulAddress = "consul.address" //服务地址
 	ConsulToken   = "consul.token"   //服务token
 	ConsulLocal   = "consul.local"   //本机地址

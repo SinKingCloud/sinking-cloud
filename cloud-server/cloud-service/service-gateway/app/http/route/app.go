@@ -38,7 +38,8 @@ func loadGateway(s *sinking_web.Engine) {
 			serviceName += parts[0]
 			targetPath = parts[1]
 		}
-		if serviceName == "" || serviceName == global.Config.GetString(constant.ConsulName) {
+		serviceName = strings.ToLower(serviceName)
+		if serviceName == "" || serviceName == constant.ServiceGateway {
 			c.Error("服务名称不能为空")
 			c.Abort()
 			return
@@ -53,12 +54,13 @@ func loadGateway(s *sinking_web.Engine) {
 			c.Abort()
 			return
 		}
+		address := node.Address
 		var url, tempPath string
 		tempPath = c.Request.URL.Path
 		if strings.ToLower(c.Request.Header.Get("Connection")) == "upgrade" && strings.ToLower(c.Request.Header.Get("Upgrade")) == "websocket" {
-			url = "ws://" + node.Address
+			url = "ws://" + address
 		} else {
-			url = "http://" + node.Address
+			url = "http://" + address
 		}
 		_ = c.Proxy(url, nil, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
 			r.URL.Path, r.URL.RawPath, r.RequestURI = targetPath, targetPath, targetPath
@@ -66,6 +68,8 @@ func loadGateway(s *sinking_web.Engine) {
 			r.Header.Set("X-Real-Ip", clientIp)
 			r.Header.Set("X-Forwarded-Host", r.Host)
 			r.Header.Set(constant.RpcTokenName, global.Config.GetString(constant.ConsulToken))
+			r.Header.Set(constant.RpcOriginService, constant.ServiceGateway)
+			r.Header.Set(constant.RpcOriginAddress, address)
 			r.Header.Set(constant.RequestId, c.GetRequestId())
 		}, nil)
 		c.Request.URL.Path = tempPath

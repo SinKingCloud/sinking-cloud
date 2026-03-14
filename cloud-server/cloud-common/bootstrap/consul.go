@@ -8,7 +8,7 @@ import (
 	consul "github.com/SinKingCloud/sinking-go/sinking-consul/client"
 )
 
-func LoadConsul() {
+func LoadConsul(name string) {
 	var list []string
 	str := global.Config.GetString(constant.ConsulAddress)
 	if str == "" {
@@ -19,7 +19,7 @@ func LoadConsul() {
 	cli := consul.NewClient(
 		list,
 		global.Config.GetString(constant.ConsulGroup),
-		global.Config.GetString(constant.ConsulName),
+		strings.ToLower(name),
 		global.Config.GetString(constant.ConsulLocal),
 		global.Config.GetString(constant.ConsulToken))
 	err := cli.Connect()

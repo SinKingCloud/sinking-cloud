@@ -1,0 +1,12 @@
+# 服务配置
+server:
+  mode: dev #模式
+  host: 0.0.0.0 #监听地址
+  port: 1008 #监听端口
+
+# consul配置
+consul:
+  group: sinking-cloud
+  address: 101.201.124.64:5678
+  token: E10ADC3949BA59ABBE56E057F20F883E
+  local: 127.0.0.1:1008

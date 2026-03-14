@@ -7,12 +7,12 @@ import (
 )
 
 // LoadDatabase 初始化数据库
-func LoadDatabase() {
+func LoadDatabase(name string) {
 	if global.Consul == nil {
 		panic("consul 未初始化")
 		return
 	}
-	config, err := global.Consul.GetConfig(global.Config.GetString(constant.ConsulName))
+	config, err := global.Consul.GetConfig(name)
 	if err != nil || config == nil {
 		panic("从consul获取配置失败: " + err.Error())
 		return

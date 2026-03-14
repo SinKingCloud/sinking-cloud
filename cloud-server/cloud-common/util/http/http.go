@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	context2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
@@ -45,10 +46,12 @@ func (s *Server) init() {
 	} else {
 		s.engine.SetErrorHandle(&sinking_web.ErrorHandel{
 			NotFound: func(c *sinking_web.Context) {
-				c.JSON(200, sinking_web.H{"code": 404, "message": "请求资源不存在"})
+				ctx := context2.New(c)
+				ctx.Error("请求失败")
 			},
 			Fail: func(c *sinking_web.Context, code int, message string) {
-				c.JSON(200, sinking_web.H{"code": code, "message": message})
+				ctx := context2.New(c)
+				ctx.ErrorWithData("请求失败", message)
 			},
 		})
 	}
