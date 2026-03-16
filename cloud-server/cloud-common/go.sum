@@ -13,6 +13,8 @@ github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260314030010-a
 github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260314030010-a4ab074b6401/go.mod h1:gSDRCjaYzbYKD4jce1CgJ81smxjIM5Q+qVeSC4GybII=
 github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260314062450-f7b379fbe631 h1:0rbKFw0Cd3+YUxqqPj2cqo6aSjk2mi8C8/tQ/sYxtXg=
 github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260314062450-f7b379fbe631/go.mod h1:gSDRCjaYzbYKD4jce1CgJ81smxjIM5Q+qVeSC4GybII=
+github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260314085352-05715728bbef h1:ZPbuSXkAvQtGiUMLLYVmF+7SG4Pm/uPDlAR1PlpIaNs=
+github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260314085352-05715728bbef/go.mod h1:gSDRCjaYzbYKD4jce1CgJ81smxjIM5Q+qVeSC4GybII=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260314022448-cff52facb2bc h1:BWc/VN2j6lojszo0lwamsHfTtuQ5uz/I++ESBWGlAi0=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260314022448-cff52facb2bc/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260314025205-961f1331e1f1 h1:jpED4rimNtfgUQuESgUj/p/y3BKpRVibObIjlgO0SlA=
@@ -21,6 +23,8 @@ github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260314030010-a4ab074b640
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260314030010-a4ab074b6401/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260314062450-f7b379fbe631 h1:Vaikt6B1WOe/7cVy1Nqxg95c13f+XHGAZt/ve9e6JMQ=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260314062450-f7b379fbe631/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260314085352-05715728bbef h1:BcfBjeaU8JCOlbcHZqqc+fXYAuz7y0L8dHaVYeSt6Fk=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260314085352-05715728bbef/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868 h1:uFrPOl1VBt/Abfl2z+A/DFc+AwmFLxEHR1+Yq6cXvww=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868/go.mod h1:srphKZ1i+yGXxl/LpBS7ZIECTjCTPzZzAMtJWoG3sLo=
 github.com/ajstarks/svgo v0.0.0-20180226025133-644b8db467af/go.mod h1:K08gAheRH3/J6wwsYMMT4xOr94bZjxIelGM0+d/wbFw=

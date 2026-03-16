@@ -40,7 +40,7 @@ func loadGateway(s *sinking_web.Engine) {
 		}
 		serviceName = strings.ToLower(serviceName)
 		if serviceName == "" || serviceName == constant.ServiceGateway {
-			c.Error("服务名称不能为空")
+			c.Error("获取服务节点失败: 服务不存在")
 			c.Abort()
 			return
 		}
