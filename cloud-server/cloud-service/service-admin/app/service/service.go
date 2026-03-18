@@ -10,5 +10,5 @@ import (
 var Config config.Service
 
 func Init() {
-	Config = config.NewService(repository.NewConfig(global.Database), global.Cache)
+	Config = config.NewService(repository.NewConfig(global.App.Database), global.App.Cache)
 }

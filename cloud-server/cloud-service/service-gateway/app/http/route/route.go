@@ -13,9 +13,9 @@ import (
 
 // Init 初始化server
 func Init() {
-	host, port := global.ServerAddr()
+	host, port := global.App.ServerAddr()
 	addr := host + ":" + strconv.Itoa(port)
-	r := http.NewServer(addr, global.IsDebug()).Handle(func(engine *sinking_web.Engine) {
+	r := http.NewServer(addr, global.App.IsDebug()).Handle(func(engine *sinking_web.Engine) {
 		loadApp(engine)
 	})
 	_ = r.Start()

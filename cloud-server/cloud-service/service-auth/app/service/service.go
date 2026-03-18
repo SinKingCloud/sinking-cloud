@@ -10,5 +10,5 @@ import (
 var Session *session.Service
 
 func Init() {
-	Session = session.NewService(repository.NewSession(global.Database))
+	Session = session.NewService(repository.NewSession(global.App.Database))
 }

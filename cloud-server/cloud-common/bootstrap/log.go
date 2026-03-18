@@ -7,5 +7,5 @@ import (
 )
 
 func LoadLog() {
-	global.Log = log.Default()
+	global.App.SetLog(log.Default())
 }

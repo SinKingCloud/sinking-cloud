@@ -41,5 +41,5 @@ func LoadConf() {
 	for _, key := range keys {
 		_ = config.BindEnv(key)
 	}
-	global.Config = config
+	global.App.SetConfig(config)
 }

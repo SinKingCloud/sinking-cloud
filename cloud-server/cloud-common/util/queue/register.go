@@ -194,7 +194,7 @@ func RegisterMemoryUnicast(topicName string, producerThreadNum int, consumerThre
 
 // RegisterRedisUnicast 注册Redis单播消息队列实例
 func RegisterRedisUnicast(topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string)) (*Client, error) {
-	topic, err := RegisterRedisQueueClient(global.Redis.GetClient())
+	topic, err := RegisterRedisQueueClient(global.App.Redis.GetClient())
 	if err != nil {
 		return nil, errors.New("注册" + topicName + "单播消费实例失败")
 	}
@@ -296,7 +296,7 @@ func RegisterMemoryBroadcast(topicName string, producerThreadNum int, consumerTh
 
 // RegisterRedisBroadcast 注册Redis广播消息队列实例
 func RegisterRedisBroadcast(topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string)) (*Client, error) {
-	topic, err := RegisterRedisQueueClient(global.Redis.GetClient())
+	topic, err := RegisterRedisQueueClient(global.App.Redis.GetClient())
 	if err != nil {
 		return nil, errors.New("注册" + topicName + "广播消费实例失败")
 	}

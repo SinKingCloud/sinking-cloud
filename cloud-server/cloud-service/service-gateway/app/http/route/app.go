@@ -48,7 +48,7 @@ func loadGateway(s *sinking_web.Engine) {
 		if clientIp == "" {
 			clientIp = c.ClientIP(false)
 		}
-		node, err := global.Consul.GetService(serviceName, client.Hash, clientIp)
+		node, err := global.App.Consul.GetService(serviceName, client.Hash, clientIp)
 		if err != nil {
 			c.Error("获取服务节点失败: " + err.Error())
 			c.Abort()
@@ -67,7 +67,7 @@ func loadGateway(s *sinking_web.Engine) {
 			r.Header.Set("X-Forwarded-For", clientIp)
 			r.Header.Set("X-Real-Ip", clientIp)
 			r.Header.Set("X-Forwarded-Host", r.Host)
-			r.Header.Set(constant.RpcTokenName, global.Config.GetString(constant.ConsulToken))
+			r.Header.Set(constant.RpcTokenName, global.App.Config.GetString(constant.ConsulToken))
 			r.Header.Set(constant.RpcOriginService, constant.ServiceGateway)
 			r.Header.Set(constant.RpcOriginAddress, address)
 			r.Header.Set(constant.RequestId, c.GetRequestId())

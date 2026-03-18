@@ -10,23 +10,23 @@ import (
 
 func LoadConsul(name string) {
 	var list []string
-	str := global.Config.GetString(constant.ConsulAddress)
+	str := global.App.Config.GetString(constant.ConsulAddress)
 	if str == "" {
-		list = global.Config.GetStringSlice(constant.ConsulAddress)
+		list = global.App.Config.GetStringSlice(constant.ConsulAddress)
 	} else {
 		list = strings.Split(str, ",")
 	}
 	cli := consul.NewClient(
 		list,
-		global.Config.GetString(constant.ConsulGroup),
+		global.App.Config.GetString(constant.ConsulGroup),
 		strings.ToLower(name),
-		global.Config.GetString(constant.ConsulLocal),
-		global.Config.GetString(constant.ConsulToken))
+		global.App.Config.GetString(constant.ConsulLocal),
+		global.App.Config.GetString(constant.ConsulToken))
 	err := cli.Connect()
 	if err != nil {
-		global.Log.Println("consul连接失败", err)
+		global.App.Log.Println("consul连接失败", err)
 		panic(err)
 		return
 	}
-	global.Consul = cli
+	global.App.SetConsul(cli)
 }

@@ -19,13 +19,13 @@ func InterceptIllegalRequest(c *context.Context) {
 	token := c.Request.Header.Get(constant.RpcTokenName)
 	originService := c.Request.Header.Get(constant.RpcOriginService)
 	originAddress := c.Request.Header.Get(constant.RpcOriginAddress)
-	if token == "" || originService == "" || originAddress == "" || token != global.Config.GetString(constant.ConsulToken) {
+	if token == "" || originService == "" || originAddress == "" || token != global.App.Config.GetString(constant.ConsulToken) {
 		c.Abort()
 		c.NotAllow("无权限", nil)
 		return
 	}
 	//本地服务名称
-	localService := global.Consul.GetName()
+	localService := global.App.Consul.GetName()
 	//获取第一个请求路径
 	parts := strings.SplitN(strings.TrimPrefix(c.Request.URL.Path, "/"), "/", 2)
 	var firstPath string

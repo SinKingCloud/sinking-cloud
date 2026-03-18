@@ -39,7 +39,7 @@ func Log(c *context.Context) {
 	fullLog := fmt.Sprintf("%s\r\n%s\r\n%s\r\n\r\n%s\r\n%s\r\n%s",
 		requestLine, requestHeader, requestBody,
 		statusLine, responseHeader, responseBody)
-	global.Log.Println(fullLog)
+	global.App.Log.Println(fullLog)
 }
 
 type responseBodyWriter struct {
