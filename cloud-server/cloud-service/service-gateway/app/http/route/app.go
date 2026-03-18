@@ -9,7 +9,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
-	consul "github.com/SinKingCloud/sinking-go/sinking-consul/client"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/client"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
@@ -48,7 +48,7 @@ func loadGateway(s *sinking_web.Engine) {
 		if clientIp == "" {
 			clientIp = c.ClientIP(false)
 		}
-		node, err := global.Consul.GetService(serviceName, consul.Hash, clientIp)
+		node, err := global.Consul.GetService(serviceName, client.Hash, clientIp)
 		if err != nil {
 			c.Error("获取服务节点失败: " + err.Error())
 			c.Abort()

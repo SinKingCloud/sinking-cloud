@@ -33,67 +33,25 @@ func (l *Client) Try(fun func(), handler func(interface{})) {
 	fun()
 }
 
-func (l *Client) run() error {
-	if l.consumer == nil {
-		l.consumer = make(chan interface{}, 10000)
-	}
-	if l.producer == nil {
-		l.producer = make(chan interface{}, 10000)
-	}
-
-	// 启动消费者任务
-	l.consumerTask = job.NewTask().
-		SetThread(l.consumerThreadNum).
-		SetProducer(func(ctx context.Context, channel chan interface{}) error {
-			l.consumer = channel
-			<-ctx.Done() // 等待上下文取消
-			return ctx.Err()
-		}).
-		SetConsumer(func(ctx context.Context, param interface{}) error {
-			l.Try(func() {
-				l.consumerFunc(param.(string))
-			}, nil)
-			return nil
-		})
-
-	if err := l.consumerTask.Start(); err != nil {
-		return err
-	}
-
-	// 启动生产者任务
-	l.producerTask = job.NewTask().
-		SetThread(l.producerThreadNum).
-		SetProducer(func(ctx context.Context, channel chan interface{}) error {
-			l.producer = channel
-			<-ctx.Done() // 等待上下文取消
-			return ctx.Err()
-		}).
-		SetConsumer(func(ctx context.Context, param interface{}) error {
-			l.Try(func() {
-				marshal, e := json.Marshal(param)
-				if e == nil {
-					_, e = l.topic.SendMsg(l.name, string(marshal))
-				}
-			}, nil)
-			return nil
-		})
-
-	if err := l.producerTask.Start(); err != nil {
-		return err
-	}
-
-	err := l.topic.ListenReceiveMsgDo(l.name, func(mqMsg MqMsg) {
-		l.consumer <- mqMsg.Body
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// SendTask 发送任务
+// SendTask 发送任务（内部使用）
 func (l *Client) SendTask(param interface{}) {
 	l.producer <- param
+}
+
+// SendUnicastTask 发送单播任务
+func (l *Client) SendUnicastTask(param interface{}) {
+	marshal, e := json.Marshal(param)
+	if e == nil {
+		_, _ = l.topic.SendUnicast(l.name, string(marshal))
+	}
+}
+
+// SendBroadcastTask 发送广播任务
+func (l *Client) SendBroadcastTask(param interface{}) {
+	marshal, e := json.Marshal(param)
+	if e == nil {
+		_, _ = l.topic.SendBroadcast(l.name, string(marshal))
+	}
 }
 
 // Stop 停止客户端
@@ -150,11 +108,8 @@ func (l *Client) GetProducerStats() job.TaskStats {
 	return l.producerTask.GetStats()
 }
 
-// register 注册消息队列实例
-// topicName 队列名称
-// producerThreadNum 发送者协程数量
-// consumerThreadNum 消费者协程数量
-func register(queue Queue, topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string)) (*Client, error) {
+// registerUnicast 注册单播消息队列实例
+func registerUnicast(queue Queue, topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string)) (*Client, error) {
 	if topicName == "" {
 		return nil, errors.New("队列名称不能为空")
 	}
@@ -164,6 +119,7 @@ func register(queue Queue, topicName string, producerThreadNum int, consumerThre
 	if consumerThreadNum <= 0 {
 		return nil, errors.New("消费者协程数量必须大于0")
 	}
+
 	ins := &Client{
 		topic:             queue,
 		name:              topicName,
@@ -171,47 +127,187 @@ func register(queue Queue, topicName string, producerThreadNum int, consumerThre
 		consumerThreadNum: consumerThreadNum,
 		consumerFunc:      consumerFunc,
 	}
-	err := ins.run()
-	if err != nil {
-		return nil, errors.New("启动" + topicName + "消费实例失败")
+
+	ins.consumer = make(chan interface{}, 10000)
+	ins.producer = make(chan interface{}, 10000)
+
+	// 启动消费者任务
+	ins.consumerTask = job.NewTask().
+		SetThread(consumerThreadNum).
+		SetProducer(func(ctx context.Context, channel chan interface{}) error {
+			ins.consumer = channel
+			<-ctx.Done()
+			return ctx.Err()
+		}).
+		SetConsumer(func(ctx context.Context, param interface{}) error {
+			ins.Try(func() {
+				ins.consumerFunc(param.(string))
+			}, nil)
+			return nil
+		})
+
+	if err := ins.consumerTask.Start(); err != nil {
+		return nil, err
 	}
+
+	// 启动生产者任务
+	ins.producerTask = job.NewTask().
+		SetThread(producerThreadNum).
+		SetProducer(func(ctx context.Context, channel chan interface{}) error {
+			ins.producer = channel
+			<-ctx.Done()
+			return ctx.Err()
+		}).
+		SetConsumer(func(ctx context.Context, param interface{}) error {
+			ins.Try(func() {
+				body, ok := param.(string)
+				if ok {
+					_, _ = queue.SendUnicast(topicName, body)
+				}
+			}, nil)
+			return nil
+		})
+
+	if err := ins.producerTask.Start(); err != nil {
+		return nil, err
+	}
+
+	// 监听单播消息
+	err := queue.ListenReceiveUnicast(topicName, func(mqMsg MqMsg) {
+		ins.consumer <- mqMsg.Body
+	})
+	if err != nil {
+		return nil, errors.New("启动" + topicName + "单播消费实例失败: " + err.Error())
+	}
+
 	return ins, nil
 }
 
-// RegisterMemory 注册redis消息队列实例
-// topicName 队列名称
-// producerThreadNum 发送者协程数量
-// consumerThreadNum 消费者协程数量
-func RegisterMemory(topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string)) (*Client, error) {
-	topic, err := RegisterMemoryQueueClient(100) //注册消费实例
+// RegisterMemoryUnicast 注册内存单播消息队列实例
+func RegisterMemoryUnicast(topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string)) (*Client, error) {
+	topic, err := RegisterMemoryQueueClient()
 	if err != nil {
-		return nil, errors.New("注册" + topicName + "消费实例失败")
+		return nil, errors.New("注册" + topicName + "单播消费实例失败")
 	}
-	return register(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
+	return registerUnicast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
 }
 
-// RegisterRedis 注册redis消息队列实例
-// topicName 队列名称
-// producerThreadNum 发送者协程数量
-// consumerThreadNum 消费者协程数量
-func RegisterRedis(topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string)) (*Client, error) {
-	topic, err := RegisterRedisQueueClient(global.Redis.GetClient()) //注册消费实例
+// RegisterRedisUnicast 注册Redis单播消息队列实例
+func RegisterRedisUnicast(topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string)) (*Client, error) {
+	topic, err := RegisterRedisQueueClient(global.Redis.GetClient())
 	if err != nil {
-		return nil, errors.New("注册" + topicName + "消费实例失败")
+		return nil, errors.New("注册" + topicName + "单播消费实例失败")
 	}
-	return register(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
+	return registerUnicast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
 }
 
-// RegisterNats 注册NATS消息队列实例
-// topicName 队列名称
-// producerThreadNum 发送者协程数量
-// consumerThreadNum 消费者协程数量
-// natsURL NATS服务器地址 (如: nats://localhost:4222)
-// options NATS连接选项 (可选)
-func RegisterNats(topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string), natsURL string, options ...interface{}) (*Client, error) {
-	topic, err := RegisterNatsQueueClient(natsURL, options...) //注册消费实例
+// RegisterNatsUnicast 注册NATS单播消息队列实例
+func RegisterNatsUnicast(topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string), natsURL string, options ...interface{}) (*Client, error) {
+	topic, err := RegisterNatsQueueClient(natsURL, options...)
 	if err != nil {
-		return nil, errors.New("注册" + topicName + "消费实例失败: " + err.Error())
+		return nil, errors.New("注册" + topicName + "单播消费实例失败: " + err.Error())
 	}
-	return register(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
+	return registerUnicast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
+}
+
+// registerBroadcast 注册广播消息队列实例
+func registerBroadcast(queue Queue, topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string)) (*Client, error) {
+	if topicName == "" {
+		return nil, errors.New("队列名称不能为空")
+	}
+	if producerThreadNum <= 0 {
+		return nil, errors.New("发送者协程数量必须大于0")
+	}
+	if consumerThreadNum <= 0 {
+		return nil, errors.New("消费者协程数量必须大于0")
+	}
+
+	ins := &Client{
+		topic:             queue,
+		name:              topicName,
+		producerThreadNum: producerThreadNum,
+		consumerThreadNum: consumerThreadNum,
+		consumerFunc:      consumerFunc,
+	}
+
+	ins.consumer = make(chan interface{}, 10000)
+	ins.producer = make(chan interface{}, 10000)
+
+	// 启动消费者任务
+	ins.consumerTask = job.NewTask().
+		SetThread(consumerThreadNum).
+		SetProducer(func(ctx context.Context, channel chan interface{}) error {
+			ins.consumer = channel
+			<-ctx.Done()
+			return ctx.Err()
+		}).
+		SetConsumer(func(ctx context.Context, param interface{}) error {
+			ins.Try(func() {
+				ins.consumerFunc(param.(string))
+			}, nil)
+			return nil
+		})
+
+	if err := ins.consumerTask.Start(); err != nil {
+		return nil, err
+	}
+
+	// 启动生产者任务
+	ins.producerTask = job.NewTask().
+		SetThread(producerThreadNum).
+		SetProducer(func(ctx context.Context, channel chan interface{}) error {
+			ins.producer = channel
+			<-ctx.Done()
+			return ctx.Err()
+		}).
+		SetConsumer(func(ctx context.Context, param interface{}) error {
+			ins.Try(func() {
+				body, ok := param.(string)
+				if ok {
+					_, _ = queue.SendBroadcast(topicName, body)
+				}
+			}, nil)
+			return nil
+		})
+
+	if err := ins.producerTask.Start(); err != nil {
+		return nil, err
+	}
+
+	// 监听广播消息
+	err := queue.ListenReceiveBroadcast(topicName, func(mqMsg MqMsg) {
+		ins.consumer <- mqMsg.Body
+	})
+	if err != nil {
+		return nil, errors.New("启动" + topicName + "广播消费实例失败: " + err.Error())
+	}
+
+	return ins, nil
+}
+
+// RegisterMemoryBroadcast 注册内存广播消息队列实例
+func RegisterMemoryBroadcast(topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string)) (*Client, error) {
+	topic, err := RegisterMemoryQueueClient()
+	if err != nil {
+		return nil, errors.New("注册" + topicName + "广播消费实例失败")
+	}
+	return registerBroadcast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
+}
+
+// RegisterRedisBroadcast 注册Redis广播消息队列实例
+func RegisterRedisBroadcast(topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string)) (*Client, error) {
+	topic, err := RegisterRedisQueueClient(global.Redis.GetClient())
+	if err != nil {
+		return nil, errors.New("注册" + topicName + "广播消费实例失败")
+	}
+	return registerBroadcast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
+}
+
+// RegisterNatsBroadcast 注册NATS广播消息队列实例
+func RegisterNatsBroadcast(topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param string), natsURL string, options ...interface{}) (*Client, error) {
+	topic, err := RegisterNatsQueueClient(natsURL, options...)
+	if err != nil {
+		return nil, errors.New("注册" + topicName + "广播消费实例失败: " + err.Error())
+	}
+	return registerBroadcast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
 }

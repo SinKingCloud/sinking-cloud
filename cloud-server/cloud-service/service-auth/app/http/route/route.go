@@ -10,7 +10,6 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/http"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
@@ -19,7 +18,6 @@ func Init() {
 	host, port := global.ServerAddr()
 	addr := host + ":" + strconv.Itoa(port)
 	r := http.NewServer(addr, global.IsDebug()).Handle(func(engine *sinking_web.Engine) {
-		rpc.RegisterHandle(engine)
 		engine.Use(context.HandleFunc(middleware.InterceptIllegalRequest))
 		loadApp(engine)
 	})

@@ -1,0 +1,14 @@
+package service
+
+import (
+	"service-admin/app/repository"
+	"service-admin/app/service/config"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
+)
+
+var Config config.Service
+
+func Init() {
+	Config = config.NewService(repository.NewConfig(global.Database), global.Cache)
+}

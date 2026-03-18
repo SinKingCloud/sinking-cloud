@@ -1,0 +1,6 @@
+package constant
+
+const (
+	LockConfigSet     = "ConfigSet_"  //修改配置并发锁
+	LockTimeConfigSet = 1 * 60 * 1000 //修改配置并发锁最大时间
+)
