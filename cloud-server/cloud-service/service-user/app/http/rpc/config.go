@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"service-user/app/service"
 
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/rpc/config"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/config"
 )
 
 type configService struct {
