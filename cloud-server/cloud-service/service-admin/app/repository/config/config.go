@@ -16,10 +16,10 @@ func (r *Repository) FindByIdentIdAndKey(identId, key string) ([]*model.Config, 
 	var configs []*model.Config
 	query := r.Database.Db.Model(&model.Config{})
 	if identId != "" {
-		query = query.Where("`ident_id` = ?", identId)
+		query = query.Where("ident_id = ?", identId)
 	}
 	if key != "" {
-		query = query.Where("`key` like ?", key+"%")
+		query = query.Where("key like ?", key+"%")
 	}
 	err := query.Find(&configs).Error
 	return configs, err
@@ -27,7 +27,7 @@ func (r *Repository) FindByIdentIdAndKey(identId, key string) ([]*model.Config, 
 
 // UpdateByIdentIdAndKey 更新配置
 func (r *Repository) UpdateByIdentIdAndKey(identId, key, value string) (int64, error) {
-	result := r.Database.Db.Model(&model.Config{}).Where("`ident_id` = ? and `key` = ?", identId, key).Update("value", value)
+	result := r.Database.Db.Model(&model.Config{}).Where("ident_id = ? and key = ?", identId, key).Update("value", value)
 	return result.RowsAffected, result.Error
 }
 

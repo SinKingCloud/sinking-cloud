@@ -6,5 +6,5 @@ import (
 )
 
 func Load() {
-	bootstrap.Load(constant.ServiceAuth)
+	bootstrap.Load(constant.ServiceUser)
 }

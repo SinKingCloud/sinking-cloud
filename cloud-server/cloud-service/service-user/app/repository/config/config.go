@@ -16,10 +16,10 @@ func (r *Repository) FindByUserIdAndKey(userId int64, key string) ([]*model.Conf
 	var configs []*model.Config
 	query := r.Database.Db.Model(&model.Config{})
 	if userId > 0 {
-		query = query.Where("`user_id` = ?", userId)
+		query = query.Where("user_id = ?", userId)
 	}
 	if key != "" {
-		query = query.Where("`key` like ?", key+"%")
+		query = query.Where("key like ?", key+"%")
 	}
 	err := query.Find(&configs).Error
 	return configs, err
@@ -27,7 +27,7 @@ func (r *Repository) FindByUserIdAndKey(userId int64, key string) ([]*model.Conf
 
 // UpdateByUserIdAndKey 更新配置
 func (r *Repository) UpdateByUserIdAndKey(userId int64, key string, value string) (int64, error) {
-	result := r.Database.Db.Model(&model.Config{}).Where("`user_id` = ? and `key` = ?", userId, key).Update("value", value)
+	result := r.Database.Db.Model(&model.Config{}).Where("user_id = ? and key = ?", userId, key).Update("value", value)
 	return result.RowsAffected, result.Error
 }
 

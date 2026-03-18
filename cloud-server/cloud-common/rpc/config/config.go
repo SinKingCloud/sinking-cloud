@@ -16,20 +16,23 @@ func (*Object) GetSystemUserConfig(userId int64, group string, refresh bool) (co
 		Refresh: refresh,
 	}, &config)
 	if err != nil {
-		return nil
+		return map[string]string{}
 	}
 	return config
 }
 
 // SetSystemUserConfig 设置用户配置
-func (*Object) SetSystemUserConfig(userId int64, group string, key string, value string) bool {
+func (*Object) SetSystemUserConfig(userId int64, group string, key string, value string) (result bool) {
 	err := rpc.InvokeFunc(constant.ServiceAdmin, "SetUserConfig", &SetSystemUserConfigParam{
 		UserId: userId,
 		Group:  group,
 		Key:    key,
 		Value:  value,
-	}, nil)
-	return err == nil
+	}, &result)
+	if err != nil {
+		return false
+	}
+	return result
 }
 
 // SetSystemUserConfigs 批量设置用户配置
@@ -49,18 +52,21 @@ func (*Object) GetSystemConfig(group string, refresh bool) (config map[string]st
 		Refresh: refresh,
 	}, &config)
 	if err != nil {
-		return nil
+		return map[string]string{}
 	}
 	return config
 }
 
 // SetSystemConfig 设置系统配置
-func (*Object) SetSystemConfig(key string, value string) bool {
+func (*Object) SetSystemConfig(key string, value string) (result bool) {
 	err := rpc.InvokeFunc(constant.ServiceAdmin, "SetSystemConfig", &SetSystemConfigParam{
 		Key:   key,
 		Value: value,
-	}, nil)
-	return err == nil
+	}, &result)
+	if err != nil {
+		return false
+	}
+	return result
 }
 
 // SetSystemConfigs 批量设置系统配置
@@ -79,20 +85,23 @@ func (*Object) GetWebUserConfig(userId int64, group string, refresh bool) (confi
 		Refresh: refresh,
 	}, &config)
 	if err != nil {
-		return nil
+		return map[string]string{}
 	}
 	return config
 }
 
 // SetWebUserConfig 设置用户配置
-func (*Object) SetWebUserConfig(userId int64, group string, key string, value string) bool {
+func (*Object) SetWebUserConfig(userId int64, group string, key string, value string) (result bool) {
 	err := rpc.InvokeFunc(constant.ServiceUser, "SetUserConfig", &SetWebUserConfigParam{
 		UserId: userId,
 		Group:  group,
 		Key:    key,
 		Value:  value,
-	}, nil)
-	return err == nil
+	}, &result)
+	if err != nil {
+		return false
+	}
+	return result
 }
 
 // SetWebUserConfigs 批量设置用户配置
