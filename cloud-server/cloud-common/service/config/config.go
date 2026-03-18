@@ -6,6 +6,8 @@ import (
 
 // Service 单例对象
 type Service struct {
+	// systemConfigLock 系统配置缓存锁
+	systemConfigLock sync.RWMutex
 }
 
 // obj 单例对象
