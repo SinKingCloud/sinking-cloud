@@ -1,9 +1,5 @@
 package config
 
-import (
-	"service-user/app/model"
-)
-
 // selectWithUserIDAndKey 获取配置数据
 func (s *service) selectWithUserIDAndKey(userId int64, key string) map[string]string {
 	configs, err := s.repo.FindByUserIdAndKey(userId, key)
