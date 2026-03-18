@@ -1,5 +1,5 @@
 package rpc
 
 var (
-	Config = &config{}
+	Config = &configService{}
 )

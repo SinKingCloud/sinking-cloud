@@ -3,18 +3,16 @@ package rpc
 import (
 	"encoding/json"
 	"service-admin/app/service"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/rpc/config"
 )
 
-type config struct {
+type configService struct {
 }
 
 // GetUserConfig 获取用户配置
-func (config) GetUserConfig(params json.RawMessage) (interface{}, error) {
-	var param struct {
-		UserId  int64
-		Group   string
-		Refresh bool
-	}
+func (*configService) GetUserConfig(params json.RawMessage) (interface{}, error) {
+	var param *config.GetSystemUserConfigParam
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return nil, err
@@ -23,13 +21,8 @@ func (config) GetUserConfig(params json.RawMessage) (interface{}, error) {
 }
 
 // SetUserConfig 设置用户配置
-func (config) SetUserConfig(params json.RawMessage) (interface{}, error) {
-	var param struct {
-		UserId int64
-		Group  string
-		Key    string
-		Value  string
-	}
+func (*configService) SetUserConfig(params json.RawMessage) (interface{}, error) {
+	var param *config.SetSystemUserConfigParam
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return nil, err
@@ -38,12 +31,8 @@ func (config) SetUserConfig(params json.RawMessage) (interface{}, error) {
 }
 
 // SetUserConfigs 批量设置用户配置
-func (config) SetUserConfigs(params json.RawMessage) (interface{}, error) {
-	var param struct {
-		UserId int64
-		Group  string
-		Data   map[string]string
-	}
+func (*configService) SetUserConfigs(params json.RawMessage) (interface{}, error) {
+	var param *config.SetSystemUserConfigsParam
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return nil, err
@@ -53,11 +42,8 @@ func (config) SetUserConfigs(params json.RawMessage) (interface{}, error) {
 }
 
 // GetSystemConfig 获取系统配置
-func (config) GetSystemConfig(params json.RawMessage) (interface{}, error) {
-	var param struct {
-		Group   string
-		Refresh bool
-	}
+func (*configService) GetSystemConfig(params json.RawMessage) (interface{}, error) {
+	var param *config.GetSystemConfigParam
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return nil, err
@@ -66,11 +52,8 @@ func (config) GetSystemConfig(params json.RawMessage) (interface{}, error) {
 }
 
 // SetSystemConfig 设置系统配置
-func (config) SetSystemConfig(params json.RawMessage) (interface{}, error) {
-	var param struct {
-		Key   string
-		Value string
-	}
+func (*configService) SetSystemConfig(params json.RawMessage) (interface{}, error) {
+	var param *config.SetSystemConfigParam
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return nil, err
@@ -79,10 +62,8 @@ func (config) SetSystemConfig(params json.RawMessage) (interface{}, error) {
 }
 
 // SetSystemConfigs 批量设置系统配置
-func (config) SetSystemConfigs(params json.RawMessage) (interface{}, error) {
-	var param struct {
-		Data map[string]string
-	}
+func (*configService) SetSystemConfigs(params json.RawMessage) (interface{}, error) {
+	var param *config.SetSystemConfigsParam
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return nil, err

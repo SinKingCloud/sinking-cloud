@@ -3,18 +3,16 @@ package rpc
 import (
 	"encoding/json"
 	"service-user/app/service"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/rpc/config"
 )
 
-type config struct {
+type configService struct {
 }
 
 // GetUserConfig 获取用户配置
-func (config) GetUserConfig(params json.RawMessage) (interface{}, error) {
-	var param struct {
-		UserId  int64
-		Group   string
-		Refresh bool
-	}
+func (*configService) GetUserConfig(params json.RawMessage) (interface{}, error) {
+	var param *config.GetWebUserConfigParam
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return nil, err
@@ -23,13 +21,8 @@ func (config) GetUserConfig(params json.RawMessage) (interface{}, error) {
 }
 
 // SetUserConfig 设置用户配置
-func (config) SetUserConfig(params json.RawMessage) (interface{}, error) {
-	var param struct {
-		UserId int64
-		Group  string
-		Key    string
-		Value  string
-	}
+func (*configService) SetUserConfig(params json.RawMessage) (interface{}, error) {
+	var param *config.SetWebUserConfigParam
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return nil, err
@@ -38,12 +31,8 @@ func (config) SetUserConfig(params json.RawMessage) (interface{}, error) {
 }
 
 // SetUserConfigs 批量设置用户配置
-func (config) SetUserConfigs(params json.RawMessage) (interface{}, error) {
-	var param struct {
-		UserId int64
-		Group  string
-		Data   map[string]string
-	}
+func (*configService) SetUserConfigs(params json.RawMessage) (interface{}, error) {
+	var param *config.SetWebUserConfigsParam
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return nil, err
