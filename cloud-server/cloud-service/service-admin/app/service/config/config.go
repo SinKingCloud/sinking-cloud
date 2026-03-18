@@ -8,15 +8,15 @@ import (
 
 // service 注入结构
 type service struct {
-	repo  repository.Config
-	cache cache.Interface
+	repository repository.Config
+	cache      cache.Interface
 }
 
 // NewService 实例化service
 func NewService(repo repository.Config, cache cache.Interface) *service {
 	return &service{
-		repo:  repo,
-		cache: cache,
+		repository: repo,
+		cache:      cache,
 	}
 }
 

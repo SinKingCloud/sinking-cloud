@@ -2,7 +2,7 @@ package config
 
 // selectWithUserIDAndKey 获取配置数据
 func (s *service) selectWithUserIDAndKey(userId int64, key string) map[string]string {
-	configs, err := s.repo.FindByUserIdAndKey(userId, key)
+	configs, err := s.repository.FindByUserIdAndKey(userId, key)
 	temp := make(map[string]string)
 	if err != nil {
 		return temp
