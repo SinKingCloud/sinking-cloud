@@ -8,8 +8,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 )
 
-// GetSystemConfigWithCache 获取系统配置（带缓存）
-func (s *Service) GetSystemConfigWithCache(group string, refresh bool) map[string]string {
+// GetSystemConfig 获取系统配置（带缓存）
+func (s *Service) GetSystemConfig(group string, refresh bool) map[string]string {
 	key := constant.SystemConfigCacheName + group
 	if !refresh {
 		// 尝试从缓存获取
@@ -35,7 +35,7 @@ func (s *Service) GetSystemConfigWithCache(group string, refresh bool) map[strin
 			}
 		}
 	}
-	config := s.GetSystemConfig(group, false)
+	config := s.getSystemConfig(group, false)
 	if len(config) > 0 {
 		b, _ := json.Marshal(config)
 		global.App.Cache.SetWithExpire(key, string(b), int64(constant.SystemConfigCacheTime))
@@ -43,8 +43,8 @@ func (s *Service) GetSystemConfigWithCache(group string, refresh bool) map[strin
 	return config
 }
 
-// GetSystemUserConfigWithCache 获取系统用户配置（带缓存）
-func (s *Service) GetSystemUserConfigWithCache(userId int64, group string, refresh bool) map[string]string {
+// GetSystemUserConfig 获取系统用户配置（带缓存）
+func (s *Service) GetSystemUserConfig(userId int64, group string, refresh bool) map[string]string {
 	key := constant.SystemUserConfigCacheName + strconv.FormatInt(userId, 10) + ":" + group
 	if !refresh {
 		if val, ok := global.App.Cache.Get(key); ok {
@@ -54,7 +54,7 @@ func (s *Service) GetSystemUserConfigWithCache(userId int64, group string, refre
 			}
 		}
 	}
-	config := s.GetSystemUserConfig(userId, group, false)
+	config := s.getSystemUserConfig(userId, group, false)
 	if len(config) > 0 {
 		b, _ := json.Marshal(config)
 		global.App.Cache.SetWithExpire(key, string(b), int64(constant.SystemUserConfigCacheTime))
@@ -62,8 +62,8 @@ func (s *Service) GetSystemUserConfigWithCache(userId int64, group string, refre
 	return config
 }
 
-// GetWebUserConfigWithCache 获取Web用户配置（带缓存）
-func (s *Service) GetWebUserConfigWithCache(userId int64, group string, refresh bool) map[string]string {
+// GetWebUserConfig 获取Web用户配置（带缓存）
+func (s *Service) GetWebUserConfig(userId int64, group string, refresh bool) map[string]string {
 	key := constant.WebUserConfigCacheName + strconv.FormatInt(userId, 10) + ":" + group
 	if !refresh {
 		if val, ok := global.App.Cache.Get(key); ok {
@@ -73,7 +73,7 @@ func (s *Service) GetWebUserConfigWithCache(userId int64, group string, refresh 
 			}
 		}
 	}
-	config := s.GetWebUserConfig(userId, group, false)
+	config := s.getWebUserConfig(userId, group, false)
 	if len(config) > 0 {
 		b, _ := json.Marshal(config)
 		global.App.Cache.SetWithExpire(key, string(b), int64(constant.WebUserConfigCacheTime))
