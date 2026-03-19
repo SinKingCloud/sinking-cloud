@@ -15,6 +15,13 @@ func InterceptIllegalRequest(c *context.Context) {
 		c.Next()
 		return
 	}
+	//本地服务名称
+	localService := global.App.Consul.GetName()
+	//网关服务则直接放行
+	if localService == constant.ServiceGateway {
+		c.Next()
+		return
+	}
 	//其他请求来源则禁止
 	token := c.Request.Header.Get(constant.RpcTokenName)
 	originService := c.Request.Header.Get(constant.RpcOriginService)
@@ -24,8 +31,6 @@ func InterceptIllegalRequest(c *context.Context) {
 		c.NotAllow("无权限", nil)
 		return
 	}
-	//本地服务名称
-	localService := global.App.Consul.GetName()
 	//获取第一个请求路径
 	parts := strings.SplitN(strings.TrimPrefix(c.Request.URL.Path, "/"), "/", 2)
 	var firstPath string

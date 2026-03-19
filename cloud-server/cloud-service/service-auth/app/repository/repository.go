@@ -10,10 +10,6 @@ import (
 // Session Session仓储接口
 type Session interface {
 	FindByToken(token string) (*model.Session, error)
-	FindByUserIdAndType(userId int64, userType int) ([]*model.Session, error)
-	Create(session *model.Session) error
-	Delete(token string) error
-	DeleteByUserId(userId int64) error
 }
 
 // NewSession 创建Session仓储

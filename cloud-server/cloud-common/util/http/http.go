@@ -41,6 +41,9 @@ func (s *Server) init() {
 	}
 	s.engine = sinking_web.Default()
 	s.engine.SetDebugMode(s.debug)
+	if s.debug {
+		s.engine.Use(sinking_web.Logger())
+	}
 	if s.errorHandle != nil {
 		s.engine.SetErrorHandle(s.errorHandle)
 	} else {

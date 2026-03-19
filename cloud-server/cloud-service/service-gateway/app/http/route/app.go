@@ -1,79 +1,27 @@
 package route
 
 import (
-	"net/http"
-	"net/http/httputil"
-	"strings"
+	"service-gateway/app/http/controller"
 
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
-	"github.com/SinKingCloud/sinking-go/sinking-consul/client"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 // loadApp 加载app路由
 func loadApp(s *sinking_web.Engine) {
 	loadMiddleware(s)
-	loadGateway(s)
+	loadApi(s)
 }
 
 // loadMiddleware 中间件
 func loadMiddleware(s *sinking_web.Engine) {
-	s.Use(context.HandleFunc(middleware.Cors), context.HandleFunc(middleware.Log))
+	s.Use(context.HandleFunc(middleware.Cors))
 }
 
-// loadGateway 网关路由
-func loadGateway(s *sinking_web.Engine) {
-	handle := context.HandleFunc(func(c *context.Context) {
-		path := c.Request.URL.Path
-		trimmedPath := strings.TrimPrefix(path, "/")
-		parts := strings.SplitN(trimmedPath, "/", 2)
-		var serviceName, targetPath string
-		switch len(parts) {
-		case 1:
-			serviceName += parts[0]
-		case 2:
-			serviceName += parts[0]
-			targetPath = parts[1]
-		}
-		serviceName = strings.ToLower(serviceName)
-		if serviceName == "" || serviceName == constant.ServiceGateway {
-			c.Error("获取服务节点失败: 服务不存在")
-			c.Abort()
-			return
-		}
-		clientIp := c.ClientIP(true)
-		if clientIp == "" {
-			clientIp = c.ClientIP(false)
-		}
-		node, err := global.App.Consul.GetService(serviceName, client.Hash, clientIp)
-		if err != nil {
-			c.Error("获取服务节点失败: " + err.Error())
-			c.Abort()
-			return
-		}
-		address := node.Address
-		var url, tempPath string
-		tempPath = c.Request.URL.Path
-		if strings.ToLower(c.Request.Header.Get("Connection")) == "upgrade" && strings.ToLower(c.Request.Header.Get("Upgrade")) == "websocket" {
-			url = "ws://" + address
-		} else {
-			url = "http://" + address
-		}
-		_ = c.Proxy(url, nil, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
-			r.URL.Path, r.URL.RawPath, r.RequestURI = targetPath, targetPath, targetPath
-			r.Header.Set("X-Forwarded-For", clientIp)
-			r.Header.Set("X-Real-Ip", clientIp)
-			r.Header.Set("X-Forwarded-Host", r.Host)
-			r.Header.Set(constant.RpcTokenName, global.App.Config.GetString(constant.ConsulToken))
-			r.Header.Set(constant.RpcOriginService, constant.ServiceGateway)
-			r.Header.Set(constant.RpcOriginAddress, address)
-			r.Header.Set(constant.RequestId, c.GetRequestId())
-		}, nil)
-		c.Request.URL.Path = tempPath
-	})
-	s.ANY("/*", handle)
-	s.ANY("/", handle)
+// loadApi api路由
+func loadApi(s *sinking_web.Engine) {
+	s.ANY("/enum", context.HandleFunc(controller.Enum))
+	s.ANY("/*", context.HandleFunc(controller.Gateway))
+	s.ANY("/", context.HandleFunc(controller.Gateway))
 }

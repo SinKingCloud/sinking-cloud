@@ -40,9 +40,9 @@ func (s *service) setConfig(identId string, key string, value string) bool {
 		return false
 	}
 	defer s.cache.UnLock(lock)
-	rowsAffected, err := s.repository.UpdateByIdentIdAndKey(identId, key, value)
+	rowsAffected, err := s.repositoryConfig.UpdateByIdentIdAndKey(identId, key, value)
 	if err != nil || rowsAffected <= 0 {
-		err = s.repository.Create(&model.Config{
+		err = s.repositoryConfig.Create(&model.Config{
 			IdentId: identId,
 			Key:     key,
 			Value:   value,

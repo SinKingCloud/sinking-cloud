@@ -2,13 +2,13 @@ package service
 
 import (
 	"service-auth/app/repository"
-	"service-auth/app/service/session"
+	"service-auth/app/service/auth"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 )
 
-var Session *session.Service
+var Auth AuthService
 
 func Init() {
-	Session = session.NewService(repository.NewSession(global.App.Database))
+	Auth = auth.NewService(repository.NewSession(global.App.Database), global.App.Cache)
 }
