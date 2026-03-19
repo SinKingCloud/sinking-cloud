@@ -3,8 +3,8 @@ module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 go 1.25.0
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260314085352-05715728bbef
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260314085352-05715728bbef
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260319032637-64f4d640b0b5
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260319032637-64f4d640b0b5
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
@@ -84,5 +84,5 @@ require (
 	modernc.org/libc v1.70.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.46.1 // indirect
+	modernc.org/sqlite v1.47.0 // indirect
 )

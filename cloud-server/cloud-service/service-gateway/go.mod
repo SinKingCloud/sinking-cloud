@@ -4,8 +4,8 @@ go 1.25.0
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260314085352-05715728bbef
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260314085352-05715728bbef
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260319032637-64f4d640b0b5
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260319032637-64f4d640b0b5
 )
 
 require (
@@ -59,7 +59,7 @@ require (
 	modernc.org/libc v1.70.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.46.1 // indirect
+	modernc.org/sqlite v1.47.0 // indirect
 )
 
 replace github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common => ../../cloud-common
