@@ -1,5 +1,5 @@
 package rpc
 
 var (
-	Enum = &enumService{}
+	Auth = &authService{}
 )

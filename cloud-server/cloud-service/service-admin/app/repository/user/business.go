@@ -1,0 +1,25 @@
+package user
+
+import (
+	"errors"
+	"service-admin/app/model"
+
+	"gorm.io/gorm"
+)
+
+// FindByIdentifier 根据标识（手机号/邮箱/账户名）查询用户
+func (r *Repository) FindByIdentifier(identifier string) (*model.User, error) {
+	var user *model.User
+	err := r.Database.Db.
+		Where("phone = ? OR email = ? OR account = ?", identifier, identifier, identifier).
+		First(&user).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	return user, nil
+}
+
+// Create 创建用户
+func (r *Repository) Create(user *model.User) error {
+	return r.Database.Db.Create(user).Error
+}

@@ -1,82 +1,133 @@
 package config
 
 import (
-	"encoding/json"
-	"strconv"
-
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 )
 
-// GetSystemConfig 获取系统配置（带缓存）
-func (s *Service) GetSystemConfig(group string, refresh bool) map[string]string {
-	key := constant.SystemConfigCacheName + group
-	if !refresh {
-		// 尝试从缓存获取
-		s.systemConfigLock.RLock()
-		if val, ok := global.App.Cache.Get(key); ok {
-			s.systemConfigLock.RUnlock()
-			var config map[string]string
-			if err := json.Unmarshal([]byte(val), &config); err == nil {
-				return config
-			}
-		}
-		s.systemConfigLock.RUnlock()
-	}
-	// 缓存未命中或强制刷新，加写锁防止击穿
-	s.systemConfigLock.Lock()
-	defer s.systemConfigLock.Unlock()
-	// 双重检查
-	if !refresh {
-		if val, ok := global.App.Cache.Get(key); ok {
-			var config map[string]string
-			if err := json.Unmarshal([]byte(val), &config); err == nil {
-				return config
-			}
-		}
-	}
-	config := s.getSystemConfig(group, false)
-	if len(config) > 0 {
-		b, _ := json.Marshal(config)
-		global.App.Cache.SetWithExpire(key, string(b), int64(constant.SystemConfigCacheTime))
+// GetSystemUserConfig 获取系统用户配置
+func (*Service) GetSystemUserConfig(userId int64, group string, refresh bool) (config map[string]string) {
+	err := rpc.InvokeFunc(constant.ServiceAdmin, "GetUserConfig", &GetSystemUserConfigParam{
+		UserId:  userId,
+		Group:   group,
+		Refresh: refresh,
+	}, &config)
+	if err != nil {
+		return map[string]string{}
 	}
 	return config
 }
 
-// GetSystemUserConfig 获取系统用户配置（带缓存）
-func (s *Service) GetSystemUserConfig(userId int64, group string, refresh bool) map[string]string {
-	key := constant.SystemUserConfigCacheName + strconv.FormatInt(userId, 10) + ":" + group
-	if !refresh {
-		if val, ok := global.App.Cache.Get(key); ok {
-			var config map[string]string
-			if err := json.Unmarshal([]byte(val), &config); err == nil {
-				return config
-			}
-		}
+// SetSystemUserConfig 设置用户配置
+func (*Service) SetSystemUserConfig(userId int64, group string, key string, value string) (result bool) {
+	err := rpc.InvokeFunc(constant.ServiceAdmin, "SetUserConfig", &SetSystemUserConfigParam{
+		UserId: userId,
+		Group:  group,
+		Key:    key,
+		Value:  value,
+	}, &result)
+	if err != nil {
+		return false
 	}
-	config := s.getSystemUserConfig(userId, group, false)
-	if len(config) > 0 {
-		b, _ := json.Marshal(config)
-		global.App.Cache.SetWithExpire(key, string(b), int64(constant.SystemUserConfigCacheTime))
+	return result
+}
+
+// SetSystemUserConfigs 批量设置用户配置
+func (*Service) SetSystemUserConfigs(userId int64, group string, data map[string]string) bool {
+	err := rpc.InvokeFunc(constant.ServiceAdmin, "SetUserConfigs", &SetSystemUserConfigsParam{
+		UserId: userId,
+		Group:  group,
+		Data:   data,
+	}, nil)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// GetSystemConfig 获取系统配置
+func (*Service) GetSystemConfig(group string, refresh bool) (config map[string]string) {
+	err := rpc.InvokeFunc(constant.ServiceAdmin, "GetSystemConfig", &GetSystemConfigParam{
+		Group:   group,
+		Refresh: refresh,
+	}, &config)
+	if err != nil {
+		return map[string]string{}
 	}
 	return config
 }
 
-// GetWebUserConfig 获取Web用户配置（带缓存）
-func (s *Service) GetWebUserConfig(userId int64, group string, refresh bool) map[string]string {
-	key := constant.WebUserConfigCacheName + strconv.FormatInt(userId, 10) + ":" + group
-	if !refresh {
-		if val, ok := global.App.Cache.Get(key); ok {
-			var config map[string]string
-			if err := json.Unmarshal([]byte(val), &config); err == nil {
-				return config
-			}
-		}
-	}
-	config := s.getWebUserConfig(userId, group, false)
-	if len(config) > 0 {
-		b, _ := json.Marshal(config)
-		global.App.Cache.SetWithExpire(key, string(b), int64(constant.WebUserConfigCacheTime))
+// GetSystemConfigs 批量获取系统配置
+func (*Service) GetSystemConfigs(group []string, refresh bool) (config map[string]map[string]string) {
+	err := rpc.InvokeFunc(constant.ServiceAdmin, "GetSystemConfigs", &GetSystemConfigsParam{
+		Group:   group,
+		Refresh: refresh,
+	}, &config)
+	if err != nil {
+		return map[string]map[string]string{}
 	}
 	return config
+}
+
+// SetSystemConfig 设置系统配置
+func (*Service) SetSystemConfig(key string, value string) (result bool) {
+	err := rpc.InvokeFunc(constant.ServiceAdmin, "SetSystemConfig", &SetSystemConfigParam{
+		Key:   key,
+		Value: value,
+	}, &result)
+	if err != nil {
+		return false
+	}
+	return result
+}
+
+// SetSystemConfigs 批量设置系统配置
+func (*Service) SetSystemConfigs(data map[string]string) bool {
+	err := rpc.InvokeFunc(constant.ServiceAdmin, "SetSystemConfigs", &SetSystemConfigsParam{
+		Data: data,
+	}, nil)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// GetWebUserConfig 获取系统用户配置
+func (*Service) GetWebUserConfig(userId int64, group string, refresh bool) (config map[string]string) {
+	err := rpc.InvokeFunc(constant.ServiceUser, "GetUserConfig", &GetWebUserConfigParam{
+		UserId:  userId,
+		Group:   group,
+		Refresh: refresh,
+	}, &config)
+	if err != nil {
+		return map[string]string{}
+	}
+	return config
+}
+
+// SetWebUserConfig 设置用户配置
+func (*Service) SetWebUserConfig(userId int64, group string, key string, value string) (result bool) {
+	err := rpc.InvokeFunc(constant.ServiceUser, "SetUserConfig", &SetWebUserConfigParam{
+		UserId: userId,
+		Group:  group,
+		Key:    key,
+		Value:  value,
+	}, &result)
+	if err != nil {
+		return false
+	}
+	return result
+}
+
+// SetWebUserConfigs 批量设置用户配置
+func (*Service) SetWebUserConfigs(userId int64, group string, data map[string]string) bool {
+	err := rpc.InvokeFunc(constant.ServiceUser, "SetUserConfigs", &SetWebUserConfigsParam{
+		UserId: userId,
+		Group:  group,
+		Data:   data,
+	}, nil)
+	if err != nil {
+		return false
+	}
+	return true
 }

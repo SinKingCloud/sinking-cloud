@@ -1,15 +1,15 @@
 package repository
 
 import (
-	"service-auth/app/model"
-	"service-auth/app/repository/session"
+	"service-user/app/model"
+	"service-user/app/repository/session"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
 )
 
 // Session Session仓储接口
 type Session interface {
-	FindByToken(token string) (*model.Session, error)
+	Create(session *model.Session) error
 }
 
 // NewSession 创建Session仓储

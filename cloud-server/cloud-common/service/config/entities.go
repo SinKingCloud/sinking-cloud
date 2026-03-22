@@ -50,6 +50,12 @@ type GetSystemConfigParam struct {
 	Refresh bool   // 是否强制刷新缓存
 }
 
+// GetSystemConfigsParam 批量获取系统配置请求参数
+type GetSystemConfigsParam struct {
+	Group   []string // 配置分组
+	Refresh bool     // 是否强制刷新缓存
+}
+
 // SetSystemConfigParam 设置系统配置请求参数
 type SetSystemConfigParam struct {
 	Key   string // 配置键

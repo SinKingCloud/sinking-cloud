@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"encoding/json"
-	"service-auth/app/enum"
+	"service-user/app/enum"
 )
 
 type enumService struct {

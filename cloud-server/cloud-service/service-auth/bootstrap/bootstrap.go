@@ -6,5 +6,8 @@ import (
 )
 
 func Load() {
-	bootstrap.Load(constant.ServiceAuth)
+	bootstrap.LoadLog()
+	bootstrap.LoadConf()
+	bootstrap.LoadConsul(constant.ServiceAuth)
+	bootstrap.LoadCache(constant.ServiceAuth)
 }

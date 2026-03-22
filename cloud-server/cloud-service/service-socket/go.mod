@@ -4,13 +4,13 @@ go 1.25.0
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260319032637-64f4d640b0b5
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260319045019-374b44cb9a38
 )
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
-	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260319032637-64f4d640b0b5 // indirect
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260319045019-374b44cb9a38 // indirect
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect

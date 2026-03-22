@@ -2,9 +2,8 @@ package captcha
 
 import (
 	"errors"
-	"log"
 
-	images "github.com/wenlng/go-captcha-assets/resources/images_v2"
+	"github.com/wenlng/go-captcha-assets/resources/imagesv2"
 	"github.com/wenlng/go-captcha-assets/resources/tiles"
 	"github.com/wenlng/go-captcha/v2/slide"
 )
@@ -13,16 +12,16 @@ var slideCapt slide.Captcha
 
 func init() {
 	builder := slide.NewBuilder(
-		slide.WithGenGraphNumber(1),
+		slide.WithGenGraphNumber(2),
 		slide.WithEnableGraphVerticalRandom(true),
 	)
-	img, err := images.GetImages()
+	img, err := imagesv2.GetImages()
 	if err != nil {
-		log.Fatalln(err)
+		return
 	}
 	graphs, err := tiles.GetTiles()
 	if err != nil {
-		log.Fatalln(err)
+		return
 	}
 	var newGraphs = make([]*slide.GraphImage, 0, len(graphs))
 	for i := 0; i < len(graphs); i++ {

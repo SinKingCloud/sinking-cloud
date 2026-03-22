@@ -21,6 +21,7 @@ func loadMiddleware(s *sinking_web.Engine) {
 
 // loadApi api路由
 func loadApi(s *sinking_web.Engine) {
+	s.ANY("/info", context.HandleFunc(controller.Info))
 	s.ANY("/enum", context.HandleFunc(controller.Enum))
 	s.ANY("/*", context.HandleFunc(controller.Gateway))
 	s.ANY("/", context.HandleFunc(controller.Gateway))

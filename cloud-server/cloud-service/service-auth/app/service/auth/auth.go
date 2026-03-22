@@ -1,21 +1,23 @@
 package auth
 
 import (
-	"service-auth/app/repository"
-
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/auth"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
 )
 
 // Session服务
 type service struct {
-	repositorySession repository.Session
-	cache             cache.Interface
+	cache         cache.Interface
+	configService *config.Service
+	authService   *auth.Service
 }
 
 // NewService 实例化service
-func NewService(repository repository.Session, cache cache.Interface) *service {
+func NewService(cache cache.Interface, configService *config.Service, authService *auth.Service) *service {
 	return &service{
-		repositorySession: repository,
-		cache:             cache,
+		cache:         cache,
+		configService: configService,
+		authService:   authService,
 	}
 }

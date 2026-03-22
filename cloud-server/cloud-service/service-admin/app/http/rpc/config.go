@@ -51,6 +51,20 @@ func (*configService) GetSystemConfig(params json.RawMessage) (interface{}, erro
 	return service.Config.GetSysConfigs(param.Group, param.Refresh), nil
 }
 
+// GetSystemConfigs 获取系统配置(批量)
+func (*configService) GetSystemConfigs(params json.RawMessage) (interface{}, error) {
+	var param *config.GetSystemConfigsParam
+	err := json.Unmarshal(params, &param)
+	if err != nil {
+		return nil, err
+	}
+	data := map[string]map[string]string{}
+	for _, v := range param.Group {
+		data[v] = service.Config.GetSysConfigs(v, param.Refresh)
+	}
+	return data, nil
+}
+
 // SetSystemConfig 设置系统配置
 func (*configService) SetSystemConfig(params json.RawMessage) (interface{}, error) {
 	var param *config.SetSystemConfigParam

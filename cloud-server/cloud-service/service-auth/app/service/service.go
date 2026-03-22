@@ -1,14 +1,18 @@
 package service
 
 import (
-	"service-auth/app/repository"
 	"service-auth/app/service/auth"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 )
 
 var Auth AuthService
 
 func Init() {
-	Auth = auth.NewService(repository.NewSession(global.App.Database), global.App.Cache)
+	cache := global.App.Cache
+	configService := service.Config
+	authService := service.Auth
+
+	Auth = auth.NewService(cache, configService, authService)
 }

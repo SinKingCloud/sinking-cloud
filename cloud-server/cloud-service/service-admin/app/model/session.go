@@ -11,7 +11,6 @@ import (
 type Session struct {
 	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	UserId     int64        `gorm:"column:user_id" json:"user_id"`
-	UserType   int          `gorm:"column:user_type" json:"user_type"`
 	Token      string       `gorm:"column:token" json:"token"`
 	Device     string       `gorm:"column:device" json:"device"`
 	Ip         string       `gorm:"column:ip" json:"ip"`

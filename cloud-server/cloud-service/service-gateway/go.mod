@@ -4,8 +4,8 @@ go 1.25.0
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260319032637-64f4d640b0b5
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260319032637-64f4d640b0b5
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260319045019-374b44cb9a38
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260319045019-374b44cb9a38
 )
 
 require (
