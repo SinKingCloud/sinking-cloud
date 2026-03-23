@@ -6,12 +6,13 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 )
 
 // InterceptIllegalRequest 拦截非法请求
 func InterceptIllegalRequest(c *context.Context) {
 	//RPC请求直接放行
-	if c.Request.URL.Path == "/"+constant.RpcRequestPath {
+	if rpc.IsRpcPath(c.Request.URL.Path) {
 		c.Next()
 		return
 	}
@@ -28,7 +29,7 @@ func InterceptIllegalRequest(c *context.Context) {
 	originAddress := c.Request.Header.Get(constant.RpcOriginAddress)
 	if token == "" || originService == "" || originAddress == "" || token != global.App.Config.GetString(constant.ConsulToken) {
 		c.Abort()
-		c.NotAllow("无权限", nil)
+		c.NotAllow("无权限")
 		return
 	}
 	//获取第一个请求路径
@@ -40,7 +41,7 @@ func InterceptIllegalRequest(c *context.Context) {
 	//如果是用户服务和后台服务请求自身或者网关则禁止
 	if (localService == constant.ServiceUser || localService == constant.ServiceAdmin) && (firstPath == localService || firstPath == constant.ServiceGateway) {
 		c.Abort()
-		c.NotAllow("无权限", nil)
+		c.NotAllow("无权限")
 		return
 	}
 	//如果是其他服务请求用户服务和后台服务路径并且来源不是用户服务和后台服务则禁止
@@ -49,7 +50,7 @@ func InterceptIllegalRequest(c *context.Context) {
 		(firstPath == constant.ServiceUser || firstPath == constant.ServiceAdmin) &&
 		(originService != constant.ServiceUser && originService != constant.ServiceAdmin) {
 		c.Abort()
-		c.NotAllow("无权限", nil)
+		c.NotAllow("无权限")
 		return
 	}
 	c.Next()

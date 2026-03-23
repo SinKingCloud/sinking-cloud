@@ -1,10 +1,9 @@
 package route
 
 import (
-	rpc2 "service-user/app/http/rpc"
+	"service-user/app/http/middleware"
 
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
@@ -16,16 +15,5 @@ func loadApp(s *sinking_web.Engine) {
 
 // loadMiddleware 中间件
 func loadMiddleware(s *sinking_web.Engine) {
-
-}
-
-// loadRpc 加载rpc
-func loadRpc(s *sinking_web.Engine) {
-	rpc.RegisterHandle(s)
-	rpc.RegisterFunc(constant.RpcGetEnumDataFunName, rpc2.Enum.GetData) //获取枚举配置
-	rpc.RegisterFunc("GetUserConfig", rpc2.Config.GetUserConfig)        //获取用户配置
-	rpc.RegisterFunc("SetUserConfig", rpc2.Config.SetUserConfig)        //更新用户配置
-	rpc.RegisterFunc("SetUserConfigs", rpc2.Config.SetUserConfigs)      //批量更新用户配置
-	rpc.RegisterFunc("Login", rpc2.Auth.Login)                          //账号登录
-	rpc.RegisterFunc("Logout", rpc2.Auth.Logout)                        //登陆注销
+	s.Use(context.HandleFunc(middleware.CheckLogin)) //验证登陆
 }

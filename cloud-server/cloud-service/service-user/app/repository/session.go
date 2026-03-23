@@ -11,6 +11,7 @@ import (
 type Session interface {
 	Create(session *model.Session) error
 	DeleteByToken(token string) error
+	FindByToken(token string) (*model.Session, error)
 }
 
 // NewSession 创建Session仓储

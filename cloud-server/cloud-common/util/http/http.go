@@ -50,7 +50,7 @@ func (s *Server) init() {
 		s.engine.SetErrorHandle(&sinking_web.ErrorHandel{
 			NotFound: func(c *sinking_web.Context) {
 				ctx := context2.New(c)
-				ctx.Error("请求失败")
+				ctx.Error("请求资源不存在")
 			},
 			Fail: func(c *sinking_web.Context, code int, message string) {
 				ctx := context2.New(c)

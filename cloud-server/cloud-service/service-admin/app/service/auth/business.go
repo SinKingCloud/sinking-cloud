@@ -1,9 +1,11 @@
 package auth
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
+	constant2 "service-admin/app/constant"
 	"service-admin/app/model"
 	"strings"
 	"time"
@@ -67,6 +69,29 @@ func (s *service) Logout(token string) error {
 	return nil
 }
 
+// GetTokenInfo 根据token获取信息
+func (s *service) GetTokenInfo(token string) (*jwt.User, error) {
+	key := jwt.CheckToken(token)
+	if key == nil || key.User == nil || key.User.Id <= 0 || key.User.Token == "" {
+		return nil, errors.New("登陆超时,请重新登陆")
+	}
+	cacheKey := constant2.CacheNameWithSession + key.User.Token
+	if data, exists := s.cache.Get(cacheKey); exists && data != "" {
+		var session model.Session
+		if err := json.Unmarshal([]byte(data), &session); err == nil {
+			return key.User, nil
+		}
+	}
+	session, err := s.repositorySession.FindByToken(key.User.Token)
+	if err != nil || session == nil {
+		return nil, errors.New("登陆超时,请重新登陆")
+	}
+	if data, err := json.Marshal(session); err == nil {
+		s.cache.SetWithExpire(cacheKey, string(data), constant2.CacheTimeWithSession)
+	}
+	return key.User, nil
+}
+
 // GenLoginToken 创建会话
 func (s *service) genLoginToken(userId int64, userAgent string, ip string) (string, error) {
 	token := str.NewStringTool(str.GetSnowWorkIns().GetUuid()).Md5()
@@ -87,10 +112,10 @@ func (s *service) genLoginToken(userId int64, userAgent string, ip string) (stri
 		return "", err
 	}
 	jwtToken := jwt.GetToken(&jwt.User{
-		Id:         userId,
-		LoginToken: token,
-		LoginIp:    ip,
-		LoginTime:  str.DateTime(time.Now()),
+		Id:        userId,
+		Token:     token,
+		Ip:        ip,
+		LoginTime: str.DateTime(time.Now()),
 	}, constant.JwtExpireTime)
 	return jwtToken, nil
 }

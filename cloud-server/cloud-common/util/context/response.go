@@ -46,14 +46,14 @@ func (c *Context) ErrorWithData(message interface{}, data interface{}) {
 	c.response(ErrorCode, message, data)
 }
 
-func (c *Context) TokenError(message interface{}, data interface{}) {
-	c.response(TokenErrorCode, message, data)
+func (c *Context) TokenError(message interface{}) {
+	c.response(TokenErrorCode, message, nil)
 }
 
-func (c *Context) NotLogin(message interface{}, data interface{}) {
-	c.response(NotLoginCode, message, data)
+func (c *Context) NotLogin(message interface{}) {
+	c.response(NotLoginCode, message, nil)
 }
 
-func (c *Context) NotAllow(message interface{}, data interface{}) {
-	c.response(NotAllowCode, message, data)
+func (c *Context) NotAllow(message interface{}) {
+	c.response(NotAllowCode, message, nil)
 }
