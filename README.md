@@ -171,7 +171,7 @@ sinking-cloud/
 
 ```go
 // 调用 auth 服务的验证码验证
-result, err := rpc.Call("Auth.CheckCaptcha", map[string]interface{}{
+result, err := rpc.Call("Auth","CheckCaptcha", map[string]interface{}{
     "key": "xxx",
     "x":   100,
     "y":   50,
