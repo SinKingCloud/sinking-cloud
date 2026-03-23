@@ -5,17 +5,10 @@
 
 基于 Go 语言构建的微服务云应用框架，专为分布式、可扩展系统设计。
 
-[![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat&logo=go)](https://golang.org)
-[![Go Report](https://goreportcard.com/badge/github.com/SinKingCloud/sinking-cloud)](https://goreportcard.com/report/github.com/SinKingCloud/sinking-cloud)
-[![License](https://img.shields.io/github/license/SinKingCloud/sinking-cloud)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/SinKingCloud/sinking-cloud?style=flat)](https://github.com/SinKingCloud/sinking-cloud/stargazers)
-[![Forks](https://img.shields.io/github/forks/SinKingCloud/sinking-cloud?style=flat)](https://github.com/SinKingCloud/sinking-cloud/network/members)
-[![Contributors](https://img.shields.io/github/contributors/SinKingCloud/sinking-cloud?style=flat)](https://github.com/SinKingCloud/sinking-cloud/graphs/contributors)
-
-[![Last Commit](https://img.shields.io/github/last-commit/SinKingCloud/sinking-cloud/main)](https://github.com/SinKingCloud/sinking-cloud/commits/main)
-[![Release](https://img.shields.io/github/v/release/SinKingCloud/sinking-cloud?include_prereleases&label=release)](https://github.com/SinKingCloud/sinking-cloud/releases)
-[![Code Size](https://img.shields.io/github/languages/code-size/SinKingCloud/sinking-cloud)](https://github.com/SinKingCloud/sinking-cloud)
-[![Repo Size](https://img.shields.io/github/repo-size/SinKingCloud/sinking-cloud)](https://github.com/SinKingCloud/sinking-cloud)
+![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat&logo=go)
+![License](https://img.shields.io/github/license/SinKingCloud/sinking-cloud)
+![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-blue)
+![Architecture](https://img.shields.io/badge/Architecture-Microservices-green)
 
 </div>
 
@@ -73,9 +66,8 @@ Sinking-Cloud 是一个完整的微服务框架，提供认证、用户管理、
 | 技术 | 用途 |
 |------|------|
 | ![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat&logo=go) | 编程语言 |
-| ![sinking-go](https://img.shields.io/badge/sinking--go-框架-blue) | Web 框架 |
-| ![GORM](https://img.shields.io/badge/GORM-ORM-green) | ORM |
-| ![Redis](https://img.shields.io/badge/Redis-Cache-red) | 缓存 |
+| ![GORM](https://img.shields.io/badge/GORM-ORM-green) | ORM 框架 |
+| ![Redis](https://img.shields.io/badge/Redis-Cache-red) | 缓存层 |
 | ![Consul](https://img.shields.io/badge/Consul-Service%20Discovery-yellow) | 服务发现 |
 | ![NATS](https://img.shields.io/badge/NATS-Message%20Queue-green) | 消息队列 |
 | ![Alibaba Cloud](https://img.shields.io/badge/Alibaba%20Cloud-Cloud%20Services-orange) | 云服务 |
@@ -140,7 +132,7 @@ consul:
 # 启动 Consul
 consul agent -dev
 
-# 启动各服务（每个终端运行一个）
+# 启动各��务（每个终端运行一个）
 ./service-gateway/gateway
 ./service-auth/auth
 ./service-user/user
@@ -193,11 +185,3 @@ result, err := rpc.Call("Auth.CheckCaptcha", map[string]interface{}{
 ## 许可证
 
 本项目基于 MIT 许可证开源 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
----
-
-<div align="center">
-
-[![Star History](https://api.star-history.com/svg?repos=SinKingCloud/sinking-cloud&type=Date)](https://star-history.com/#SinKingCloud/sinking-cloud&Date)
-
-</div>
