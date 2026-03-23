@@ -1,7 +1,6 @@
 package jwt
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
@@ -47,13 +46,6 @@ func GetToken(user *User, expireTime int) string {
 		return ""
 	}
 	return token
-}
-
-// GetLoginToken 获取token
-func GetLoginToken(token string) map[string]string {
-	temp := make(map[string]string)
-	_ = json.Unmarshal([]byte(token), &temp)
-	return temp
 }
 
 // CheckToken 验证token

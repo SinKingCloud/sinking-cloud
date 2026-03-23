@@ -53,7 +53,7 @@ func Gateway(c *context.Context) {
 		r.Header.Set("X-Forwarded-Host", r.Host)
 		r.Header.Set(constant.RpcTokenName, global.App.Config.GetString(constant.ConsulToken))
 		r.Header.Set(constant.RpcOriginService, constant.ServiceGateway)
-		r.Header.Set(constant.RpcOriginAddress, address)
+		r.Header.Set(constant.RpcOriginAddress, global.App.Consul.GetAddress())
 		r.Header.Set(constant.RequestId, c.GetRequestId())
 	}, nil)
 	c.Request.URL.Path = tempPath

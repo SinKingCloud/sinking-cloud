@@ -3,6 +3,7 @@ package route
 import (
 	"os"
 	"os/signal"
+	"service-admin/app/constant"
 	"strconv"
 	"syscall"
 
@@ -20,6 +21,14 @@ func Init() {
 	r := http.NewServer(addr, global.App.IsDebug()).Handle(func(engine *sinking_web.Engine) {
 		engine.Use(context.HandleFunc(middleware.InterceptIllegalRequest))
 		loadApp(engine)
+	}).ErrorHandle(&sinking_web.ErrorHandel{
+		NotFound: func(c *sinking_web.Context) {
+			c.Set(constant.NeedProxy, true)
+		},
+		Fail: func(c *sinking_web.Context, code int, message string) {
+			ctx := context.New(c)
+			ctx.ErrorWithData("请求失败", message)
+		},
 	})
 	_ = r.Start()
 	//等待中断信号
