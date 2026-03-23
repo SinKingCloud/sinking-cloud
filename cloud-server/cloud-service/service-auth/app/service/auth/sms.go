@@ -19,6 +19,8 @@ func (s *service) CheckSms(phone string, code string) bool {
 	if exists && num != "" {
 		num2, err := strconv.Atoi(key2)
 		if err == nil && num2 >= 10 {
+			s.cache.Delete(key)
+			s.cache.Delete(key2)
 			return false
 		}
 	}
@@ -54,7 +56,6 @@ func (s *service) SendSms(phone string) bool {
 		"{\""+configs[constant2.AliSmsVar]+"\":"+code+"}",
 	) {
 		s.cache.SetWithExpire(key, code, constant.CacheTimeWithSms)
-		s.cache.SetWithExpire(constant.CacheNameWithSms+phone, code, constant.CacheTimeWithSms)
 		return true
 	}
 	return false

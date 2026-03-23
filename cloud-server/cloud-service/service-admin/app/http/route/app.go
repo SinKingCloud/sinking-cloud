@@ -25,4 +25,5 @@ func loadRpc(s *sinking_web.Engine) {
 	rpc.RegisterFunc("SetSystemConfig", rpc2.Config.SetSystemConfig)    //更新系统配置
 	rpc.RegisterFunc("SetSystemConfigs", rpc2.Config.SetSystemConfigs)  //批量更新系统配置
 	rpc.RegisterFunc("Login", rpc2.Auth.Login)                          //账号登录
+	rpc.RegisterFunc("Logout", rpc2.Auth.Logout)                        //登陆注销
 }

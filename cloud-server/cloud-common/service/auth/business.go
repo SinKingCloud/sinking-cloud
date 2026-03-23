@@ -71,3 +71,21 @@ func (*Service) SystemUserLogin(account string, password string, code string, us
 	}
 	return token, nil
 }
+
+// WebUserLogout 网站用户注销登录
+func (*Service) WebUserLogout(token string) error {
+	err := rpc.InvokeFunc(constant.ServiceUser, "Logout", token, nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// SystemUserLogout 系统用户注销登录
+func (*Service) SystemUserLogout(token string) error {
+	err := rpc.InvokeFunc(constant.ServiceAdmin, "Logout", token, nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}

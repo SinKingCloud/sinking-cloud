@@ -19,6 +19,8 @@ func (s *service) CheckMail(mail string, code string) bool {
 	if exists && num != "" {
 		num2, err := strconv.Atoi(key2)
 		if err == nil && num2 >= 10 {
+			s.cache.Delete(key)
+			s.cache.Delete(key2)
 			return false
 		}
 	}
@@ -54,7 +56,6 @@ func (s *service) SendMail(mail string) bool {
 		web[constant2.WebName], mail, "验证码通知", "您的验证码为："+code+"，请勿泄露于他人！",
 	) {
 		s.cache.SetWithExpire(key, code, constant.CacheTimeWithMail)
-		s.cache.SetWithExpire(constant.CacheNameWithMail+mail, code, constant.CacheTimeWithMail)
 		return true
 	}
 	return false

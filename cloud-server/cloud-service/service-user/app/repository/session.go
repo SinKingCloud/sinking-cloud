@@ -10,6 +10,7 @@ import (
 // Session Session仓储接口
 type Session interface {
 	Create(session *model.Session) error
+	DeleteByToken(token string) error
 }
 
 // NewSession 创建Session仓储

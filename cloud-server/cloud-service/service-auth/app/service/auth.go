@@ -7,5 +7,6 @@ type AuthService interface {
 	SendSms(phone string) bool                                                                                     //发送短信验证码
 	CheckMail(mail string, code string) bool                                                                       //判断邮件验证码
 	SendMail(mail string) bool                                                                                     //发送邮件验证码
-	Login(account string, isAdmin bool, password string, code string, userAgent string, ip string) (string, error) //账号登录或注册
+	Login(isAdmin bool, account string, password string, code string, userAgent string, ip string) (string, error) //账号登录或注册
+	Logout(isAdmin bool, token string) error                                                                       //账户注销登录
 }

@@ -54,6 +54,19 @@ func (s *service) Login(account string, password string, code string, userAgent 
 	return s.genLoginToken(id, userAgent, ip)
 }
 
+// Logout 注销登录
+func (s *service) Logout(token string) error {
+	key := jwt.CheckToken(token)
+	if key == nil {
+		return errors.New("未获取到登陆信息")
+	}
+	err := s.repositorySession.DeleteByToken(token)
+	if err != nil {
+		return errors.New("注销登录失败")
+	}
+	return nil
+}
+
 // GenLoginToken 创建会话
 func (s *service) genLoginToken(userId int64, userAgent string, ip string) (string, error) {
 	token := str.NewStringTool(str.GetSnowWorkIns().GetUuid()).Md5()

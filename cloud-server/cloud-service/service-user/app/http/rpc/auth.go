@@ -22,3 +22,16 @@ func (*authService) Login(params json.RawMessage) (interface{}, error) {
 	}
 	return token, nil
 }
+
+// Logout 登录注销
+func (*authService) Logout(params json.RawMessage) (interface{}, error) {
+	var param string
+	if err := json.Unmarshal(params, &param); err != nil {
+		return false, err
+	}
+	err := service.Auth.Logout(param)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
