@@ -11,6 +11,7 @@ import (
 type Menu struct {
 	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	ParentId   int64        `gorm:"column:parent_id" json:"parent_id"`
+	Code       string       `gorm:"column:code" json:"code"`
 	Name       string       `gorm:"column:name" json:"name"`
 	Type       int          `gorm:"column:type" json:"type"`
 	Icon       string       `gorm:"column:icon" json:"icon"`

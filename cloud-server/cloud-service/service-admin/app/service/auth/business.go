@@ -101,10 +101,11 @@ func (s *service) genLoginToken(userId int64, userAgent string, ip string) (stri
 	if err == nil && ipInfo != nil {
 		location = strings.ReplaceAll(fmt.Sprintf("%s %s %s %s", ipInfo.Country, ipInfo.Province, ipInfo.City, ipInfo.Isp), "  ", "")
 	}
+	device, types := str.NewStringTool(userAgent).ToDevice()
 	if err = s.repositorySession.Create(&model.Session{
 		UserId:     userId,
 		Token:      token,
-		Device:     userAgent,
+		Device:     fmt.Sprintf("%s %s", device, types),
 		Ip:         ip,
 		Location:   location,
 		ExpireTime: expireTime,

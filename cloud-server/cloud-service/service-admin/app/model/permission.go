@@ -12,6 +12,7 @@ type Permission struct {
 	Service    string       `gorm:"column:service" json:"service"`
 	Name       string       `gorm:"column:name" json:"name"`
 	Code       string       `gorm:"column:code" json:"code"`
+	Path       string       `gorm:"column:path" json:"path"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 }
 

@@ -11,7 +11,6 @@ import (
 type Role struct {
 	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	Name       string       `gorm:"column:name" json:"name"`
-	Code       string       `gorm:"column:code" json:"code"`
 	Status     int          `gorm:"column:status" json:"status"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
