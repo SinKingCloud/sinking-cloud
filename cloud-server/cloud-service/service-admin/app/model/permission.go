@@ -8,7 +8,6 @@ import (
 
 // Permission 权限表
 type Permission struct {
-	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	Service    string       `gorm:"column:service" json:"service"`
 	Name       string       `gorm:"column:name" json:"name"`
 	Code       string       `gorm:"column:code" json:"code"`
