@@ -1,1 +1,4 @@
 /.idea
+/cloud-server/cloud-service/service-admin/temp/
+/cloud-server/cloud-service/service-user/temp/
+/cloud-server/cloud-common/vendor/

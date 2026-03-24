@@ -28,7 +28,7 @@ func InterceptIllegalRequest(c *context.Context) {
 	originService := c.Request.Header.Get(constant.RpcOriginService)
 	originAddress := c.Request.Header.Get(constant.RpcOriginAddress)
 	if token == "" || originService == "" || originAddress == "" || token != global.App.Config.GetString(constant.ConsulToken) {
-		c.NotAllow("无权限")
+		c.NotAllow("暂无权限访问此内容")
 		c.Abort()
 		return
 	}
@@ -40,7 +40,7 @@ func InterceptIllegalRequest(c *context.Context) {
 	}
 	//如果是用户服务和后台服务请求自身或者网关则禁止
 	if (localService == constant.ServiceUser || localService == constant.ServiceAdmin) && (firstPath == localService || firstPath == constant.ServiceGateway) {
-		c.NotAllow("无权限")
+		c.NotAllow("暂无权限访问此内容")
 		c.Abort()
 		return
 	}
@@ -49,7 +49,7 @@ func InterceptIllegalRequest(c *context.Context) {
 		localService != constant.ServiceAdmin &&
 		(firstPath == constant.ServiceUser || firstPath == constant.ServiceAdmin) &&
 		(originService != constant.ServiceUser && originService != constant.ServiceAdmin) {
-		c.NotAllow("无权限")
+		c.NotAllow("暂无权限访问此内容")
 		c.Abort()
 		return
 	}

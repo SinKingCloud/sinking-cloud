@@ -4,21 +4,40 @@ import (
 	"net/http"
 	"net/http/httputil"
 	constant2 "service-admin/app/constant"
+	"service-admin/app/service"
 	"strings"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/client"
 )
 
-// Proxy 转发到子服务
-func Proxy(c *context.Context) {
+// Rbac rbac权限拦截
+func Rbac(c *context.Context) {
+	//RPC放行
+	path := c.Request.URL.Path
+	if rpc.IsRpcPath(path) {
+		c.Next()
+		return
+	}
+	//权限拦截
+	user := c.GetUserInfo()
+	if user != nil && user.Id > 0 {
+		err := service.Rbac.CheckUserHasPermission(user.Id, "/"+constant.ServiceAdmin+path)
+		if err != nil {
+			c.NotAllow("暂无权限访问此内容")
+			return
+		}
+	}
+	//执行控制器
 	c.Next()
 	if !c.GetBool(constant2.NeedProxy) {
 		return
 	}
-	parts := strings.SplitN(strings.TrimPrefix(c.Request.URL.Path, "/"), "/", 2)
+	//执行反向代理
+	parts := strings.SplitN(strings.TrimPrefix(path, "/"), "/", 2)
 	var serviceName, targetPath string
 	switch len(parts) {
 	case 1:

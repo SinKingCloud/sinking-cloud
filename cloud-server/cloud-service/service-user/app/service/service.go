@@ -9,8 +9,10 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 )
 
-var Config ConfigService
-var Auth AuthService
+var (
+	Config ConfigService
+	Auth   AuthService
+)
 
 func Init() {
 	configRepository := repository.NewConfig(global.App.Database)
