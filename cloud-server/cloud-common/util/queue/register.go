@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"time"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/job"
@@ -34,11 +33,6 @@ func (l *Client) Try(fun func(), handler func(interface{})) {
 		}
 	}()
 	fun()
-}
-
-// SendTask 发送任务（内部使用）
-func (l *Client) SendTask(param interface{}) {
-	l.producer <- param
 }
 
 // SendUnicastTask 发送单播任务
@@ -134,7 +128,7 @@ func registerUnicast(queue Queue, topicName string, producerThreadNum int, consu
 		producerThreadNum: producerThreadNum,
 		consumerThreadNum: consumerThreadNum,
 		consumerFunc:      consumerFunc,
-		taskChan:          make(chan MqMsg, consumerThreadNum*2),
+		taskChan:          make(chan MqMsg, consumerThreadNum*100), // 增大缓冲
 	}
 
 	ins.producer = make(chan interface{}, 10000)
@@ -166,7 +160,7 @@ func registerUnicast(queue Queue, topicName string, producerThreadNum int, consu
 		go func() {
 			for mqMsg := range ins.taskChan {
 				ins.Try(func() {
-					ins.consumerFunc(mqMsg.Body)
+					_ = ins.consumerFunc(mqMsg.Body)
 				}, func(e interface{}) {
 					// panic，不影响主流程
 				})
@@ -231,7 +225,7 @@ func registerBroadcast(queue Queue, topicName string, producerThreadNum int, con
 		producerThreadNum: producerThreadNum,
 		consumerThreadNum: consumerThreadNum,
 		consumerFunc:      consumerFunc,
-		taskChan:          make(chan MqMsg, consumerThreadNum*2),
+		taskChan:          make(chan MqMsg, consumerThreadNum*100), // 增大缓冲
 	}
 
 	ins.producer = make(chan interface{}, 10000)
@@ -263,7 +257,7 @@ func registerBroadcast(queue Queue, topicName string, producerThreadNum int, con
 		go func() {
 			for mqMsg := range ins.taskChan {
 				ins.Try(func() {
-					ins.consumerFunc(mqMsg.Body)
+					_ = ins.consumerFunc(mqMsg.Body)
 				}, func(e interface{}) {
 					// panic，不影响主流程
 				})

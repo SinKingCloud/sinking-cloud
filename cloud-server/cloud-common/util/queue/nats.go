@@ -47,7 +47,7 @@ func (n *NatsQueue) ListenReceiveUnicast(topic string, receiveDo func(mqMsg MqMs
 		}) {
 			_ = msg.Ack()
 		}
-	}, nats.Durable(queueName+"-d"))
+	}, nats.Durable(queueName+"-d"), nats.AckExplicit())
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func (n *NatsQueue) ListenReceiveBroadcast(topic string, receiveDo func(mqMsg Mq
 		}) {
 			_ = msg.Ack()
 		}
-	})
+	}, nats.AckExplicit())
 	if err != nil {
 		return err
 	}
@@ -83,14 +83,14 @@ func (n *NatsQueue) ListenReceiveBroadcast(topic string, receiveDo func(mqMsg Mq
 	return nil
 }
 
-// SendUnicast 发送单播消息
-// JetStream Publish 实现消息持久化
+// SendUnicast 发送单播消息（异步，高效）
 func (n *NatsQueue) SendUnicast(topic string, body string) (mqMsg MqMsg, err error) {
 	if n.client == nil {
 		return mqMsg, errors.New("the nats client is nil")
 	}
 	subject := jsSubjectPrefix + topic
-	_, err = n.js.Publish(subject, []byte(body))
+	// 异步发送，不等待 ack
+	_, err = n.js.PublishAsync(subject, []byte(body))
 	if err != nil {
 		return mqMsg, err
 	}
@@ -101,14 +101,13 @@ func (n *NatsQueue) SendUnicast(topic string, body string) (mqMsg MqMsg, err err
 	}, nil
 }
 
-// SendBroadcast 发送广播消息
-// JetStream Publish 实现消息持久化
+// SendBroadcast 发送广播消息（异步，高效）
 func (n *NatsQueue) SendBroadcast(topic string, body string) (mqMsg MqMsg, err error) {
 	if n.client == nil {
 		return mqMsg, errors.New("the nats client is nil")
 	}
 	subject := jsSubjectPrefix + topic
-	_, err = n.js.Publish(subject, []byte(body))
+	_, err = n.js.PublishAsync(subject, []byte(body))
 	if err != nil {
 		return mqMsg, err
 	}
@@ -134,6 +133,7 @@ func (n *NatsQueue) Close() {
 	}
 	n.unicastSubs = nil
 	if n.client != nil {
+		_ = n.client.Flush()
 		n.client.Close()
 	}
 }
@@ -145,6 +145,11 @@ func RegisterNatsQueueClient(natsURL string, options ...interface{}) (Queue, err
 	}
 
 	var natsOptions []nats.Option
+	// 默认高吞吐配置
+	natsOptions = append(natsOptions,
+		nats.MaxPingsOutstanding(10),
+		nats.ReconnectBufSize(32*1024*1024), // 32MB 重连缓冲
+	)
 	for _, opt := range options {
 		if natsOpt, ok := opt.(nats.Option); ok {
 			natsOptions = append(natsOptions, natsOpt)
@@ -156,7 +161,9 @@ func RegisterNatsQueueClient(natsURL string, options ...interface{}) (Queue, err
 		return nil, errors.New("failed to connect to nats server: " + err.Error())
 	}
 
-	js, err := nc.JetStream()
+	js, err := nc.JetStream(
+		nats.PublishAsyncMaxPending(4096), // 增大到 4096
+	)
 	if err != nil {
 		nc.Close()
 		return nil, errors.New("failed to create jetstream context: " + err.Error())
