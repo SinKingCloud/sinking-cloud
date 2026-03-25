@@ -1,7 +1,6 @@
 package queue
 
 import (
-	"context"
 	"errors"
 	"sync"
 	"time"
@@ -13,6 +12,12 @@ const (
 	jsStreamName    = "SINKING_QUEUE"
 	jsSubject       = "SINKING_QUEUE.>"
 	jsSubjectPrefix = "SINKING_QUEUE."
+)
+
+var (
+	ncInit = make(map[string]*nats.Conn)
+	jsInit = make(map[string]nats.JetStreamContext)
+	initMu sync.Mutex
 )
 
 type NatsQueue struct {
@@ -121,74 +126,72 @@ func (n *NatsQueue) SendBroadcast(topic string, body string) (mqMsg MqMsg, err e
 	}, nil
 }
 
-// Close 关闭NATS连接
+// Close 关闭当前实例的订阅（连接由单例持有，不关闭）
 func (n *NatsQueue) Close() {
 	n.mu.Lock()
 	defer n.mu.Unlock()
-	// 关闭所有广播订阅
 	for _, sub := range n.broadcastSubs {
 		_ = sub.Unsubscribe()
 	}
 	n.broadcastSubs = nil
-	// 关闭所有单播订阅
 	for _, sub := range n.unicastSubs {
 		_ = sub.Unsubscribe()
 	}
 	n.unicastSubs = nil
-	if n.client != nil {
-		_ = n.client.Flush()
-		n.client.Close()
-	}
 }
 
-// RegisterNatsQueueClient 注册NATS队列实例
+// RegisterNatsQueueClient 注册NATS队列实例（按 URL 单例）
 func RegisterNatsQueueClient(natsURL string, options ...interface{}) (Queue, error) {
 	if natsURL == "" {
 		return nil, errors.New("nats url cannot be empty")
 	}
-
+	initMu.Lock()
+	if nc, ok := ncInit[natsURL]; ok {
+		initMu.Unlock()
+		return &NatsQueue{
+			client:        nc,
+			js:            jsInit[natsURL],
+			unicastSubs:   make(map[string]*nats.Subscription),
+			broadcastSubs: make(map[string]*nats.Subscription),
+		}, nil
+	}
 	var natsOptions []nats.Option
-	// 默认高吞吐配置
 	natsOptions = append(natsOptions,
 		nats.MaxPingsOutstanding(10),
-		nats.ReconnectBufSize(32*1024*1024), // 32MB 重连缓冲
+		nats.ReconnectBufSize(32*1024*1024),
 	)
 	for _, opt := range options {
 		if natsOpt, ok := opt.(nats.Option); ok {
 			natsOptions = append(natsOptions, natsOpt)
 		}
 	}
-
 	nc, err := nats.Connect(natsURL, natsOptions...)
 	if err != nil {
+		initMu.Unlock()
 		return nil, errors.New("failed to connect to nats server: " + err.Error())
 	}
-
-	js, err := nc.JetStream(
-		nats.PublishAsyncMaxPending(4096), // 增大到 4096
-	)
+	ncInit[natsURL] = nc
+	js, err := nc.JetStream(nats.PublishAsyncMaxPending(4096))
 	if err != nil {
 		nc.Close()
+		delete(ncInit, natsURL)
+		initMu.Unlock()
 		return nil, errors.New("failed to create jetstream context: " + err.Error())
 	}
-
-	q := &NatsQueue{
+	jsInit[natsURL] = js
+	_, _ = js.AddStream(&nats.StreamConfig{
+		Name:     jsStreamName,
+		Subjects: []string{jsSubject},
+		MaxBytes: 1024 * 1024 * 1024,
+		MaxAge:   7 * 24 * time.Hour,
+		Storage:  nats.FileStorage,
+	})
+	_, _ = js.StreamInfo(jsStreamName)
+	initMu.Unlock()
+	return &NatsQueue{
 		client:        nc,
 		js:            js,
 		unicastSubs:   make(map[string]*nats.Subscription),
 		broadcastSubs: make(map[string]*nats.Subscription),
-	}
-	// 创建 Stream（幂等：已存在则忽略）
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	_, _ = js.AddStream(&nats.StreamConfig{
-		Name:     jsStreamName,
-		Subjects: []string{jsSubject},
-		MaxBytes: 1024 * 1024 * 1024, // 1GB
-		MaxAge:   7 * 24 * time.Hour, // 7天
-		Storage:  nats.FileStorage,
-	})
-	// 等待 Stream 就绪
-	_, _ = js.StreamInfo(jsStreamName, nats.Context(ctx))
-	return q, nil
+	}, nil
 }
