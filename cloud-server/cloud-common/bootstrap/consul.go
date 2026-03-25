@@ -29,4 +29,5 @@ func LoadConsul(name string) {
 		return
 	}
 	global.App.SetConsul(cli)
+	global.App.Log.Println("consul初始化成功")
 }

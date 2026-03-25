@@ -14,7 +14,7 @@ type MemoryQueue struct {
 }
 
 // ListenReceiveUnicast 监听接收单播消息
-func (r *MemoryQueue) ListenReceiveUnicast(topic string, receiveDo func(mqMsg MqMsg)) error {
+func (r *MemoryQueue) ListenReceiveUnicast(topic string, receiveDo func(mqMsg MqMsg) bool) error {
 	r.mu.Lock()
 	if r.unicastChans == nil {
 		r.unicastChans = make(map[string][]chan string)
@@ -38,7 +38,7 @@ func (r *MemoryQueue) ListenReceiveUnicast(topic string, receiveDo func(mqMsg Mq
 }
 
 // ListenReceiveBroadcast 监听接收广播消息
-func (r *MemoryQueue) ListenReceiveBroadcast(topic string, receiveDo func(mqMsg MqMsg)) error {
+func (r *MemoryQueue) ListenReceiveBroadcast(topic string, receiveDo func(mqMsg MqMsg) bool) error {
 	r.mu.Lock()
 	if r.broadcastChans == nil {
 		r.broadcastChans = make(map[string][]chan string)

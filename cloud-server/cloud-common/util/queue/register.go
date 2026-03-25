@@ -173,8 +173,9 @@ func registerUnicast(queue Queue, topicName string, producerThreadNum int, consu
 	}
 
 	// 监听单播消息
-	err := queue.ListenReceiveUnicast(topicName, func(mqMsg MqMsg) {
+	err := queue.ListenReceiveUnicast(topicName, func(mqMsg MqMsg) bool {
 		ins.consumer <- mqMsg.Body
+		return true
 	})
 	if err != nil {
 		return nil, errors.New("启动" + topicName + "单播消费实例失败: " + err.Error())
@@ -275,8 +276,9 @@ func registerBroadcast(queue Queue, topicName string, producerThreadNum int, con
 	}
 
 	// 监听广播消息
-	err := queue.ListenReceiveBroadcast(topicName, func(mqMsg MqMsg) {
+	err := queue.ListenReceiveBroadcast(topicName, func(mqMsg MqMsg) bool {
 		ins.consumer <- mqMsg.Body
+		return true
 	})
 	if err != nil {
 		return nil, errors.New("启动" + topicName + "广播消费实例失败: " + err.Error())

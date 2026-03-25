@@ -30,4 +30,5 @@ func LoadCache(name string) {
 	}
 	global.App.SetCache(client)
 	global.App.SetRedis(client)
+	global.App.Log.Println("cache初始化成功")
 }

@@ -42,4 +42,5 @@ func LoadConf() {
 		_ = config.BindEnv(key)
 	}
 	global.App.SetConfig(config)
+	global.App.Log.Println("config初始化成功")
 }

@@ -8,4 +8,5 @@ import (
 
 func LoadLog() {
 	global.App.SetLog(log.Default())
+	global.App.Log.Println("log初始化成功")
 }

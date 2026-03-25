@@ -30,7 +30,7 @@ type RedisQueue struct {
 
 // ListenReceiveUnicast 监听接收单播消息
 // 单播使用 Redis Stream 实现，接收者需要指定 consumer group
-func (r *RedisQueue) ListenReceiveUnicast(topic string, receiveDo func(mqMsg MqMsg)) error {
+func (r *RedisQueue) ListenReceiveUnicast(topic string, receiveDo func(mqMsg MqMsg) bool) error {
 	if r.client == nil {
 		return errors.New("the redis client is nil")
 	}
@@ -91,9 +91,10 @@ func (r *RedisQueue) ListenReceiveUnicast(topic string, receiveDo func(mqMsg MqM
 						var mqMsg MqMsg
 						if err := json.Unmarshal([]byte(body), &mqMsg); err == nil {
 							mqMsg.RunType = ReceiveUnicast
-							receiveDo(mqMsg)
-							// 只有成功处理后才 ACK
-							client.XAck(ctx, streamKey, groupName, msg.ID)
+							// 只有回调返回 true 才 ACK
+							if receiveDo(mqMsg) {
+								client.XAck(ctx, streamKey, groupName, msg.ID)
+							}
 						}
 					}
 				}
@@ -106,7 +107,7 @@ func (r *RedisQueue) ListenReceiveUnicast(topic string, receiveDo func(mqMsg MqM
 
 // ListenReceiveBroadcast 监听接收广播消息
 // 广播使用 Redis Pub/Sub 实现
-func (r *RedisQueue) ListenReceiveBroadcast(topic string, receiveDo func(mqMsg MqMsg)) error {
+func (r *RedisQueue) ListenReceiveBroadcast(topic string, receiveDo func(mqMsg MqMsg) bool) error {
 	if r.client == nil {
 		return errors.New("the redis client is nil")
 	}

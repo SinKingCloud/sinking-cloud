@@ -29,4 +29,5 @@ func LoadDatabase(name string) {
 		panic(global.App.Database.DbError)
 		return
 	}
+	global.App.Log.Println("database初始化成功")
 }
