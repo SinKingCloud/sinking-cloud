@@ -9,5 +9,5 @@ func Load() {
 	bootstrap.LoadLog()
 	bootstrap.LoadConf()
 	bootstrap.LoadConsul(constant.ServiceAuth)
-	bootstrap.LoadCache(constant.ServiceAuth)
+	bootstrap.LoadCache()
 }

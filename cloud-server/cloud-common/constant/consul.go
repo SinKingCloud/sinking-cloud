@@ -14,4 +14,10 @@ const (
 	RedisPort = Redis + ".port" //redis 端口
 	RedisPwd  = Redis + ".pwd"  //redis 密码
 	RedisDb   = Redis + ".db"   //redis 编号
+
+	Nats     = "nats"
+	NatsHost = Nats + ".host" //nats 地址
+	NatsPort = Nats + ".port" //nats 端口
+	NatsUser = Nats + ".user" //nats 用户
+	NatsPwd  = Nats + ".pwd"  //nats 密码
 )

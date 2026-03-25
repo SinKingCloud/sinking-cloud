@@ -6,6 +6,6 @@ func Load(name string) {
 	LoadLog()
 	LoadConf()
 	LoadConsul(name)
-	LoadDatabase(name)
-	LoadCache(name)
+	LoadDatabase()
+	LoadCache()
 }

@@ -7,22 +7,22 @@ import (
 )
 
 // LoadDatabase 初始化数据库
-func LoadDatabase(name string) {
+func LoadDatabase() {
 	if global.App.Consul == nil {
 		panic("consul 未初始化")
 		return
 	}
-	config, err := global.App.Consul.GetConfig(name)
-	if err != nil || config == nil {
-		panic("从consul获取配置失败: " + err.Error())
+	config := global.App.GetPostgresConfig()
+	if config == nil {
+		panic("从consul获取postgress配置失败")
 		return
 	}
 	global.App.SetDataBase(database.NewPostgresSql(
-		config.GetString(constant.PostgresHost),
-		config.GetString(constant.PostgresPort),
-		config.GetString(constant.PostgresUser),
-		config.GetString(constant.PostgresPwd),
-		config.GetString(constant.PostgresName),
+		config[constant.PostgresHost],
+		config[constant.PostgresPort],
+		config[constant.PostgresUser],
+		config[constant.PostgresPwd],
+		config[constant.PostgresName],
 	))
 	if global.App.Database.DbError != nil {
 		global.App.Log.Println("数据库连接失败", global.App.Database.DbError)

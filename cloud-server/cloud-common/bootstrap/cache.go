@@ -7,21 +7,21 @@ import (
 )
 
 // LoadCache 初始化缓存
-func LoadCache(name string) {
+func LoadCache() {
 	if global.App.Consul == nil {
 		panic("consul 未初始化")
 		return
 	}
-	config, err := global.App.Consul.GetConfig(name)
-	if err != nil || config == nil {
-		panic("从consul获取配置失败: " + err.Error())
+	config := global.App.GetRedisConfig()
+	if config == nil {
+		panic("从consul获取redis配置失败")
 		return
 	}
 	client, err := redis.NewClient(
-		config.GetString(constant.RedisHost),
-		config.GetString(constant.RedisPort),
-		config.GetString(constant.RedisPwd),
-		config.GetInt64(constant.RedisDb),
+		config[constant.RedisHost].(string),
+		config[constant.RedisPort].(string),
+		config[constant.RedisPwd].(string),
+		config[constant.RedisDb].(int64),
 	)
 	if err != nil {
 		global.App.Log.Println("redis 连接失败", err)
