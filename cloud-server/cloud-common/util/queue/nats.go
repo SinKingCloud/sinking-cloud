@@ -56,7 +56,7 @@ func (n *NatsQueue) ListenReceiveUnicast(topic string, receiveDo func(mqMsg MqMs
 }
 
 // ListenReceiveBroadcast 监听接收广播消息
-// 广播使用 JetStream 订阅，消息持久化存储
+// 广播使用 JetStream 订阅，消息持久化存储，每个订阅者都能收到所有消息
 func (n *NatsQueue) ListenReceiveBroadcast(topic string, receiveDo func(mqMsg MqMsg) bool) error {
 	if n.client == nil {
 		return errors.New("the nats client is nil")
@@ -65,6 +65,9 @@ func (n *NatsQueue) ListenReceiveBroadcast(topic string, receiveDo func(mqMsg Mq
 	defer n.mu.Unlock()
 	if n.broadcastSubs == nil {
 		n.broadcastSubs = make(map[string]*nats.Subscription)
+	}
+	if oldSub, ok := n.broadcastSubs[topic]; ok {
+		_ = oldSub.Unsubscribe()
 	}
 	subject := jsSubjectPrefix + topic
 	sub, err := n.js.Subscribe(subject, func(msg *nats.Msg) {
@@ -75,7 +78,7 @@ func (n *NatsQueue) ListenReceiveBroadcast(topic string, receiveDo func(mqMsg Mq
 		}) {
 			_ = msg.Ack()
 		}
-	}, nats.AckExplicit())
+	}, nats.Durable("broadcast-"+topic+"-d"), nats.AckExplicit())
 	if err != nil {
 		return err
 	}
