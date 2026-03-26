@@ -10,8 +10,8 @@ func Login(c *context.Context) {}
 
 // loadApi 加载API
 func loadAdmin(s *sinking_web.Engine) {
-	service.Auth.LoadAdminRoute(s, func(ANY func(string, string, func(*context.Context))) {
-		ANY("/test", "测试权限", Login)
-		ANY("/test2", "测试权限2", Login)
+	g := service.Auth.GetAdminRouteGroup(s)
+	service.Auth.LoadAdminRouteWithRegister(g, func(ANY func(string, string, func(*context.Context))) {
+
 	})
 }

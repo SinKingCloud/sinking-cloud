@@ -99,10 +99,15 @@ func (*Service) SystemUserLogout(token string) error {
 	return nil
 }
 
-// LoadAdminRoute 加载后台路由组
-func (*Service) LoadAdminRoute(s *sinking_web.Engine, handle func(ANY func(path string, name string, h func(*context.Context)))) {
+// GetAdminRouteGroup 获取后台路由group
+func (*Service) GetAdminRouteGroup(s *sinking_web.Engine) *sinking_web.RouterGroup {
 	g := s.Group("/" + constant.ServiceAdmin)
 	g.Use(context.HandleFunc(middleware.CheckLogin))
+	return g
+}
+
+// LoadAdminRouteWithRegister 加载后台路由组并注册
+func (srv *Service) LoadAdminRouteWithRegister(g *sinking_web.RouterGroup, handle func(ANY func(path string, name string, h func(*context.Context)))) {
 	var list []*rbac.RegisterPermissionsParam
 	handle(func(path string, name string, h func(c *context.Context)) {
 		g.ANY(path, context.HandleFunc(h))
@@ -127,11 +132,9 @@ func (*Service) LoadAdminRoute(s *sinking_web.Engine, handle func(ANY func(path 
 	}
 }
 
-// LoadUserRoute 加载用户路由组
-func (*Service) LoadUserRoute(s *sinking_web.Engine, handle func(ANY func(path string, h func(*context.Context)))) {
-	g := s.Group("/" + constant.ServiceAdmin)
+// GetUserRouteGroup 获取用户路由group
+func (*Service) GetUserRouteGroup(s *sinking_web.Engine) *sinking_web.RouterGroup {
+	g := s.Group("/" + constant.ServiceUser)
 	g.Use(context.HandleFunc(middleware.CheckLogin))
-	handle(func(path string, h func(c *context.Context)) {
-		g.ANY(path, context.HandleFunc(h))
-	})
+	return g
 }
