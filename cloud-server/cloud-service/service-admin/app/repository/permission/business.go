@@ -51,5 +51,5 @@ func (r *Repository) UpdateByCode(code string, perm *model.Permission) error {
 		return nil
 	}
 	updates["update_time"] = str.DateTime(time.Now())
-	return r.Database.Db.Where("code = ?", code).Updates(updates).Error
+	return r.Database.Db.Model(&model.Permission{}).Where("code = ?", code).Updates(updates).Error
 }

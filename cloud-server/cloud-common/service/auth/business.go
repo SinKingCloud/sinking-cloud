@@ -1,8 +1,17 @@
 package auth
 
 import (
+	"fmt"
+	"strings"
+	"time"
+
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rbac"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 // CheckCaptcha 判断滑块验证码
@@ -88,4 +97,41 @@ func (*Service) SystemUserLogout(token string) error {
 		return err
 	}
 	return nil
+}
+
+// LoadAdminRoute 加载后台路由组
+func (*Service) LoadAdminRoute(s *sinking_web.Engine, handle func(ANY func(path string, name string, h func(*context.Context)))) {
+	g := s.Group("/" + constant.ServiceAdmin)
+	g.Use(context.HandleFunc(middleware.CheckLogin))
+	var list []*rbac.RegisterPermissionsParam
+	handle(func(path string, name string, h func(c *context.Context)) {
+		g.ANY(path, context.HandleFunc(h))
+		fullPath := strings.ReplaceAll(fmt.Sprintf("/%s/%s/%s", constant.ServiceAdmin, global.App.Consul.GetName(), path), "//", "/")
+		list = append(list, &rbac.RegisterPermissionsParam{
+			Name: name,
+			Code: strings.Trim(strings.ReplaceAll(fullPath, "/", ":"), ":"),
+			Path: fullPath,
+		})
+	})
+	if list != nil && len(list) > 0 {
+		go func(list []*rbac.RegisterPermissionsParam) {
+			for i := 0; i < 60; i++ {
+				result := rbac.GetIns().RegisterPermissions(list)
+				if !result {
+					time.Sleep(time.Second)
+				} else {
+					break
+				}
+			}
+		}(list)
+	}
+}
+
+// LoadUserRoute 加载用户路由组
+func (*Service) LoadUserRoute(s *sinking_web.Engine, handle func(ANY func(path string, h func(*context.Context)))) {
+	g := s.Group("/" + constant.ServiceAdmin)
+	g.Use(context.HandleFunc(middleware.CheckLogin))
+	handle(func(path string, h func(c *context.Context)) {
+		g.ANY(path, context.HandleFunc(h))
+	})
 }

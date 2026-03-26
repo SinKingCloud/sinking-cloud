@@ -19,11 +19,11 @@ func (s *service) RegisterPermission(name string, code string, path string) erro
 		Code: code,
 		Path: path,
 	}
-	existing, err := s.repositoryPermission.FindByCode(code)
+	record, err := s.repositoryPermission.FindByCode(code)
 	if err != nil {
 		return err
 	}
-	if existing == nil {
+	if record == nil || record.Id <= 0 {
 		if err = s.repositoryPermission.Create(perm); err != nil {
 			return err
 		}
