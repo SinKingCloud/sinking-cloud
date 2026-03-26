@@ -2,7 +2,40 @@ package rbac
 
 import (
 	"errors"
+	"service-admin/app/constant"
+	"service-admin/app/model"
 )
+
+// RegisterPermission 注册权限（以 code 为唯一标识，不存在则插入，存在则更新）
+func (s *service) RegisterPermission(name string, code string, path string) error {
+	codeLockKey := constant.LockPermission + code
+	if s.cache.Lock(codeLockKey, constant.LockTimePermission) {
+		defer s.cache.UnLock(codeLockKey)
+	} else {
+		return errors.New("系统繁忙,请稍候重试")
+	}
+	perm := &model.Permission{
+		Name: name,
+		Code: code,
+		Path: path,
+	}
+	existing, err := s.repositoryPermission.FindByCode(code)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		if err = s.repositoryPermission.Create(perm); err != nil {
+			return err
+		}
+	} else {
+		if err = s.repositoryPermission.UpdateByCode(code, perm); err != nil {
+			return err
+		}
+	}
+	// 刷新缓存
+	s.clearCacheWithPermission(path)
+	return nil
+}
 
 // CheckUserHasPermission 判断用户是否含有权限
 func (s *service) CheckUserHasPermission(userId int64, path string) error {

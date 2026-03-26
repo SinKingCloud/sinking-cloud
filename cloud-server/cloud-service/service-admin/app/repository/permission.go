@@ -10,6 +10,9 @@ import (
 // Permission 权限仓储接口
 type Permission interface {
 	FindByPath(path string) (*model.Permission, error)
+	FindByCode(code string) (*model.Permission, error)
+	Create(perm *model.Permission) error
+	UpdateByCode(code string, perm *model.Permission) error
 }
 
 // NewPermission 创建Permission仓储
