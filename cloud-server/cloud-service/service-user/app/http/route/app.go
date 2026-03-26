@@ -12,14 +12,10 @@ func loadApp(s *sinking_web.Engine) {
 	loadMiddleware(s)
 	loadRpc(s)
 	loadApi(s)
+	loadAdmin(s)
 }
 
 // loadMiddleware 中间件
 func loadMiddleware(s *sinking_web.Engine) {
 	s.Use(context.HandleFunc(middleware.CheckLogin), context.HandleFunc(middleware.Proxy))
-}
-
-// loadApi 加载API
-func loadApi(s *sinking_web.Engine) {
-
 }

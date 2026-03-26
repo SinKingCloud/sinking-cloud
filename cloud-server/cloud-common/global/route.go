@@ -1,19 +1,14 @@
-package middleware
+package global
 
 import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/jwt"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
-// CheckLogin 判断是否登陆
-func CheckLogin(c *context.Context) {
-	//RPC放行
-	if rpc.IsRpcPath(c.Request.URL.Path) {
-		c.Next()
-		return
-	}
+// checkLogin 判断是否登陆
+func (a *Application) checkLogin(c *context.Context) {
 	//登陆验证
 	token := c.Request.Header.Get(constant.JwtTokenName)
 	if token == "" {
@@ -29,4 +24,16 @@ func CheckLogin(c *context.Context) {
 	}
 	c.SetUserInfo(key.User)
 	c.Next()
+}
+
+// GetAdminRouteGroup 获取后台路由组
+func (a *Application) GetAdminRouteGroup(s *sinking_web.Engine) *sinking_web.RouterGroup {
+	g := s.Group("/" + constant.ServiceAdmin)
+	return g.Use(context.HandleFunc(a.checkLogin))
+}
+
+// GetUserRouteGroup 获取用户路由组
+func (a *Application) GetUserRouteGroup(s *sinking_web.Engine) *sinking_web.RouterGroup {
+	g := s.Group("/" + constant.ServiceUser)
+	return g.Use(context.HandleFunc(a.checkLogin))
 }

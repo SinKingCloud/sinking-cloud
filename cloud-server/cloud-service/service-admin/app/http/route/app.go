@@ -18,7 +18,3 @@ func loadApp(s *sinking_web.Engine) {
 func loadMiddleware(s *sinking_web.Engine) {
 	s.Use(context.HandleFunc(middleware.CheckLogin), context.HandleFunc(middleware.Rbac))
 }
-
-// loadApi 加载API
-func loadApi(s *sinking_web.Engine) {
-}
