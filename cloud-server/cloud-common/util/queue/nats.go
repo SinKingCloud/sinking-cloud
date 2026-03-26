@@ -52,7 +52,7 @@ func (n *NatsQueue) ListenReceiveUnicast(topic string, receiveDo func(mqMsg MqMs
 		}) {
 			_ = msg.Ack()
 		}
-	}, nats.Durable(queueName+"-d"), nats.AckExplicit())
+	}, nats.Durable(queueName+"-d"), nats.AckExplicit(), nats.MaxDeliver(10))
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (n *NatsQueue) ListenReceiveBroadcast(topic string, receiveDo func(mqMsg Mq
 		}) {
 			_ = msg.Ack()
 		}
-	}, nats.Durable("broadcast-"+topic+"-d"), nats.AckExplicit())
+	}, nats.Durable("broadcast-"+topic+"-d"), nats.AckExplicit(), nats.MaxDeliver(10))
 	if err != nil {
 		return err
 	}
