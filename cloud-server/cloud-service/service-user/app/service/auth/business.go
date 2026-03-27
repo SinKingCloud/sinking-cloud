@@ -21,7 +21,7 @@ import (
 // Login 账号登录
 func (s *service) Login(account string, password string, code string, userAgent string, ip string) (string, error) {
 	var id int64
-	if password == "" {
+	if password != "" {
 		u, err := s.repositoryUser.FindByIdentifier(account)
 		if err != nil {
 			return "", errors.New("系统繁忙,请稍后再试")
@@ -34,36 +34,42 @@ func (s *service) Login(account string, password string, code string, userAgent 
 		}
 		id = u.Id
 	} else {
+		isMail := false
+		check := s.authService.CheckSms
 		if !regexp.MustCompile(`^1[3-9]\d{9}$`).MatchString(account) {
-			return "", errors.New("手机号格式不正确")
+			if !regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`).MatchString(account) {
+				return "", errors.New("手机号或邮箱格式不正确")
+			}
+			isMail = true
+			check = s.authService.CheckMail
 		}
 		if !regexp.MustCompile(`^\d{6}$`).MatchString(code) {
 			return "", errors.New("验证码格式不正确")
 		}
-		if !s.authService.CheckSms(account, code) {
+		if !check(account, code) {
 			return "", errors.New("验证码错误")
 		}
+		lock := constant2.LockUserCreate + account
+		if !s.cache.Lock(lock, constant2.LockTimeUserCreate) {
+			return "", errors.New("系统繁忙,请稍后重试")
+		}
+		defer s.cache.UnLock(lock)
 		u, err := s.repositoryUser.FindByIdentifier(account)
 		if err != nil {
 			return "", errors.New("系统繁忙,请稍后再试")
 		}
 		if u == nil || u.Id <= 0 {
-			lock := constant2.LockUserCreate + account
-			if !s.cache.Lock(lock, constant2.LockTimeUserCreate) {
-				return "", errors.New("系统繁忙,请稍后重试")
-			}
-			defer s.cache.UnLock(lock)
-			num, err2 := s.repositoryUser.CountByPhone(account)
-			if err2 != nil || num != 0 {
-				return "", errors.New("该手机号已被占用")
-			}
 			u = &model.User{
-				Phone:          account,
 				RealAuthStatus: int(real_auth.UnAuth),
 				Status:         int(user.StatusEnable),
 			}
-			err2 = s.repositoryUser.Create(u)
-			if err2 != nil {
+			if isMail {
+				u.Email = account
+			} else {
+				u.Phone = account
+			}
+			err = s.repositoryUser.Create(u)
+			if err != nil {
 				return "", err
 			}
 			id = u.Id

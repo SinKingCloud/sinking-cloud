@@ -19,7 +19,7 @@ import (
 // Login 账号登录
 func (s *service) Login(account string, password string, code string, userAgent string, ip string) (string, error) {
 	var id int64
-	if password == "" {
+	if password != "" {
 		u, err := s.repositoryUser.FindByIdentifier(account)
 		if err != nil {
 			return "", errors.New("系统繁忙,请稍后再试")
@@ -32,13 +32,17 @@ func (s *service) Login(account string, password string, code string, userAgent 
 		}
 		id = u.Id
 	} else {
+		check := s.authService.CheckSms
 		if !regexp.MustCompile(`^1[3-9]\d{9}$`).MatchString(account) {
-			return "", errors.New("手机号格式不正确")
+			if !regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`).MatchString(account) {
+				return "", errors.New("手机号或邮箱格式不正确")
+			}
+			check = s.authService.CheckMail
 		}
 		if !regexp.MustCompile(`^\d{6}$`).MatchString(code) {
 			return "", errors.New("验证码格式不正确")
 		}
-		if !s.authService.CheckSms(account, code) {
+		if !check(account, code) {
 			return "", errors.New("验证码错误")
 		}
 		u, err := s.repositoryUser.FindByIdentifier(account)
