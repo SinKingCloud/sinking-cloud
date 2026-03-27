@@ -30,8 +30,3 @@ func (r *Repository) FindByIdentifier(identifier string) (*model.User, error) {
 	}
 	return user, nil
 }
-
-// Create 创建用户
-func (r *Repository) Create(user *model.User) error {
-	return r.Database.Db.Create(user).Error
-}

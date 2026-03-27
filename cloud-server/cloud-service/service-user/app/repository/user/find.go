@@ -19,7 +19,14 @@ func (r *Repository) FindByIdentifier(identifier string) (*model.User, error) {
 	return user, nil
 }
 
-// Create 创建用户
-func (r *Repository) Create(user *model.User) error {
-	return r.Database.Db.Create(user).Error
+// FindById 根据id查询用户
+func (r *Repository) FindById(id int64) (*model.User, error) {
+	var user *model.User
+	err := r.Database.Db.
+		Where("id = ?", id).
+		First(&user).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	return user, nil
 }
