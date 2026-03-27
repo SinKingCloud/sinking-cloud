@@ -25,5 +25,4 @@ func (s *service) GetUserInfo(userId int64, refresh bool) (user *model.User, err
 		s.cache.SetWithExpire(cacheKey, string(data), constant.CacheTimeWithUserInfo)
 	}
 	return user, nil
-
 }

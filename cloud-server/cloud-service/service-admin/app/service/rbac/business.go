@@ -4,6 +4,7 @@ import (
 	"errors"
 	"service-admin/app/constant"
 	"service-admin/app/model"
+	"service-admin/app/repository/permission"
 )
 
 // RegisterPermission 注册权限（以 code 为唯一标识，不存在则插入，存在则更新）
@@ -28,7 +29,10 @@ func (s *service) RegisterPermission(name string, code string, path string) erro
 			return err
 		}
 	} else {
-		if err = s.repositoryPermission.UpdateByCode(code, perm); err != nil {
+		if err = s.repositoryPermission.UpdateByCode(code, &permission.UpdatePermission{
+			Name: perm.Name,
+			Path: perm.Path,
+		}); err != nil {
 			return err
 		}
 	}

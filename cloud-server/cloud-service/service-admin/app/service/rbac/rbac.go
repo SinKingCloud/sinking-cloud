@@ -9,6 +9,12 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
 )
 
+// Service service接口
+type Service interface {
+	RegisterPermission(name string, code string, path string) error //注册权限
+	CheckUserHasPermission(userId int64, path string) error         //判断用户是否含有权限
+}
+
 // service 注入结构
 type service struct {
 	repositoryRole           role.Interface

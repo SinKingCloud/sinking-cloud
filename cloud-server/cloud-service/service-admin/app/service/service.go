@@ -18,10 +18,10 @@ import (
 )
 
 var (
-	Config ConfigService
-	Auth   AuthService
-	Rbac   RbacService
-	User   UserService
+	Config config.Service
+	Auth   auth.Service
+	Rbac   rbac.Service
+	User   user.Service
 )
 
 func Init() {

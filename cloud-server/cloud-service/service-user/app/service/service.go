@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	Config ConfigService
-	Auth   AuthService
-	User   UserService
+	Config config.Service
+	Auth   auth.Service
+	User   user.Service
 )
 
 func Init() {
@@ -27,5 +27,5 @@ func Init() {
 
 	Config = config.NewService(configRepository, cache)
 	Auth = auth.NewService(authService, sessionRepository, userRepository, cache)
-	User = user.NewService(userRepository, cache)
+	User = user.NewService(userRepository, Config, cache)
 }

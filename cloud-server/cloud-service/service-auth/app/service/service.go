@@ -7,7 +7,9 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 )
 
-var Auth AuthService
+var (
+	Auth auth.Service
+)
 
 func Init() {
 	cache := global.App.Cache
