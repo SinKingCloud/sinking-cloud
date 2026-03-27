@@ -5,6 +5,7 @@ import (
 	"service-admin/app/service/auth"
 	"service-admin/app/service/config"
 	"service-admin/app/service/rbac"
+	"service-admin/app/service/user"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
@@ -14,6 +15,7 @@ var (
 	Config ConfigService
 	Auth   AuthService
 	Rbac   RbacService
+	User   UserService
 )
 
 func Init() {
@@ -30,4 +32,5 @@ func Init() {
 	Config = config.NewService(configRepository, cache)
 	Auth = auth.NewService(authService, sessionRepository, userRepository, cache)
 	Rbac = rbac.NewService(roleRepository, permissionRepository, userRoleRepository, rolePermRepository, cache)
+	User = user.NewService(userRepository, cache)
 }

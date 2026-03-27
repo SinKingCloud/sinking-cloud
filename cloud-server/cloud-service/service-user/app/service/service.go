@@ -4,6 +4,7 @@ import (
 	"service-user/app/repository"
 	"service-user/app/service/auth"
 	"service-user/app/service/config"
+	"service-user/app/service/user"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
@@ -12,6 +13,7 @@ import (
 var (
 	Config ConfigService
 	Auth   AuthService
+	User   UserService
 )
 
 func Init() {
@@ -23,4 +25,5 @@ func Init() {
 
 	Config = config.NewService(configRepository, cache)
 	Auth = auth.NewService(authService, sessionRepository, userRepository, cache)
+	User = user.NewService(userRepository, cache)
 }

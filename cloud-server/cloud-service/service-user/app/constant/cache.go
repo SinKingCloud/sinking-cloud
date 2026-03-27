@@ -1,6 +1,9 @@
 package constant
 
 const (
+	CacheNameWithUserInfo = "UserInfo_"       //用户信息
+	CacheTimeWithUserInfo = int64(600 * 1000) //用户信息储存时间
+
 	CacheNameWithUserConfig = "UserConfig_"     //用户应用配置
 	CacheTimeWithUserConfig = int64(600 * 1000) //用户应用配置储存时间
 

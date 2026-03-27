@@ -9,6 +9,9 @@ import (
 
 // User 用户仓储接口
 type User interface {
+	CountByPhone(phone string) (int64, error)
+	CountByEmail(email string) (int64, error)
+	FindById(id int64) (*model.User, error)
 	FindByIdentifier(identifier string) (*model.User, error)
 	Create(user *model.User) error
 }

@@ -9,6 +9,7 @@ import (
 
 // User 用户仓储接口
 type User interface {
+	FindById(id int64) (*model.User, error)
 	FindByIdentifier(identifier string) (*model.User, error)
 	Create(user *model.User) error
 }
