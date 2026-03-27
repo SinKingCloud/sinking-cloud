@@ -8,16 +8,13 @@ import (
 )
 
 // UpdateByCode 根据 code 更新权限
-func (r *Repository) UpdateByCode(code string, perm *model.Permission) error {
+func (r *Repository) UpdateByCode(code string, perm *UpdatePermission) error {
 	if perm == nil {
 		return nil
 	}
 	updates := make(map[string]interface{})
 	if perm.Name != "" {
 		updates["name"] = perm.Name
-	}
-	if perm.Code != "" {
-		updates["code"] = perm.Code
 	}
 	if perm.Path != "" {
 		updates["path"] = perm.Path

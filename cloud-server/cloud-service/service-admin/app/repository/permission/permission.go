@@ -11,7 +11,7 @@ type Interface interface {
 	FindByPath(path string) (*model.Permission, error)
 	FindByCode(code string) (*model.Permission, error)
 	Create(perm *model.Permission) error
-	UpdateByCode(code string, perm *model.Permission) error
+	UpdateByCode(code string, perm *UpdatePermission) error
 }
 
 // Repository 仓储
