@@ -1,7 +1,13 @@
 package service
 
 import (
-	"service-admin/app/repository"
+	config2 "service-admin/app/repository/config"
+	"service-admin/app/repository/permission"
+	"service-admin/app/repository/role"
+	"service-admin/app/repository/role_permission"
+	"service-admin/app/repository/session"
+	user2 "service-admin/app/repository/user"
+	"service-admin/app/repository/user_role"
 	"service-admin/app/service/auth"
 	"service-admin/app/service/config"
 	"service-admin/app/service/rbac"
@@ -19,13 +25,13 @@ var (
 )
 
 func Init() {
-	configRepository := repository.NewConfig(global.App.Database)
-	userRepository := repository.NewUser(global.App.Database)
-	roleRepository := repository.NewRole(global.App.Database)
-	sessionRepository := repository.NewSession(global.App.Database)
-	permissionRepository := repository.NewPermission(global.App.Database)
-	userRoleRepository := repository.NewUserRole(global.App.Database)
-	rolePermRepository := repository.NewRolePermission(global.App.Database)
+	configRepository := config2.NewRepository(global.App.Database)
+	userRepository := user2.NewRepository(global.App.Database)
+	roleRepository := role.NewRepository(global.App.Database)
+	sessionRepository := session.NewRepository(global.App.Database)
+	permissionRepository := permission.NewRepository(global.App.Database)
+	userRoleRepository := user_role.NewRepository(global.App.Database)
+	rolePermRepository := role_permission.NewRepository(global.App.Database)
 	cache := global.App.Cache
 	authService := service.Auth
 

@@ -1,7 +1,9 @@
 package service
 
 import (
-	"service-user/app/repository"
+	config2 "service-user/app/repository/config"
+	"service-user/app/repository/session"
+	user2 "service-user/app/repository/user"
 	"service-user/app/service/auth"
 	"service-user/app/service/config"
 	"service-user/app/service/user"
@@ -17,9 +19,9 @@ var (
 )
 
 func Init() {
-	configRepository := repository.NewConfig(global.App.Database)
-	userRepository := repository.NewUser(global.App.Database)
-	sessionRepository := repository.NewSession(global.App.Database)
+	configRepository := config2.NewRepository(global.App.Database)
+	userRepository := user2.NewRepository(global.App.Database)
+	sessionRepository := session.NewRepository(global.App.Database)
 	cache := global.App.Cache
 	authService := service.Auth
 
