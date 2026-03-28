@@ -30,7 +30,6 @@ type GetSystemUserConfigParam struct {
 // SetSystemUserConfigParam 设置系统用户配置请求参数
 type SetSystemUserConfigParam struct {
 	UserId int64  // 用户ID
-	Group  string // 配置分组
 	Key    string // 配置键
 	Value  string // 配置值
 }
@@ -38,7 +37,6 @@ type SetSystemUserConfigParam struct {
 // SetSystemUserConfigsParam 批量设置系统用户配置请求参数
 type SetSystemUserConfigsParam struct {
 	UserId int64             // 用户ID
-	Group  string            // 配置分组
 	Data   map[string]string // 配置数据
 }
 

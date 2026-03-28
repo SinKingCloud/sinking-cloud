@@ -27,7 +27,7 @@ func (*configService) SetUserConfig(params json.RawMessage) (interface{}, error)
 	if err != nil {
 		return nil, err
 	}
-	return service.Config.SetUserConfig(param.UserId, param.Group, param.Key, param.Value), nil
+	return service.Config.SetUserConfig(param.UserId, param.Key, param.Value), nil
 }
 
 // SetUserConfigs 批量设置用户配置
@@ -37,7 +37,7 @@ func (*configService) SetUserConfigs(params json.RawMessage) (interface{}, error
 	if err != nil {
 		return nil, err
 	}
-	service.Config.SetUserConfigs(param.UserId, param.Group, param.Data)
+	service.Config.SetUserConfigs(param.UserId, param.Data)
 	return true, nil
 }
 

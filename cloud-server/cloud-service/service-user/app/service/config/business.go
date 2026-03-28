@@ -15,19 +15,20 @@ func (s *service) getConfig(userId int64, key string, refresh bool) map[string]s
 	ttl := constant.CacheTimeWithUserConfig
 	if refresh {
 		config = s.selectWithUserIDAndKey(userId, key)
-		data, err := json.Marshal(config)
-		if err == nil {
+		if data, err := json.Marshal(config); err == nil {
 			s.cache.SetWithExpire(cacheKey, string(data), ttl)
 		}
 	} else {
+		var err error
 		data, exists := s.cache.Get(cacheKey)
 		if exists {
-			_ = json.Unmarshal([]byte(data), &config)
-		} else {
+			err = json.Unmarshal([]byte(data), &config)
+		}
+		if err != nil {
 			config = s.selectWithUserIDAndKey(userId, key)
-			data, err := json.Marshal(config)
-			if err == nil {
-				s.cache.SetWithExpire(cacheKey, string(data), ttl)
+			data2, err2 := json.Marshal(config)
+			if err2 == nil {
+				s.cache.SetWithExpire(cacheKey, string(data2), ttl)
 			}
 		}
 	}

@@ -19,10 +19,9 @@ func (*Service) GetSystemUserConfig(userId int64, group string, refresh bool) (c
 }
 
 // SetSystemUserConfig 设置用户配置
-func (*Service) SetSystemUserConfig(userId int64, group string, key string, value string) (result bool) {
+func (*Service) SetSystemUserConfig(userId int64, key string, value string) (result bool) {
 	err := rpc.InvokeFunc(constant.ServiceAdmin, "SetUserConfig", &SetSystemUserConfigParam{
 		UserId: userId,
-		Group:  group,
 		Key:    key,
 		Value:  value,
 	}, &result)
@@ -33,10 +32,9 @@ func (*Service) SetSystemUserConfig(userId int64, group string, key string, valu
 }
 
 // SetSystemUserConfigs 批量设置用户配置
-func (*Service) SetSystemUserConfigs(userId int64, group string, data map[string]string) bool {
+func (*Service) SetSystemUserConfigs(userId int64, data map[string]string) bool {
 	err := rpc.InvokeFunc(constant.ServiceAdmin, "SetUserConfigs", &SetSystemUserConfigsParam{
 		UserId: userId,
-		Group:  group,
 		Data:   data,
 	}, nil)
 	if err != nil {
