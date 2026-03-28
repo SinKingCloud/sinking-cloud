@@ -13,6 +13,8 @@ const (
 	CacheNameWithUserInfo = "SysUserInfo_"    //用户信息
 	CacheTimeWithUserInfo = int64(600 * 1000) //用户信息储存时间
 
+	CacheNameWithUserVerify = "SysUserVerify_" //安全验证
+
 	CacheNameWithPermission = "Permission_"     //权限信息缓存
 	CacheTimeWithPermission = int64(600 * 1000) //权限信息缓存储存时间
 
