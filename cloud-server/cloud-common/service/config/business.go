@@ -106,10 +106,9 @@ func (*Service) GetWebUserConfig(userId int64, group string, refresh bool) (conf
 }
 
 // SetWebUserConfig 设置用户配置
-func (*Service) SetWebUserConfig(userId int64, group string, key string, value string) (result bool) {
+func (*Service) SetWebUserConfig(userId int64, key string, value string) (result bool) {
 	err := rpc.InvokeFunc(constant.ServiceUser, "SetUserConfig", &SetWebUserConfigParam{
 		UserId: userId,
-		Group:  group,
 		Key:    key,
 		Value:  value,
 	}, &result)
@@ -120,10 +119,9 @@ func (*Service) SetWebUserConfig(userId int64, group string, key string, value s
 }
 
 // SetWebUserConfigs 批量设置用户配置
-func (*Service) SetWebUserConfigs(userId int64, group string, data map[string]string) bool {
+func (*Service) SetWebUserConfigs(userId int64, data map[string]string) bool {
 	err := rpc.InvokeFunc(constant.ServiceUser, "SetUserConfigs", &SetWebUserConfigsParam{
 		UserId: userId,
-		Group:  group,
 		Data:   data,
 	}, nil)
 	if err != nil {

@@ -10,7 +10,6 @@ type GetWebUserConfigParam struct {
 // SetWebUserConfigParam 设置Web用户配置请求参数
 type SetWebUserConfigParam struct {
 	UserId int64  // 用户ID
-	Group  string // 配置分组
 	Key    string // 配置键
 	Value  string // 配置值
 }
@@ -18,7 +17,6 @@ type SetWebUserConfigParam struct {
 // SetWebUserConfigsParam 批量设置Web用户配置请求参数
 type SetWebUserConfigsParam struct {
 	UserId int64             // 用户ID
-	Group  string            // 配置分组
 	Data   map[string]string // 配置数据
 }
 

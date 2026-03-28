@@ -5,6 +5,7 @@ import (
 	"service-user/app/constant"
 	"service-user/app/model"
 	"strconv"
+	"strings"
 )
 
 // getConfig 获取配置
@@ -35,22 +36,21 @@ func (s *service) getConfig(userId int64, key string, refresh bool) map[string]s
 
 // setConfig 设置配置
 func (s *service) setConfig(userId int64, key string, value string) bool {
-	lock := constant.LockConfigSet + strconv.FormatInt(userId, 10) + key
+	lock := constant.LockConfigSet + strconv.FormatInt(userId, 10) + "_" + key
 	if !s.cache.Lock(lock, constant.LockTimeConfigSet) {
 		return false
 	}
 	defer s.cache.UnLock(lock)
 	rowsAffected, err := s.repositoryConfig.UpdateByUserIdAndKey(userId, key, value)
-	if err != nil || rowsAffected <= 0 {
+	if err != nil {
+		return false
+	}
+	if rowsAffected <= 0 {
 		err = s.repositoryConfig.Create(&model.Config{
 			UserId: userId,
 			Key:    key,
 			Value:  value,
 		})
-	}
-	if err == nil {
-		cacheKey := constant.CacheNameWithUserConfig + strconv.FormatInt(userId, 10) + "_" + key
-		s.cache.Delete(cacheKey)
 	}
 	return err == nil
 }
@@ -62,20 +62,33 @@ func (s *service) GetUserConfigs(userId int64, group string, refresh bool) map[s
 
 // clearUserConfigCache 清理用户配置缓存
 func (s *service) clearUserConfigCache(userId int64, group string) bool {
+	dotIndex := strings.Index(group, ".")
+	if dotIndex != -1 {
+		group = group[:dotIndex]
+	}
 	key := constant.CacheNameWithUserConfig + strconv.FormatInt(userId, 10) + "_" + group
 	return s.cache.Delete(key)
 }
 
 // SetUserConfig 设置用户配置
-func (s *service) SetUserConfig(userId int64, group string, key string, value string) bool {
-	defer s.clearUserConfigCache(userId, group)
+func (s *service) SetUserConfig(userId int64, key string, value string) bool {
+	defer s.clearUserConfigCache(userId, key)
 	return s.setConfig(userId, key, value)
 }
 
 // SetUserConfigs 批量设置用户配置
-func (s *service) SetUserConfigs(userId int64, group string, data map[string]string) {
+func (s *service) SetUserConfigs(userId int64, data map[string]string) {
+	groups := map[string]int{}
 	for k, v := range data {
 		s.setConfig(userId, k, v)
+		dotIndex := strings.Index(k, ".")
+		if dotIndex != -1 {
+			groups[k[:dotIndex]] = 1
+		} else {
+			groups[k] = 1
+		}
 	}
-	s.clearUserConfigCache(userId, group)
+	for k := range groups {
+		s.clearUserConfigCache(userId, k)
+	}
 }
