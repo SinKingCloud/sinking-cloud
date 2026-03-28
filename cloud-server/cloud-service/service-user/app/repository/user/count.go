@@ -25,3 +25,14 @@ func (r *Repository) CountByEmail(email string) (int64, error) {
 	}
 	return total, nil
 }
+
+// CountByAccount 根据账户统计用户数量
+func (r *Repository) CountByAccount(account string) (int64, error) {
+	var total int64
+	err := r.Database.Db.Model(&model.User{}).
+		Where("account = ?", account).Count(&total).Error
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
+}

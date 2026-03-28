@@ -10,6 +10,7 @@ import (
 type Interface interface {
 	CountByPhone(phone string) (int64, error)
 	CountByEmail(email string) (int64, error)
+	CountByAccount(account string) (int64, error)
 	FindById(id int64) (*model.User, error)
 	FindByIdentifier(identifier string) (*model.User, error)
 	Create(user *model.User) error

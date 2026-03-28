@@ -12,9 +12,11 @@ func loadApi(s *sinking_web.Engine) {
 	person := s.Group("/person")
 	{
 		person.ANY("/info", context.HandleFunc(controller.Person.Info))         //个人信息
+		person.ANY("/verify", context.HandleFunc(controller.Person.Verify))     //安全验证
 		person.ANY("/password", context.HandleFunc(controller.Person.Password)) //修改密码
 		person.ANY("/email", context.HandleFunc(controller.Person.Email))       //修改邮箱
 		person.ANY("/phone", context.HandleFunc(controller.Person.Phone))       //修改手机
+		person.ANY("/account", context.HandleFunc(controller.Person.Account))   //修改账号
 		person.ANY("/update", context.HandleFunc(controller.Person.Update))     //修改资料
 	}
 }
