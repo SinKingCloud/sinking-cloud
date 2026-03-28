@@ -9,11 +9,10 @@ import (
 
 // Enum 枚举数据
 func Enum(c *context.Context) {
-	type Form struct {
+	var form struct {
 		Name string `json:"name" default:"" validate:"required" label:"枚举名称"`
 	}
-	form := &Form{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}

@@ -9,11 +9,10 @@ import (
 
 // Logout 登陆注销
 func Logout(c *context.Context) {
-	type Form struct {
+	var form struct {
 		IsAdmin bool `json:"is_admin" default:"false" validate:"required,oneof=true false" label:"是否后台"`
 	}
-	form := &Form{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}

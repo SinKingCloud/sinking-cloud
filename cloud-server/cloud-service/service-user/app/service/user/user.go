@@ -11,6 +11,7 @@ import (
 // Service service接口
 type Service interface {
 	GetUserInfo(userId int64, refresh bool) (user *model.User, err error) //获取用户信息
+	UpdateById(id int64, data *user.UpdateUser) error                     //更新用户信息
 }
 
 // Session服务

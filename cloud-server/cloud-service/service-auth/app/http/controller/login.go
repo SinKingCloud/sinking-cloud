@@ -8,7 +8,7 @@ import (
 
 // Login 账号登录
 func Login(c *context.Context) {
-	type Form struct {
+	var form struct {
 		Account  string `json:"account" default:"" validate:"required" label:"账号"`
 		Password string `json:"password" default:"" validate:"omitempty,min=6,max=20" label:"密码"`
 		Code     string `json:"code" default:"" validate:"omitempty,numeric,len=6" label:"验证码"`
@@ -17,8 +17,7 @@ func Login(c *context.Context) {
 		CaptchaX int    `json:"captcha_x" default:"" validate:"required,numeric,min=0,max=999" label:"验证码X坐标"`
 		CaptchaY int    `json:"captcha_y" default:"" validate:"required,numeric,min=0,max=999" label:"验证码Y坐标"`
 	}
-	form := &Form{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}

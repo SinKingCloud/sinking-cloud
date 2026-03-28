@@ -10,15 +10,14 @@ import (
 
 // Sms 发送短信验证码
 func Sms(c *context.Context) {
-	type Form struct {
+	var form struct {
 		Phone    string `json:"phone" default:"" validate:"omitempty,numeric,len=11" label:"手机号"`
 		IsAdmin  bool   `json:"is_admin" default:"false" validate:"required,oneof=true false" label:"是否后台"`
 		Token    string `json:"token" default:"" validate:"required,len=16" label:"验证码标识"`
 		CaptchaX int    `json:"captcha_x" default:"" validate:"required,numeric" label:"验证码X坐标"`
 		CaptchaY int    `json:"captcha_y" default:"" validate:"required,numeric" label:"验证码Y坐标"`
 	}
-	form := &Form{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}

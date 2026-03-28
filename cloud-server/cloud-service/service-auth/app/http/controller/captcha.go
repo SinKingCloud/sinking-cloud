@@ -8,11 +8,10 @@ import (
 
 // Captcha 验证码
 func Captcha(c *context.Context) {
-	type Form struct {
+	var form struct {
 		Token string `json:"token" default:"" validate:"required,len=16" label:"验证码标识"`
 	}
-	form := &Form{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}

@@ -2,8 +2,10 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"service-user/app/constant"
 	"service-user/app/model"
+	"service-user/app/repository/user"
 	"strconv"
 )
 
@@ -25,4 +27,16 @@ func (s *service) GetUserInfo(userId int64, refresh bool) (user *model.User, err
 		s.cache.SetWithExpire(cacheKey, string(data), constant.CacheTimeWithUserInfo)
 	}
 	return user, nil
+}
+
+// UpdateById 更新用户信息
+func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
+	if data == nil {
+		return errors.New("参数不能为空")
+	}
+	err := s.repositoryUser.UpdateById(id, data)
+	if err == nil {
+		_, _ = s.GetUserInfo(id, true)
+	}
+	return err
 }
