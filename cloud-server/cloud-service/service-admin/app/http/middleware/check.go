@@ -22,7 +22,7 @@ func CheckLogin(c *context.Context) {
 		return
 	}
 	user, err := service.Auth.GetTokenInfo(token)
-	if err != nil || user == nil {
+	if err != nil || user == nil || user.Id <= 0 {
 		c.TokenError("登陆超时,请重新登陆")
 		c.Abort()
 		return

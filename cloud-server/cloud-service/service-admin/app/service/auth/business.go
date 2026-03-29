@@ -84,7 +84,7 @@ func (s *service) GetSessionInfo(token string) *model.Session {
 		}
 	}
 	session, err := s.repositorySession.FindByToken(token)
-	if err != nil || session == nil {
+	if err != nil || session == nil || session.Id <= 0 {
 		return nil
 	}
 	if data, err := json.Marshal(session); err == nil {

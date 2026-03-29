@@ -28,6 +28,7 @@ func Rbac(c *context.Context) {
 		err := service.Rbac.CheckUserHasPermission(user.Id, "/"+constant.ServiceAdmin+path)
 		if err != nil {
 			c.NotAllow("暂无权限访问此内容")
+			c.Abort()
 			return
 		}
 	}

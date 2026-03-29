@@ -14,5 +14,8 @@ func (r *Repository) FindById(id int64) (*model.Role, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
+	if role.Id <= 0 {
+		return nil, nil
+	}
 	return role, nil
 }

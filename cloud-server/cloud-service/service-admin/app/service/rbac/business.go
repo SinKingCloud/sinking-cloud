@@ -44,11 +44,11 @@ func (s *service) RegisterPermission(name string, code string, path string) erro
 // CheckUserHasPermission 判断用户是否含有权限
 func (s *service) CheckUserHasPermission(userId int64, path string) error {
 	//根据path查询数据库，获取path对应的权限code
-	permission, err := s.findPermissionByPath(path, false)
+	perm, err := s.findPermissionByPath(path, false)
 	if err != nil {
 		return err
 	}
-	if permission == nil {
+	if perm == nil || perm.Id <= 0 {
 		return nil
 	}
 	//存在则根据用户ID查询用户角色，获取到所有角色ID
@@ -64,7 +64,7 @@ func (s *service) CheckUserHasPermission(userId int64, path string) error {
 		permissionCodes, err2 := s.findPermissionCodesByRoleId(roleId, false)
 		if err2 == nil && permissionCodes != nil {
 			for _, permissionCode := range permissionCodes {
-				if permissionCode == permission.Code {
+				if permissionCode == perm.Code {
 					return nil
 				}
 			}

@@ -14,6 +14,9 @@ func (r *Repository) FindByPath(path string) (*model.Permission, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
+	if perm.Id <= 0 {
+		return nil, nil
+	}
 	return perm, nil
 }
 
@@ -23,6 +26,9 @@ func (r *Repository) FindByCode(code string) (*model.Permission, error) {
 	err := r.Database.Db.Where("code = ?", code).First(&perm).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
+	}
+	if perm.Id <= 0 {
+		return nil, nil
 	}
 	return perm, nil
 }
