@@ -68,6 +68,7 @@ func (s *service) Login(account string, password string, code string, userAgent 
 			} else {
 				u.Phone = account
 			}
+			u.NickName = str.NewNickTool().GetRand()
 			err = s.repositoryUser.Create(u)
 			if err != nil {
 				return "", err
@@ -86,11 +87,11 @@ func (s *service) Login(account string, password string, code string, userAgent 
 // Logout 注销登录
 func (s *service) Logout(token string) error {
 	key := jwt.CheckToken(token)
-	if key == nil {
+	if key == nil || key.User.Id <= 0 || key.User.Token == "" {
 		return errors.New("未获取到登陆信息")
 	}
-	s.cache.Delete(constant2.CacheNameWithSession + token)
-	err := s.repositorySession.DeleteByToken(token)
+	s.cache.Delete(constant2.CacheNameWithSession + key.User.Token)
+	err := s.repositorySession.DeleteByToken(key.User.Token)
 	if err != nil {
 		return errors.New("注销登录失败")
 	}
