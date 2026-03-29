@@ -12,7 +12,7 @@ func Login(c *context.Context) {
 		Account  string `json:"account" default:"" validate:"required" label:"账号"`
 		Password string `json:"password" default:"" validate:"omitempty,min=6,max=20" label:"密码"`
 		Code     string `json:"code" default:"" validate:"omitempty,numeric,len=6" label:"验证码"`
-		IsAdmin  bool   `json:"is_admin" default:"false" validate:"required,oneof=true false" label:"是否后台"`
+		IsAdmin  bool   `json:"is_admin" default:"false" validate:"omitempty,oneof=true false" label:"用户标识"`
 		Token    string `json:"token" default:"" validate:"required,len=16" label:"验证码标识"`
 		CaptchaX int    `json:"captcha_x" default:"" validate:"required,numeric,min=0,max=999" label:"验证码X坐标"`
 		CaptchaY int    `json:"captcha_y" default:"" validate:"required,numeric,min=0,max=999" label:"验证码Y坐标"`
