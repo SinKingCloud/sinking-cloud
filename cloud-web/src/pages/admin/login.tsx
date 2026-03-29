@@ -767,7 +767,6 @@ export default () => {
     const handleLogin = async (values: any, captchaRes: any, loginType: string) => {
         const body: any = {
             phone: values.phone,
-            device: values.device,
             token: captchaRes?.token,
             captcha_x: captchaRes?.x,
             captcha_y: captchaRes?.y
@@ -783,7 +782,7 @@ export default () => {
         await login({
             body,
             onSuccess: (r: any) => {
-                setLoginToken(values.device, r?.data);
+                setLoginToken(r?.data);
                 user?.refreshWebUser(() => {
                     message?.success(r?.message);
                     historyPush("user.index");
@@ -838,8 +837,6 @@ export default () => {
             message?.error("请阅读并同意《用户使用条款》协议");
             return;
         }
-        values.device = "web";
-
         // 验证输入
         if (!validatePhone(values.phone)) return;
 
