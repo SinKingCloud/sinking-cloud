@@ -1,8 +1,5 @@
 import {
     UserOutlined,
-    SafetyCertificateOutlined,
-    ThunderboltOutlined,
-    CustomerServiceOutlined,
     LoginOutlined,
     SwapOutlined
 } from '@ant-design/icons';
@@ -30,300 +27,29 @@ const useStyles: any = createStyles(({css, responsive, token, isDarkMode}: any):
             bottom: 0;
             width: 100%;
             height: 100%;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding-top: 80px;
             margin: 0;
-            padding: 0;
             background: ${isDarkMode ? token.colorBgContainer : '#ffffff'};
-            animation: fadeIn 0.6s ease-out;
-
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                }
-                to {
-                    opacity: 1;
-                }
-            }
-
-            ${responsive.md} {
-                flex-direction: column;
-                position: fixed;
-                width: 100vw;
-                height: 100vh;
-                overflow-y: auto;
-                overflow-x: hidden;
-                top: 0;
-                left: 0;
-            }
-        `,
-        leftPanel: css`
-            flex: 1;
-            background: linear-gradient(135deg, ${token.colorPrimary} 0%, ${token.colorPrimaryHover} 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: ${token.paddingXL * 2}px;
-            position: relative;
-            overflow: hidden;
-            animation: slideInLeft 0.8s ease-out;
-
-            @keyframes slideInLeft {
-                from {
-                    opacity: 0;
-                    transform: translateX(-50px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateX(0);
-                }
-            }
-
-            @media (prefers-reduced-motion: reduce) {
-                animation: none;
-            }
-
-            &::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-image: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-                z-index: 1;
-                animation: breathe 4s ease-in-out infinite;
-            }
-
-            &::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-image: linear-gradient(45deg, transparent 48%, rgba(255, 255, 255, 0.03) 49%, rgba(255, 255, 255, 0.03) 51%, transparent 52%),
-                linear-gradient(-45deg, transparent 48%, rgba(255, 255, 255, 0.03) 49%, rgba(255, 255, 255, 0.03) 51%, transparent 52%);
-                background-size: 60px 60px;
-                z-index: 0;
-                animation: slide 5s linear infinite;
-            }
-
-            @keyframes breathe {
-                0%, 100% {
-                    opacity: 1;
-                    transform: scale(1);
-                }
-                50% {
-                    opacity: 0.8;
-                    transform: scale(1.05);
-                }
-            }
-
-            @keyframes slide {
-                0% {
-                    background-position: 0 0;
-                }
-                100% {
-                    background-position: 60px 60px;
-                }
-            }
-
-            ${responsive.md} {
-                display: none;
-            }
-        `,
-        brandContent: css`
-            position: relative;
-            z-index: 2;
-            text-align: center;
-            color: white;
-            max-width: 500px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        `,
-        brandLogo: css`
-            font-size: ${token.fontSizeHeading1 * 2.5}px;
-            color: white;
-            margin-bottom: ${token.marginXS}px;
-            transition: all 0.4s ease;
-
-            &:hover {
-                transform: scale(1.1) rotate(5deg);
-            }
-
-            img {
-                width: 80px;
-                height: 80px;
-                border-radius: ${token.borderRadiusLG}px;
-                transition: all 0.4s ease;
-            }
-
-            ${responsive.md} {
-                font-size: ${token.fontSizeHeading1 * 2}px;
-                margin-bottom: ${token.marginXS}px;
-
-                img {
-                    width: 64px;
-                    height: 64px;
-                }
-            }
 
             ${responsive.sm} {
-                font-size: ${token.fontSizeHeading1 * 1.5}px;
-                margin-bottom: ${token.marginXXS}px;
-
-                img {
-                    width: 56px;
-                    height: 56px;
-                }
-            }
-        `,
-        brandTitle: css`
-            font-size: ${token.fontSizeHeading1 * 1.5}px;
-            font-weight: 700;
-            margin-bottom: ${token.marginXS}px;
-            color: white;
-            letter-spacing: 1px;
-
-            ${responsive.md} {
-                font-size: ${token.fontSizeHeading2}px;
-                margin-bottom: ${token.marginXXS}px;
-            }
-
-            ${responsive.sm} {
-                font-size: ${token.fontSizeHeading3}px;
-                margin-bottom: ${token.marginXXS}px;
-            }
-        `,
-        brandSubtitle: css`
-            font-size: ${token.fontSize}px;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: ${token.marginLG}px;
-            line-height: ${token.lineHeight};
-
-            ${responsive.md} {
-                font-size: ${token.fontSizeSM}px;
-                margin-bottom: ${token.margin}px;
-            }
-
-            ${responsive.sm} {
-                font-size: ${token.fontSizeSM}px;
-                margin-bottom: ${token.marginSM}px;
-            }
-        `,
-        brandFeatures: css`
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: ${token.marginSM}px;
-            margin-top: ${token.marginLG}px;
-
-            ${responsive.md} {
-                grid-template-columns: 1fr 1fr;
-                gap: ${token.marginSM}px;
-                margin-top: ${token.margin}px;
-            }
-
-            ${responsive.sm} {
-                grid-template-columns: 1fr;
-                gap: ${token.marginXS}px;
-                margin-top: ${token.marginSM}px;
-            }
-        `,
-        featureItem: css`
-            display: flex;
-            align-items: center;
-            gap: ${token.marginXS}px;
-            text-align: left;
-            padding: ${token.paddingXS}px ${token.paddingSM}px;
-            border-radius: ${token.borderRadius}px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            cursor: pointer;
-
-            &:hover {
-                background: rgba(255, 255, 255, 0.15);
-                transform: translateX(8px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-
-                .feature-icon {
-                    transform: scale(1.2);
-                }
-            }
-
-            .feature-icon {
-                font-size: ${token.fontSizeLG}px;
-                color: white;
-                opacity: 0.9;
-                transition: all 0.3s ease;
-            }
-
-            .feature-text {
-                font-size: ${token.fontSizeSM}px;
-                color: rgba(255, 255, 255, 0.85);
-                line-height: ${token.lineHeight};
-            }
-
-            ${responsive.md} {
-                .feature-icon {
-                    font-size: ${token.fontSize}px;
-                }
-
-                .feature-text {
-                    font-size: ${token.fontSizeSM}px;
-                }
+                padding-top: 48px;
+                padding-left: 24px;
+                padding-right: 24px;
             }
         `,
         rightPanel: css`
-            width: 520px;
+            width: 100%;
+            max-width: 440px;
             background: ${isDarkMode ? token.colorBgContainer : '#ffffff'};
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            padding: ${token.paddingXL * 2.5}px;
-            box-shadow: ${isDarkMode ? '0 0 40px rgba(0,0,0,0.5)' : '-2px 0 40px rgba(0,0,0,0.08)'};
-            animation: slideInRight 0.8s ease-out;
-
-            @keyframes slideInRight {
-                from {
-                    opacity: 0;
-                    transform: translateX(50px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateX(0);
-                }
-            }
-
-            @media (prefers-reduced-motion: reduce) {
-                animation: none;
-            }
-
-            ${responsive.lg} {
-                width: 460px;
-                padding: ${token.paddingXL * 2}px;
-            }
 
             ${responsive.md} {
-                width: 100%;
-                min-height: 100vh;
-                padding: ${token.paddingXL * 2}px ${token.paddingXL}px;
-                box-shadow: none;
-                justify-content: flex-start;
-                background: ${isDarkMode ? token.colorBgContainer : '#ffffff'};
-                animation: none;
-                position: relative;
-            }
-
-            ${responsive.sm} {
-                padding: ${token.paddingXL}px ${token.paddingLG}px;
-                min-height: 100vh;
+                max-width: 100%;
             }
         `,
         loginContent: css`
@@ -341,66 +67,58 @@ const useStyles: any = createStyles(({css, responsive, token, isDarkMode}: any):
             }
         `,
         mobileHeader: css`
-            display: none;
+            text-align: center;
+            margin-bottom: ${token.margin}px;
 
-            ${responsive.md} {
-                display: block;
-                text-align: center;
-                margin-top: ${token.marginXL}px;
-                margin-bottom: ${token.marginXXL}px;
-                position: relative;
-                z-index: 1;
+            .mobile-logo-title {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: ${token.marginSM}px;
+                margin-bottom: ${token.marginXS}px;
+                height: 48px;
+            }
 
-                .mobile-logo-title {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: ${token.marginSM}px;
-                    margin-bottom: ${token.marginLG}px;
-                    height: 48px;
-                }
+            img {
+                width: 48px;
+                height: 48px;
+                flex-shrink: 0;
+            }
 
-                img {
-                    width: 48px;
-                    height: 48px;
-                    flex-shrink: 0;
-                }
+            .mobile-title {
+                font-size: 48px;
+                font-weight: 700;
+                color: ${isDarkMode ? token.colorText : token.colorTextHeading};
+                line-height: 48px;
+                height: 48px;
+                display: flex;
+                align-items: center;
+            }
 
-                .mobile-title {
-                    font-size: 48px;
-                    font-weight: 700;
-                    color: ${isDarkMode ? token.colorText : token.colorTextHeading};
-                    line-height: 48px;
-                    height: 48px;
-                    display: flex;
-                    align-items: center;
-                }
-
-                .mobile-subtitle {
-                    font-size: ${token.fontSizeSM}px;
-                    color: ${isDarkMode ? token.colorTextSecondary : token.colorTextTertiary};
-                    line-height: 1.5;
-                }
+            .mobile-subtitle {
+                font-size: ${token.fontSizeSM}px;
+                color: ${isDarkMode ? token.colorTextSecondary : token.colorTextTertiary};
+                line-height: 1.5;
+                margin-top: ${token.margin}px;
             }
 
             ${responsive.sm} {
-                margin-top: ${token.marginLG}px;
-                margin-bottom: ${token.marginXL}px;
+                margin-bottom: ${token.marginSM}px;
+                padding-top: ${token.margin}px;
 
                 .mobile-logo-title {
-                    gap: ${token.marginXS}px;
-                    margin-bottom: ${token.margin}px;
                     height: 40px;
-                }
-
-                img {
-                    width: 40px;
-                    height: 40px;
+                    margin-bottom: ${token.marginXXS}px;
                 }
 
                 .mobile-title {
                     font-size: 40px;
                     line-height: 40px;
+                    height: 40px;
+                }
+
+                img {
+                    width: 40px;
                     height: 40px;
                 }
             }
@@ -409,23 +127,26 @@ const useStyles: any = createStyles(({css, responsive, token, isDarkMode}: any):
             font-size: ${token.fontSizeHeading2}px;
             font-weight: 700;
             color: ${isDarkMode ? token.colorText : token.colorTextHeading};
-            margin-bottom: ${token.marginXS}px;
+            margin-bottom: ${token.marginXXS}px;
+            text-align: center;
 
-            ${responsive.md} {
-                display: none;
+            ${responsive.sm} {
+                font-size: ${token.fontSizeHeading3}px;
             }
         `,
         loginSubtitle: css`
             font-size: ${token.fontSizeSM}px;
             color: ${isDarkMode ? token.colorTextSecondary : token.colorTextTertiary};
-            margin-bottom: ${token.marginXL}px;
+            margin-bottom: ${token.marginSM}px;
+            text-align: center;
 
-            ${responsive.md} {
-                display: none;
+            ${responsive.sm} {
+                font-size: ${token.fontSize}px;
+                margin-bottom: ${token.marginXS}px;
             }
         `,
         tabsWrapper: css`
-            margin-bottom: ${token.marginLG}px;
+            margin-bottom: ${token.margin}px;
 
             .ant-tabs-nav {
                 margin-bottom: 0 !important;
@@ -611,20 +332,6 @@ const useStyles: any = createStyles(({css, responsive, token, isDarkMode}: any):
                 }
             }
         `,
-        agreement: css`
-            .ant-checkbox-wrapper {
-                font-size: ${token.fontSizeSM}px;
-                color: ${isDarkMode ? token.colorTextSecondary : token.colorTextTertiary};
-
-                a {
-                    color: ${token.colorPrimary};
-
-                    &:hover {
-                        color: ${token.colorPrimaryHover};
-                    }
-                }
-            }
-        `,
         loggedInCard: css`
             text-align: center;
             padding: ${token.paddingXL}px;
@@ -731,7 +438,6 @@ export default () => {
     const [type, setType] = useState<string>('account');
     const [isLoading, setIsLoading] = useState(false);
     const [isCodeSendLoading, setIsCodeSendLoading] = useState(false);
-    const [isRead, setIsRead] = useState(true);
     const [countdown, setCountdown] = useState(0);
     const [showRelogin, setShowRelogin] = useState(false);
     const [checkingLogin, setCheckingLogin] = useState(true);
@@ -853,10 +559,6 @@ export default () => {
 
     // 表单提交
     const handleSubmit = async (values: any) => {
-        if (!isRead) {
-            message?.error("请阅读并同意《用户使用条款》协议");
-            return;
-        }
         // 验证输入
         if (type === "account") {
             if (!values.account || values.account.length === 0) {
@@ -906,52 +608,9 @@ export default () => {
             <div className={styles.container}>
                 <Captcha ref={captcha}/>
 
-                {/* 左侧品牌区域 */}
-                <div className={styles.leftPanel}>
-                    <div className={styles.brandContent}>
-                        <div className={styles.brandLogo}>
-                            {web?.info?.logo ? (
-                                <img
-                                    src={web?.info?.logo || ((Settings?.basePath || '/') + 'logo.svg')}
-                                    alt="logo"
-                                />
-                            ) : (
-                                <Icon type="icon-logo"/>
-                            )}
-                        </div>
-
-                        <div className={styles.brandTitle}>
-                            {web?.info?.name || Settings?.title}
-                        </div>
-
-                        <div className={styles.brandSubtitle}>
-                            为您提供专业、安全、高效的一站式网络服务平台
-                        </div>
-
-                        <div className={styles.brandFeatures}>
-                            <div className={styles.featureItem}>
-                                <SafetyCertificateOutlined className="feature-icon"/>
-                                <span className="feature-text">安全可靠</span>
-                            </div>
-                            <div className={styles.featureItem}>
-                                <ThunderboltOutlined className="feature-icon"/>
-                                <span className="feature-text">快速响应</span>
-                            </div>
-                            <div className={styles.featureItem}>
-                                <UserOutlined className="feature-icon"/>
-                                <span className="feature-text">专业团队</span>
-                            </div>
-                            <div className={styles.featureItem}>
-                                <CustomerServiceOutlined className="feature-icon"/>
-                                <span className="feature-text">7×24服务</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* 右侧登录区域 */}
+                {/* 登录卡片 */}
                 <div className={styles.rightPanel}>
-                    {/* 移动端头部 */}
+                    {/* 顶部 Logo 区域 */}
                     <div className={styles.mobileHeader}>
                         <div className="mobile-logo-title">
                             {web?.info?.logo ? (
@@ -967,7 +626,7 @@ export default () => {
                             )}
                             <div className="mobile-title">{web?.info?.name || Settings?.title}</div>
                         </div>
-                        <div className="mobile-subtitle">为您提供专业、安全、高效的一站式网络服务平台</div>
+                        <div className="mobile-subtitle">后台管理平台</div>
                     </div>
 
                     <div className={styles.loginContent}>
@@ -1037,9 +696,6 @@ export default () => {
                             </>
                         ) : (
                             <>
-                                <div className={styles.loginTitle}>欢迎登录</div>
-                                <div className={styles.loginSubtitle}>请输入您的账号信息</div>
-
                                 <Tabs
                                     items={items}
                                     activeKey={type}
@@ -1123,14 +779,8 @@ export default () => {
                                             htmlType='submit'
                                             block
                                         >
-                                            {type === 'code' ? '登录 / 注册' : '登 录'}
+                                           登 录
                                         </Button>
-                                    </Form.Item>
-
-                                    <Form.Item style={{marginBottom: 0}} className={styles.agreement}>
-                                        <Checkbox checked={isRead} onChange={(e) => setIsRead(e.target.checked)}>
-                                            我已阅读并同意 <a href=''>《用户使用条款》</a>
-                                        </Checkbox>
                                     </Form.Item>
                                 </Form>
                             </>
