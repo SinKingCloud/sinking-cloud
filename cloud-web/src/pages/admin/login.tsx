@@ -14,6 +14,7 @@ import {login, logout} from "@/service/common/login";
 import {setLoginToken, deleteHeader} from "@/utils/auth";
 import Captcha, {CaptchaRef} from "@/pages/components/captcha";
 import {sendSms} from "@/service/common/sms";
+import {sendMail} from "@/service/common/mail";
 import Settings from "@/../config/defaultSettings";
 import {historyPush} from "@/utils/route";
 import {createStyles} from 'antd-style';
@@ -510,7 +511,7 @@ const useStyles: any = createStyles(({css, responsive, token, isDarkMode}: any):
                 border-radius: ${token.borderRadiusLG}px;
                 box-shadow: ${isDarkMode ? `0 2px 8px rgba(0,0,0,0.15)` : 'rgba(0, 0, 0, 0.05) 0 7px 25px 0'};
                 padding: 0 ${token.paddingLG}px;
-                transition: all 0.3s ease;
+                transition: box-shadow 0.3s ease;
 
                 &:hover {
                     box-shadow: ${isDarkMode ? `0 4px 12px rgba(0,0,0,0.25)` : 'rgba(0, 0, 0, 0.08) 0 10px 30px 0'};
@@ -520,6 +521,18 @@ const useStyles: any = createStyles(({css, responsive, token, isDarkMode}: any):
                     box-shadow: ${isDarkMode
                             ? `0 4px 12px rgba(0,0,0,0.3), 0 0 0 2px ${token.colorPrimaryBg}`
                             : `rgba(0, 0, 0, 0.08) 0 10px 30px 0, 0 0 0 2px ${token.colorPrimaryBg}`};
+                }
+
+                &.ant-input-status-error,
+                &.ant-input-affix-wrapper-status-error {
+                    border-color: ${token.colorError} !important;
+                    box-shadow: ${isDarkMode
+                            ? `0 2px 8px rgba(0,0,0,0.15)`
+                            : 'rgba(0, 0, 0, 0.05) 0 7px 25px 0'} !important;
+
+                    .ant-input {
+                        border-color: transparent !important;
+                    }
                 }
 
                 .ant-input {
@@ -564,23 +577,18 @@ const useStyles: any = createStyles(({css, responsive, token, isDarkMode}: any):
             .ant-btn-default {
                 height: 52px;
                 border-radius: ${token.borderRadiusLG}px;
-                background: ${isDarkMode ? token.colorBgElevated : '#ffffff'};
-                border: ${isDarkMode ? `1px solid ${token.colorBorder}` : 'none'};
-                box-shadow: ${isDarkMode ? `0 2px 8px rgba(0,0,0,0.15)` : 'rgba(0, 0, 0, 0.05) 0 4px 12px 0'};
+                background: ${isDarkMode ? token.colorBgElevated : '#ffffff'} !important;
+                border: 1px solid ${isDarkMode ? token.colorBorder : 'transparent'} !important;
+                box-shadow: ${isDarkMode ? `0 2px 8px rgba(0,0,0,0.15)` : 'rgba(0, 0, 0, 0.05) 0 4px 12px 0'} !important;
 
-                &:hover {
-                    background: ${isDarkMode ? token.colorBgTextHover : token.colorBgTextHover};
-                    box-shadow: ${isDarkMode ? `0 4px 12px rgba(0,0,0,0.25)` : 'rgba(0, 0, 0, 0.08) 0 6px 16px 0'};
+                &:hover,
+                &:focus,
+                &:focus-visible {
+                    background: ${isDarkMode ? token.colorBgTextHover : token.colorBgTextHover} !important;
+                    border-color: ${isDarkMode ? token.colorBorder : 'transparent'} !important;
+                    box-shadow: ${isDarkMode ? `0 4px 12px rgba(0,0,0,0.25)` : 'rgba(0, 0, 0, 0.08) 0 6px 16px 0'} !important;
                 }
             }
-        `,
-        phonePrefix: css`
-            color: ${isDarkMode ? token.colorTextTertiary : 'rgba(0, 0, 0, 0.35)'};
-            margin-right: ${token.marginXS}px;
-        `,
-        divider: css`
-            color: ${isDarkMode ? token.colorTextTertiary : 'rgba(0, 0, 0, 0.35)'};
-            margin: 0 ${token.marginXS}px;
         `,
         extraRow: css`
             display: flex;
@@ -639,7 +647,7 @@ const useStyles: any = createStyles(({css, responsive, token, isDarkMode}: any):
                 margin-bottom: ${token.marginXS}px;
             }
 
-            .user-phone {
+            .user-contact {
                 font-size: ${token.fontSizeSM}px;
                 color: ${isDarkMode ? token.colorTextSecondary : token.colorTextTertiary};
                 margin-bottom: ${token.marginLG}px;
@@ -671,7 +679,7 @@ const useStyles: any = createStyles(({css, responsive, token, isDarkMode}: any):
 
             .ant-btn-default {
                 background: ${isDarkMode ? token.colorBgElevated : '#ffffff'};
-                border: ${isDarkMode ? `1px solid ${token.colorBorder}` : 'none'};
+                border: ${isDarkMode ? `1px solid ${token.colorBorder}` : '#ffffff'};
                 box-shadow: ${isDarkMode ? `0 2px 8px rgba(0,0,0,0.15)` : 'rgba(0, 0, 0, 0.05) 0 4px 12px 0'};
 
                 &:hover {
@@ -722,7 +730,7 @@ export default () => {
 
     const [type, setType] = useState<string>('account');
     const [isLoading, setIsLoading] = useState(false);
-    const [isSmsSendLoading, setIsSmsSendLoading] = useState(false);
+    const [isCodeSendLoading, setIsCodeSendLoading] = useState(false);
     const [isRead, setIsRead] = useState(true);
     const [countdown, setCountdown] = useState(0);
     const [showRelogin, setShowRelogin] = useState(false);
@@ -731,7 +739,7 @@ export default () => {
     // 初始化时检查登录状态
     useEffect(() => {
         setCheckingLogin(true);
-        user?.refreshWebUser?.((d: any) => {
+        user?.refreshSystemUser?.((d: any) => {
             setCheckingLogin(false);
             if (!d) {
                 setShowRelogin(true);
@@ -739,13 +747,17 @@ export default () => {
         });
     }, []);
 
-    // 验证手机号
-    const validatePhone = (phone: string): boolean => {
-        if (!/^1[3-9]\d{9}$/.test(phone)) {
-            message?.error("请输入正确的手机号");
-            return false;
+    // 验证账号（手机号或邮箱）
+    const validateAccount = (value: string): { valid: boolean; type: 'phone' | 'email' | 'unknown' } => {
+        const phoneRegex = /^1[3-9]\d{9}$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (phoneRegex.test(value)) {
+            return {valid: true, type: 'phone'};
         }
-        return true;
+        if (emailRegex.test(value)) {
+            return {valid: true, type: 'email'};
+        }
+        return {valid: false, type: 'unknown'};
     };
 
     // 获取验证码倒计时
@@ -766,7 +778,8 @@ export default () => {
     // 统一登录处理
     const handleLogin = async (values: any, captchaRes: any, loginType: string) => {
         const body: any = {
-            phone: values.phone,
+            account: values.account,
+            is_admin: true,
             token: captchaRes?.token,
             captcha_x: captchaRes?.x,
             captcha_y: captchaRes?.y
@@ -783,14 +796,14 @@ export default () => {
             body,
             onSuccess: (r: any) => {
                 setLoginToken(r?.data);
-                user?.refreshWebUser(() => {
+                user?.refreshSystemUser?.(() => {
                     message?.success(r?.message);
-                    historyPush("user.index");
+                    historyPush("admin.index");
                     setIsLoading(false);
                 });
             },
             onFail: (r: any) => {
-                if (loginType === "phone") {
+                if (loginType === "code") {
                     modal.error({
                         title: '登录失败',
                         content: r?.message,
@@ -804,30 +817,37 @@ export default () => {
         });
     };
 
-    // 发送短信验证码
-    const handleSendSms = () => {
-        const phone = form.getFieldValue("phone" as any);
-        if (!validatePhone(phone)) return;
+    // 发送验证码（自动识别手机号或邮箱）
+    const handleSendCode = () => {
+        const account = form.getFieldValue("account" as any);
+        const result = validateAccount(account);
+        if (!result.valid) {
+            message?.error("请输入正确的手机号或邮箱");
+            return;
+        }
         if (countdown > 0) return;
 
+        const sendFn = result.type === 'email' ? sendMail : sendSms;
+        const targetValue = result.type === 'email' ? {mail: account} : {phone: account};
+
         captcha?.current?.Show?.(async (res) => {
-            setIsSmsSendLoading(true);
-            await sendSms({
+            setIsCodeSendLoading(true);
+            await sendFn({
                 body: {
                     token: res?.token,
                     captcha_x: res?.x,
                     captcha_y: res?.y,
-                    phone: phone
+                    ...targetValue
                 },
                 onSuccess: (r) => {
                     message?.success(r?.message);
                     startCountdown();
                 },
                 onFail: (r) => message?.error(r?.message),
-                onFinally: () => setIsSmsSendLoading(false)
+                onFinally: () => setIsCodeSendLoading(false)
             });
         }, () => {
-            setIsSmsSendLoading(false);
+            setIsCodeSendLoading(false);
         });
     };
 
@@ -838,16 +858,25 @@ export default () => {
             return;
         }
         // 验证输入
-        if (!validatePhone(values.phone)) return;
-
-        // 验证密码或验证码
-        if (type === "account" && (!values.password || values.password.length <= 5)) {
-            message?.error("请输入正确的密码");
-            return;
-        }
-        if (type === "phone" && (!values.code || values.code.length !== 6)) {
-            message?.error("请输入正确的手机验证码");
-            return;
+        if (type === "account") {
+            if (!values.account || values.account.length === 0) {
+                message?.error("请输入账号或手机号");
+                return;
+            }
+            if (!values.password || values.password.length <= 5) {
+                message?.error("请输入正确的密码");
+                return;
+            }
+        } else {
+            const result = validateAccount(values.account);
+            if (!result.valid) {
+                message?.error("请输入正确的手机号或邮箱");
+                return;
+            }
+            if (!values.code || values.code.length !== 6) {
+                message?.error("请输入正确的验证码");
+                return;
+            }
         }
 
         // 显示验证码并执行登录
@@ -859,7 +888,7 @@ export default () => {
 
     const items: any = [
         {key: 'account', label: '密码登录'},
-        {key: 'phone', label: '短信登录'}
+        {key: 'code', label: '验证登录'}
     ];
 
     return (
@@ -946,7 +975,7 @@ export default () => {
                             <div style={{textAlign: 'center', padding: '80px 0'}}>
                                 <Spin size="large"/>
                             </div>
-                        ) : user?.web?.id && !showRelogin ? (
+                        ) : user?.system?.id && !showRelogin ? (
                             <>
                                 <div className={styles.loginTitle}>欢迎回来</div>
                                 <div className={styles.loginSubtitle}>检测到您已登录</div>
@@ -954,15 +983,15 @@ export default () => {
                                 <div className={styles.loggedInCard}>
                                     <Avatar
                                         size={80}
-                                        src={user?.web?.avatar}
+                                        src={user?.system?.avatar || false}
                                         icon={<UserOutlined/>}
                                         className="user-avatar"
                                     />
                                     <div className="user-name">
-                                        {user?.web?.nick_name || '用户' + user?.web?.phone?.toString().slice(-4)}
+                                        {user?.system?.nick_name || '管理员' + (user?.system?.phone || user?.system?.email || user?.system?.account)?.toString().slice(0, 4)}
                                     </div>
-                                    <div className="user-phone">
-                                        {user?.web?.phone || '未绑定手机'}
+                                    <div className="user-contact">
+                                        {user?.system?.phone || user?.system?.email || user?.system?.account || '未绑定联系方式'}
                                     </div>
                                 </div>
 
@@ -970,7 +999,7 @@ export default () => {
                                     <Button
                                         type="primary"
                                         icon={<LoginOutlined/>}
-                                        onClick={() => historyPush("user.index")}
+                                        onClick={() => historyPush("admin.index")}
                                         block
                                     >
                                         快捷登录
@@ -988,10 +1017,11 @@ export default () => {
                                     <a onClick={async () => {
                                         message.loading({content: "正在退出登录...", key: "outLogin"});
                                         await logout({
+                                            body: {is_admin: true},
                                             onSuccess: (r) => {
                                                 message.success(r?.message || "退出登录成功");
                                                 deleteHeader();
-                                                user?.setWeb(undefined);
+                                                user?.setSystem(undefined);
                                                 message.destroy("outLogin");
                                                 setShowRelogin(true);
                                             },
@@ -1022,15 +1052,10 @@ export default () => {
                                 <Form form={form} onFinish={handleSubmit} className={styles.formWrapper}>
                                     {type === 'account' && (
                                         <>
-                                            <Form.Item name='phone' rules={[{required: true, message: '请输入手机号'}]}>
+                                            <Form.Item name='account'
+                                                       rules={[{required: true, message: '请输入账号或手机号或邮箱'}]}>
                                                 <Input
-                                                    prefix={
-                                                        <div>
-                                                            <span className={styles.phonePrefix}>+86</span>
-                                                            <span className={styles.divider}>|</span>
-                                                        </div>
-                                                    }
-                                                    placeholder='请输入账号或手机号'
+                                                    placeholder='请输入账号或手机号或邮箱'
                                                     allowClear
                                                 />
                                             </Form.Item>
@@ -1043,24 +1068,19 @@ export default () => {
                                             <div className={styles.extraRow}>
                                                 <Checkbox defaultChecked>下次自动登录</Checkbox>
                                                 <a onClick={() => {
-                                                    message?.warning("请使用短信验证登陆后修改密码");
-                                                    setType("phone");
+                                                    message?.warning("请使用验证登录后修改密码");
+                                                    setType("code");
                                                 }}>忘记密码</a>
                                             </div>
                                         </>
                                     )}
 
-                                    {type === 'phone' && (
+                                    {type === 'code' && (
                                         <>
-                                            <Form.Item name='phone' rules={[{required: true, message: '请输入手机号'}]}>
+                                            <Form.Item name='account'
+                                                       rules={[{required: true, message: '请输入手机号或邮箱'}]}>
                                                 <Input
-                                                    prefix={
-                                                        <div>
-                                                            <span className={styles.phonePrefix}>+86</span>
-                                                            <span className={styles.divider}>|</span>
-                                                        </div>
-                                                    }
-                                                    placeholder='请输入手机号'
+                                                    placeholder='请输入手机号或邮箱'
                                                     allowClear
                                                 />
                                             </Form.Item>
@@ -1076,15 +1096,15 @@ export default () => {
                                                             <span
                                                                 className={styles.sendSmsBtn}
                                                                 onClick={() => {
-                                                                    const phone = form.getFieldValue('phone' as any);
-                                                                    if (!phone) {
-                                                                        message?.error('请先输入手机号');
+                                                                    const account = form.getFieldValue('account' as any);
+                                                                    if (!account) {
+                                                                        message?.error('请先输入手机号或邮箱');
                                                                         return;
                                                                     }
-                                                                    handleSendSms();
+                                                                    handleSendCode();
                                                                 }}
                                                             >
-                                                        {isSmsSendLoading ? '发送中...' : '发送验证码'}
+                                                        {isCodeSendLoading ? '发送中...' : '发送验证码'}
                                                     </span>
                                                         )
                                                     }
@@ -1103,7 +1123,7 @@ export default () => {
                                             htmlType='submit'
                                             block
                                         >
-                                            {type === 'phone' ? '登录 / 注册' : '登 录'}
+                                            {type === 'code' ? '登录 / 注册' : '登 录'}
                                         </Button>
                                     </Form.Item>
 

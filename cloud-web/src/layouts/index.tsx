@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {Outlet, useLocation, history} from "umi";
-import {App, ConfigProvider, Spin} from "antd";
+import {useLocation, history} from "umi";
+import {ConfigProvider, Spin} from "antd";
 import {getCurrentPath, historyPush} from "@/utils/route";
 import {adminPath, userPath} from "../../config/routes";
-import {Admin, User} from "@/layouts/components";
+import {Admin, User, Index} from "@/layouts/components";
 import {useModel} from "umi";
 import Title from "./components/title";
 import {deleteHeader, getHeaders} from "@/utils/auth";
@@ -104,20 +104,13 @@ const ProLayout = () => {
     if (!web?.info || !web?.info?.ui) {
         return <Spin spinning={true} size="large" className={load}/>;
     }
-
     if (!isLoginPage && systemPath == userPath) {
         return <User/>
     }
-
     if (!isLoginPage && systemPath == adminPath) {
         return <Admin/>
     }
-
-    return <>
-        <App>
-            <Outlet/>
-        </App>
-    </>;
+    return <Index/>;
 }
 
 export default () => {

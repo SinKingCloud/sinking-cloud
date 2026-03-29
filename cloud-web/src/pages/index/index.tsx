@@ -2317,7 +2317,7 @@ export default () => {
         if (user?.web) {
             historyPush("user.index");
         } else {
-            historyPush("login");
+            historyPush("user.login");
         }
     };
 
@@ -2423,7 +2423,7 @@ export default () => {
                                 <>
                                     <button
                                         className={`${styles.navBtn} btn-secondary`}
-                                        onClick={() => historyPush("login")}
+                                        onClick={() => historyPush("user.login")}
                                     >
                                         <LoginOutlined/>
                                         登录
@@ -2542,7 +2542,7 @@ export default () => {
                                 <button
                                     className={styles.mobileActionItem}
                                     onClick={() => {
-                                        historyPush("login");
+                                        historyPush("user.login");
                                         setMobileMenuOpen(false);
                                     }}
                                 >
@@ -2638,7 +2638,7 @@ export default () => {
                                 {!user?.web && (
                                     <button
                                         className={styles.btnSecondary}
-                                        onClick={() => historyPush("login")}
+                                        onClick={() => historyPush("user.login")}
                                     >
                                         已有账号？登录
                                     </button>
@@ -2840,7 +2840,7 @@ export default () => {
                             <div className={styles.ctaButtons}>
                                 <button
                                     className={styles.btnPrimary}
-                                    onClick={() => user?.web ? historyPush("user.index") : historyPush("login")}
+                                    onClick={() => user?.web ? historyPush("user.index") : historyPush("user.login")}
                                 >
                                     {user?.web ? (
                                         <>

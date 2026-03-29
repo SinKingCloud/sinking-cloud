@@ -16,7 +16,7 @@ export default defineConfig({
         defaultSettings?.favicons?.toString(),
     ],
     history: {
-        type: 'hash'
+        type: 'browser'
     },
     hash: true,
     exportStatic: {},
