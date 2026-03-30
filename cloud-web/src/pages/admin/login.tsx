@@ -38,12 +38,11 @@ export default () => {
                     flex-direction: column;
                     justify-content: flex-start;
                     align-items: center;
-                    padding-top: ${isCompact ? 64 : 80}px;
+                    padding-top: ${isCompact ? 100 : 80}px;
                     margin: 0;
                     background: ${isDarkMode ? token.colorBgContainer : '#ffffff'};
 
                     ${responsive.sm} {
-                        padding-top: ${isCompact ? 48 : 48}px;
                         padding-left: 24px;
                         padding-right: 24px;
                     }
@@ -61,13 +60,13 @@ export default () => {
                     }
                 `,
                 loginContent: css`
-                    max-width: ${isCompact ? 300 : 420}px;
+                    max-width: ${isCompact ? 300 : 360}px;
                     width: 100%;
                     position: relative;
                     z-index: 1;
 
                     ${responsive.md} {
-                        max-width: ${isCompact ? 380 : 450}px;
+                        max-width: 360px;
                     }
 
                     ${responsive.sm} {
@@ -154,11 +153,9 @@ export default () => {
                     }
                 `,
                 tabsWrapper: css`
-                    margin-bottom: ${isCompact ? token.margin : token.marginLG}px;
-
                     .ant-tabs-nav {
-                        margin-bottom: 0 !important;
-                        height: 60px !important;
+                        margin-bottom: ${isCompact ? 10 : 0}px !important;
+                        height: ${isCompact ? 48 : 60}px !important;
 
                         &::before {
                             border: none !important;
@@ -167,7 +164,7 @@ export default () => {
 
                     .ant-tabs-tab {
                         padding: 0;
-                        height: 60px !important;
+                        height: ${isCompact ? 48 : 60}px !important;
                         display: flex;
                         align-items: center;
                         justify-content: center;
@@ -228,12 +225,12 @@ export default () => {
                 `,
                 formWrapper: css`
                     .ant-form-item {
-                        margin-bottom: ${isCompact ? 20 : token.marginXL}px;
+                        margin-bottom: ${isCompact ? 20 : 25}px;
                     }
 
                     .ant-input-affix-wrapper,
                     .ant-input {
-                        height: ${isCompact ? 40 : 52}px;
+                        height: ${isCompact ? 40 : 45}px;
                         font-size: ${token.fontSize}px;
                         background: ${isDarkMode ? token.colorBgElevated : 'rgb(255, 255, 255)'};
                         border: ${isDarkMode ? `1px solid ${token.colorBorder}` : 'none'};
@@ -288,7 +285,7 @@ export default () => {
                     }
 
                     .ant-btn-primary {
-                        height: ${isCompact ? 40 : 50}px;
+                        height: ${isCompact ? 40 : 45}px;
                         font-size: ${token.fontSizeLG}px;
                         border-radius: ${token.borderRadiusLG}px;
                         background: ${token.colorPrimary};
