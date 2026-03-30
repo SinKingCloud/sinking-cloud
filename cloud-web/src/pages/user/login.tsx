@@ -29,6 +29,9 @@ export default () => {
 
     const useStyles: any = React.useMemo(() =>
             createStyles(({css, responsive, token, isDarkMode}: any) => ({
+                body: css`
+                    padding: 0;
+                `,
                 container: css`
                     display: flex;
                     position: absolute;
@@ -860,13 +863,7 @@ export default () => {
     ];
 
     return (
-        <Body space={false} animation={false} style={{
-            padding: 0,
-            margin: 0,
-            height: '100%',
-            overflow: 'hidden',
-            background: 'transparent'
-        }}>
+        <Body space={false} animation={false} className={styles.body}>
             <div className={styles.container}>
                 <Captcha ref={captcha}/>
                 <div className={styles.leftPanel}>

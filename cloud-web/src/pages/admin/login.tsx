@@ -15,6 +15,7 @@ import {sendMail} from "@/service/common/mail";
 import Settings from "@/../config/defaultSettings";
 import {historyPush} from "@/utils/route";
 import {createStyles} from 'antd-style';
+import {getPath} from "@/utils/assets";
 
 export default () => {
     const {message, modal} = App.useApp();
@@ -23,9 +24,13 @@ export default () => {
     const user = useModel("user");
     const theme = useTheme();
     const isCompact = theme?.isCompactTheme() || false;
+    const backgroundUrl = getPath("/images/background.svg");
 
     const useStyles: any = React.useMemo(() =>
             createStyles(({css, responsive, token, isDarkMode}: any) => ({
+                body: css`
+                    padding: 0;
+                `,
                 container: css`
                     display: flex;
                     position: absolute;
@@ -40,17 +45,23 @@ export default () => {
                     align-items: center;
                     padding-top: ${isCompact ? 100 : 80}px;
                     margin: 0;
-                    background: ${isDarkMode ? token.colorBgContainer : '#ffffff'};
+                    background-color: ${isDarkMode ? token.colorBgContainer : '#ffffff'};
+                    background-image: url('${backgroundUrl}');
+                    background-repeat: no-repeat;
+                    background-position: center top;
+                    background-size: min(1361px, 100%) auto;
+                    overflow: auto;
 
                     ${responsive.sm} {
                         padding-left: 24px;
                         padding-right: 24px;
+                        background-size: 160% auto;
+                        background-position: center 0;
                     }
                 `,
                 rightPanel: css`
                     width: 100%;
                     max-width: ${isCompact ? 320 : 440}px;
-                    background: ${isDarkMode ? token.colorBgContainer : '#ffffff'};
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -594,7 +605,7 @@ export default () => {
     ];
 
     return (
-        <Body space={false} animation={false}>
+        <Body space={false} animation={false} className={styles.body}>
             <div className={styles.container}>
                 <Captcha ref={captcha}/>
                 <div className={styles.rightPanel}>
