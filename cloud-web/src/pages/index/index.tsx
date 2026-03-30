@@ -17,15 +17,7 @@ import Settings from "@/../config/defaultSettings";
 import {deleteHeader} from "@/utils/auth";
 import {logout} from "@/service/common/login";
 import {historyPush} from "@/utils/route";
-
-/**
- * 处理资源路径，正确拼接 basePath
- */
-const getAssetPath = (path: string): string => {
-    const basePath = (Settings?.basePath || '').replace(/\/$/, ''); // 去掉结尾的斜杠
-    const srcPath = path.replace(/^\//, ''); // 去掉开头的斜杠
-    return basePath ? `${basePath}/${srcPath}` : `/${srcPath}`;
-};
+import {getPath as getAssetPath} from "@/utils/assets";
 
 // 优化后的动画元素配置 - 减少数量提升性能
 const ANIMATION_ELEMENTS = {

@@ -5,6 +5,7 @@ import {createStyles} from 'antd-style';
 import Settings from "@/../config/defaultSettings";
 import defaultSettings from "@/../config/defaultSettings";
 import {Icon, Layout} from "sinking-antd";
+import {getPath} from "@/utils/assets";
 
 /**
  * 样式信息
@@ -121,7 +122,7 @@ const SKLayout: React.FC = () => {
                 menuUnCollapsedWidth={210}
                 collapsedLogo={() => {
                     return web?.info?.logo ? <img
-                            src={web?.info?.logo || (Settings?.basePath || "/") + "logo.svg"}
+                            src={web?.info?.logo || getPath("logo.svg")}
                             alt={web?.info?.name} className={collapsedImg}/> :
                         <Icon type="icon-logo" style={{color: web?.info?.ui?.color || defaultSettings?.color}}
                               className={collapsedLogo}/>
@@ -130,7 +131,7 @@ const SKLayout: React.FC = () => {
                     return (
                         <div className={unCollapsed}>
                             {web?.info?.logo ? <img
-                                    src={web?.info?.logo || (Settings?.basePath || "/") + "logo.svg"}
+                                    src={web?.info?.logo || getPath("logo.svg")}
                                     alt={web?.info?.name || Settings?.title}/> :
                                 <Icon type="icon-logo"
                                       style={{color: web?.info?.ui?.color || defaultSettings?.color}}/>}
