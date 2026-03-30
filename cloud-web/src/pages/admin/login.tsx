@@ -777,9 +777,8 @@ export default () => {
                                             type='primary'
                                             loading={isLoading}
                                             htmlType='submit'
-                                            block
-                                        >
-                                           登 录
+                                            block>
+                                            登 录
                                         </Button>
                                     </Form.Item>
                                 </Form>

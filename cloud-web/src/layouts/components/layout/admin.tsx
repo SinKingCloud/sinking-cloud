@@ -92,8 +92,11 @@ const SKLayout: React.FC = () => {
      */
     useEffect(() => {
         setLoading(true)
-        user?.refreshSystemUser(() => {
-            setLoading(false)
+        user?.refreshSystemUser((data) => {
+            setLoading(false);
+            if (!data) {
+                historyPush("admin.login");
+            }
         });
     }, []);
 
