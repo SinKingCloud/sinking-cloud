@@ -46,7 +46,7 @@ func Gateway(c *context.Context) {
 	} else {
 		url = "http://" + address
 	}
-	_ = c.Proxy(url, nil, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
+	err = c.Proxy(url, nil, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
 		r.URL.Path, r.URL.RawPath, r.RequestURI = targetPath, targetPath, targetPath
 		r.Header.Set("X-Forwarded-For", clientIp)
 		r.Header.Set("X-Real-Ip", clientIp)
@@ -55,6 +55,13 @@ func Gateway(c *context.Context) {
 		r.Header.Set(constant.RpcOriginService, constant.ServiceGateway)
 		r.Header.Set(constant.RpcOriginAddress, global.App.Consul.GetAddress())
 		r.Header.Set(constant.RequestId, c.GetRequestId())
-	}, nil)
+	}, func(writer http.ResponseWriter, request *http.Request, err error) {
+		c.Request = request
+		c.Writer = writer
+		c.Error("获取服务节点失败: 请求服务失败")
+	})
 	c.Request.URL.Path = tempPath
+	if err != nil {
+		c.Error("获取服务节点失败: 转发服务失败")
+	}
 }
