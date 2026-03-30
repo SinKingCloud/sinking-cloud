@@ -18,6 +18,7 @@ import {sendMail} from "@/service/common/mail";
 import Settings from "@/../config/defaultSettings";
 import {historyPush} from "@/utils/route";
 import {createStyles} from 'antd-style';
+import {getPath} from "@/utils/assets";
 
 export default () => {
     const {message, modal} = App.useApp();
@@ -26,6 +27,7 @@ export default () => {
     const user = useModel("user");
     const theme = useTheme();
     const isCompact = theme?.isCompactTheme() || false;
+    const backgroundUrl = getPath("/images/background.svg");
 
     const useStyles: any = React.useMemo(() =>
             createStyles(({css, responsive, token, isDarkMode}: any) => ({
@@ -35,6 +37,7 @@ export default () => {
                 container: css`
                     display: flex;
                     position: absolute;
+                    flex: 1;
                     top: 0;
                     left: 0;
                     right: 0;
@@ -270,7 +273,10 @@ export default () => {
                 `,
                 rightPanel: css`
                     width: ${isCompact ? 440 : 500}px;
-                    background: ${isDarkMode ? token.colorBgContainer : '#ffffff'};
+                    background-image: url('${backgroundUrl}');
+                    background-repeat: no-repeat;
+                    background-position: center;
+                    background-size: 150%;
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
@@ -305,7 +311,8 @@ export default () => {
                         padding: ${token.paddingXL * 2}px ${token.paddingXL}px;
                         box-shadow: none;
                         justify-content: flex-start;
-                        background: ${isDarkMode ? token.colorBgContainer : '#ffffff'};
+                        background-size: min(1361px, 160%) auto;
+                        background-position: center;
                         animation: none;
                         position: relative;
                     }
@@ -313,6 +320,8 @@ export default () => {
                     ${responsive.sm} {
                         padding: ${token.paddingXL}px ${token.paddingLG}px;
                         min-height: 100%;
+                        background-position: center top;
+                        background-size: 100% auto;
                     }
                 `,
                 loginContent: css`
