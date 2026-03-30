@@ -99,7 +99,7 @@ func (s *service) GetTokenInfo(token string) (*jwt.User, error) {
 	if key == nil || key.User == nil || key.User.Id <= 0 || key.User.Token == "" {
 		return nil, errors.New("登陆超时,请重新登陆")
 	}
-	if s.GetSessionInfo(token) == nil {
+	if s.GetSessionInfo(key.User.Token) == nil {
 		return nil, errors.New("登陆超时,请重新登陆")
 	}
 	return key.User, nil
