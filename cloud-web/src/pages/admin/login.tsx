@@ -16,423 +16,426 @@ import Settings from "@/../config/defaultSettings";
 import {historyPush} from "@/utils/route";
 import {createStyles} from 'antd-style';
 
-const useStyles: any = createStyles(({css, responsive, token, isDarkMode}: any): any => {
-    return {
-        container: css`
-            display: flex;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            padding-top: 80px;
-            margin: 0;
-            background: ${isDarkMode ? token.colorBgContainer : '#ffffff'};
-
-            ${responsive.sm} {
-                padding-top: 48px;
-                padding-left: 24px;
-                padding-right: 24px;
-            }
-        `,
-        rightPanel: css`
-            width: 100%;
-            max-width: 440px;
-            background: ${isDarkMode ? token.colorBgContainer : '#ffffff'};
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-
-            ${responsive.md} {
-                max-width: 100%;
-            }
-        `,
-        loginContent: css`
-            max-width: 420px;
-            width: 100%;
-            position: relative;
-            z-index: 1;
-
-            ${responsive.md} {
-                max-width: 450px;
-            }
-
-            ${responsive.sm} {
-                max-width: 100%;
-            }
-        `,
-        mobileHeader: css`
-            text-align: center;
-            margin-bottom: ${token.margin}px;
-
-            .mobile-logo-title {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: ${token.marginSM}px;
-                margin-bottom: ${token.marginXS}px;
-                height: 48px;
-            }
-
-            img {
-                width: 48px;
-                height: 48px;
-                flex-shrink: 0;
-            }
-
-            .mobile-title {
-                font-size: 48px;
-                font-weight: 700;
-                color: ${isDarkMode ? token.colorText : token.colorTextHeading};
-                line-height: 48px;
-                height: 48px;
-                display: flex;
-                align-items: center;
-            }
-
-            .mobile-subtitle {
-                font-size: ${token.fontSizeSM}px;
-                color: ${isDarkMode ? token.colorTextSecondary : token.colorTextTertiary};
-                line-height: 1.5;
-                margin-top: ${token.margin}px;
-            }
-
-            ${responsive.sm} {
-                margin-bottom: ${token.marginSM}px;
-                padding-top: ${token.margin}px;
-
-                .mobile-logo-title {
-                    height: 40px;
-                    margin-bottom: ${token.marginXXS}px;
-                }
-
-                .mobile-title {
-                    font-size: 40px;
-                    line-height: 40px;
-                    height: 40px;
-                }
-
-                img {
-                    width: 40px;
-                    height: 40px;
-                }
-            }
-        `,
-        loginTitle: css`
-            font-size: ${token.fontSizeHeading2}px;
-            font-weight: 700;
-            color: ${isDarkMode ? token.colorText : token.colorTextHeading};
-            margin-bottom: ${token.marginXXS}px;
-            text-align: center;
-
-            ${responsive.sm} {
-                font-size: ${token.fontSizeHeading3}px;
-            }
-        `,
-        loginSubtitle: css`
-            font-size: ${token.fontSizeSM}px;
-            color: ${isDarkMode ? token.colorTextSecondary : token.colorTextTertiary};
-            margin-bottom: ${token.marginSM}px;
-            text-align: center;
-
-            ${responsive.sm} {
-                font-size: ${token.fontSize}px;
-                margin-bottom: ${token.marginXS}px;
-            }
-        `,
-        tabsWrapper: css`
-            margin-bottom: ${token.margin}px;
-
-            .ant-tabs-nav {
-                margin-bottom: 0 !important;
-                height: 60px !important;
-
-                &::before {
-                    border: none !important;
-                }
-            }
-
-            .ant-tabs-tab {
-                padding: 0;
-                height: 60px !important;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-
-                &:hover {
-                    color: ${token.colorPrimaryHover};
-                }
-            }
-
-            .ant-tabs-tab-btn {
-                font-size: ${token.fontSizeHeading4}px;
-                font-weight: 600;
-                color: ${isDarkMode ? token.colorTextTertiary : '#979797'};
-                line-height: 1;
-                transform: scale(0.8);
-                transform-origin: center;
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                color 0.3s ease,
-                font-weight 0.3s ease;
-                will-change: transform;
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-                text-rendering: optimizeLegibility;
-            }
-
-            .ant-tabs-tab-active .ant-tabs-tab-btn {
-                font-weight: 700;
-                color: ${isDarkMode ? token.colorText : token.colorTextHeading};
-                transform: scale(1);
-            }
-
-            .ant-tabs-nav-wrap {
-                &::after {
-                    content: '';
-                    position: absolute;
-                    bottom: 0;
-                    left: 0;
-                    right: 0;
-                    height: 2px;
-                    background: ${isDarkMode ? token.colorBorderSecondary : '#f0f0f0'};
-                }
-            }
-
-            .ant-tabs-ink-bar {
-                position: absolute;
-                bottom: 0;
-                height: 4px !important;
-                width: 55px !important;
-                border-radius: ${token.borderRadiusSM}px !important;
-                background: ${token.colorPrimary} !important;
-                z-index: 1;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            }
-
-            .ant-tabs-tabpane {
-                margin-top: ${token.margin}px;
-            }
-        `,
-        formWrapper: css`
-            .ant-form-item {
-                margin-bottom: ${token.marginXL}px;
-            }
-
-            .ant-input-affix-wrapper,
-            .ant-input {
-                height: 52px;
-                font-size: ${token.fontSize}px;
-                background: ${isDarkMode ? token.colorBgElevated : 'rgb(255, 255, 255)'};
-                border: ${isDarkMode ? `1px solid ${token.colorBorder}` : 'none'};
-                border-radius: ${token.borderRadiusLG}px;
-                box-shadow: ${isDarkMode ? `0 2px 8px rgba(0,0,0,0.15)` : 'rgba(0, 0, 0, 0.05) 0 7px 25px 0'};
-                padding: 0 ${token.paddingLG}px;
-                transition: box-shadow 0.3s ease;
-
-                &:hover {
-                    box-shadow: ${isDarkMode ? `0 4px 12px rgba(0,0,0,0.25)` : 'rgba(0, 0, 0, 0.08) 0 10px 30px 0'};
-                }
-
-                &:focus-within {
-                    box-shadow: ${isDarkMode
-                            ? `0 4px 12px rgba(0,0,0,0.3), 0 0 0 2px ${token.colorPrimaryBg}`
-                            : `rgba(0, 0, 0, 0.08) 0 10px 30px 0, 0 0 0 2px ${token.colorPrimaryBg}`};
-                }
-
-                &.ant-input-status-error,
-                &.ant-input-affix-wrapper-status-error {
-                    border-color: ${token.colorError} !important;
-                    box-shadow: ${isDarkMode
-                            ? `0 2px 8px rgba(0,0,0,0.15)`
-                            : 'rgba(0, 0, 0, 0.05) 0 7px 25px 0'} !important;
-
-                    .ant-input {
-                        border-color: transparent !important;
-                    }
-                }
-
-                .ant-input {
-                    background: transparent;
-                    border: none;
-                    box-shadow: none;
-                    height: auto;
-                    padding: 0;
-                }
-
-                input::placeholder {
-                    color: ${isDarkMode ? token.colorTextTertiary : 'darkgray'};
-                }
-
-                .anticon {
-                    color: ${isDarkMode ? token.colorTextTertiary : 'rgba(0,0,0,0.45)'};
-                    font-size: ${token.fontSize}px;
-                }
-            }
-
-            .ant-btn {
-                border-radius: ${token.borderRadiusLG}px;
-                font-weight: 500;
-            }
-
-            .ant-btn-primary {
-                height: 50px;
-                font-size: ${token.fontSizeLG}px;
-                border-radius: ${token.borderRadiusLG}px;
-                background: ${token.colorPrimary};
-                border-color: ${token.colorPrimary};
-                box-shadow: ${isDarkMode ? `0 4px 12px ${token.colorPrimary}40` : `${token.colorPrimary}80 0 6px 27px 0`};
-                font-weight: 600;
-
-                &:hover {
-                    background: ${token.colorPrimaryHover} !important;
-                    border-color: ${token.colorPrimaryHover} !important;
-                    box-shadow: ${isDarkMode ? `0 6px 16px ${token.colorPrimaryHover}40` : `${token.colorPrimaryHover}80 0 8px 32px 0`};
-                }
-            }
-
-            .ant-btn-default {
-                height: 52px;
-                border-radius: ${token.borderRadiusLG}px;
-                background: ${isDarkMode ? token.colorBgElevated : '#ffffff'} !important;
-                border: 1px solid ${isDarkMode ? token.colorBorder : 'transparent'} !important;
-                box-shadow: ${isDarkMode ? `0 2px 8px rgba(0,0,0,0.15)` : 'rgba(0, 0, 0, 0.05) 0 4px 12px 0'} !important;
-
-                &:hover,
-                &:focus,
-                &:focus-visible {
-                    background: ${isDarkMode ? token.colorBgTextHover : token.colorBgTextHover} !important;
-                    border-color: ${isDarkMode ? token.colorBorder : 'transparent'} !important;
-                    box-shadow: ${isDarkMode ? `0 4px 12px rgba(0,0,0,0.25)` : 'rgba(0, 0, 0, 0.08) 0 6px 16px 0'} !important;
-                }
-            }
-        `,
-        extraRow: css`
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: ${token.marginLG}px;
-
-            .ant-checkbox-wrapper {
-                font-size: ${token.fontSizeSM}px;
-                color: ${isDarkMode ? token.colorTextSecondary : 'rgba(0, 0, 0, 0.5)'};
-            }
-
-            a {
-                font-size: ${token.fontSizeSM}px;
-                color: ${isDarkMode ? token.colorTextSecondary : 'rgba(0, 0, 0, 0.45)'};
-                transition: all 0.3s ease;
-
-                &:hover {
-                    color: ${token.colorPrimary};
-                }
-            }
-        `,
-        loggedInCard: css`
-            text-align: center;
-            padding: ${token.paddingXL}px;
-            background: ${isDarkMode ? token.colorBgElevated : 'rgb(255, 255, 255)'};
-            border-radius: ${token.borderRadiusLG}px;
-            border: ${isDarkMode ? `1px solid ${token.colorBorder}` : 'none'};
-            margin-bottom: ${token.marginXL}px;
-            box-shadow: ${isDarkMode ? '0 2px 8px rgba(0,0,0,0.2)' : 'rgba(0, 0, 0, 0.08) 0 7px 25px 0'};
-
-            .user-avatar {
-                margin-bottom: ${token.margin}px;
-                border: 3px solid ${token.colorPrimary};
-                box-shadow: 0 4px 12px ${token.colorPrimary}40;
-            }
-
-            .user-name {
-                font-size: ${token.fontSizeLG}px;
-                font-weight: 600;
-                color: ${isDarkMode ? token.colorText : token.colorTextHeading};
-                margin-bottom: ${token.marginXS}px;
-            }
-
-            .user-contact {
-                font-size: ${token.fontSizeSM}px;
-                color: ${isDarkMode ? token.colorTextSecondary : token.colorTextTertiary};
-                margin-bottom: ${token.marginLG}px;
-            }
-        `,
-        quickActions: css`
-            display: flex;
-            flex-direction: column;
-            gap: ${token.marginSM}px;
-
-            .ant-btn {
-                height: 50px;
-                font-size: ${token.fontSize}px;
-                border-radius: ${token.borderRadiusLG}px;
-                font-weight: 600;
-            }
-
-            .ant-btn-primary {
-                background: ${token.colorPrimary};
-                border-color: ${token.colorPrimary};
-                box-shadow: ${isDarkMode ? `0 4px 12px ${token.colorPrimary}40` : `${token.colorPrimary}80 0 6px 27px 0`};
-
-                &:hover {
-                    background: ${token.colorPrimaryHover} !important;
-                    border-color: ${token.colorPrimaryHover} !important;
-                    box-shadow: ${isDarkMode ? `0 6px 16px ${token.colorPrimaryHover}40` : `${token.colorPrimaryHover}80 0 8px 32px 0`};
-                }
-            }
-
-            .ant-btn-default {
-                background: ${isDarkMode ? token.colorBgElevated : '#ffffff'};
-                border: ${isDarkMode ? `1px solid ${token.colorBorder}` : '#ffffff'};
-                box-shadow: ${isDarkMode ? `0 2px 8px rgba(0,0,0,0.15)` : 'rgba(0, 0, 0, 0.05) 0 4px 12px 0'};
-
-                &:hover {
-                    background: ${isDarkMode ? token.colorBgTextHover : token.colorBgTextHover};
-                    box-shadow: ${isDarkMode ? `0 4px 12px rgba(0,0,0,0.25)` : 'rgba(0, 0, 0, 0.08) 0 6px 16px 0'};
-                }
-            }
-        `,
-        reloginLink: css`
-            text-align: center;
-            margin-top: ${token.marginLG}px;
-
-            a {
-                font-size: ${token.fontSizeSM}px;
-                color: ${token.colorPrimary};
-
-                &:hover {
-                    color: ${token.colorPrimaryHover};
-                }
-            }
-        `,
-        sendSmsBtn: css`
-            font-size: ${token.fontSizeSM}px;
-            color: ${token.colorPrimary};
-            cursor: pointer;
-            user-select: none;
-
-            &:hover {
-                color: ${token.colorPrimaryHover};
-            }
-        `,
-        sendSmsDisabled: css`
-            font-size: ${token.fontSizeSM}px;
-            color: ${isDarkMode ? token.colorTextTertiary : 'gray'};
-            cursor: default;
-        `,
-    };
-});
-
 export default () => {
-    const {styles} = useStyles();
     const {message, modal} = App.useApp();
     const captcha = useRef<CaptchaRef>({});
     const web = useModel("web");
     const user = useModel("user");
-    const themeModel = useTheme();
+    const theme = useTheme();
+    const isCompact = theme?.isCompactTheme() || false;
+
+    const useStyles: any = React.useMemo(() =>
+            createStyles(({css, responsive, token, isDarkMode}: any) => ({
+                container: css`
+                    display: flex;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    width: 100%;
+                    height: 100%;
+                    flex-direction: column;
+                    justify-content: flex-start;
+                    align-items: center;
+                    padding-top: ${isCompact ? 64 : 80}px;
+                    margin: 0;
+                    background: ${isDarkMode ? token.colorBgContainer : '#ffffff'};
+
+                    ${responsive.sm} {
+                        padding-top: ${isCompact ? 48 : 48}px;
+                        padding-left: 24px;
+                        padding-right: 24px;
+                    }
+                `,
+                rightPanel: css`
+                    width: 100%;
+                    max-width: ${isCompact ? 320 : 440}px;
+                    background: ${isDarkMode ? token.colorBgContainer : '#ffffff'};
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+
+                    ${responsive.md} {
+                        max-width: 100%;
+                    }
+                `,
+                loginContent: css`
+                    max-width: ${isCompact ? 300 : 420}px;
+                    width: 100%;
+                    position: relative;
+                    z-index: 1;
+
+                    ${responsive.md} {
+                        max-width: ${isCompact ? 380 : 450}px;
+                    }
+
+                    ${responsive.sm} {
+                        max-width: 100%;
+                    }
+                `,
+                mobileHeader: css`
+                    text-align: center;
+                    margin-bottom: ${token.margin}px;
+
+                    .mobile-logo-title {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: ${token.marginSM}px;
+                        margin-bottom: ${token.marginXS}px;
+                        height: ${isCompact ? 40 : 48}px;
+                    }
+
+                    img {
+                        width: ${isCompact ? 40 : 48}px;
+                        height: ${isCompact ? 40 : 48}px;
+                        flex-shrink: 0;
+                    }
+
+                    .mobile-title {
+                        font-size: ${isCompact ? 40 : 48}px;
+                        font-weight: 700;
+                        color: ${isDarkMode ? token.colorText : token.colorTextHeading};
+                        line-height: ${isCompact ? 40 : 48}px;
+                        height: ${isCompact ? 40 : 48}px;
+                        display: flex;
+                        align-items: center;
+                    }
+
+                    .mobile-subtitle {
+                        font-size: ${token.fontSizeLG}px;
+                        color: ${isDarkMode ? token.colorTextSecondary : token.colorTextTertiary};
+                        line-height: 1.5;
+                        margin-top: ${token.margin + 2}px;
+                    }
+
+                    ${responsive.sm} {
+                        margin-bottom: ${token.marginSM}px;
+                        padding-top: ${token.margin}px;
+
+                        .mobile-logo-title {
+                            height: 40px;
+                            margin-bottom: ${token.marginXXS}px;
+                        }
+
+                        .mobile-title {
+                            font-size: 40px;
+                            line-height: 40px;
+                            height: 40px;
+                        }
+
+                        img {
+                            width: 40px;
+                            height: 40px;
+                        }
+                    }
+                `,
+                loginTitle: css`
+                    font-size: ${isCompact ? token.fontSizeHeading3 : token.fontSizeHeading2}px;
+                    font-weight: 700;
+                    color: ${isDarkMode ? token.colorText : token.colorTextHeading};
+                    margin-bottom: ${token.marginXXS}px;
+                    text-align: center;
+
+                    ${responsive.sm} {
+                        font-size: ${token.fontSizeHeading3}px;
+                    }
+                `,
+                loginSubtitle: css`
+                    font-size: ${isCompact ? token.fontSize : token.fontSizeSM}px;
+                    color: ${isDarkMode ? token.colorTextSecondary : token.colorTextTertiary};
+                    margin-bottom: ${token.marginSM}px;
+                    text-align: center;
+
+                    ${responsive.sm} {
+                        font-size: ${token.fontSize}px;
+                        margin-bottom: ${token.marginXS}px;
+                    }
+                `,
+                tabsWrapper: css`
+                    margin-bottom: ${isCompact ? token.margin : token.marginLG}px;
+
+                    .ant-tabs-nav {
+                        margin-bottom: 0 !important;
+                        height: 60px !important;
+
+                        &::before {
+                            border: none !important;
+                        }
+                    }
+
+                    .ant-tabs-tab {
+                        padding: 0;
+                        height: 60px !important;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+
+                        &:hover {
+                            color: ${token.colorPrimaryHover};
+                        }
+                    }
+
+                    .ant-tabs-tab-btn {
+                        font-size: ${token.fontSizeHeading4}px;
+                        font-weight: 600;
+                        color: ${isDarkMode ? token.colorTextTertiary : '#979797'};
+                        line-height: 1;
+                        transform: scale(0.8);
+                        transform-origin: center;
+                        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        color 0.3s ease,
+                        font-weight 0.3s ease;
+                        will-change: transform;
+                        -webkit-font-smoothing: antialiased;
+                        -moz-osx-font-smoothing: grayscale;
+                        text-rendering: optimizeLegibility;
+                    }
+
+                    .ant-tabs-tab-active .ant-tabs-tab-btn {
+                        font-weight: 700;
+                        color: ${isDarkMode ? token.colorText : token.colorTextHeading};
+                        transform: scale(1);
+                    }
+
+                    .ant-tabs-nav-wrap {
+                        &::after {
+                            content: '';
+                            position: absolute;
+                            bottom: 0;
+                            left: 0;
+                            right: 0;
+                            height: 2px;
+                            background: ${isDarkMode ? token.colorBorderSecondary : '#f0f0f0'};
+                        }
+                    }
+
+                    .ant-tabs-ink-bar {
+                        position: absolute;
+                        bottom: 0;
+                        height: 4px !important;
+                        width: 55px !important;
+                        border-radius: ${token.borderRadiusSM}px !important;
+                        background: ${token.colorPrimary} !important;
+                        z-index: 1;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                    }
+
+                    .ant-tabs-tabpane {
+                        margin-top: ${token.margin}px;
+                    }
+                `,
+                formWrapper: css`
+                    .ant-form-item {
+                        margin-bottom: ${isCompact ? 20 : token.marginXL}px;
+                    }
+
+                    .ant-input-affix-wrapper,
+                    .ant-input {
+                        height: ${isCompact ? 40 : 52}px;
+                        font-size: ${token.fontSize}px;
+                        background: ${isDarkMode ? token.colorBgElevated : 'rgb(255, 255, 255)'};
+                        border: ${isDarkMode ? `1px solid ${token.colorBorder}` : 'none'};
+                        border-radius: ${token.borderRadiusLG}px;
+                        box-shadow: ${isDarkMode ? `0 2px 8px rgba(0,0,0,0.15)` : 'rgba(0, 0, 0, 0.05) 0 7px 25px 0'};
+                        padding: 0 ${token.paddingLG}px;
+                        transition: box-shadow 0.3s ease;
+
+                        &:hover {
+                            box-shadow: ${isDarkMode ? `0 4px 12px rgba(0,0,0,0.25)` : 'rgba(0, 0, 0, 0.08) 0 10px 30px 0'};
+                        }
+
+                        &:focus-within {
+                            box-shadow: ${isDarkMode
+                                    ? `0 4px 12px rgba(0,0,0,0.3), 0 0 0 2px ${token.colorPrimaryBg}`
+                                    : `rgba(0, 0, 0, 0.08) 0 10px 30px 0, 0 0 0 2px ${token.colorPrimaryBg}`};
+                        }
+
+                        &.ant-input-status-error,
+                        &.ant-input-affix-wrapper-status-error {
+                            border-color: ${token.colorError} !important;
+                            box-shadow: ${isDarkMode
+                                    ? `0 2px 8px rgba(0,0,0,0.15)`
+                                    : 'rgba(0, 0, 0, 0.05) 0 7px 25px 0'} !important;
+
+                            .ant-input {
+                                border-color: transparent !important;
+                            }
+                        }
+
+                        .ant-input {
+                            background: transparent;
+                            border: none;
+                            box-shadow: none;
+                            height: auto;
+                            padding: 0;
+                        }
+
+                        input::placeholder {
+                            color: ${isDarkMode ? token.colorTextTertiary : 'darkgray'};
+                        }
+
+                        .anticon {
+                            color: ${isDarkMode ? token.colorTextTertiary : 'rgba(0,0,0,0.45)'};
+                            font-size: ${token.fontSize}px;
+                        }
+                    }
+
+                    .ant-btn {
+                        border-radius: ${token.borderRadiusLG}px;
+                        font-weight: 500;
+                    }
+
+                    .ant-btn-primary {
+                        height: ${isCompact ? 40 : 50}px;
+                        font-size: ${token.fontSizeLG}px;
+                        border-radius: ${token.borderRadiusLG}px;
+                        background: ${token.colorPrimary};
+                        border-color: ${token.colorPrimary};
+                        box-shadow: ${isDarkMode ? `0 4px 12px ${token.colorPrimary}40` : `${token.colorPrimary}80 0 6px 27px 0`};
+                        font-weight: 600;
+
+                        &:hover {
+                            background: ${token.colorPrimaryHover} !important;
+                            border-color: ${token.colorPrimaryHover} !important;
+                            box-shadow: ${isDarkMode ? `0 6px 16px ${token.colorPrimaryHover}40` : `${token.colorPrimaryHover}80 0 8px 32px 0`};
+                        }
+                    }
+
+                    .ant-btn-default {
+                        height: ${isCompact ? 40 : 52}px;
+                        border-radius: ${token.borderRadiusLG}px;
+                        background: ${isDarkMode ? token.colorBgElevated : '#ffffff'} !important;
+                        border: 1px solid ${isDarkMode ? token.colorBorder : 'transparent'} !important;
+                        box-shadow: ${isDarkMode ? `0 2px 8px rgba(0,0,0,0.15)` : 'rgba(0, 0, 0, 0.05) 0 4px 12px 0'} !important;
+
+                        &:hover,
+                        &:focus,
+                        &:focus-visible {
+                            background: ${isDarkMode ? token.colorBgTextHover : token.colorBgTextHover} !important;
+                            border-color: ${isDarkMode ? token.colorBorder : 'transparent'} !important;
+                            box-shadow: ${isDarkMode ? `0 4px 12px rgba(0,0,0,0.25)` : 'rgba(0, 0, 0, 0.08) 0 6px 16px 0'} !important;
+                        }
+                    }
+                `,
+                extraRow: css`
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: ${isCompact ? token.marginLG : token.marginXL}px;
+
+                    .ant-checkbox-wrapper {
+                        font-size: ${token.fontSizeSM}px;
+                        color: ${isDarkMode ? token.colorTextSecondary : 'rgba(0, 0, 0, 0.5)'};
+                    }
+
+                    a {
+                        font-size: ${token.fontSizeSM}px;
+                        color: ${isDarkMode ? token.colorTextSecondary : 'rgba(0, 0, 0, 0.45)'};
+                        transition: all 0.3s ease;
+
+                        &:hover {
+                            color: ${token.colorPrimary};
+                        }
+                    }
+                `,
+                loggedInCard: css`
+                    text-align: center;
+                    padding: ${token.paddingXL}px;
+                    background: ${isDarkMode ? token.colorBgElevated : 'rgb(255, 255, 255)'};
+                    border-radius: ${token.borderRadiusLG}px;
+                    border: ${isDarkMode ? `1px solid ${token.colorBorder}` : 'none'};
+                    margin-bottom: ${token.marginXL}px;
+                    box-shadow: ${isDarkMode ? '0 2px 8px rgba(0,0,0,0.2)' : 'rgba(0, 0, 0, 0.08) 0 7px 25px 0'};
+
+                    .user-avatar {
+                        margin-bottom: ${token.margin}px;
+                        border: 3px solid ${token.colorPrimary};
+                        box-shadow: 0 4px 12px ${token.colorPrimary}40;
+                    }
+
+                    .user-name {
+                        font-size: ${token.fontSizeLG}px;
+                        font-weight: 600;
+                        color: ${isDarkMode ? token.colorText : token.colorTextHeading};
+                        margin-bottom: ${token.marginXS}px;
+                    }
+
+                    .user-contact {
+                        font-size: ${token.fontSizeSM}px;
+                        color: ${isDarkMode ? token.colorTextSecondary : token.colorTextTertiary};
+                        margin-bottom: ${token.marginLG}px;
+                    }
+                `,
+                quickActions: css`
+                    display: flex;
+                    flex-direction: column;
+                    gap: ${isCompact ? token.marginXS : token.marginSM}px;
+
+                    .ant-btn {
+                        height: ${isCompact ? 40 : 50}px;
+                        font-size: ${token.fontSize}px;
+                        border-radius: ${token.borderRadiusLG}px;
+                        font-weight: 600;
+                    }
+
+                    .ant-btn-primary {
+                        background: ${token.colorPrimary};
+                        border-color: ${token.colorPrimary};
+                        box-shadow: ${isDarkMode ? `0 4px 12px ${token.colorPrimary}40` : `${token.colorPrimary}80 0 6px 27px 0`};
+
+                        &:hover {
+                            background: ${token.colorPrimaryHover} !important;
+                            border-color: ${token.colorPrimaryHover} !important;
+                            box-shadow: ${isDarkMode ? `0 6px 16px ${token.colorPrimaryHover}40` : `${token.colorPrimaryHover}80 0 8px 32px 0`};
+                        }
+                    }
+
+                    .ant-btn-default {
+                        background: ${isDarkMode ? token.colorBgElevated : '#ffffff'};
+                        border: ${isDarkMode ? `1px solid ${token.colorBorder}` : '#ffffff'};
+                        box-shadow: ${isDarkMode ? `0 2px 8px rgba(0,0,0,0.15)` : 'rgba(0, 0, 0, 0.05) 0 4px 12px 0'};
+
+                        &:hover {
+                            background: ${isDarkMode ? token.colorBgTextHover : token.colorBgTextHover};
+                            box-shadow: ${isDarkMode ? `0 4px 12px rgba(0,0,0,0.25)` : 'rgba(0, 0, 0, 0.08) 0 6px 16px 0'};
+                        }
+                    }
+                `,
+                reloginLink: css`
+                    text-align: center;
+                    margin-top: ${token.marginLG}px;
+
+                    a {
+                        font-size: ${token.fontSizeSM}px;
+                        color: ${token.colorPrimary};
+
+                        &:hover {
+                            color: ${token.colorPrimaryHover};
+                        }
+                    }
+                `,
+                sendSmsBtn: css`
+                    font-size: ${token.fontSizeSM}px;
+                    color: ${token.colorPrimary};
+                    cursor: pointer;
+                    user-select: none;
+
+                    &:hover {
+                        color: ${token.colorPrimaryHover};
+                    }
+                `,
+                sendSmsDisabled: css`
+                    font-size: ${token.fontSizeSM}px;
+                    color: ${isDarkMode ? token.colorTextTertiary : 'gray'};
+                    cursor: default;
+                `,
+            })),
+        [isCompact]
+    );
+
+    const {styles} = useStyles();
     const [form] = Form.useForm();
 
     const [type, setType] = useState<string>('account');
@@ -594,41 +597,24 @@ export default () => {
     ];
 
     return (
-        <Body
-            space={false}
-            animation={false}
-            className=""
-            style={{
-                padding: 0,
-                margin: 0,
-                height: '100%',
-                overflow: 'hidden',
-                background: 'transparent'
-            }}>
+        <Body space={false} animation={false}>
             <div className={styles.container}>
                 <Captcha ref={captcha}/>
-
-                {/* 登录卡片 */}
                 <div className={styles.rightPanel}>
-                    {/* 顶部 Logo 区域 */}
                     <div className={styles.mobileHeader}>
                         <div className="mobile-logo-title">
                             {web?.info?.logo ? (
-                                <img
-                                    src={web?.info?.logo || ((Settings?.basePath || '/') + 'logo.svg')}
-                                    alt="logo"
-                                />
+                                <img src={web?.info?.logo || ((Settings?.basePath || '/') + 'logo.svg')} alt="logo"/>
                             ) : (
                                 <Icon type="icon-logo" style={{
                                     fontSize: '48px',
-                                    color: themeModel?.themes?.token?.colorPrimary || '#1890ff'
+                                    color: theme?.themes?.token?.colorPrimary || '#1890ff'
                                 }}/>
                             )}
                             <div className="mobile-title">{web?.info?.name || Settings?.title}</div>
                         </div>
                         <div className="mobile-subtitle">后台管理平台</div>
                     </div>
-
                     <div className={styles.loginContent}>
                         {checkingLogin ? (
                             <div style={{textAlign: 'center', padding: '80px 0'}}>
@@ -653,25 +639,15 @@ export default () => {
                                         {user?.system?.phone || user?.system?.email || user?.system?.account || '未绑定联系方式'}
                                     </div>
                                 </div>
-
                                 <div className={styles.quickActions}>
-                                    <Button
-                                        type="primary"
-                                        icon={<LoginOutlined/>}
-                                        onClick={() => historyPush("admin.index")}
-                                        block
-                                    >
+                                    <Button type="primary" icon={<LoginOutlined/>}
+                                            onClick={() => historyPush("admin.index")} block>
                                         快捷登录
                                     </Button>
-                                    <Button
-                                        icon={<SwapOutlined/>}
-                                        onClick={() => setShowRelogin(true)}
-                                        block
-                                    >
+                                    <Button icon={<SwapOutlined/>} onClick={() => setShowRelogin(true)} block>
                                         切换账号
                                     </Button>
                                 </div>
-
                                 <div className={styles.reloginLink}>
                                     <a onClick={async () => {
                                         message.loading({content: "正在退出登录...", key: "outLogin"});
@@ -696,15 +672,8 @@ export default () => {
                             </>
                         ) : (
                             <>
-                                <Tabs
-                                    items={items}
-                                    activeKey={type}
-                                    onChange={setType}
-                                    size="large"
-                                    centered
-                                    className={styles.tabsWrapper}
-                                />
-
+                                <Tabs items={items} activeKey={type} onChange={setType} size="large" centered
+                                      className={styles.tabsWrapper}/>
                                 <Form form={form} onFinish={handleSubmit} className={styles.formWrapper}>
                                     {type === 'account' && (
                                         <>
@@ -730,7 +699,6 @@ export default () => {
                                             </div>
                                         </>
                                     )}
-
                                     {type === 'code' && (
                                         <>
                                             <Form.Item name='account'
@@ -771,7 +739,6 @@ export default () => {
                                             </div>
                                         </>
                                     )}
-
                                     <Form.Item>
                                         <Button
                                             type='primary'

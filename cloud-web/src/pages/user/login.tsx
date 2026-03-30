@@ -892,42 +892,30 @@ export default () => {
     ];
 
     return (
-        <Body
-            space={false}
-            animation={false}
-            className=""
-            style={{
-                padding: 0,
-                margin: 0,
-                height: '100%',
-                overflow: 'hidden',
-                background: 'transparent'
-            }}>
+        <Body space={false} animation={false} style={{
+            padding: 0,
+            margin: 0,
+            height: '100%',
+            overflow: 'hidden',
+            background: 'transparent'
+        }}>
             <div className={styles.container}>
                 <Captcha ref={captcha}/>
-
-                {/* 左侧品牌区域 */}
                 <div className={styles.leftPanel}>
                     <div className={styles.brandContent}>
                         <div className={styles.brandLogo}>
                             {web?.info?.logo ? (
-                                <img
-                                    src={web?.info?.logo || ((Settings?.basePath || '/') + 'logo.svg')}
-                                    alt="logo"
-                                />
+                                <img src={web?.info?.logo || ((Settings?.basePath || '/') + 'logo.svg')} alt="logo"/>
                             ) : (
                                 <Icon type="icon-logo"/>
                             )}
                         </div>
-
                         <div className={styles.brandTitle}>
                             {web?.info?.name || Settings?.title}
                         </div>
-
                         <div className={styles.brandSubtitle}>
                             为您提供专业、安全、高效的一站式网络服务平台
                         </div>
-
                         <div className={styles.brandFeatures}>
                             <div className={styles.featureItem}>
                                 <SafetyCertificateOutlined className="feature-icon"/>
@@ -948,10 +936,7 @@ export default () => {
                         </div>
                     </div>
                 </div>
-
-                {/* 右侧登录区域 */}
                 <div className={styles.rightPanel}>
-                    {/* 移动端头部 */}
                     <div className={styles.mobileHeader}>
                         <div className="mobile-logo-title">
                             {web?.info?.logo ? (
@@ -969,7 +954,6 @@ export default () => {
                         </div>
                         <div className="mobile-subtitle">为您提供专业、安全、高效的一站式网络服务平台</div>
                     </div>
-
                     <div className={styles.loginContent}>
                         {checkingLogin ? (
                             <div style={{textAlign: 'center', padding: '80px 0'}}>
@@ -979,7 +963,6 @@ export default () => {
                             <>
                                 <div className={styles.loginTitle}>欢迎回来</div>
                                 <div className={styles.loginSubtitle}>检测到您已登录</div>
-
                                 <div className={styles.loggedInCard}>
                                     <Avatar
                                         size={80}
@@ -994,21 +977,12 @@ export default () => {
                                         {user?.web?.phone || user?.web?.email || user?.web?.account || '未绑定联系方式'}
                                     </div>
                                 </div>
-
                                 <div className={styles.quickActions}>
-                                    <Button
-                                        type="primary"
-                                        icon={<LoginOutlined/>}
-                                        onClick={() => historyPush("user.index")}
-                                        block
-                                    >
+                                    <Button type="primary" icon={<LoginOutlined/>}
+                                            onClick={() => historyPush("user.index")} block>
                                         快捷登录
                                     </Button>
-                                    <Button
-                                        icon={<SwapOutlined/>}
-                                        onClick={() => setShowRelogin(true)}
-                                        block
-                                    >
+                                    <Button icon={<SwapOutlined/>} onClick={() => setShowRelogin(true)} block>
                                         切换账号
                                     </Button>
                                 </div>
@@ -1038,16 +1012,8 @@ export default () => {
                             <>
                                 <div className={styles.loginTitle}>欢迎登录</div>
                                 <div className={styles.loginSubtitle}>请输入您的账号信息</div>
-
-                                <Tabs
-                                    items={items}
-                                    activeKey={type}
-                                    onChange={setType}
-                                    size="large"
-                                    centered
-                                    className={styles.tabsWrapper}
-                                />
-
+                                <Tabs items={items} activeKey={type} onChange={setType} size="large" centered
+                                      className={styles.tabsWrapper}/>
                                 <Form form={form} onFinish={handleSubmit} className={styles.formWrapper}>
                                     {type === 'account' && (
                                         <>
@@ -1073,7 +1039,6 @@ export default () => {
                                             </div>
                                         </>
                                     )}
-
                                     {type === 'code' && (
                                         <>
                                             <Form.Item name='account'
@@ -1114,18 +1079,11 @@ export default () => {
                                             </div>
                                         </>
                                     )}
-
                                     <Form.Item>
-                                        <Button
-                                            type='primary'
-                                            loading={isLoading}
-                                            htmlType='submit'
-                                            block
-                                        >
+                                        <Button type='primary' loading={isLoading} htmlType='submit' block>
                                             {type === 'code' ? '登录 / 注册' : '登 录'}
                                         </Button>
                                     </Form.Item>
-
                                     <Form.Item style={{marginBottom: 0}} className={styles.agreement}>
                                         <Checkbox checked={isRead} onChange={(e) => setIsRead(e.target.checked)}>
                                             我已阅读并同意 <a href=''>《用户使用条款》</a>
