@@ -10,7 +10,7 @@ import (
 // Logout 登陆注销
 func Logout(c *context.Context) {
 	var form struct {
-		IsAdmin bool `json:"is_admin" default:"false" validate:"omitempty,oneof=true false" label:"用户标识"`
+		IsAdmin bool `json:"is_admin" default:"false" label:"用户标识"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
