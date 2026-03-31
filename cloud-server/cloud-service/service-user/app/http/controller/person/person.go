@@ -40,6 +40,7 @@ func (Controller) Info(c *context.Context) {
 		"phone":     str.NewStringTool(info.Phone).Show(3, 4, "*"),
 		"email":     str.NewStringTool(info.Email).Show(3, 8, "*"),
 		"real_auth": info.RealAuthStatus == int(real_auth.Authed),
+		"password":  info.Password != "",
 		"session":   session,
 	})
 }

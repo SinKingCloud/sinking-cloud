@@ -40,6 +40,7 @@ declare namespace API {
         phone?: string;
         email?: string;
         real_auth?: boolean;
+        password?: boolean;
         session?: Session;
     }
 
@@ -53,6 +54,7 @@ declare namespace API {
         account?: string;
         phone?: string;
         email?: string;
+        password?: boolean;
         session?: Session;
     }
 

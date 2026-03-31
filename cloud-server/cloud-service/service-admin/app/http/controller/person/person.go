@@ -38,6 +38,7 @@ func (Controller) Info(c *context.Context) {
 		"account":   info.Account,
 		"phone":     str.NewStringTool(info.Phone).Show(3, 4, "*"),
 		"email":     str.NewStringTool(info.Email).Show(3, 8, "*"),
+		"password":  info.Password != "",
 		"session":   session,
 	})
 }
