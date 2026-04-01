@@ -6,8 +6,8 @@ import (
 	"service-admin/app/model"
 )
 
-// findPermissionByPath 根据path查询权限
-func (s *service) findPermissionByPath(path string, refresh bool) (perm *model.Permission, err error) {
+// getPermissionByPath 根据path查询权限
+func (s *service) getPermissionByPath(path string, refresh bool) (perm *model.Permission, err error) {
 	cacheKey := constant.CacheNameWithPermission + path
 	if !refresh {
 		if data, exists := s.cache.Get(cacheKey); exists && data != "" {

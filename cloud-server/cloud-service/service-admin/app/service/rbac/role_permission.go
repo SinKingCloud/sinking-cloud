@@ -7,8 +7,8 @@ import (
 	"strconv"
 )
 
-// findPermissionCodesByRoleId 根据roleId查询角色权限列表
-func (s *service) findPermissionCodesByRoleId(roleId int64, refresh bool) (permissionCodes []string, err error) {
+// getPermissionCodesByRoleId 根据roleId查询角色权限列表
+func (s *service) getPermissionCodesByRoleId(roleId int64, refresh bool) (permissionCodes []string, err error) {
 	cacheKey := constant.CacheNameWithRolePermissions + strconv.FormatInt(roleId, 10)
 	if !refresh {
 		if data, exists := s.cache.Get(cacheKey); exists && data != "" {
@@ -19,7 +19,7 @@ func (s *service) findPermissionCodesByRoleId(roleId int64, refresh bool) (permi
 	}
 	r, err := s.repositoryRole.FindById(roleId)
 	if err == nil && r != nil && r.Status == int(role.StatusEnable) {
-		permissionCodes, err = s.repositoryRolePermission.FindPermissionCodesByRoleId(r.Id)
+		permissionCodes, err = s.repositoryRolePermission.SelectPermissionCodesByRoleId(r.Id)
 		if err != nil {
 			return nil, err
 		}

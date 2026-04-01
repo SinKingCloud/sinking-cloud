@@ -99,6 +99,8 @@ function getMenuItems(routes: any, parentPath = '/', hideMenu = true) {
             const children = getMenuItems(route?.routes, menuItem.key, hideMenu);
             if (children.length > 0) {
                 menuItem.children = children;
+            } else {
+                menuItem.children = []
             }
         }
         return menuItem;

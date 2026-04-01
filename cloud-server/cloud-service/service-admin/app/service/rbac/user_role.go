@@ -6,8 +6,8 @@ import (
 	"strconv"
 )
 
-// findRoleIdsByUserId 根据userId查询用户角色列表
-func (s *service) findRoleIdsByUserId(userId int64, refresh bool) (ids []int64, err error) {
+// getRoleIdsByUserId 根据userId查询用户角色列表
+func (s *service) getRoleIdsByUserId(userId int64, refresh bool) (ids []int64, err error) {
 	cacheKey := constant.CacheNameWithUserRoles + strconv.FormatInt(userId, 10)
 	if !refresh {
 		if data, exists := s.cache.Get(cacheKey); exists && data != "" {
@@ -16,7 +16,7 @@ func (s *service) findRoleIdsByUserId(userId int64, refresh bool) (ids []int64, 
 			}
 		}
 	}
-	ids, err = s.repositoryUserRole.FindRoleIdsByUserId(userId)
+	ids, err = s.repositoryUserRole.SelectRoleIdsByUserId(userId)
 	if err != nil {
 		return nil, err
 	}

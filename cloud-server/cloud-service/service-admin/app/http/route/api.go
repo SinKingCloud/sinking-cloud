@@ -9,6 +9,11 @@ import (
 
 // loadApi 加载API
 func loadApi(s *sinking_web.Engine) {
+	page := s.Group("/page")
+	{
+		page.ANY("/menu", context.HandleFunc(controller.Page.Menu))       //菜单列表
+		page.ANY("/control", context.HandleFunc(controller.Page.Control)) //控件列表
+	}
 	person := s.Group("/person")
 	{
 		person.ANY("/info", context.HandleFunc(controller.Person.Info))     //个人信息

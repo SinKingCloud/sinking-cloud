@@ -1,6 +1,7 @@
 package enum
 
 import (
+	"service-admin/app/enum/menu"
 	"service-admin/app/enum/role"
 	"service-admin/app/enum/user"
 )
@@ -12,5 +13,9 @@ var Data = map[string]interface{}{
 	},
 	"role": map[string]interface{}{
 		"status": role.Status(), //角色状态
+	},
+	"menu": map[string]interface{}{
+		"status": menu.Status(), //菜单状态
+		"types":  menu.Types(),  //菜单类型
 	},
 }

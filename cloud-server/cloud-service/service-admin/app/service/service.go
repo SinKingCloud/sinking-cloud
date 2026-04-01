@@ -2,8 +2,11 @@ package service
 
 import (
 	config2 "service-admin/app/repository/config"
+	"service-admin/app/repository/menu"
+	"service-admin/app/repository/menu_permission"
 	"service-admin/app/repository/permission"
 	"service-admin/app/repository/role"
+	"service-admin/app/repository/role_menu"
 	"service-admin/app/repository/role_permission"
 	"service-admin/app/repository/session"
 	user2 "service-admin/app/repository/user"
@@ -32,11 +35,14 @@ func Init() {
 	permissionRepository := permission.NewRepository(global.App.Database)
 	userRoleRepository := user_role.NewRepository(global.App.Database)
 	rolePermRepository := role_permission.NewRepository(global.App.Database)
+	roleMenuRepository := role_menu.NewRepository(global.App.Database)
+	menuRepository := menu.NewRepository(global.App.Database)
+	menuPermRepository := menu_permission.NewRepository(global.App.Database)
 	cache := global.App.Cache
 	authService := service.Auth
 
 	Config = config.NewService(configRepository, cache)
 	Auth = auth.NewService(authService, sessionRepository, userRepository, cache)
-	Rbac = rbac.NewService(roleRepository, permissionRepository, userRoleRepository, rolePermRepository, cache)
+	Rbac = rbac.NewService(roleRepository, permissionRepository, userRoleRepository, rolePermRepository, roleMenuRepository, menuRepository, menuPermRepository, cache)
 	User = user.NewService(userRepository, cache)
 }

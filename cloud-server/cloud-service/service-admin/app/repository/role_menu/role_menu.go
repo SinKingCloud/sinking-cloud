@@ -4,6 +4,7 @@ import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/dat
 
 // Interface 角色菜单仓储接口
 type Interface interface {
+	SelectMenuIdsByRoleId(roleId int64) ([]int64, error)
 }
 
 // Repository 仓储

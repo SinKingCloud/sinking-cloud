@@ -1,6 +1,6 @@
 package role
 
-// Statu 用户状态
+// Statu 角色状态
 type Statu int
 
 const (

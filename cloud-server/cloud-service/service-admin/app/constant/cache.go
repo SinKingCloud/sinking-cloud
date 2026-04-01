@@ -23,4 +23,10 @@ const (
 
 	CacheNameWithRolePermissions = "RolePermissions_" //角色权限
 	CacheTimeWithRolePermissions = int64(600 * 1000)  //角色权限储存时间
+
+	CacheNameWithRoleMenus = "RoleMenus_"      //角色菜单
+	CacheTimeWithRoleMenus = int64(600 * 1000) //角色菜单储存时间
+
+	CacheNameWithMenus = "Menus_"          //菜单信息
+	CacheTimeWithMenus = int64(600 * 1000) //菜单信息储存时间
 )
