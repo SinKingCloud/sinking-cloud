@@ -180,6 +180,28 @@ const RightTop: React.FC = () => {
         }
     } = useRightTopStyles();
 
+    /**
+     * 退出登录
+     */
+    const outLogin = async () => {
+        message?.loading({content: '正在退出登录', duration: 600000, key: "outLogin"});
+        await logout({
+            body: {
+                is_admin: true,
+            },
+            onSuccess: (r) => {
+                message?.success(r?.message || "退出登录成功")
+                deleteHeader()
+                user?.setWeb(undefined);
+                message?.destroy("outLogin")
+                historyPush("/");
+            },
+            onFail: (r) => {
+                message?.error(r?.message || "退出登录失败")
+            }
+        })
+    }
+
     return <>
         <Tooltip title={theme?.getModeName(theme?.mode as any)}>
             <Icon type={theme?.isDarkMode() ? 'icon-dark' : (theme?.isAutoMode() ? 'icon-auto' : 'icon-light')}
@@ -212,24 +234,7 @@ const RightTop: React.FC = () => {
                              </div>
                              <Icon type="RightOutlined"></Icon>
                          </li>
-                         <li className={menuItem} onClick={async () => {
-                             message?.loading({content: '正在退出登录', duration: 600000, key: "outLogin"});
-                             await logout({
-                                 body: {
-                                     is_admin: true,
-                                 },
-                                 onSuccess: (r) => {
-                                     message?.success(r?.message || "退出登录成功")
-                                     deleteHeader()
-                                     user?.setWeb(undefined);
-                                     message?.destroy("outLogin")
-                                     historyPush("/");
-                                 },
-                                 onFail: (r) => {
-                                     message?.error(r?.message || "退出登录失败")
-                                 }
-                             })
-                         }}>
+                         <li className={menuItem} onClick={outLogin}>
                              <div className={menuItemLabel}><Icon type="LogoutOutlined" className={menuItemLeadIcon}/>退出登录
                              </div>
                              <Icon type="RightOutlined"></Icon>
