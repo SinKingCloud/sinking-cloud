@@ -6,7 +6,7 @@ import (
 )
 
 // Data 获取数据
-func (*Service) Data(service string, key string) (result map[string]interface{}) {
+func (*Service) Data(service string, key []string) (result map[string]interface{}) {
 	err := rpc.InvokeFunc(service, constant.RpcGetEnumDataFunName, key, &result)
 	if err != nil {
 		return nil
