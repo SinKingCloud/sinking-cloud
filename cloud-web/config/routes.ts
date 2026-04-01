@@ -20,7 +20,28 @@ export const admin = [
         title: "网站概览",
         name: "admin.index",
         icon: 'icon-home',
-        hideInMenu: false,
+    },
+    {
+        path: "service",
+        title: "业务管理",
+        name: "admin.service",
+        icon: 'icon-computer',
+        routes: [
+            {
+                path: "test",
+                component: "@/pages/admin/index",
+                title: "运动步数",
+                name: "service.test",
+                icon: '•',
+            },
+            {
+                path: "test2",
+                component: "@/pages/admin/index",
+                title: "故事解析",
+                name: "admin.test2",
+                icon: '•',
+            },
+        ]
     },
 ]
 /**

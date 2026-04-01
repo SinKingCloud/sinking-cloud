@@ -73,10 +73,10 @@ export function historyPush(name: any, params = {}) {
  * @param parentPath
  * @param hideMenu
  */
-function getMenuItems(routes: any, parentPath = '/', hideMenu = true) {
-    return routes.map((route: any) => {
+export function getMenuItems(routes: any, parentPath = '/', hideMenu = true) {
+    return (routes || []).map((route: any) => {
         if (hideMenu && route?.hideInMenu) {
-            return;
+            return undefined;
         }
         const menuItem: any = {
             label: route?.title,
@@ -84,9 +84,15 @@ function getMenuItems(routes: any, parentPath = '/', hideMenu = true) {
             name: route?.name
         };
         if (route?.icon) {
-            menuItem.icon = <Icon type={route?.icon}/>;
+            if (React.isValidElement(route?.icon)) {
+                menuItem.icon = route.icon;
+            } else if (typeof route?.icon === 'string') {
+                menuItem.icon = <Icon type={route?.icon}/>;
+            } else {
+                menuItem.icon = route?.icon;
+            }
         }
-        if (parentPath != '/' && !route.path.startsWith('/')) {
+        if (parentPath != '/' && !route?.path?.startsWith('/')) {
             menuItem.key = `${parentPath}/${route.path}`;
         } else {
             if (parentPath == '/' && route.path != '/') {
@@ -96,7 +102,7 @@ function getMenuItems(routes: any, parentPath = '/', hideMenu = true) {
             }
         }
         if (route?.routes) {
-            const children = getMenuItems(route?.routes, menuItem.key, hideMenu);
+            const children = getMenuItems(route?.routes, menuItem.key, hideMenu).filter(Boolean);
             if (children.length > 0) {
                 menuItem.children = children;
             } else {
@@ -104,11 +110,12 @@ function getMenuItems(routes: any, parentPath = '/', hideMenu = true) {
             }
         }
         return menuItem;
-    });
+    }).filter(Boolean);
 }
 
 
 const parentCache: any = {}
+
 
 /**
  * 根据name查找父级菜单
@@ -116,7 +123,10 @@ const parentCache: any = {}
  * @param name 标识
  */
 export function getParentList(data: any[], name: string): any[] {
-    if (Object.keys(name).length <= 0 && parentCache?.[name] != undefined) {
+    if (!name) {
+        return [];
+    }
+    if (parentCache?.[name] != undefined) {
         return parentCache[name];
     }
     let parents: any[] = [];
@@ -217,4 +227,16 @@ export function getFirstMenuWithoutChildren(menu: any[]): any | null {
         }
     }
     return null;
+}
+
+/**
+ * 清理路由缓存
+ */
+export function clearRouteCache() {
+    Object.keys(parentCache).forEach((key) => {
+        delete parentCache[key];
+    });
+    Object.keys(routeCache).forEach((key) => {
+        delete routeCache[key];
+    });
 }

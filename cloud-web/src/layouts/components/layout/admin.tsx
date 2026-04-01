@@ -1,14 +1,23 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {useLocation, useModel, Outlet, history, useSelectedRoutes} from "umi";
-import {historyPush, getCurrentMenus, getFirstMenuWithoutChildren, getParentList} from "@/utils/route";
+import {
+    clearRouteCache,
+    getFirstMenuWithoutChildren,
+    getFullPathByName,
+    getMenuItems,
+    getParentList,
+    historyPush
+} from "@/utils/route";
 import {createStyles} from 'antd-style';
 import Settings from "@/../config/defaultSettings";
 import defaultSettings from "@/../config/defaultSettings";
+import {admin as adminRoutes, adminPath} from "@/../config/routes";
 import {Icon, Layout, useTheme} from "sinking-antd";
 import {getPath} from "@/utils/assets";
 import {App, Avatar, Col, Popover, Row, Tooltip} from "antd";
 import {logout} from "@/service/common/login";
 import {deleteHeader} from "@/utils/auth";
+import {getMenus} from "@/service/admin/page";
 
 
 /**
@@ -293,22 +302,68 @@ const SKLayout: React.FC = () => {
     const {styles: {menuColor, collapsedImg, unCollapsed, collapsedLogo}} = useSKLayoutStyles();
 
     /**
+     * 菜单数据
+     */
+    const [adminMenus, setAdminMenus] = useState<any[]>([]);
+    const adminRouteMap = useMemo(() => {
+        const map = new Map<string, any>();
+        const fillRouteMap = (routes: any[]) => {
+            routes?.forEach((item: any) => {
+                if (item?.name) {
+                    map.set(item.name, item);
+                }
+                if (item?.routes && item?.routes?.length > 0) {
+                    fillRouteMap(item.routes);
+                }
+            });
+        };
+        fillRouteMap(adminRoutes || []);
+        return map;
+    }, []);
+    const currentMenus = useMemo(() => getMenuItems(adminMenus, '/' + adminPath, true), [adminMenus]);
+    const currentMenusWithHidden = useMemo(() => getMenuItems(adminMenus, '/' + adminPath, false), [adminMenus]);
+    const transformAdminMenus = (menus: any[]): any[] => {
+        if (!Array.isArray(menus) || menus.length <= 0) {
+            return [];
+        }
+        return menus.reduce((list: any[], item: any) => {
+            if (!item?.code) {
+                return list;
+            }
+            const routeItem = adminRouteMap.get(item.code);
+            const current: any = {
+                path: routeItem?.name ? getFullPathByName(routeItem.name) : item.code,
+                title: item?.name || routeItem?.title || item?.code,
+                name: item?.code,
+                icon: item?.icon || routeItem?.icon,
+            };
+            if (item?.type == 0) {
+                current.routes = transformAdminMenus(item?.children || []);
+            } else if (routeItem?.component) {
+                current.component = routeItem.component;
+            }
+            list.push(current);
+            return list;
+        }, []);
+    };
+
+    /**
      * 计算面包屑数据
      */
     const breadCrumbItems = useMemo(() => {
         if (!location?.pathname) return [];
-        const items = getParentList(getCurrentMenus(location?.pathname, false), match?.at(-1)?.route?.name);
+        const items = getParentList(currentMenusWithHidden, match?.at(-1)?.route?.name);
         const temp = [{
             title: "首页",
             onClick: () => {
-                historyPush(getFirstMenuWithoutChildren(getCurrentMenus(location?.pathname))?.name || "");
+                historyPush(getFirstMenuWithoutChildren(currentMenus)?.name || "admin.index");
             },
         }];
         const handleItemClick = (x: any) => {
             if (x?.children && x?.children?.length > 0) {
-                historyPush(getFirstMenuWithoutChildren(x?.children)?.name || "");
+                historyPush(getFirstMenuWithoutChildren(x?.children)?.name || "admin.index");
             } else {
-                historyPush(x?.name);
+                historyPush(x?.name || "admin.index");
             }
         };
         items.forEach((x) => {
@@ -318,18 +373,27 @@ const SKLayout: React.FC = () => {
             });
         });
         return temp;
-    }, [location?.pathname, match]);
+    }, [currentMenus, currentMenusWithHidden, location?.pathname, match]);
 
     /**
      * 初始化数据
      */
     useEffect(() => {
-        setLoading(true)
-        user?.refreshSystemUser((data) => {
-            setLoading(false);
+        setLoading(true);
+        clearRouteCache();
+        user?.refreshSystemUser(async (data) => {
             if (!data) {
                 historyPush("admin.login");
+                return;
             }
+            await getMenus({
+                onSuccess: (res) => {
+                    setAdminMenus(transformAdminMenus(res?.data || []));
+                },
+                onFinally: () => {
+                    setLoading(false);
+                }
+            })
         });
     }, []);
 
@@ -341,7 +405,7 @@ const SKLayout: React.FC = () => {
                 breadCrumbItems={breadCrumbItems}
                 hideBreadCrumb={match?.at(-1)?.route?.hideBreadCrumb}
                 waterMark={web?.info?.ui?.water_mark ? [user?.system?.nick_name, user?.system?.email] : ""}
-                menus={getCurrentMenus(location?.pathname, true)}
+                menus={currentMenus}
                 menuClassNames={menuColor}
                 layout={web?.info?.ui?.layout != "left" ? "horizontal" : "inline"}
                 flowLayout={web?.info?.ui?.layout != "left"}
