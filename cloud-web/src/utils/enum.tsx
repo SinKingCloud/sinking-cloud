@@ -9,7 +9,7 @@ const enumCache: Record<string, EnumGroup> = {};
 
 function normalizeNames(name: string | string[], restNames: string[] = []): string[] {
     const names = Array.isArray(name) ? name : [name, ...restNames];
-    return Array.from(new Set(names.map((item) => item?.trim()).filter(Boolean)));
+    return Array.from(new Set(names.map((item) => item?.trim()).filter(Boolean)) as any);
 }
 
 function getCachedEnums(names: string[]): EnumsData {
@@ -107,7 +107,7 @@ export function useEnum(name: string | string[], ...restNames: string[]): [EnumG
         setLoading(true);
         setError(null);
 
-        getEnum(isMultiple ? names : names[0]).then((data) => {
+        getEnum(isMultiple ? names : names[0] as any).then((data) => {
             if (mounted) {
                 setEnumData(data);
             }
