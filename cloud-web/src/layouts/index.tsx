@@ -25,7 +25,6 @@ const check = async (ctx: any, next: any) => {
     if (path == userPath || path == adminPath) {
         if ((ctx.res.code == 403 || ctx.res.code == 503)) {
             historyPush(path == userPath ? "user.login" : "admin.login");//登陆页面
-            deleteHeader()
             return
         }
         if (ctx.res.code == 401) {

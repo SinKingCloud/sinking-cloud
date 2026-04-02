@@ -453,7 +453,9 @@ export default () => {
     const [showRelogin, setShowRelogin] = useState(false);
     const [checkingLogin, setCheckingLogin] = useState(true);
 
-    // 初始化时检查登录状态
+    /**
+     * 初始化时检查登录状态
+     */
     useEffect(() => {
         setCheckingLogin(true);
         user?.refreshSystemUser?.((d: any) => {
@@ -464,7 +466,10 @@ export default () => {
         });
     }, []);
 
-    // 验证账号（手机号或邮箱）
+    /**
+     * 验证账号（手机号或邮箱）
+     * @param value 账号
+     */
     const validateAccount = (value: string): { valid: boolean; type: 'phone' | 'email' | 'unknown' } => {
         const phoneRegex = /^1[3-9]\d{9}$/;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -477,7 +482,9 @@ export default () => {
         return {valid: false, type: 'unknown'};
     };
 
-    // 获取验证码倒计时
+    /**
+     * 获取验证码倒计时
+     */
     const startCountdown = () => {
         let timeLeft = 60;
         setCountdown(timeLeft);
@@ -534,7 +541,9 @@ export default () => {
         });
     };
 
-    // 发送验证码（自动识别手机号或邮箱）
+    /**
+     * 发送验证码（自动识别手机号或邮箱）
+     */
     const handleSendCode = () => {
         const account = form.getFieldValue("account" as any);
         const result = validateAccount(account);
@@ -568,7 +577,10 @@ export default () => {
         });
     };
 
-    // 表单提交
+    /**
+     * 提交登陆表单
+     * @param values 表单数据
+     */
     const handleSubmit = async (values: any) => {
         // 验证输入
         if (type === "account") {
@@ -598,6 +610,27 @@ export default () => {
             await handleLogin(values, res, type);
         });
     };
+
+    /**
+     * 退出登录
+     */
+    const outLogin = async () => {
+        message.loading({content: "正在退出登录...", key: "outLogin"});
+        await logout({
+            body: {is_admin: true},
+            onSuccess: (r) => {
+                message.success(r?.message || "退出登录成功");
+                deleteHeader();
+                user?.setSystem(undefined);
+                message.destroy("outLogin");
+                setShowRelogin(true);
+            },
+            onFail: (r) => {
+                message.error(r?.message || "退出登录失败");
+                message.destroy("outLogin");
+            }
+        });
+    }
 
     const items: any = [
         {key: 'account', label: '密码登录'},
@@ -657,23 +690,7 @@ export default () => {
                                     </Button>
                                 </div>
                                 <div className={styles.reloginLink}>
-                                    <a onClick={async () => {
-                                        message.loading({content: "正在退出登录...", key: "outLogin"});
-                                        await logout({
-                                            body: {is_admin: true},
-                                            onSuccess: (r) => {
-                                                message.success(r?.message || "退出登录成功");
-                                                deleteHeader();
-                                                user?.setSystem(undefined);
-                                                message.destroy("outLogin");
-                                                setShowRelogin(true);
-                                            },
-                                            onFail: (r) => {
-                                                message.error(r?.message || "退出登录失败");
-                                                message.destroy("outLogin");
-                                            }
-                                        });
-                                    }}>
+                                    <a onClick={outLogin}>
                                         退出当前账号
                                     </a>
                                 </div>
