@@ -2,9 +2,13 @@ package rbac
 
 import (
 	"encoding/json"
+	"errors"
 	"service-admin/app/constant"
 	"service-admin/app/model"
 	"service-admin/app/repository/permission"
+	"time"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
 // getPermissionByPath 根据path查询权限
@@ -90,4 +94,31 @@ func (s *service) DeletePermissionByIds(ids []int64) error {
 		s.clearCacheWithRolePermissions(roleIds)
 	}
 	return err
+}
+
+// CreatePermission 创建权限
+func (s *service) CreatePermission(data *model.Permission) error {
+	if data.Code == "" {
+		return errors.New("标识不能为空")
+	}
+	info, err := s.repositoryPermission.FindByCode(data.Code)
+	if err != nil {
+		return err
+	}
+	if info != nil && info.Id > 0 {
+		return errors.New("该标识已被使用")
+	}
+	if data.Path == "" {
+		return errors.New("路径不能为空")
+	}
+	info, err = s.repositoryPermission.FindByPath(data.Path)
+	if err != nil {
+		return err
+	}
+	if info != nil && info.Id > 0 {
+		return errors.New("该路径已被使用")
+	}
+	data.UpdateTime = str.DateTime(time.Now())
+	data.CreateTime = str.DateTime(time.Now())
+	return s.repositoryPermission.Create(data)
 }

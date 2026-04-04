@@ -1,6 +1,7 @@
 package permission
 
 import (
+	"service-admin/app/model"
 	"service-admin/app/repository/permission"
 	"service-admin/app/service"
 
@@ -60,7 +61,25 @@ func (Controller) List(c *context.Context) {
 
 // Create 创建权限
 func (Controller) Create(c *context.Context) {
-
+	var form struct {
+		Code string `json:"place" default:"" validate:"required,max=50" label:"标识"`
+		Name string `json:"title" default:"" validate:"required,max=20" label:"名称"`
+		Path string `json:"describe" default:"" validate:"required,max=100" label:"路径"`
+	}
+	if ok, msg := c.ValidatorAll(&form); !ok {
+		c.Error(msg)
+		return
+	}
+	err := service.Rbac.CreatePermission(&model.Permission{
+		Name: form.Name,
+		Code: form.Code,
+		Path: form.Path,
+	})
+	if err == nil {
+		c.Success("创建数据成功")
+	} else {
+		c.Error(err.Error())
+	}
 }
 
 // Update 修改权限

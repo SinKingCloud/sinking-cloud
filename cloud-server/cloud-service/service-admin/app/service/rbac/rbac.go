@@ -21,6 +21,7 @@ type Service interface {
 	GetUserControl(userId int64, pageCode string) []*UserControl                                                                                              //获取用户控件
 	UpdatePermissionByIds(ids []int64, data *permission.UpdatePermission) error                                                                               //根据id集合更新权限
 	DeletePermissionByIds(ids []int64) error                                                                                                                  //根据ID集合删除权限
+	CreatePermission(data *model.Permission) error                                                                                                            //新增权限数据
 	SelectPermission(where *permission.SelectPermission, orderByField string, orderByType string, page int, pageSize int) ([]*model.Permission, int64, error) //查询权限数据
 }
 
