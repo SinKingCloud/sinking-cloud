@@ -7,6 +7,7 @@ import (
 // Interface 角色权限仓储接口
 type Interface interface {
 	SelectPermissionCodesByRoleId(roleId int64) ([]string, error)
+	SelectRoleIdsByPermissionCodes(permissionCodes []string) ([]int64, error)
 }
 
 // Repository 仓储

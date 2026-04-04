@@ -167,7 +167,7 @@ func (s *service) RegisterPermission(name string, code string, path string) erro
 		}
 	}
 	// 刷新缓存
-	s.clearCacheWithPermission(path)
+	s.clearCacheWithPermissions([]string{path})
 	return nil
 }
 

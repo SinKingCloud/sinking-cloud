@@ -34,18 +34,60 @@ func (s *service) SelectPermission(where *permission.SelectPermission, orderByFi
 
 // UpdatePermissionByIds 批量更新权限数据
 func (s *service) UpdatePermissionByIds(ids []int64, data *permission.UpdatePermission) error {
-	err := s.repositoryPermission.UpdateByIds(ids, data)
+	if len(ids) == 0 || data == nil {
+		return nil
+	}
+	perms, err := s.repositoryPermission.SelectByIds(ids)
+	if err != nil {
+		return err
+	}
+	err = s.repositoryPermission.UpdateByIds(ids, data)
 	if err == nil {
-
+		paths := make([]string, 0, len(perms)+1)
+		for _, item := range perms {
+			if item == nil || item.Path == "" {
+				continue
+			}
+			paths = append(paths, item.Path)
+		}
+		if data.Path != "" {
+			paths = append(paths, data.Path)
+		}
+		go s.clearCacheWithPermissions(paths)
 	}
 	return err
 }
 
 // DeletePermissionByIds 批量删除权限数据
 func (s *service) DeletePermissionByIds(ids []int64) error {
-	err := s.repositoryPermission.DeleteByIds(ids)
+	if len(ids) == 0 {
+		return nil
+	}
+	perms, err := s.repositoryPermission.SelectByIds(ids)
+	if err != nil {
+		return err
+	}
+	err = s.repositoryPermission.DeleteByIds(ids)
 	if err == nil {
-
+		paths := make([]string, 0, len(perms))
+		codes := make([]string, 0, len(perms))
+		for _, item := range perms {
+			if item == nil {
+				continue
+			}
+			if item.Path != "" {
+				paths = append(paths, item.Path)
+			}
+			if item.Code != "" {
+				codes = append(codes, item.Code)
+			}
+		}
+		roleIds, err2 := s.repositoryRolePermission.SelectRoleIdsByPermissionCodes(codes)
+		if err2 != nil {
+			return err2
+		}
+		s.clearCacheWithPermissions(paths)
+		s.clearCacheWithRolePermissions(roleIds)
 	}
 	return err
 }

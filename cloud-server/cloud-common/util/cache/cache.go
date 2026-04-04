@@ -6,7 +6,7 @@ type Interface interface {
 	SetExpire(key string, ttl int64) bool
 	Set(key string, value string) bool
 	Remember(key string, fun func() string, ttl int64) string
-	Delete(key string) bool
+	Delete(keys ...string) bool
 	Lock(key string, ttl int64) bool
 	IsLock(key string) bool
 	UnLock(key string) bool

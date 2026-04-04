@@ -14,6 +14,7 @@ type Interface interface {
 	UpdateByCode(code string, perm *UpdatePermission) error
 	UpdateByIds(ids []int64, perm *UpdatePermission) error
 	DeleteByIds(ids []int64) error
+	SelectByIds(ids []int64) ([]*model.Permission, error)
 	Select(where *SelectPermission, orderByField string, orderByType string, page int, pageSize int) (list []*model.Permission, total int64, err error)
 }
 

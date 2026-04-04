@@ -107,10 +107,23 @@ func (c *Client) Remember(key string, fun func() string, ttl int64) string {
 }
 
 // Delete 删除缓存
-func (c *Client) Delete(key string) bool {
+func (c *Client) Delete(keys ...string) bool {
+	if len(keys) == 0 {
+		return true
+	}
+	const batchSize = 500
 	ctx := context.Background()
-	err := c.client.Del(ctx, key).Err()
-	return err == nil
+	total := len(keys)
+	for i := 0; i < total; i += batchSize {
+		end := i + batchSize
+		if end > total {
+			end = total
+		}
+		if err := c.client.Del(ctx, keys[i:end]...).Err(); err != nil {
+			return false
+		}
+	}
+	return true
 }
 
 // Close 关闭连接

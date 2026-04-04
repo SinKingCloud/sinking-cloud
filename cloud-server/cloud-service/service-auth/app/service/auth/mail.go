@@ -19,8 +19,7 @@ func (s *service) CheckMail(mail string, code string) bool {
 	if exists && num != "" {
 		num2, err := strconv.Atoi(key2)
 		if err == nil && num2 >= 10 {
-			s.cache.Delete(key)
-			s.cache.Delete(key2)
+			s.cache.Delete(key, key2)
 			return false
 		}
 	}
@@ -28,8 +27,7 @@ func (s *service) CheckMail(mail string, code string) bool {
 	if exists {
 		res := data == code
 		if res {
-			s.cache.Delete(key)
-			s.cache.Delete(key2)
+			s.cache.Delete(key, key2)
 		}
 		return res
 	}
