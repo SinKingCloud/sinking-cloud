@@ -114,6 +114,9 @@ func (srv *Service) LoadAdminRouteWithRegister(g *sinking_web.RouterGroup, handl
 			g.ANY(path, context.HandleFunc(h))
 		}
 		fullPath := strings.ReplaceAll(fmt.Sprintf("/%s/%s/%s", constant.ServiceAdmin, global.App.Consul.GetName(), path), "//", "/")
+		if global.App.Consul.GetName() == constant.ServiceAdmin {
+			fullPath = strings.ReplaceAll(fmt.Sprintf("/%s/%s", constant.ServiceAdmin, path), "//", "/")
+		}
 		list = append(list, &rbac.RegisterPermissionsParam{
 			Name: name,
 			Code: strings.Trim(strings.ReplaceAll(fullPath, "/", ":"), ":"),
