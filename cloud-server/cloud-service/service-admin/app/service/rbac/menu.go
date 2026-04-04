@@ -5,8 +5,60 @@ import (
 	"service-admin/app/constant"
 	"service-admin/app/enum/menu"
 	"service-admin/app/model"
+	"sort"
 	"strconv"
 )
+
+// buildMenuTree 构建菜单树
+func (s *service) buildMenuTree(menus []*model.Menu) []*MenuTree {
+	menuMap := make(map[int64]*MenuTree, len(menus))
+	var rootMenus []*MenuTree
+	for _, item := range menus {
+		menuMap[item.Id] = &MenuTree{
+			Id:   item.Id,
+			Code: item.Code,
+			Name: item.Name,
+			Type: item.Type,
+			Icon: item.Icon,
+			Sort: item.Sort,
+		}
+	}
+	for _, item := range menus {
+		current := menuMap[item.Id]
+		if current == nil {
+			continue
+		}
+		if item.ParentId == 0 {
+			rootMenus = append(rootMenus, current)
+			continue
+		}
+		if parentMenu, ok := menuMap[item.ParentId]; ok && parentMenu != nil {
+			parentMenu.Children = append(parentMenu.Children, current)
+			continue
+		}
+		rootMenus = append(rootMenus, current)
+	}
+	//菜单排序
+	var sortMenus func(list []*MenuTree)
+	sortMenus = func(list []*MenuTree) {
+		if len(list) == 0 {
+			return
+		}
+		sort.Slice(list, func(i, j int) bool {
+			if list[i].Sort == list[j].Sort {
+				return list[i].Id < list[j].Id
+			}
+			return list[i].Sort > list[j].Sort
+		})
+		for _, item := range list {
+			if len(item.Children) > 0 {
+				sortMenus(item.Children)
+			}
+		}
+	}
+	sortMenus(rootMenus)
+	return rootMenus
+}
 
 // getMenuByCode 根据code查询菜单
 func (s *service) getMenuByCode(code string, refresh bool) (menu *model.Menu, err error) {

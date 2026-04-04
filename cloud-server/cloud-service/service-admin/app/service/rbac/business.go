@@ -6,12 +6,14 @@ import (
 	"service-admin/app/enum/menu"
 	"service-admin/app/model"
 	"service-admin/app/repository/permission"
-	"sort"
+	"time"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
 // GetUserControl 获取用户页面控件
-func (s *service) GetUserControl(userId int64, code string) []*UserControl {
-	var controls []*UserControl
+func (s *service) GetUserControl(userId int64, code string) []*Control {
+	var controls []*Control
 	info, err := s.getMenuByCode(code, false)
 	if err != nil || info == nil || info.Id <= 0 {
 		return controls
@@ -44,14 +46,14 @@ func (s *service) GetUserControl(userId int64, code string) []*UserControl {
 			}
 		}
 	}
-	controls = make([]*UserControl, 0, len(authControlMap))
+	controls = make([]*Control, 0, len(authControlMap))
 	for _, item := range menus {
 		if _, ok := authControlMap[item.Id]; ok {
 			value := controlMap[item.Id]
 			if value == nil {
 				continue
 			}
-			controls = append(controls, &UserControl{
+			controls = append(controls, &Control{
 				Code: value.Code,
 				Name: value.Name,
 				Icon: value.Icon,
@@ -61,8 +63,8 @@ func (s *service) GetUserControl(userId int64, code string) []*UserControl {
 	return controls
 }
 
-// GetUserMenus 获取用户菜单
-func (s *service) GetUserMenus(userId int64) []*UserMenu {
+// GetUserMenuTree 获取用户菜单
+func (s *service) GetUserMenuTree(userId int64) []*MenuTree {
 	//根据用户ID查询用户角色，获取到所有角色ID
 	roleIds, err := s.getRoleIdsByUserId(userId, false)
 	if err != nil || len(roleIds) == 0 {
@@ -87,54 +89,8 @@ func (s *service) GetUserMenus(userId int64) []*UserMenu {
 	if err != nil || len(menus) == 0 {
 		return nil
 	}
-	//对菜单数据进行树状组装
-	menuMap := make(map[int64]*UserMenu, len(menus))
-	var rootMenus []*UserMenu
-	for _, item := range menus {
-		menuMap[item.Id] = &UserMenu{
-			Id:   item.Id,
-			Code: item.Code,
-			Name: item.Name,
-			Type: item.Type,
-			Icon: item.Icon,
-			Sort: item.Sort,
-		}
-	}
-	for _, item := range menus {
-		current := menuMap[item.Id]
-		if current == nil {
-			continue
-		}
-		if item.ParentId == 0 {
-			rootMenus = append(rootMenus, current)
-			continue
-		}
-		if parentMenu, ok := menuMap[item.ParentId]; ok && parentMenu != nil {
-			parentMenu.Children = append(parentMenu.Children, current)
-			continue
-		}
-		rootMenus = append(rootMenus, current)
-	}
-	//菜单排序
-	var sortMenus func(list []*UserMenu)
-	sortMenus = func(list []*UserMenu) {
-		if len(list) == 0 {
-			return
-		}
-		sort.Slice(list, func(i, j int) bool {
-			if list[i].Sort == list[j].Sort {
-				return list[i].Id < list[j].Id
-			}
-			return list[i].Sort > list[j].Sort
-		})
-		for _, item := range list {
-			if len(item.Children) > 0 {
-				sortMenus(item.Children)
-			}
-		}
-	}
-	sortMenus(rootMenus)
-	return rootMenus
+	//返回菜单树
+	return s.buildMenuTree(menus)
 }
 
 // RegisterPermission 注册权限（以 code 为唯一标识，不存在则插入，存在则更新）
@@ -201,4 +157,105 @@ func (s *service) CheckUserHasPermission(userId int64, path string) error {
 		}
 	}
 	return errors.New("无访问权限")
+}
+
+// SelectPermission 查询权限数据
+func (s *service) SelectPermission(where *permission.SelectPermission, orderByField string, orderByType string, page int, pageSize int) ([]*model.Permission, int64, error) {
+	return s.repositoryPermission.Select(where, orderByField, orderByType, page, pageSize)
+}
+
+// UpdatePermissionByIds 批量更新权限数据
+func (s *service) UpdatePermissionByIds(ids []int64, data *permission.UpdatePermission) error {
+	if len(ids) == 0 || data == nil {
+		return nil
+	}
+	perms, err := s.repositoryPermission.SelectByIds(ids)
+	if err != nil {
+		return err
+	}
+	err = s.repositoryPermission.UpdateByIds(ids, data)
+	if err == nil {
+		paths := make([]string, 0, len(perms)+1)
+		for _, item := range perms {
+			if item == nil || item.Path == "" {
+				continue
+			}
+			paths = append(paths, item.Path)
+		}
+		if data.Path != "" {
+			paths = append(paths, data.Path)
+		}
+		go s.clearCacheWithPermissions(paths)
+	}
+	return err
+}
+
+// DeletePermissionByIds 批量删除权限数据
+func (s *service) DeletePermissionByIds(ids []int64) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	perms, err := s.repositoryPermission.SelectByIds(ids)
+	if err != nil {
+		return err
+	}
+	err = s.repositoryPermission.DeleteByIds(ids)
+	if err == nil {
+		paths := make([]string, 0, len(perms))
+		codes := make([]string, 0, len(perms))
+		for _, item := range perms {
+			if item == nil {
+				continue
+			}
+			if item.Path != "" {
+				paths = append(paths, item.Path)
+			}
+			if item.Code != "" {
+				codes = append(codes, item.Code)
+			}
+		}
+		roleIds, err2 := s.repositoryRolePermission.SelectRoleIdsByPermissionCodes(codes)
+		if err2 != nil {
+			return err2
+		}
+		s.clearCacheWithPermissions(paths)
+		s.clearCacheWithRolePermissions(roleIds)
+	}
+	return err
+}
+
+// CreatePermission 创建权限
+func (s *service) CreatePermission(data *model.Permission) error {
+	if data.Code == "" {
+		return errors.New("标识不能为空")
+	}
+	info, err := s.repositoryPermission.FindByCode(data.Code)
+	if err != nil {
+		return err
+	}
+	if info != nil && info.Id > 0 {
+		return errors.New("该标识已被使用")
+	}
+	if data.Path == "" {
+		return errors.New("路径不能为空")
+	}
+	info, err = s.repositoryPermission.FindByPath(data.Path)
+	if err != nil {
+		return err
+	}
+	if info != nil && info.Id > 0 {
+		return errors.New("该路径已被使用")
+	}
+	data.UpdateTime = str.DateTime(time.Now())
+	data.CreateTime = str.DateTime(time.Now())
+	return s.repositoryPermission.Create(data)
+}
+
+// GetAllMenuTree 获取所有菜单树状数据
+func (s *service) GetAllMenuTree() []*MenuTree {
+	menus, err := s.repositoryMenu.SelectWithType([]int{int(menu.TypeDir), int(menu.TypePage)})
+	if err != nil {
+		return nil
+	}
+	return s.buildMenuTree(menus)
 }

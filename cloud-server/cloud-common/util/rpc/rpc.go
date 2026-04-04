@@ -14,6 +14,7 @@ var rpcRequestPath = strings.ToLower(constant.RpcRequestPath)
 // RegisterHandle 挂载RPC处理器到HTTP引擎
 func RegisterHandle(engine *sinking_web.Engine) {
 	engine.ANY(rpcRequestPath, func(c *sinking_web.Context) {
+		c.StatusCode = 200
 		global.App.Consul.RpcHandle().ServeHTTP(c.Writer, c.Request)
 	})
 }

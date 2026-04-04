@@ -17,8 +17,9 @@ import (
 type Service interface {
 	RegisterPermission(name string, code string, path string) error                                                                                           //注册权限
 	CheckUserHasPermission(userId int64, path string) error                                                                                                   //判断用户是否含有权限
-	GetUserMenus(userId int64) []*UserMenu                                                                                                                    //获取用户菜单
-	GetUserControl(userId int64, pageCode string) []*UserControl                                                                                              //获取用户控件
+	GetUserMenuTree(userId int64) []*MenuTree                                                                                                                 //获取用户菜单
+	GetAllMenuTree() []*MenuTree                                                                                                                              //获取所有菜单
+	GetUserControl(userId int64, pageCode string) []*Control                                                                                                  //获取用户控件
 	UpdatePermissionByIds(ids []int64, data *permission.UpdatePermission) error                                                                               //根据id集合更新权限
 	DeletePermissionByIds(ids []int64) error                                                                                                                  //根据ID集合删除权限
 	CreatePermission(data *model.Permission) error                                                                                                            //新增权限数据

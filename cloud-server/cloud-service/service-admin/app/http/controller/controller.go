@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"service-admin/app/http/controller/menu"
 	"service-admin/app/http/controller/page"
 	"service-admin/app/http/controller/permission"
 	"service-admin/app/http/controller/person"
@@ -12,4 +13,5 @@ var (
 	Person     = &person.Controller{}
 	Security   = &security.Controller{}
 	Permission = &permission.Controller{}
+	Menu       = &menu.Controller{}
 )

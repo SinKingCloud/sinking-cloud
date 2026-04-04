@@ -34,5 +34,12 @@ func loadApi(s *sinking_web.Engine) {
 		ANY("/permission/create", "创建权限", controller.Permission.Create)
 		ANY("/permission/update", "修改权限", controller.Permission.Update)
 		ANY("/permission/delete", "删除权限", controller.Permission.Delete)
+
+		ANY("/menu/list", "菜单列表", controller.Menu.List)
+		ANY("/menu/info", "菜单或控件详情", controller.Menu.Info)
+		ANY("/menu/controls", "查看页面控件列表", controller.Menu.Controls)
+		ANY("/menu/create", "创建列表或控件", controller.Menu.Create)
+		ANY("/menu/update", "修改列表或控件", controller.Menu.Update)
+		ANY("/menu/delete", "删除列表或控件", controller.Menu.Delete)
 	})
 }

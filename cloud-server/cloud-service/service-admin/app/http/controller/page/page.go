@@ -11,7 +11,7 @@ type Controller struct {
 
 // Menu 系统菜单
 func (Controller) Menu(c *context.Context) {
-	menus := service.Rbac.GetUserMenus(c.GetUserInfo().Id)
+	menus := service.Rbac.GetUserMenuTree(c.GetUserInfo().Id)
 	if menus == nil {
 		c.Error("获取菜单数据失败")
 		return
