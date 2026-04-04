@@ -21,6 +21,85 @@ export const admin = [
         name: "admin.index",
         icon: 'icon-home',
     },
+    {
+        path: "system",
+        title: "系统管理",
+        name: "admin.system",
+        icon: 'icon-setting',
+        routes: [
+            {
+                path: "user",
+                component: "@/pages/admin/index",
+                title: "用户管理",
+                name: "admin.system.user",
+                icon: '•',
+            },
+            {
+                path: "role",
+                component: "@/pages/admin/index",
+                title: "角色管理",
+                name: "admin.system.role",
+                icon: '•',
+            },
+            {
+                path: "permission",
+                component: "@/pages/admin/index",
+                title: "权限管理",
+                name: "admin.system.permission",
+                icon: '•',
+            },
+            {
+                path: "menu",
+                component: "@/pages/admin/index",
+                title: "菜单管理",
+                name: "admin.system.menu",
+                icon: '•',
+            },
+            {
+                path: "task",
+                component: "@/pages/admin/index",
+                title: "任务管理",
+                name: "admin.system.task",
+                icon: '•',
+            },
+            {
+                path: "storage",
+                component: "@/pages/admin/index",
+                title: "存储管理",
+                name: "admin.system.storage",
+                icon: '•',
+            },
+            {
+                path: "config",
+                component: "@/pages/admin/index",
+                title: "系统设置",
+                name: "admin.system.config",
+                icon: '•',
+            },
+        ]
+    },
+    {
+        path: "person",
+        title: "账户管理",
+        name: "admin.person",
+        icon: 'icon-my',
+        routes: [
+            {
+                path: "setting",
+                component: "@/pages/admin/index",
+                title: "账户管理",
+                name: "admin.person.setting",
+                icon: '•',
+            },
+            {
+                path: "log",
+                component: "@/pages/admin/index",
+                title: "操作日志",
+                name: "admin.person.log",
+                icon: '•',
+            },
+        ]
+    },
 ]
 /**
  * 首页系统路由

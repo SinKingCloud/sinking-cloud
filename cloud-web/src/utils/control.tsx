@@ -36,7 +36,7 @@ export function useControl(code?: string): UseControlResult {
         return code || match?.at(-1)?.route?.name || "";
     }, [code, match]);
     const [controls, setControls] = useState<ControlItem[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const [reloadKey, setReloadKey] = useState(0);
 

@@ -91,7 +91,7 @@ export function useEnum(name: string | string[], ...restNames: string[]): [EnumG
         return normalizeNames(name, restNames).join(",");
     }, [Array.isArray(name) ? name.join(",") : name, restNames.join(",")]);
     const [enumData, setEnumData] = useState<EnumGroup | EnumsData>({});
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {

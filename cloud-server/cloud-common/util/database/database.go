@@ -3,6 +3,7 @@ package database
 import (
 	"log"
 	"os"
+	"reflect"
 	"time"
 
 	"gorm.io/gorm"
@@ -15,6 +16,33 @@ type Database struct {
 	DbError error
 }
 
+// BatchExecute	批量执行
+func (d *Database) BatchExecute(slice interface{}, batchSize int, fn func(batch interface{}) error) error {
+	val := reflect.ValueOf(slice)
+	if val.Kind() != reflect.Slice {
+		return nil
+	}
+	total := val.Len()
+	if total == 0 {
+		return nil
+	}
+	if batchSize <= 0 {
+		batchSize = 1000
+	}
+	for i := 0; i < total; i += batchSize {
+		end := i + batchSize
+		if end > total {
+			end = total
+		}
+		batch := val.Slice(i, end).Interface()
+		if err := fn(batch); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// newLogger 实例化日志输出
 func newLogger() logger.Interface {
 	return logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), //io writer（日志输出的目标，前缀和日志包含的内容——译者注）

@@ -12,6 +12,9 @@ type Interface interface {
 	FindByCode(code string) (*model.Permission, error)
 	Create(perm *model.Permission) error
 	UpdateByCode(code string, perm *UpdatePermission) error
+	UpdateByIds(ids []int64, perm *UpdatePermission) error
+	DeleteByIds(ids []int64) error
+	Select(where *SelectPermission, orderByField string, orderByType string, page int, pageSize int) (list []*model.Permission, total int64, err error)
 }
 
 // Repository 仓储

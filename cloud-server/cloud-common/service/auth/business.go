@@ -110,7 +110,9 @@ func (*Service) GetAdminRouteGroup(s *sinking_web.Engine) *sinking_web.RouterGro
 func (srv *Service) LoadAdminRouteWithRegister(g *sinking_web.RouterGroup, handle func(ANY func(path string, name string, h func(*context.Context)))) {
 	var list []*rbac.RegisterPermissionsParam
 	handle(func(path string, name string, h func(c *context.Context)) {
-		g.ANY(path, context.HandleFunc(h))
+		if g != nil && h != nil {
+			g.ANY(path, context.HandleFunc(h))
+		}
 		fullPath := strings.ReplaceAll(fmt.Sprintf("/%s/%s/%s", constant.ServiceAdmin, global.App.Consul.GetName(), path), "//", "/")
 		list = append(list, &rbac.RegisterPermissionsParam{
 			Name: name,
