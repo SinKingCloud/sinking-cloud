@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"errors"
 	"service-admin/app/service"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
@@ -17,12 +18,32 @@ func (Controller) List(c *context.Context) {
 
 // Info 页面信息
 func (Controller) Info(c *context.Context) {
-
+	var form struct {
+		Id int64 `json:"id" default:"" validate:"numeric,min=1" label:"记录ID"`
+	}
+	if ok, msg := c.ValidatorAll(&form); !ok {
+		c.Error(msg)
+		return
+	}
+	info, err := service.Rbac.GetMenuOrControlInfoById(form.Id)
+	if err != nil {
+		c.Error(errors.Join(errors.New("获取数据失败"), err))
+		return
+	}
+	c.SuccessWithData("获取数据成功", info)
 }
 
 // Controls 控件列表
 func (Controller) Controls(c *context.Context) {
-
+	var form struct {
+		Id int64 `json:"id" default:"" validate:"numeric,min=1" label:"页面ID"`
+	}
+	if ok, msg := c.ValidatorAll(&form); !ok {
+		c.Error(msg)
+		return
+	}
+	list := service.Rbac.GetPageControlsByMenuId(form.Id)
+	c.SuccessWithData("获取数据成功", list)
 }
 
 // Create 创建菜单或控件

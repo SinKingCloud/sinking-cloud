@@ -11,9 +11,9 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
-// GetUserControl 获取用户页面控件
-func (s *service) GetUserControl(userId int64, code string) []*Control {
-	var controls []*Control
+// GetPageControlsByUserId 根据用户ID获取页面控件
+func (s *service) GetPageControlsByUserId(userId int64, code string) []*UserControl {
+	var controls []*UserControl
 	info, err := s.getMenuByCode(code, false)
 	if err != nil || info == nil || info.Id <= 0 {
 		return controls
@@ -46,14 +46,14 @@ func (s *service) GetUserControl(userId int64, code string) []*Control {
 			}
 		}
 	}
-	controls = make([]*Control, 0, len(authControlMap))
+	controls = make([]*UserControl, 0, len(authControlMap))
 	for _, item := range menus {
 		if _, ok := authControlMap[item.Id]; ok {
 			value := controlMap[item.Id]
 			if value == nil {
 				continue
 			}
-			controls = append(controls, &Control{
+			controls = append(controls, &UserControl{
 				Code: value.Code,
 				Name: value.Name,
 				Icon: value.Icon,
@@ -64,7 +64,7 @@ func (s *service) GetUserControl(userId int64, code string) []*Control {
 }
 
 // GetUserMenuTree 获取用户菜单
-func (s *service) GetUserMenuTree(userId int64) []*MenuTree {
+func (s *service) GetUserMenuTree(userId int64) []*UserMenuTree {
 	//根据用户ID查询用户角色，获取到所有角色ID
 	roleIds, err := s.getRoleIdsByUserId(userId, false)
 	if err != nil || len(roleIds) == 0 {
@@ -90,7 +90,29 @@ func (s *service) GetUserMenuTree(userId int64) []*MenuTree {
 		return nil
 	}
 	//返回菜单树
-	return s.buildMenuTree(menus)
+	tree := s.buildMenuTree(menus)
+	var formatMenus func(list []*MenuTree) []*UserMenuTree
+	formatMenus = func(list []*MenuTree) []*UserMenuTree {
+		if len(list) == 0 {
+			return nil
+		}
+		result := make([]*UserMenuTree, 0, len(list))
+		for _, item := range list {
+			if item == nil {
+				continue
+			}
+			result = append(result, &UserMenuTree{
+				Code:     item.Code,
+				Name:     item.Name,
+				Type:     item.Type,
+				Icon:     item.Icon,
+				Sort:     item.Sort,
+				Children: formatMenus(item.Children),
+			})
+		}
+		return result
+	}
+	return formatMenus(tree)
 }
 
 // RegisterPermission 注册权限（以 code 为唯一标识，不存在则插入，存在则更新）
@@ -239,7 +261,7 @@ func (s *service) CreatePermission(data *model.Permission) error {
 	if data.Path == "" {
 		return errors.New("路径不能为空")
 	}
-	info, err = s.repositoryPermission.FindByPath(data.Path)
+	info, err = s.getPermissionByPath(data.Path, false)
 	if err != nil {
 		return err
 	}
@@ -258,4 +280,89 @@ func (s *service) GetAllMenuTree() []*MenuTree {
 		return nil
 	}
 	return s.buildMenuTree(menus)
+}
+
+// GetMenuOrControlInfoById 根据ID获取菜单或控件信息
+func (s *service) GetMenuOrControlInfoById(id int64) (*MenuOrControlInfo, error) {
+	info, err := s.repositoryMenu.FindById(id)
+	if err != nil {
+		return nil, errors.Join(errors.New("查询数据失败"), err)
+	}
+	if info == nil || info.Id <= 0 {
+		return nil, errors.New("该数据不存在")
+	}
+	menuOrControlInfo := &MenuOrControlInfo{
+		Id:         info.Id,
+		Code:       info.Code,
+		Name:       info.Name,
+		Icon:       info.Icon,
+		Type:       info.Type,
+		Sort:       info.Sort,
+		Status:     info.Status,
+		CreateTime: info.CreateTime,
+		UpdateTime: info.UpdateTime,
+	}
+	if menu.Type(info.Type) != menu.TypeDir {
+		menuOrControlInfo.PermissionCodes, err = s.repositoryMenuPermission.SelectPermissionCodesByMenuId(info.Id)
+		if err != nil {
+			return nil, errors.Join(errors.New("查询权限数据失败"), err)
+		}
+	}
+	return menuOrControlInfo, nil
+}
+
+// GetPageControlsByMenuId 获取页面控件
+func (s *service) GetPageControlsByMenuId(id int64) []*Control {
+	var controls []*Control
+	if id <= 0 {
+		return controls
+	}
+	menus, err := s.repositoryMenu.SelectByParentIdWithType(id, int(menu.TypeControl))
+	if err != nil || len(menus) == 0 {
+		return controls
+	}
+	n := len(menus)
+	menuIds := make([]int64, 0, n)
+	for _, item := range menus {
+		if item == nil || item.Id <= 0 {
+			continue
+		}
+		menuIds = append(menuIds, item.Id)
+	}
+	menuPermissions, err := s.repositoryMenuPermission.SelectByMenuIds(menuIds)
+	if err != nil {
+		return nil
+	}
+	permissionCodeMap := make(map[int64][]string, n)
+	tempMap := make(map[int64]map[string]struct{}, n)
+	for _, item := range menuPermissions {
+		if item == nil || item.MenuId <= 0 || item.PermissionCode == "" {
+			continue
+		}
+		if _, ok := tempMap[item.MenuId]; !ok {
+			tempMap[item.MenuId] = make(map[string]struct{}, 5)
+		}
+		if _, ok := tempMap[item.MenuId][item.PermissionCode]; ok {
+			continue
+		}
+		tempMap[item.MenuId][item.PermissionCode] = struct{}{}
+		permissionCodeMap[item.MenuId] = append(permissionCodeMap[item.MenuId], item.PermissionCode)
+	}
+	controls = make([]*Control, 0, len(menus))
+	for _, item := range menus {
+		if item == nil || item.Id <= 0 {
+			continue
+		}
+		controls = append(controls, &Control{
+			Id:              item.Id,
+			Code:            item.Code,
+			Name:            item.Name,
+			Icon:            item.Icon,
+			PermissionCodes: permissionCodeMap[item.Id],
+			Status:          item.Status,
+			CreateTime:      item.CreateTime,
+			UpdateTime:      item.UpdateTime,
+		})
+	}
+	return controls
 }

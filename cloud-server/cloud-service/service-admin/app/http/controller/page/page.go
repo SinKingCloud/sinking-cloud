@@ -28,7 +28,7 @@ func (Controller) Control(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	controls := service.Rbac.GetUserControl(c.GetUserInfo().Id, form.Code)
+	controls := service.Rbac.GetPageControlsByUserId(c.GetUserInfo().Id, form.Code)
 	if controls == nil {
 		c.Error("获取控件数据失败")
 		return

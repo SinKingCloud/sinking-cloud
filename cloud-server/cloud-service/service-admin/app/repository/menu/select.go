@@ -51,3 +51,16 @@ func (r *Repository) SelectWithType(types []int) ([]*model.Menu, error) {
 	}
 	return menus, nil
 }
+
+// SelectByParentIdWithType 根据菜单父级ID和类型查询子项
+func (r *Repository) SelectByParentIdWithType(parentId int64, types int) ([]*model.Menu, error) {
+	var menus []*model.Menu
+	err := r.Database.Db.
+		Model(&model.Menu{}).
+		Where("parent_id = ? AND type = ?", parentId, types).
+		Find(&menus).Error
+	if err != nil {
+		return nil, err
+	}
+	return menus, nil
+}
