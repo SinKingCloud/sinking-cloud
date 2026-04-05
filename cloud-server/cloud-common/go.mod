@@ -14,10 +14,10 @@ require (
 	github.com/aliyun/credentials-go v1.4.12
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 	github.com/glebarez/sqlite v1.11.0
-	github.com/go-pay/gopay v1.5.116
+	github.com/go-pay/gopay v1.5.117
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
-	github.com/go-playground/validator/v10 v10.30.1
+	github.com/go-playground/validator/v10 v10.30.2
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/nats-io/nats.go v1.50.0
 	github.com/redis/go-redis/v9 v9.18.0
@@ -93,5 +93,5 @@ require (
 	modernc.org/libc v1.70.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.47.0 // indirect
+	modernc.org/sqlite v1.48.1 // indirect
 )
