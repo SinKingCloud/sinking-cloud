@@ -2,6 +2,19 @@ package permission
 
 import "service-admin/app/model"
 
+// SelectAll 查询全部权限
+func (r *Repository) SelectAll() ([]*model.Permission, error) {
+	var permissions []*model.Permission
+	err := r.Database.Db.
+		Model(&model.Permission{}).
+		Order("id ASC").
+		Find(&permissions).Error
+	if err != nil {
+		return nil, err
+	}
+	return permissions, nil
+}
+
 // SelectByIds 根据ID集合查询权限
 func (r *Repository) SelectByIds(ids []int64) ([]*model.Permission, error) {
 	if len(ids) == 0 {

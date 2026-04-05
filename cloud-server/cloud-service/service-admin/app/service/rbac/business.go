@@ -146,6 +146,7 @@ func (s *service) RegisterPermission(name string, code string, path string) erro
 	}
 	// 刷新缓存
 	s.clearCacheWithPermissions([]string{path})
+	s.clearCacheWithEnums([]string{"permission"})
 	return nil
 }
 
@@ -207,7 +208,8 @@ func (s *service) UpdatePermissionByIds(ids []int64, data *permission.UpdatePerm
 		if data.Path != "" {
 			paths = append(paths, data.Path)
 		}
-		go s.clearCacheWithPermissions(paths)
+		s.clearCacheWithPermissions(paths)
+		s.clearCacheWithEnums([]string{"permission"})
 	}
 	return err
 }
@@ -242,6 +244,7 @@ func (s *service) DeletePermissionByIds(ids []int64) error {
 		}
 		s.clearCacheWithPermissions(paths)
 		s.clearCacheWithRolePermissions(roleIds)
+		s.clearCacheWithEnums([]string{"permission"})
 	}
 	return err
 }
@@ -270,7 +273,12 @@ func (s *service) CreatePermission(data *model.Permission) error {
 	}
 	data.UpdateTime = str.DateTime(time.Now())
 	data.CreateTime = str.DateTime(time.Now())
-	return s.repositoryPermission.Create(data)
+	err = s.repositoryPermission.Create(data)
+	if err == nil {
+		s.clearCacheWithPermissions([]string{data.Path})
+		s.clearCacheWithEnums([]string{"permission"})
+	}
+	return err
 }
 
 // GetAllMenuTree 获取所有菜单树状数据

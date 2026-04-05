@@ -29,4 +29,7 @@ const (
 
 	CacheNameWithMenus = "Menus_"          //菜单信息
 	CacheTimeWithMenus = int64(600 * 1000) //菜单信息储存时间
+
+	CacheNameWithEnum = "Enum_"           //枚举缓存
+	CacheTimeWithEnum = int64(600 * 1000) //枚举缓存储存时间
 )

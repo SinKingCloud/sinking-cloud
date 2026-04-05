@@ -42,3 +42,22 @@ func (s *service) clearCacheWithRolePermissions(roleIds []int64) {
 		s.cache.Delete(keys...)
 	}
 }
+
+// clearCacheWithEnums 清理枚举缓存
+func (s *service) clearCacheWithEnums(names []string) {
+	nameMap := make(map[string]struct{}, len(names))
+	keys := make([]string, 0, len(names))
+	for _, name := range names {
+		if name == "" {
+			continue
+		}
+		if _, ok := nameMap[name]; ok {
+			continue
+		}
+		nameMap[name] = struct{}{}
+		keys = append(keys, constant.CacheNameWithEnum+name)
+	}
+	if len(keys) > 0 {
+		s.cache.Delete(keys...)
+	}
+}
