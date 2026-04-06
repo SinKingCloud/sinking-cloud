@@ -374,3 +374,81 @@ func (s *service) GetPageControlsByMenuId(id int64) []*Control {
 	}
 	return controls
 }
+
+// DeleteMenuOrControlByIds 根据ID列表删除菜单或控件数据
+func (s *service) DeleteMenuOrControlByIds(ids []int64) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	menus, err := s.repositoryMenu.SelectWithType([]int{int(menu.TypeDir), int(menu.TypePage), int(menu.TypeControl)})
+	if err != nil {
+		return errors.Join(errors.New("查询菜单数据失败"), err)
+	}
+	if len(menus) == 0 {
+		return nil
+	}
+	menuMap := make(map[int64]*model.Menu, len(menus))
+	childrenMap := make(map[int64][]int64, len(menus))
+	for _, item := range menus {
+		if item == nil || item.Id <= 0 {
+			continue
+		}
+		menuMap[item.Id] = item
+		childrenMap[item.ParentId] = append(childrenMap[item.ParentId], item.Id)
+	}
+	deleteMap := make(map[int64]*model.Menu, len(ids))
+	var loadChildren func(menuId int64)
+	loadChildren = func(menuId int64) {
+		if _, ok := deleteMap[menuId]; ok {
+			return
+		}
+		info, ok := menuMap[menuId]
+		if !ok || info == nil {
+			return
+		}
+		deleteMap[menuId] = info
+		for _, childId := range childrenMap[menuId] {
+			loadChildren(childId)
+		}
+	}
+	for _, id := range ids {
+		if id <= 0 {
+			continue
+		}
+		loadChildren(id)
+	}
+	if len(deleteMap) == 0 {
+		return nil
+	}
+	deleteIds := make([]int64, 0, len(deleteMap))
+	deleteMenus := make([]*model.Menu, 0, len(deleteMap))
+	for _, item := range deleteMap {
+		if item == nil || item.Id <= 0 {
+			continue
+		}
+		deleteIds = append(deleteIds, item.Id)
+		deleteMenus = append(deleteMenus, item)
+	}
+	if len(deleteIds) == 0 {
+		return nil
+	}
+	roleIds, err := s.repositoryRoleMenu.SelectRoleIdsByMenuIds(deleteIds)
+	if err != nil {
+		return errors.Join(errors.New("查询角色菜单关联失败"), err)
+	}
+	err = s.repositoryMenuPermission.DeleteByMenuIds(deleteIds)
+	if err != nil {
+		return errors.Join(errors.New("删除菜单权限关联失败"), err)
+	}
+	err = s.repositoryRoleMenu.DeleteByMenuIds(deleteIds)
+	if err != nil {
+		return errors.Join(errors.New("删除角色菜单关联失败"), err)
+	}
+	err = s.repositoryMenu.DeleteByIds(deleteIds)
+	if err != nil {
+		return errors.Join(errors.New("删除菜单数据失败"), err)
+	}
+	s.clearCacheWithRoleMenus(roleIds)
+	s.clearCacheWithMenus(deleteMenus)
+	return nil
+}

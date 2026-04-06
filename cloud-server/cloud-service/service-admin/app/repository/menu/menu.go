@@ -14,6 +14,7 @@ type Interface interface {
 	SelectByParentIdWithType(parentId int64, types int) ([]*model.Menu, error)
 	FindByCode(code string) (*model.Menu, error)
 	FindById(id int64) (*model.Menu, error)
+	DeleteByIds(ids []int64) error
 }
 
 // Repository 用户仓储

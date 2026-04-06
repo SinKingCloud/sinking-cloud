@@ -10,6 +10,7 @@ import (
 type Interface interface {
 	SelectPermissionCodesByMenuId(menuId int64) ([]string, error)
 	SelectByMenuIds(menuIds []int64) ([]*model.MenuPermission, error)
+	DeleteByMenuIds(menuIds []int64) error
 }
 
 // Repository 仓储

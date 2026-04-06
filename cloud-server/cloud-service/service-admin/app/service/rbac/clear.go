@@ -2,6 +2,7 @@ package rbac
 
 import (
 	"service-admin/app/constant"
+	"service-admin/app/model"
 	"strconv"
 )
 
@@ -37,6 +38,60 @@ func (s *service) clearCacheWithRolePermissions(roleIds []int64) {
 		}
 		roleMap[roleId] = struct{}{}
 		keys = append(keys, constant.CacheNameWithRolePermissions+strconv.FormatInt(roleId, 10))
+	}
+	if len(keys) > 0 {
+		s.cache.Delete(keys...)
+	}
+}
+
+// clearCacheWithRoleMenus 清理角色菜单缓存
+func (s *service) clearCacheWithRoleMenus(roleIds []int64) {
+	roleMap := make(map[int64]struct{}, len(roleIds))
+	keys := make([]string, 0, len(roleIds))
+	for _, roleId := range roleIds {
+		if roleId <= 0 {
+			continue
+		}
+		if _, ok := roleMap[roleId]; ok {
+			continue
+		}
+		roleMap[roleId] = struct{}{}
+		keys = append(keys, constant.CacheNameWithRoleMenus+strconv.FormatInt(roleId, 10))
+	}
+	if len(keys) > 0 {
+		s.cache.Delete(keys...)
+	}
+}
+
+// clearCacheWithMenus 清理菜单缓存
+func (s *service) clearCacheWithMenus(menus []*model.Menu) {
+	keyMap := make(map[string]struct{}, len(menus)*3)
+	keys := make([]string, 0, len(menus)*3)
+	for _, item := range menus {
+		if item == nil {
+			continue
+		}
+		if item.Code != "" {
+			cacheKey := constant.CacheNameWithMenus + item.Code
+			if _, ok := keyMap[cacheKey]; !ok {
+				keyMap[cacheKey] = struct{}{}
+				keys = append(keys, cacheKey)
+			}
+		}
+		if item.Id > 0 {
+			cacheKey := constant.CacheNameWithMenus + "_list_" + strconv.FormatInt(item.Id, 10)
+			if _, ok := keyMap[cacheKey]; !ok {
+				keyMap[cacheKey] = struct{}{}
+				keys = append(keys, cacheKey)
+			}
+		}
+		if item.ParentId > 0 {
+			cacheKey := constant.CacheNameWithMenus + "_list_" + strconv.FormatInt(item.ParentId, 10)
+			if _, ok := keyMap[cacheKey]; !ok {
+				keyMap[cacheKey] = struct{}{}
+				keys = append(keys, cacheKey)
+			}
+		}
 	}
 	if len(keys) > 0 {
 		s.cache.Delete(keys...)
