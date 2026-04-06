@@ -29,7 +29,6 @@ func (r *Repository) SelectByMenuIds(menuIds []int64) ([]*model.MenuPermission, 
 		err := r.Database.Db.
 			Model(&model.MenuPermission{}).
 			Where("menu_id IN ?", batch.([]int64)).
-			Order("id ASC").
 			Find(&items).Error
 		if err != nil {
 			return err

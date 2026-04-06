@@ -9,9 +9,8 @@ import (
 
 // RolePermission 角色权限关联表
 type RolePermission struct {
-	Id             int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
-	RoleId         int64        `gorm:"column:role_id" json:"role_id"`
-	PermissionCode string       `gorm:"column:permission_code" json:"permission_code"`
+	RoleId         int64        `gorm:"column:role_id;primaryKey" json:"role_id"`
+	PermissionCode string       `gorm:"column:permission_code;primaryKey" json:"permission_code"`
 	CreateTime     str.DateTime `gorm:"column:create_time" json:"create_time"`
 }
 

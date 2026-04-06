@@ -9,9 +9,8 @@ import (
 
 // UserRole 用户角色关联表
 type UserRole struct {
-	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
-	UserId     int64        `gorm:"column:user_id" json:"user_id"`
-	RoleId     int64        `gorm:"column:role_id" json:"role_id"`
+	UserId     int64        `gorm:"column:user_id;primaryKey" json:"user_id"`
+	RoleId     int64        `gorm:"column:role_id;primaryKey" json:"role_id"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }

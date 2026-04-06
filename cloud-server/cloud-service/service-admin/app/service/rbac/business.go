@@ -673,6 +673,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 	}
 	permissionCodesChanged := permissionCodes != nil
 	permissionList := make([]*model.MenuPermission, 0)
+	newPermissionCodeMap := make(map[string]struct{})
 	if permissionCodesChanged {
 		codes := permissionCodes
 		permissionCodeMap := make(map[string]struct{}, len(codes))
@@ -721,6 +722,35 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 				validPermissionList = append(validPermissionList, item)
 			}
 			permissionList = validPermissionList
+		}
+		for _, item := range permissionList {
+			if item == nil || item.PermissionCode == "" {
+				continue
+			}
+			newPermissionCodeMap[item.PermissionCode] = struct{}{}
+		}
+		oldPermissionCodes, err := s.repositoryMenuPermission.SelectPermissionCodesByMenuId(info.Id)
+		if err != nil {
+			return errors.Join(errors.New("更新失败"), err)
+		}
+		oldPermissionCodeMap := make(map[string]struct{}, len(oldPermissionCodes))
+		for _, permissionCode := range oldPermissionCodes {
+			if permissionCode == "" {
+				continue
+			}
+			oldPermissionCodeMap[permissionCode] = struct{}{}
+		}
+		if len(oldPermissionCodeMap) == len(newPermissionCodeMap) {
+			same := true
+			for permissionCode := range newPermissionCodeMap {
+				if _, ok := oldPermissionCodeMap[permissionCode]; !ok {
+					same = false
+					break
+				}
+			}
+			if same {
+				permissionCodesChanged = false
+			}
 		}
 	}
 	if !hasUpdateData && !permissionCodesChanged {

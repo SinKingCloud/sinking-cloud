@@ -9,9 +9,8 @@ import (
 
 // RoleMenu 角色菜单表
 type RoleMenu struct {
-	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
-	RoleId     int64        `gorm:"column:role_id" json:"role_id"`
-	MenuId     int64        `gorm:"column:menu_id" json:"menu_id"`
+	RoleId     int64        `gorm:"column:role_id;primaryKey" json:"role_id"`
+	MenuId     int64        `gorm:"column:menu_id;primaryKey" json:"menu_id"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }

@@ -9,9 +9,8 @@ import (
 
 // MenuPermission 菜单权限表
 type MenuPermission struct {
-	Id             int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
-	MenuId         int64        `gorm:"column:menu_id" json:"menu_id"`
-	PermissionCode string       `gorm:"column:permission_code" json:"permission_code"`
+	MenuId         int64        `gorm:"column:menu_id;primaryKey" json:"menu_id"`
+	PermissionCode string       `gorm:"column:permission_code;primaryKey" json:"permission_code"`
 	CreateTime     str.DateTime `gorm:"column:create_time" json:"create_time"`
 }
 
