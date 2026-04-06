@@ -41,5 +41,11 @@ func loadApi(s *sinking_web.Engine) {
 		ANY("/menu/create", "创建列表或控件", controller.Menu.Create)
 		ANY("/menu/update", "修改列表或控件", controller.Menu.Update)
 		ANY("/menu/delete", "删除列表或控件", controller.Menu.Delete)
+
+		ANY("/role/list", "角色列表", controller.Role.List)
+		ANY("/role/info", "角色详情", controller.Role.Info)
+		ANY("/role/create", "创建角色", controller.Role.Create)
+		ANY("/role/update", "修改角色", controller.Role.Update)
+		ANY("/role/delete", "删除角色", controller.Role.Delete)
 	})
 }

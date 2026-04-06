@@ -32,6 +32,7 @@ type Service interface {
 	DeletePermissionByIds(ids []int64) error                                                                                                                  //根据ID集合删除权限
 	CreatePermission(data *model.Permission) error                                                                                                            //新增权限数据
 	SelectPermission(where *permission.SelectPermission, orderByField string, orderByType string, page int, pageSize int) ([]*model.Permission, int64, error) //查询权限数据
+	SelectRole(where *role.SelectRole, orderByField string, orderByType string, page int, pageSize int) ([]*model.Role, int64, error)                         //查询角色数据
 }
 
 // service 注入结构

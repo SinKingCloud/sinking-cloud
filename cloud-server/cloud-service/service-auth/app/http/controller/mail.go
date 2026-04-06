@@ -14,8 +14,8 @@ func Mail(c *context.Context) {
 		Mail     string `json:"mail" default:"" validate:"omitempty,email" label:"邮箱"`
 		IsAdmin  bool   `json:"is_admin" default:"false" label:"用户标识"`
 		Token    string `json:"token" default:"" validate:"required,len=16" label:"验证码标识"`
-		CaptchaX int    `json:"captcha_x" default:"" validate:"required,numeric" label:"验证码X坐标"`
-		CaptchaY int    `json:"captcha_y" default:"" validate:"required,numeric" label:"验证码Y坐标"`
+		CaptchaX int    `json:"captcha_x" default:"" validate:"required,numeric,min=0,max=999" label:"验证码X坐标"`
+		CaptchaY int    `json:"captcha_y" default:"" validate:"required,numeric,min=0,max=999" label:"验证码Y坐标"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)

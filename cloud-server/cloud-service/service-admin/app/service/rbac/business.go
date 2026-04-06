@@ -6,9 +6,12 @@ import (
 	"service-admin/app/constant"
 	"service-admin/app/enum/menu_status"
 	"service-admin/app/enum/menu_type"
+	"service-admin/app/enum/role_status"
 	"service-admin/app/model"
 	menu2 "service-admin/app/repository/menu"
 	"service-admin/app/repository/permission"
+	"service-admin/app/repository/role"
+	"strconv"
 	"time"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
@@ -794,4 +797,18 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 	}
 	s.clearCacheWithMenus(clearMenus)
 	return nil
+}
+
+// SelectRole 查询角色数据
+func (s *service) SelectRole(where *role.SelectRole, orderByField string, orderByType string, page int, pageSize int) ([]*model.Role, int64, error) {
+	if where.Status != "" {
+		status, err := strconv.Atoi(where.Status)
+		if err != nil {
+			return nil, 0, errors.New("状态参数错误")
+		}
+		if _, ok := role_status.Status()[status]; !ok {
+			return nil, 0, errors.New("状态参数不合法")
+		}
+	}
+	return s.repositoryRole.Select(where, orderByField, orderByType, page, pageSize)
 }

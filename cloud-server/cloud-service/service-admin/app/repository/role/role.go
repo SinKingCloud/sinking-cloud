@@ -10,6 +10,7 @@ import (
 type Interface interface {
 	FindById(id int64) (*model.Role, error)
 	SelectAll() ([]*model.Role, error)
+	Select(where *SelectRole, orderByField string, orderByType string, page int, pageSize int) (list []*model.Role, total int64, err error)
 }
 
 // Repository 仓储
