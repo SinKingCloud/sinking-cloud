@@ -62,9 +62,9 @@ func (Controller) List(c *context.Context) {
 // Create 创建权限
 func (Controller) Create(c *context.Context) {
 	var form struct {
-		Code string `json:"place" default:"" validate:"required,max=50" label:"标识"`
-		Name string `json:"title" default:"" validate:"required,max=20" label:"名称"`
-		Path string `json:"describe" default:"" validate:"required,max=100" label:"路径"`
+		Code string `json:"code" default:"" validate:"required,max=50" label:"标识"`
+		Name string `json:"name" default:"" validate:"required,max=20" label:"名称"`
+		Path string `json:"path" default:"" validate:"required,max=100" label:"路径"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
@@ -86,8 +86,8 @@ func (Controller) Create(c *context.Context) {
 func (Controller) Update(c *context.Context) {
 	var form struct {
 		Ids  []int64 `json:"ids" default:"" validate:"required,min=1,max=1000,unique" label:"ID列表"`
-		Name string  `json:"title" default:"" validate:"omitempty,max=100" label:"名称"`
-		Path string  `json:"describe" default:"" validate:"omitempty,max=200" label:"描述"`
+		Name string  `json:"name" default:"" validate:"omitempty,max=100" label:"名称"`
+		Path string  `json:"path" default:"" validate:"omitempty,max=200" label:"描述"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
