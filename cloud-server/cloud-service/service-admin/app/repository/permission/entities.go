@@ -1,8 +1,8 @@
 package permission
 
 type UpdatePermission struct {
-	Name string
-	Path string
+	Name interface{}
+	Path interface{}
 }
 
 type SelectPermission struct {

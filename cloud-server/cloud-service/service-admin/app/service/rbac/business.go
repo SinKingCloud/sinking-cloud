@@ -6,6 +6,7 @@ import (
 	"service-admin/app/constant"
 	"service-admin/app/enum/menu"
 	"service-admin/app/model"
+	menu2 "service-admin/app/repository/menu"
 	"service-admin/app/repository/permission"
 	"time"
 
@@ -208,7 +209,9 @@ func (s *service) UpdatePermissionByIds(ids []int64, data *permission.UpdatePerm
 			paths = append(paths, item.Path)
 		}
 		if data.Path != "" {
-			paths = append(paths, data.Path)
+			if value, ok := data.Path.(string); ok {
+				paths = append(paths, value)
+			}
 		}
 		s.clearCacheWithPermissions(paths)
 		s.clearCacheWithEnums([]string{"permission"})
@@ -579,5 +582,187 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 		return errors.Join(errors.New("创建失败"), err)
 	}
 	s.clearCacheWithMenus([]*model.Menu{menuData})
+	return nil
+}
+
+// UpdateMenuOrControl 更新菜单或控件数据
+func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissionCodes []string) error {
+	if id <= 0 || data == nil {
+		return errors.New("参数错误")
+	}
+	info, err := s.repositoryMenu.FindById(id)
+	if err != nil {
+		return errors.Join(errors.New("更新失败"), err)
+	}
+	if info == nil || info.Id <= 0 {
+		return errors.New("该数据不存在")
+	}
+	mType := menu.Type(info.Type)
+	types := menu.Types()
+	status := menu.Status()
+	hasUpdateData := false
+	newParentId := int64(-1)
+	if data.ParentId != nil {
+		parentId, ok := data.ParentId.(int64)
+		if !ok {
+			return errors.New("父级数据不合法")
+		}
+		if parentId <= 0 {
+			parentId = 0
+		}
+		if parentId == info.Id {
+			return errors.New("父级不能是自己")
+		}
+		if parentId > 0 {
+			parentInfo, err := s.repositoryMenu.FindById(parentId)
+			if err != nil {
+				return errors.Join(errors.New("更新失败"), err)
+			}
+			if parentInfo == nil || parentInfo.Id <= 0 {
+				return errors.New("该父级数据不存在")
+			}
+			if mType == menu.TypeControl && menu.Type(parentInfo.Type) != menu.TypePage {
+				return errors.New(fmt.Sprintf("%s类型必须添加在%s类型下", types[menu.TypeControl], types[menu.TypePage]))
+			}
+			if (mType == menu.TypePage || mType == menu.TypeDir) && menu.Type(parentInfo.Type) != menu.TypeDir {
+				return errors.New(fmt.Sprintf("%s或%s类型必须添加在%s类型下", types[menu.TypeDir], types[menu.TypePage], types[menu.TypeDir]))
+			}
+			menus, err := s.repositoryMenu.SelectAll()
+			if err != nil {
+				return errors.Join(errors.New("更新失败"), err)
+			}
+			childrenMap := make(map[int64][]int64, len(menus))
+			for _, item := range menus {
+				if item == nil || item.Id <= 0 {
+					continue
+				}
+				childrenMap[item.ParentId] = append(childrenMap[item.ParentId], item.Id)
+			}
+			targetMap := make(map[int64]struct{}, len(menus))
+			var loadChildren func(menuId int64)
+			loadChildren = func(menuId int64) {
+				if _, ok = targetMap[menuId]; ok {
+					return
+				}
+				targetMap[menuId] = struct{}{}
+				for _, childId := range childrenMap[menuId] {
+					loadChildren(childId)
+				}
+			}
+			loadChildren(info.Id)
+			if _, ok = targetMap[parentId]; ok {
+				return errors.New("父级不能是自己的子级")
+			}
+		} else if mType == menu.TypeControl {
+			return errors.New(fmt.Sprintf("%s类型必须添加在%s类型下", types[menu.TypeControl], types[menu.TypePage]))
+		}
+		hasUpdateData = true
+		newParentId = parentId
+	}
+	if data.Name != nil || data.Icon != nil || data.Sort != nil {
+		hasUpdateData = true
+	}
+	if data.Status != nil {
+		statusValue, ok := data.Status.(int)
+		if !ok {
+			return errors.New("状态数据不合法")
+		}
+		if _, ok = status[menu.Statu(statusValue)]; !ok {
+			return errors.New("状态数据不合法")
+		}
+		hasUpdateData = true
+	}
+	permissionCodesChanged := permissionCodes != nil
+	permissionList := make([]*model.MenuPermission, 0)
+	if permissionCodesChanged {
+		codes := permissionCodes
+		permissionCodeMap := make(map[string]struct{}, len(codes))
+		for _, permissionCode := range codes {
+			if permissionCode == "" {
+				continue
+			}
+			if _, ok := permissionCodeMap[permissionCode]; ok {
+				continue
+			}
+			permissionCodeMap[permissionCode] = struct{}{}
+			permissionList = append(permissionList, &model.MenuPermission{
+				PermissionCode: permissionCode,
+			})
+		}
+		if mType == menu.TypeDir && len(permissionList) > 0 {
+			return errors.New(fmt.Sprintf("%s类型不能绑定权限", types[menu.TypeDir]))
+		}
+		if len(permissionList) > 0 {
+			codes = make([]string, 0, len(permissionList))
+			for _, item := range permissionList {
+				if item == nil || item.PermissionCode == "" {
+					continue
+				}
+				codes = append(codes, item.PermissionCode)
+			}
+			permissions, err := s.repositoryPermission.SelectByCodes(codes)
+			if err != nil {
+				return errors.Join(errors.New("更新失败"), err)
+			}
+			permissionMap := make(map[string]struct{}, len(permissions))
+			for _, item := range permissions {
+				if item == nil || item.Code == "" {
+					continue
+				}
+				permissionMap[item.Code] = struct{}{}
+			}
+			validPermissionList := make([]*model.MenuPermission, 0, len(permissionList))
+			for _, item := range permissionList {
+				if item == nil || item.PermissionCode == "" {
+					continue
+				}
+				if _, ok := permissionMap[item.PermissionCode]; !ok {
+					continue
+				}
+				validPermissionList = append(validPermissionList, item)
+			}
+			permissionList = validPermissionList
+		}
+	}
+	if !hasUpdateData && !permissionCodesChanged {
+		return nil
+	}
+	//更新数据 并重构权限
+	err = s.database.Transaction(func(tx *gorm.DB) error {
+		if hasUpdateData {
+			err = s.repositoryMenu.UpdateById(info.Id, data, tx)
+			if err != nil {
+				return err
+			}
+		}
+		if permissionCodesChanged {
+			err = s.repositoryMenuPermission.DeleteByMenuIds([]int64{info.Id}, tx)
+			if err != nil {
+				return err
+			}
+			if len(permissionList) > 0 {
+				for _, item := range permissionList {
+					if item == nil {
+						continue
+					}
+					item.MenuId = info.Id
+				}
+				err = s.repositoryMenuPermission.Creates(permissionList, tx)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return errors.Join(errors.New("更新失败"), err)
+	}
+	//清理缓存
+	clearMenus := []*model.Menu{info}
+	if newParentId >= 0 && newParentId != info.ParentId {
+		clearMenus = append(clearMenus, &model.Menu{ParentId: newParentId})
+	}
+	s.clearCacheWithMenus(clearMenus)
 	return nil
 }
