@@ -43,7 +43,7 @@ func (r *Repository) UpdateByIds(ids []int64, perm *UpdatePermission) error {
 		return nil
 	}
 	updates["update_time"] = str.DateTime(time.Now())
-	return r.Database.Db.Transaction(func(tx *gorm.DB) error {
+	return r.Database.Transaction(func(tx *gorm.DB) error {
 		return r.Database.BatchExecute(ids, 1000, func(batch interface{}) error {
 			return tx.Model(&model.Permission{}).
 				Where("id IN ?", batch.([]int64)).

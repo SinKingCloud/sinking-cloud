@@ -1,12 +1,15 @@
 package role_menu
 
-import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+import (
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"gorm.io/gorm"
+)
 
 // Interface 角色菜单仓储接口
 type Interface interface {
 	SelectMenuIdsByRoleId(roleId int64) ([]int64, error)
 	SelectRoleIdsByMenuIds(menuIds []int64) ([]int64, error)
-	DeleteByMenuIds(menuIds []int64) error
+	DeleteByMenuIds(menuIds []int64, tx ...*gorm.DB) error
 }
 
 // Repository 仓储

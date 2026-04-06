@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"gorm.io/gorm"
 )
 
 // GetPageControlsByUserId 根据用户ID获取页面控件
@@ -380,7 +381,7 @@ func (s *service) DeleteMenuOrControlByIds(ids []int64) error {
 	if len(ids) == 0 {
 		return nil
 	}
-	menus, err := s.repositoryMenu.SelectWithType([]int{int(menu.TypeDir), int(menu.TypePage), int(menu.TypeControl)})
+	menus, err := s.repositoryMenu.SelectAll()
 	if err != nil {
 		return errors.Join(errors.New("查询菜单数据失败"), err)
 	}
@@ -436,17 +437,23 @@ func (s *service) DeleteMenuOrControlByIds(ids []int64) error {
 	if err != nil {
 		return errors.Join(errors.New("查询角色菜单关联失败"), err)
 	}
-	err = s.repositoryMenuPermission.DeleteByMenuIds(deleteIds)
+	err = s.database.Transaction(func(tx *gorm.DB) error {
+		err = s.repositoryMenuPermission.DeleteByMenuIds(deleteIds, tx)
+		if err != nil {
+			return errors.Join(errors.New("删除菜单权限关联失败"), err)
+		}
+		err = s.repositoryRoleMenu.DeleteByMenuIds(deleteIds, tx)
+		if err != nil {
+			return errors.Join(errors.New("删除角色菜单关联失败"), err)
+		}
+		err = s.repositoryMenu.DeleteByIds(deleteIds, tx)
+		if err != nil {
+			return errors.Join(errors.New("删除菜单数据失败"), err)
+		}
+		return nil
+	})
 	if err != nil {
-		return errors.Join(errors.New("删除菜单权限关联失败"), err)
-	}
-	err = s.repositoryRoleMenu.DeleteByMenuIds(deleteIds)
-	if err != nil {
-		return errors.Join(errors.New("删除角色菜单关联失败"), err)
-	}
-	err = s.repositoryMenu.DeleteByIds(deleteIds)
-	if err != nil {
-		return errors.Join(errors.New("删除菜单数据失败"), err)
+		return err
 	}
 	s.clearCacheWithRoleMenus(roleIds)
 	s.clearCacheWithMenus(deleteMenus)

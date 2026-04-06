@@ -40,9 +40,10 @@ func Init() {
 	menuPermRepository := menu_permission.NewRepository(global.App.Database)
 	cache := global.App.Cache
 	authService := service.Auth
+	database := global.App.Database
 
 	Config = config.NewService(configRepository, cache)
 	Auth = auth.NewService(authService, sessionRepository, userRepository, cache)
-	Rbac = rbac.NewService(roleRepository, permissionRepository, userRoleRepository, rolePermRepository, roleMenuRepository, menuRepository, menuPermRepository, cache)
+	Rbac = rbac.NewService(roleRepository, permissionRepository, userRoleRepository, rolePermRepository, roleMenuRepository, menuRepository, menuPermRepository, database, cache)
 	User = user.NewService(userRepository, cache)
 }

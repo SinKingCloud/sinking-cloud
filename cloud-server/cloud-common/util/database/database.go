@@ -16,6 +16,14 @@ type Database struct {
 	DbError error
 }
 
+// Transaction 事务执行
+func (d *Database) Transaction(fc func(tx *gorm.DB) error) error {
+	if d == nil || d.Db == nil {
+		return gorm.ErrInvalidDB
+	}
+	return d.Db.Transaction(fc)
+}
+
 // BatchExecute	批量执行
 func (d *Database) BatchExecute(slice interface{}, batchSize int, fn func(batch interface{}) error) error {
 	val := reflect.ValueOf(slice)

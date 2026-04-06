@@ -11,6 +11,7 @@ import (
 	"service-admin/app/repository/user_role"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
 )
 
 // Service service接口
@@ -39,6 +40,7 @@ type service struct {
 	repositoryRoleMenu       role_menu.Interface
 	repositoryMenu           menu.Interface
 	repositoryMenuPermission menu_permission.Interface
+	database                 *database.Database
 	cache                    cache.Interface
 }
 
@@ -51,6 +53,7 @@ func NewService(
 	repositoryRoleMenu role_menu.Interface,
 	repositoryMenu menu.Interface,
 	repositoryMenuPermission menu_permission.Interface,
+	database *database.Database,
 	cache cache.Interface,
 ) *service {
 	return &service{
@@ -61,6 +64,7 @@ func NewService(
 		repositoryRoleMenu:       repositoryRoleMenu,
 		repositoryMenu:           repositoryMenu,
 		repositoryMenuPermission: repositoryMenuPermission,
+		database:                 database,
 		cache:                    cache,
 	}
 }

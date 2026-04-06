@@ -4,17 +4,19 @@ import (
 	"service-admin/app/model"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"gorm.io/gorm"
 )
 
 // Interface 菜单仓储接口
 type Interface interface {
 	SelectByIdsWithStatusAndType(ids []int64, status int, types []int) ([]*model.Menu, error)
+	SelectAll() ([]*model.Menu, error)
 	SelectWithType(types []int) ([]*model.Menu, error)
 	SelectByParentIdWithStatusAndType(parentId int64, status int, types int) ([]*model.Menu, error)
 	SelectByParentIdWithType(parentId int64, types int) ([]*model.Menu, error)
 	FindByCode(code string) (*model.Menu, error)
 	FindById(id int64) (*model.Menu, error)
-	DeleteByIds(ids []int64) error
+	DeleteByIds(ids []int64, tx ...*gorm.DB) error
 }
 
 // Repository 用户仓储
