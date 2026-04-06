@@ -25,6 +25,7 @@ type Service interface {
 	GetPageControlsByUserId(userId int64, pageCode string) []*UserControl                                                                                     //根据用户ID获取页面控件
 	GetPageControlsByMenuId(id int64) []*Control                                                                                                              //根据菜单ID获取页面控件
 	DeleteMenuOrControlByIds(ids []int64) error                                                                                                               //根据ID列表删除菜单或控件数据
+	CreateMenuOrControl(parentId int64, code string, name string, icon string, Type int, sort int, status int, permissionCodes []string) error                //创建菜单或控件数据
 	UpdatePermissionByIds(ids []int64, data *permission.UpdatePermission) error                                                                               //根据id集合更新权限
 	DeletePermissionByIds(ids []int64) error                                                                                                                  //根据ID集合删除权限
 	CreatePermission(data *model.Permission) error                                                                                                            //新增权限数据

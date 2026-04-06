@@ -2,6 +2,7 @@ package rbac
 
 import (
 	"errors"
+	"fmt"
 	"service-admin/app/constant"
 	"service-admin/app/enum/menu"
 	"service-admin/app/model"
@@ -457,5 +458,126 @@ func (s *service) DeleteMenuOrControlByIds(ids []int64) error {
 	}
 	s.clearCacheWithRoleMenus(roleIds)
 	s.clearCacheWithMenus(deleteMenus)
+	return nil
+}
+
+// CreateMenuOrControl 创建菜单或控件数据
+func (s *service) CreateMenuOrControl(parentId int64, code string, name string, icon string, Type int, sort int, statu int, permissionCodes []string) error {
+	if parentId <= 0 {
+		parentId = 0
+	}
+	mType := menu.Type(Type)
+	types := menu.Types()
+	status := menu.Status()
+	if _, ok := status[menu.Statu(statu)]; !ok {
+		return errors.New("状态数据不合法")
+	}
+	if _, ok := types[mType]; !ok {
+		return errors.New("类型数据不合法")
+	}
+	if parentId == 0 && mType == menu.TypeControl {
+		return errors.New(fmt.Sprintf("%s类型必须添加在%s类型下", types[menu.TypeControl], types[menu.TypePage]))
+	}
+	info, err := s.repositoryMenu.FindByCode(code)
+	if err != nil {
+		return errors.Join(errors.New("创建失败"), err)
+	}
+	if info != nil && info.Id > 0 {
+		return errors.New("该数据标识已被占用")
+	}
+	if parentId > 0 {
+		info, err = s.repositoryMenu.FindById(parentId)
+		if err != nil {
+			return errors.Join(errors.New("创建失败"), err)
+		}
+		if info == nil || info.Id <= 0 {
+			return errors.New("该父级数据不存在")
+		}
+		if mType == menu.TypeControl && menu.Type(info.Type) != menu.TypePage {
+			return errors.New(fmt.Sprintf("%s类型必须添加在%s类型下", types[menu.TypeControl], types[menu.TypePage]))
+		}
+		if (mType == menu.TypePage || mType == menu.TypeDir) && menu.Type(info.Type) != menu.TypeDir {
+			return errors.New(fmt.Sprintf("%s或%s类型必须添加在%s类型下", types[menu.TypeDir], types[menu.TypePage], types[menu.TypeDir]))
+		}
+	}
+	if mType == menu.TypeDir && len(permissionCodes) > 0 {
+		return errors.New(fmt.Sprintf("%s类型不能绑定权限", types[menu.TypeDir]))
+	}
+	menuData := &model.Menu{
+		ParentId:   parentId,
+		Code:       code,
+		Name:       name,
+		Type:       Type,
+		Icon:       icon,
+		Sort:       sort,
+		Status:     statu,
+		CreateTime: str.DateTime(time.Now()),
+		UpdateTime: str.DateTime(time.Now()),
+	}
+	permissionCodeMap := make(map[string]struct{}, len(permissionCodes))
+	permissionList := make([]*model.MenuPermission, 0, len(permissionCodes))
+	for _, permissionCode := range permissionCodes {
+		if permissionCode == "" {
+			continue
+		}
+		if _, ok := permissionCodeMap[permissionCode]; ok {
+			continue
+		}
+		permissionCodeMap[permissionCode] = struct{}{}
+		permissionList = append(permissionList, &model.MenuPermission{
+			PermissionCode: permissionCode,
+		})
+	}
+	if len(permissionList) > 0 {
+		codes := make([]string, 0, len(permissionList))
+		for _, item := range permissionList {
+			if item == nil || item.PermissionCode == "" {
+				continue
+			}
+			codes = append(codes, item.PermissionCode)
+		}
+		permissions, err := s.repositoryPermission.SelectByCodes(codes)
+		if err != nil {
+			return errors.Join(errors.New("创建失败"), err)
+		}
+		permissionMap := make(map[string]struct{}, len(permissions))
+		for _, item := range permissions {
+			if item == nil || item.Code == "" {
+				continue
+			}
+			permissionMap[item.Code] = struct{}{}
+		}
+		validPermissionList := make([]*model.MenuPermission, 0, len(permissionList))
+		for _, item := range permissionList {
+			if item == nil || item.PermissionCode == "" {
+				continue
+			}
+			if _, ok := permissionMap[item.PermissionCode]; !ok {
+				continue
+			}
+			validPermissionList = append(validPermissionList, item)
+		}
+		permissionList = validPermissionList
+	}
+	err = s.database.Transaction(func(tx *gorm.DB) error {
+		err = s.repositoryMenu.Create(menuData, tx)
+		if err != nil {
+			return err
+		}
+		if menuData.Id <= 0 || len(permissionList) == 0 {
+			return nil
+		}
+		for _, item := range permissionList {
+			if item == nil {
+				continue
+			}
+			item.MenuId = menuData.Id
+		}
+		return s.repositoryMenuPermission.Creates(permissionList, tx)
+	})
+	if err != nil {
+		return errors.Join(errors.New("创建失败"), err)
+	}
+	s.clearCacheWithMenus([]*model.Menu{menuData})
 	return nil
 }

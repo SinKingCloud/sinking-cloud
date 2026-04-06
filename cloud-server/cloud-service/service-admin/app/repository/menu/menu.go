@@ -9,6 +9,7 @@ import (
 
 // Interface 菜单仓储接口
 type Interface interface {
+	Create(data *model.Menu, tx ...*gorm.DB) error
 	SelectByIdsWithStatusAndType(ids []int64, status int, types []int) ([]*model.Menu, error)
 	SelectAll() ([]*model.Menu, error)
 	SelectWithType(types []int) ([]*model.Menu, error)

@@ -9,6 +9,7 @@ import (
 
 // Interface 菜单权限仓储接口
 type Interface interface {
+	Creates(data []*model.MenuPermission, tx ...*gorm.DB) error
 	SelectPermissionCodesByMenuId(menuId int64) ([]string, error)
 	SelectByMenuIds(menuIds []int64) ([]*model.MenuPermission, error)
 	DeleteByMenuIds(menuIds []int64, tx ...*gorm.DB) error

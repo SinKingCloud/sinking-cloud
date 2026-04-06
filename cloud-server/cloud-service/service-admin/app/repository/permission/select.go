@@ -15,6 +15,28 @@ func (r *Repository) SelectAll() ([]*model.Permission, error) {
 	return permissions, nil
 }
 
+// SelectByCodes 根据标识集合查询权限
+func (r *Repository) SelectByCodes(codes []string) ([]*model.Permission, error) {
+	if len(codes) == 0 {
+		return nil, nil
+	}
+	var permissionList []*model.Permission
+	err := r.Database.BatchExecute(codes, 1000, func(batch interface{}) error {
+		batchCodes := batch.([]string)
+		var permissions []*model.Permission
+		err := r.Database.Db.
+			Model(&model.Permission{}).
+			Where("code IN ?", batchCodes).
+			Find(&permissions).Error
+		if err != nil {
+			return err
+		}
+		permissionList = append(permissionList, permissions...)
+		return nil
+	})
+	return permissionList, err
+}
+
 // SelectByIds 根据ID集合查询权限
 func (r *Repository) SelectByIds(ids []int64) ([]*model.Permission, error) {
 	if len(ids) == 0 {
