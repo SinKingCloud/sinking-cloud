@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"regexp"
 	constant2 "service-user/app/constant"
-	"service-user/app/enum/real_auth"
-	"service-user/app/enum/user"
+	"service-user/app/enum/real_auth_status"
+	"service-user/app/enum/user_status"
 	"service-user/app/model"
 	"strings"
 	"time"
@@ -21,6 +21,7 @@ import (
 // Login 账号登录
 func (s *service) Login(account string, password string, code string, userAgent string, ip string) (string, error) {
 	var id int64
+	var status int
 	if password != "" {
 		u, err := s.repositoryUser.FindByIdentifier(account)
 		if err != nil {
@@ -33,6 +34,7 @@ func (s *service) Login(account string, password string, code string, userAgent 
 			return "", errors.New("密码错误")
 		}
 		id = u.Id
+		status = u.Status
 	} else {
 		isMail := false
 		check := s.authService.CheckSms
@@ -60,8 +62,8 @@ func (s *service) Login(account string, password string, code string, userAgent 
 		}
 		if u == nil || u.Id <= 0 {
 			u = &model.User{
-				RealAuthStatus: int(real_auth.UnAuth),
-				Status:         int(user.StatusEnable),
+				RealAuthStatus: real_auth_status.UnAuth,
+				Status:         user_status.Enable,
 			}
 			if isMail {
 				u.Email = account
@@ -76,10 +78,14 @@ func (s *service) Login(account string, password string, code string, userAgent 
 			id = u.Id
 		} else {
 			id = u.Id
+			status = u.Status
 		}
 	}
 	if id <= 0 {
-		return "", errors.New("获取用户信息错误")
+		return "", errors.New("获取账户信息错误")
+	}
+	if status != user_status.Enable {
+		return "", errors.New("该账户已被封禁,如有问题请咨询官方客服")
 	}
 	return s.genLoginToken(id, userAgent, ip)
 }

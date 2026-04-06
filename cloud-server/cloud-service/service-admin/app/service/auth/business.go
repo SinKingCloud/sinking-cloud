@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	constant2 "service-admin/app/constant"
+	"service-admin/app/enum/user_status"
 	"service-admin/app/model"
 	"strings"
 	"time"
@@ -19,6 +20,7 @@ import (
 // Login 账号登录
 func (s *service) Login(account string, password string, code string, userAgent string, ip string) (string, error) {
 	var id int64
+	var status int
 	if password != "" {
 		u, err := s.repositoryUser.FindByIdentifier(account)
 		if err != nil {
@@ -31,6 +33,7 @@ func (s *service) Login(account string, password string, code string, userAgent 
 			return "", errors.New("密码错误")
 		}
 		id = u.Id
+		status = u.Status
 	} else {
 		check := s.authService.CheckSms
 		if !regexp.MustCompile(`^1[3-9]\d{9}$`).MatchString(account) {
@@ -53,9 +56,13 @@ func (s *service) Login(account string, password string, code string, userAgent 
 			return "", errors.New("用户不存在")
 		}
 		id = u.Id
+		status = u.Status
 	}
 	if id <= 0 {
-		return "", errors.New("获取用户信息错误")
+		return "", errors.New("获取账户信息错误")
+	}
+	if status != user_status.Enable {
+		return "", errors.New("该账户已被封禁,如有问题请咨询管理员")
 	}
 	return s.genLoginToken(id, userAgent, ip)
 }

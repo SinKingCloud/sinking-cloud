@@ -9,6 +9,7 @@ import (
 // Interface 角色仓储接口
 type Interface interface {
 	FindById(id int64) (*model.Role, error)
+	SelectAll() ([]*model.Role, error)
 }
 
 // Repository 仓储

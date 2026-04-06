@@ -19,6 +19,7 @@ type Service interface {
 	RegisterPermission(name string, code string, path string) error                                                                                           //注册权限
 	CheckUserHasPermission(userId int64, path string) error                                                                                                   //判断用户是否含有权限
 	GetPermissionEnum(refresh bool) (map[string]string, error)                                                                                                //获取权限枚举
+	GetRoleNameEnum(refresh bool) (map[int64]string, error)                                                                                                   //获取角色名称枚举
 	GetUserMenuTree(userId int64) []*UserMenuTree                                                                                                             //获取用户菜单
 	GetAllMenuTree() []*MenuTree                                                                                                                              //获取所有菜单
 	GetMenuOrControlInfoById(id int64) (*MenuOrControlInfo, error)                                                                                            //获取页面或控件信息

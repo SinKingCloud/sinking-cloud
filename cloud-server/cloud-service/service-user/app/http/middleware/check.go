@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"service-user/app/enum/user_status"
 	"service-user/app/service"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
@@ -22,12 +23,23 @@ func CheckLogin(c *context.Context) {
 		c.Abort()
 		return
 	}
-	user, err := service.Auth.GetTokenInfo(token)
+	u, err := service.Auth.GetTokenInfo(token)
+	if err != nil || u == nil || u.Id <= 0 {
+		c.TokenError("登陆超时,请重新登陆")
+		c.Abort()
+		return
+	}
+	user, err := service.User.GetUserInfo(u.Id, false)
 	if err != nil || user == nil || user.Id <= 0 {
 		c.TokenError("登陆超时,请重新登陆")
 		c.Abort()
 		return
 	}
-	c.SetUserInfo(user)
+	if user.Status != user_status.Enable {
+		c.TokenError("该账户已被封禁,如有问题请咨询官方客服")
+		c.Abort()
+		return
+	}
+	c.SetUserInfo(u)
 	c.Next()
 }

@@ -3,7 +3,8 @@ package rbac
 import (
 	"encoding/json"
 	"service-admin/app/constant"
-	"service-admin/app/enum/menu"
+	"service-admin/app/enum/menu_status"
+	"service-admin/app/enum/menu_type"
 	"service-admin/app/model"
 	"sort"
 	"strconv"
@@ -90,7 +91,7 @@ func (s *service) getMenusByParentId(parentId int64, refresh bool) (menus []*mod
 			}
 		}
 	}
-	menus, err = s.repositoryMenu.SelectByParentIdWithStatusAndType(parentId, int(menu.StatusEnable), int(menu.TypeControl))
+	menus, err = s.repositoryMenu.SelectByParentIdWithStatusAndType(parentId, menu_status.Enable, int(menu_type.Control))
 	if err != nil {
 		return nil, err
 	}

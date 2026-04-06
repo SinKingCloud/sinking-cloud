@@ -3,7 +3,7 @@ package rbac
 import (
 	"encoding/json"
 	"service-admin/app/constant"
-	"service-admin/app/enum/role"
+	"service-admin/app/enum/role_status"
 	"strconv"
 )
 
@@ -18,7 +18,7 @@ func (s *service) getRoleMenuIdsByRoleId(roleId int64, refresh bool) (menuIds []
 		}
 	}
 	r, err := s.repositoryRole.FindById(roleId)
-	if err == nil && r != nil && r.Status == int(role.StatusEnable) {
+	if err == nil && r != nil && r.Status == role_status.Enable {
 		menuIds, err = s.repositoryRoleMenu.SelectMenuIdsByRoleId(r.Id)
 		if err != nil {
 			return nil, err

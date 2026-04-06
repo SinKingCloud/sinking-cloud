@@ -4,7 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"service-admin/app/constant"
-	"service-admin/app/enum/menu"
+	"service-admin/app/enum/menu_status"
+	"service-admin/app/enum/menu_type"
 	"service-admin/app/model"
 	menu2 "service-admin/app/repository/menu"
 	"service-admin/app/repository/permission"
@@ -88,7 +89,7 @@ func (s *service) GetUserMenuTree(userId int64) []*UserMenuTree {
 		}
 	}
 	//去重菜单ID后根据菜单ID查询菜单信息
-	menus, err := s.repositoryMenu.SelectByIdsWithStatusAndType(menuIds, int(menu.StatusEnable), []int{int(menu.TypeDir), int(menu.TypePage)})
+	menus, err := s.repositoryMenu.SelectByIdsWithStatusAndType(menuIds, menu_status.Enable, []int{menu_type.Dir, menu_type.Page})
 	if err != nil || len(menus) == 0 {
 		return nil
 	}
@@ -288,7 +289,7 @@ func (s *service) CreatePermission(data *model.Permission) error {
 
 // GetAllMenuTree 获取所有菜单树状数据
 func (s *service) GetAllMenuTree() []*MenuTree {
-	menus, err := s.repositoryMenu.SelectWithType([]int{int(menu.TypeDir), int(menu.TypePage)})
+	menus, err := s.repositoryMenu.SelectWithType([]int{menu_type.Dir, menu_type.Page})
 	if err != nil {
 		return nil
 	}
@@ -315,7 +316,7 @@ func (s *service) GetMenuOrControlInfoById(id int64) (*MenuOrControlInfo, error)
 		CreateTime: info.CreateTime,
 		UpdateTime: info.UpdateTime,
 	}
-	if menu.Type(info.Type) != menu.TypeDir {
+	if info.Type != menu_type.Dir {
 		menuOrControlInfo.PermissionCodes, err = s.repositoryMenuPermission.SelectPermissionCodesByMenuId(info.Id)
 		if err != nil {
 			return nil, errors.Join(errors.New("查询权限数据失败"), err)
@@ -330,7 +331,7 @@ func (s *service) GetPageControlsByMenuId(id int64) []*Control {
 	if id <= 0 {
 		return controls
 	}
-	menus, err := s.repositoryMenu.SelectByParentIdWithType(id, int(menu.TypeControl))
+	menus, err := s.repositoryMenu.SelectByParentIdWithType(id, int(menu_type.Control))
 	if err != nil || len(menus) == 0 {
 		return controls
 	}
@@ -469,17 +470,16 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 	if parentId <= 0 {
 		parentId = 0
 	}
-	mType := menu.Type(Type)
-	types := menu.Types()
-	status := menu.Status()
-	if _, ok := status[menu.Statu(statu)]; !ok {
+	types := menu_type.Types()
+	status := menu_status.Status()
+	if _, ok := status[statu]; !ok {
 		return errors.New("状态数据不合法")
 	}
-	if _, ok := types[mType]; !ok {
+	if _, ok := types[Type]; !ok {
 		return errors.New("类型数据不合法")
 	}
-	if parentId == 0 && mType == menu.TypeControl {
-		return errors.New(fmt.Sprintf("%s类型必须添加在%s类型下", types[menu.TypeControl], types[menu.TypePage]))
+	if parentId == 0 && Type == menu_type.Control {
+		return errors.New(fmt.Sprintf("%s类型必须添加在%s类型下", types[menu_type.Control], types[menu_type.Page]))
 	}
 	info, err := s.repositoryMenu.FindByCode(code)
 	if err != nil {
@@ -496,15 +496,15 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 		if info == nil || info.Id <= 0 {
 			return errors.New("该父级数据不存在")
 		}
-		if mType == menu.TypeControl && menu.Type(info.Type) != menu.TypePage {
-			return errors.New(fmt.Sprintf("%s类型必须添加在%s类型下", types[menu.TypeControl], types[menu.TypePage]))
+		if Type == menu_type.Control && info.Type != menu_type.Page {
+			return errors.New(fmt.Sprintf("%s类型必须添加在%s类型下", types[menu_type.Control], types[menu_type.Page]))
 		}
-		if (mType == menu.TypePage || mType == menu.TypeDir) && menu.Type(info.Type) != menu.TypeDir {
-			return errors.New(fmt.Sprintf("%s或%s类型必须添加在%s类型下", types[menu.TypeDir], types[menu.TypePage], types[menu.TypeDir]))
+		if (Type == menu_type.Page || Type == menu_type.Dir) && info.Type != menu_type.Dir {
+			return errors.New(fmt.Sprintf("%s或%s类型必须添加在%s类型下", types[menu_type.Dir], types[menu_type.Page], types[menu_type.Dir]))
 		}
 	}
-	if mType == menu.TypeDir && len(permissionCodes) > 0 {
-		return errors.New(fmt.Sprintf("%s类型不能绑定权限", types[menu.TypeDir]))
+	if Type == menu_type.Dir && len(permissionCodes) > 0 {
+		return errors.New(fmt.Sprintf("%s类型不能绑定权限", types[menu_type.Dir]))
 	}
 	menuData := &model.Menu{
 		ParentId:   parentId,
@@ -597,9 +597,8 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 	if info == nil || info.Id <= 0 {
 		return errors.New("该数据不存在")
 	}
-	mType := menu.Type(info.Type)
-	types := menu.Types()
-	status := menu.Status()
+	types := menu_type.Types()
+	status := menu_status.Status()
 	hasUpdateData := false
 	newParentId := int64(-1)
 	if data.ParentId != nil {
@@ -621,11 +620,11 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 			if parentInfo == nil || parentInfo.Id <= 0 {
 				return errors.New("该父级数据不存在")
 			}
-			if mType == menu.TypeControl && menu.Type(parentInfo.Type) != menu.TypePage {
-				return errors.New(fmt.Sprintf("%s类型必须添加在%s类型下", types[menu.TypeControl], types[menu.TypePage]))
+			if info.Type == menu_type.Control && parentInfo.Type != menu_type.Page {
+				return errors.New(fmt.Sprintf("%s类型必须添加在%s类型下", types[menu_type.Control], types[menu_type.Page]))
 			}
-			if (mType == menu.TypePage || mType == menu.TypeDir) && menu.Type(parentInfo.Type) != menu.TypeDir {
-				return errors.New(fmt.Sprintf("%s或%s类型必须添加在%s类型下", types[menu.TypeDir], types[menu.TypePage], types[menu.TypeDir]))
+			if (info.Type == menu_type.Page || info.Type == menu_type.Dir) && parentInfo.Type != menu_type.Dir {
+				return errors.New(fmt.Sprintf("%s或%s类型必须添加在%s类型下", types[menu_type.Dir], types[menu_type.Page], types[menu_type.Dir]))
 			}
 			menus, err := s.repositoryMenu.SelectAll()
 			if err != nil {
@@ -653,8 +652,8 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 			if _, ok = targetMap[parentId]; ok {
 				return errors.New("父级不能是自己的子级")
 			}
-		} else if mType == menu.TypeControl {
-			return errors.New(fmt.Sprintf("%s类型必须添加在%s类型下", types[menu.TypeControl], types[menu.TypePage]))
+		} else if info.Type == menu_type.Control {
+			return errors.New(fmt.Sprintf("%s类型必须添加在%s类型下", types[menu_type.Control], types[menu_type.Page]))
 		}
 		hasUpdateData = true
 		newParentId = parentId
@@ -667,7 +666,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 		if !ok {
 			return errors.New("状态数据不合法")
 		}
-		if _, ok = status[menu.Statu(statusValue)]; !ok {
+		if _, ok = status[statusValue]; !ok {
 			return errors.New("状态数据不合法")
 		}
 		hasUpdateData = true
@@ -689,8 +688,8 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 				PermissionCode: permissionCode,
 			})
 		}
-		if mType == menu.TypeDir && len(permissionList) > 0 {
-			return errors.New(fmt.Sprintf("%s类型不能绑定权限", types[menu.TypeDir]))
+		if info.Type == menu_type.Dir && len(permissionList) > 0 {
+			return errors.New(fmt.Sprintf("%s类型不能绑定权限", types[menu_type.Dir]))
 		}
 		if len(permissionList) > 0 {
 			codes = make([]string, 0, len(permissionList))
