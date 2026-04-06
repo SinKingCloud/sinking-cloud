@@ -14,10 +14,10 @@ func (r *Repository) UpdateByCode(code string, perm *UpdatePermission) error {
 		return nil
 	}
 	updates := make(map[string]interface{})
-	if perm.Name != "" {
+	if perm.Name != nil {
 		updates["name"] = perm.Name
 	}
-	if perm.Path != "" {
+	if perm.Path != nil {
 		updates["path"] = perm.Path
 	}
 	if len(updates) == 0 {
@@ -33,10 +33,10 @@ func (r *Repository) UpdateByIds(ids []int64, perm *UpdatePermission) error {
 		return nil
 	}
 	updates := make(map[string]interface{})
-	if perm.Name != "" {
+	if perm.Name != nil {
 		updates["name"] = perm.Name
 	}
-	if perm.Path != "" {
+	if perm.Path != nil {
 		updates["path"] = perm.Path
 	}
 	if len(updates) == 0 {

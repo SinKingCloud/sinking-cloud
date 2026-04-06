@@ -21,7 +21,9 @@ type Service interface {
 	GetPermissionEnum(refresh bool) (map[string]string, error)                                                                                                //获取权限枚举
 	GetRoleNameEnum(refresh bool) (map[int64]string, error)                                                                                                   //获取角色名称枚举
 	GetUserMenuTree(userId int64) []*UserMenuTree                                                                                                             //获取用户菜单
-	GetAllMenuTree() []*MenuTree                                                                                                                              //获取所有菜单
+	GetAllMenuTreeByDirAndPage() []*MenuTree                                                                                                                  //获取所有菜单
+	GetAllMenuTreeByStatusEnabled() []*MenuTree                                                                                                               //获取角色菜单树
+	GetRoleInfoById(id int64) (*RoleInfo, error)                                                                                                              //获取角色详情
 	GetMenuOrControlInfoById(id int64) (*MenuOrControlInfo, error)                                                                                            //获取页面或控件信息
 	GetPageControlsByUserId(userId int64, pageCode string) []*UserControl                                                                                     //根据用户ID获取页面控件
 	GetPageControlsByMenuId(id int64) []*Control                                                                                                              //根据菜单ID获取页面控件

@@ -13,6 +13,16 @@ type MenuTree struct {
 	Children []*MenuTree `json:"children,omitempty"`
 }
 
+// RoleInfo 角色详情
+type RoleInfo struct {
+	Id         int64        `json:"id"`
+	Name       string       `json:"name"`
+	Status     int          `json:"status"`
+	MenuIds    []int64      `json:"menu_ids"`
+	CreateTime str.DateTime `json:"create_time"`
+	UpdateTime str.DateTime `json:"update_time"`
+}
+
 // Control 页面控件
 type Control struct {
 	Id              int64        `json:"id"`

@@ -14,7 +14,7 @@ type Controller struct {
 
 // List 菜单列表
 func (Controller) List(c *context.Context) {
-	list := service.Rbac.GetAllMenuTree()
+	list := service.Rbac.GetAllMenuTreeByDirAndPage()
 	c.SuccessWithData("获取数据成功", list)
 }
 

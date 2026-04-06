@@ -232,30 +232,37 @@ func (s *service) DeletePermissionByIds(ids []int64) error {
 	if err != nil {
 		return err
 	}
-	err = s.repositoryPermission.DeleteByIds(ids)
-	if err == nil {
-		paths := make([]string, 0, len(perms))
-		codes := make([]string, 0, len(perms))
-		for _, item := range perms {
-			if item == nil {
-				continue
-			}
-			if item.Path != "" {
-				paths = append(paths, item.Path)
-			}
-			if item.Code != "" {
-				codes = append(codes, item.Code)
-			}
+	paths := make([]string, 0, len(perms))
+	codes := make([]string, 0, len(perms))
+	for _, item := range perms {
+		if item == nil {
+			continue
 		}
-		roleIds, err2 := s.repositoryRolePermission.SelectRoleIdsByPermissionCodes(codes)
-		if err2 != nil {
-			return err2
+		if item.Path != "" {
+			paths = append(paths, item.Path)
 		}
-		s.clearCacheWithPermissions(paths)
-		s.clearCacheWithRolePermissions(roleIds)
-		s.clearCacheWithEnums([]string{"permission"})
+		if item.Code != "" {
+			codes = append(codes, item.Code)
+		}
 	}
-	return err
+	roleIds, err := s.repositoryRolePermission.SelectRoleIdsByPermissionCodes(codes)
+	if err != nil {
+		return err
+	}
+	err = s.database.Transaction(func(tx *gorm.DB) error {
+		err = s.repositoryRolePermission.DeleteByPermissionCodes(codes, tx)
+		if err != nil {
+			return err
+		}
+		return s.repositoryPermission.DeleteByIds(ids, tx)
+	})
+	if err != nil {
+		return err
+	}
+	s.clearCacheWithPermissions(paths)
+	s.clearCacheWithRolePermissions(roleIds)
+	s.clearCacheWithEnums([]string{"permission"})
+	return nil
 }
 
 // CreatePermission 创建权限
@@ -290,13 +297,45 @@ func (s *service) CreatePermission(data *model.Permission) error {
 	return err
 }
 
-// GetAllMenuTree 获取所有菜单树状数据
-func (s *service) GetAllMenuTree() []*MenuTree {
+// GetAllMenuTreeByDirAndPage 获取所有菜单树状数据
+func (s *service) GetAllMenuTreeByDirAndPage() []*MenuTree {
 	menus, err := s.repositoryMenu.SelectWithType([]int{menu_type.Dir, menu_type.Page})
 	if err != nil {
 		return nil
 	}
 	return s.buildMenuTree(menus)
+}
+
+// GetAllMenuTreeByStatusEnabled 获取菜单树带控件
+func (s *service) GetAllMenuTreeByStatusEnabled() []*MenuTree {
+	menus, err := s.repositoryMenu.SelectWithStatus(menu_status.Enable)
+	if err != nil {
+		return nil
+	}
+	return s.buildMenuTree(menus)
+}
+
+// GetRoleInfoById 获取角色详情
+func (s *service) GetRoleInfoById(id int64) (*RoleInfo, error) {
+	info, err := s.repositoryRole.FindById(id)
+	if err != nil {
+		return nil, errors.Join(errors.New("查询角色失败"), err)
+	}
+	if info == nil || info.Id <= 0 {
+		return nil, errors.New("该角色不存在")
+	}
+	menuIds, err := s.repositoryRoleMenu.SelectMenuIdsByRoleId(info.Id)
+	if err != nil {
+		return nil, errors.Join(errors.New("查询角色菜单失败"), err)
+	}
+	return &RoleInfo{
+		Id:         info.Id,
+		Name:       info.Name,
+		Status:     info.Status,
+		MenuIds:    menuIds,
+		CreateTime: info.CreateTime,
+		UpdateTime: info.UpdateTime,
+	}, nil
 }
 
 // GetMenuOrControlInfoById 根据ID获取菜单或控件信息

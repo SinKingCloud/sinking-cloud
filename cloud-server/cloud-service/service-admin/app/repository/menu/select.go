@@ -16,6 +16,19 @@ func (r *Repository) SelectAll() ([]*model.Menu, error) {
 	return menus, nil
 }
 
+// SelectWithStatus 根据状态查询全部菜单数据
+func (r *Repository) SelectWithStatus(status int) ([]*model.Menu, error) {
+	var menus []*model.Menu
+	err := r.Database.Db.
+		Model(&model.Menu{}).
+		Where("status = ?", status).
+		Find(&menus).Error
+	if err != nil {
+		return nil, err
+	}
+	return menus, nil
+}
+
 // SelectByIdsWithStatusAndType 根据菜单ID集合状态和类型查询
 func (r *Repository) SelectByIdsWithStatusAndType(ids []int64, status int, types []int) ([]*model.Menu, error) {
 	if len(ids) == 0 || len(types) == 0 {

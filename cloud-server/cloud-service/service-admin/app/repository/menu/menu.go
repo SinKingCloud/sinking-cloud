@@ -13,6 +13,7 @@ type Interface interface {
 	UpdateById(id int64, data *UpdateMenu, tx ...*gorm.DB) error
 	SelectByIdsWithStatusAndType(ids []int64, status int, types []int) ([]*model.Menu, error)
 	SelectAll() ([]*model.Menu, error)
+	SelectWithStatus(status int) ([]*model.Menu, error)
 	SelectWithType(types []int) ([]*model.Menu, error)
 	SelectByParentIdWithStatusAndType(parentId int64, status int, types int) ([]*model.Menu, error)
 	SelectByParentIdWithType(parentId int64, types int) ([]*model.Menu, error)

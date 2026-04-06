@@ -4,6 +4,7 @@ import (
 	"service-admin/app/model"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"gorm.io/gorm"
 )
 
 // Interface 权限仓储接口
@@ -13,7 +14,7 @@ type Interface interface {
 	Create(perm *model.Permission) error
 	UpdateByCode(code string, perm *UpdatePermission) error
 	UpdateByIds(ids []int64, perm *UpdatePermission) error
-	DeleteByIds(ids []int64) error
+	DeleteByIds(ids []int64, tx ...*gorm.DB) error
 	SelectAll() ([]*model.Permission, error)
 	SelectByCodes(codes []string) ([]*model.Permission, error)
 	SelectByIds(ids []int64) ([]*model.Permission, error)

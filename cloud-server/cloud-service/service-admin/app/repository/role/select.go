@@ -18,7 +18,7 @@ func (r *Repository) SelectAll() ([]*model.Role, error) {
 // Select 查询数据
 func (r *Repository) Select(where *SelectRole, orderByField string, orderByType string, page int, pageSize int) (list []*model.Role, total int64, err error) {
 	offset := pageSize * (page - 1)
-	query := r.Database.Db.Model(&model.Permission{})
+	query := r.Database.Db.Model(&model.Role{})
 	if where.Name != "" {
 		query = query.Where("name LIKE ?", "%"+where.Name+"%")
 	}

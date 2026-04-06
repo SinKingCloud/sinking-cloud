@@ -121,6 +121,6 @@ func (Controller) Delete(c *context.Context) {
 	if err != nil {
 		c.Error("删除数据失败")
 	} else {
-		c.Success("删除数据失败")
+		c.Success("删除数据成功")
 	}
 }
