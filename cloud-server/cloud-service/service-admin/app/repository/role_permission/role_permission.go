@@ -10,6 +10,7 @@ type Interface interface {
 	SelectPermissionCodesByRoleId(roleId int64) ([]string, error)
 	SelectRoleIdsByPermissionCodes(permissionCodes []string) ([]int64, error)
 	DeleteByPermissionCodes(permissionCodes []string, tx ...*gorm.DB) error
+	DeleteByRoleIds(roleIds []int64, tx ...*gorm.DB) error
 }
 
 // Repository 仓储

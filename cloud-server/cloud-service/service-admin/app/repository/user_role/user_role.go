@@ -7,6 +7,7 @@ import (
 // Interface 用户仓储接口
 type Interface interface {
 	SelectRoleIdsByUserId(userId int64) ([]int64, error)
+	CountByRoleIds(roleIds []int64) (int64, error)
 }
 
 // Repository 仓储

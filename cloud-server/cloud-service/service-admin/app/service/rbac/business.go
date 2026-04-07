@@ -316,7 +316,7 @@ func (s *service) GetAllMenuTreeByStatusEnabled() []*MenuTree {
 }
 
 // GetRoleInfoById 获取角色详情
-func (s *service) GetRoleInfoById(id int64) (*RoleInfo, error) {
+func (s *service) GetRoleInfoById(id int64) (*Role, error) {
 	info, err := s.repositoryRole.FindById(id)
 	if err != nil {
 		return nil, errors.Join(errors.New("查询角色失败"), err)
@@ -328,7 +328,7 @@ func (s *service) GetRoleInfoById(id int64) (*RoleInfo, error) {
 	if err != nil {
 		return nil, errors.Join(errors.New("查询角色菜单失败"), err)
 	}
-	return &RoleInfo{
+	return &Role{
 		Id:         info.Id,
 		Name:       info.Name,
 		Status:     info.Status,
@@ -336,6 +336,47 @@ func (s *service) GetRoleInfoById(id int64) (*RoleInfo, error) {
 		CreateTime: info.CreateTime,
 		UpdateTime: info.UpdateTime,
 	}, nil
+}
+
+// DeleteRoleByIds 根据ID集合删除角色
+func (s *service) DeleteRoleByIds(ids []int64) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	lockKeys, err := s.lockRoles(ids)
+	if err != nil {
+		return err
+	}
+	defer s.unLockRoles(lockKeys)
+	total, err := s.repositoryUserRole.CountByRoleIds(ids)
+	if err != nil {
+		return errors.Join(errors.New("查询角色使用情况失败"), err)
+	}
+	if total > 0 {
+		return errors.New("存在用户正在使用该角色，不允许删除")
+	}
+	err = s.database.Transaction(func(tx *gorm.DB) error {
+		err = s.repositoryRolePermission.DeleteByRoleIds(ids, tx)
+		if err != nil {
+			return errors.Join(errors.New("删除角色权限关联失败"), err)
+		}
+		err = s.repositoryRoleMenu.DeleteByRoleIds(ids, tx)
+		if err != nil {
+			return errors.Join(errors.New("删除角色菜单关联失败"), err)
+		}
+		err = s.repositoryRole.DeleteByIds(ids, tx)
+		if err != nil {
+			return errors.Join(errors.New("删除角色数据失败"), err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	s.clearCacheWithRolePermissions(ids)
+	s.clearCacheWithRoleMenus(ids)
+	s.clearCacheWithEnums([]string{"role_names"})
+	return nil
 }
 
 // GetMenuOrControlInfoById 根据ID获取菜单或控件信息

@@ -6,4 +6,7 @@ const (
 
 	LockPermission     = "LockPermission_" //权限注册并发锁
 	LockTimePermission = 1 * 60 * 1000     //权限注册并发锁最大时间
+
+	LockRole     = "LockRole_"   //角色业务并发锁
+	LockTimeRole = 1 * 60 * 1000 //角色业务并发锁最大时间
 )

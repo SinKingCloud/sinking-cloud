@@ -10,6 +10,7 @@ type Interface interface {
 	SelectMenuIdsByRoleId(roleId int64) ([]int64, error)
 	SelectRoleIdsByMenuIds(menuIds []int64) ([]int64, error)
 	DeleteByMenuIds(menuIds []int64, tx ...*gorm.DB) error
+	DeleteByRoleIds(roleIds []int64, tx ...*gorm.DB) error
 }
 
 // Repository 仓储

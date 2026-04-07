@@ -13,8 +13,8 @@ type MenuTree struct {
 	Children []*MenuTree `json:"children,omitempty"`
 }
 
-// RoleInfo 角色详情
-type RoleInfo struct {
+// Role 角色详情
+type Role struct {
 	Id         int64        `json:"id"`
 	Name       string       `json:"name"`
 	Status     int          `json:"status"`
