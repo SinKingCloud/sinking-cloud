@@ -4,6 +4,28 @@ import (
 	"service-admin/app/model"
 )
 
+// SelectByIds 根据菜单ID集合查询
+func (r *Repository) SelectByIds(ids []int64) ([]*model.Menu, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	var menuList []*model.Menu
+	err := r.Database.BatchExecute(ids, 1000, func(batch interface{}) error {
+		batchIds := batch.([]int64)
+		var menus []*model.Menu
+		err := r.Database.Db.
+			Model(&model.Menu{}).
+			Where("id IN ?", batchIds).
+			Find(&menus).Error
+		if err != nil {
+			return err
+		}
+		menuList = append(menuList, menus...)
+		return nil
+	})
+	return menuList, err
+}
+
 // SelectAll 查询全部菜单数据
 func (r *Repository) SelectAll() ([]*model.Menu, error) {
 	var menus []*model.Menu

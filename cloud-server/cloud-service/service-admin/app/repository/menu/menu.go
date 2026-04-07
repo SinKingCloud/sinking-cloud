@@ -11,6 +11,7 @@ import (
 type Interface interface {
 	Create(data *model.Menu, tx ...*gorm.DB) error
 	UpdateById(id int64, data *UpdateMenu, tx ...*gorm.DB) error
+	SelectByIds(ids []int64) ([]*model.Menu, error)
 	SelectByIdsWithStatusAndType(ids []int64, status int, types []int) ([]*model.Menu, error)
 	SelectAll() ([]*model.Menu, error)
 	SelectWithStatus(status int) ([]*model.Menu, error)

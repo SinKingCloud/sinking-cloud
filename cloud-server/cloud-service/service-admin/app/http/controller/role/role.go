@@ -82,6 +82,26 @@ func (Controller) Menu(c *context.Context) {
 func (Controller) Create(c *context.Context) {
 	var form struct {
 		Name    string  `json:"name" default:"" validate:"required,max=30" label:"名称"`
+		Status  int     `json:"status" default:"0" validate:"required,numeric" label:"状态"`
+		MenuIds []int64 `json:"menu_ids" default:"" validate:"omitempty,unique" label:"菜单ID列表"`
+	}
+	if ok, msg := c.ValidatorAll(&form); !ok {
+		c.Error(msg)
+		return
+	}
+	err := service.Rbac.CreateRole(form.Name, form.Status, form.MenuIds)
+	if err != nil {
+		c.Error(err.Error())
+		return
+	}
+	c.Success("创建数据成功")
+}
+
+// Update 修改角色
+func (Controller) Update(c *context.Context) {
+	var form struct {
+		Id      int64   `json:"id" default:"" validate:"required,min=1" label:"ID列表"`
+		Name    string  `json:"name" default:"" validate:"omitempty,max=30" label:"名称"`
 		Status  int     `json:"status" default:"0" validate:"numeric" label:"状态"`
 		MenuIds []int64 `json:"menu_ids" default:"" validate:"required,unique" label:"菜单ID列表"`
 	}
@@ -89,19 +109,6 @@ func (Controller) Create(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-}
-
-// Update 修改角色
-func (Controller) Update(c *context.Context) {
-	var form struct {
-		Id   int64  `json:"id" default:"" validate:"required,min=1" label:"ID列表"`
-		Name string `json:"name" default:"" validate:"omitempty,max=30" label:"名称"`
-	}
-	if ok, msg := c.ValidatorAll(&form); !ok {
-		c.Error(msg)
-		return
-	}
-
 }
 
 // Delete 删除角色

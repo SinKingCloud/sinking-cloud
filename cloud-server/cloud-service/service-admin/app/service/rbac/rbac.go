@@ -23,6 +23,7 @@ type Service interface {
 	GetUserMenuTree(userId int64) []*UserMenuTree                                                                                                             //获取用户菜单
 	GetAllMenuTreeByDirAndPage() []*MenuTree                                                                                                                  //获取所有菜单
 	GetAllMenuTreeByStatusEnabled() []*MenuTree                                                                                                               //获取角色菜单树
+	CreateRole(name string, status int, menuIds []int64) error                                                                                                //创建角色
 	GetRoleInfoById(id int64) (*Role, error)                                                                                                                  //获取角色详情
 	GetMenuOrControlInfoById(id int64) (*MenuOrControlInfo, error)                                                                                            //获取页面或控件信息
 	GetPageControlsByUserId(userId int64, pageCode string) []*UserControl                                                                                     //根据用户ID获取页面控件

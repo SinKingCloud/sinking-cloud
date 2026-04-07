@@ -130,10 +130,13 @@ func (s *service) RegisterPermission(name string, code string, path string) erro
 	} else {
 		return errors.New("系统繁忙,请稍候重试")
 	}
+	now := str.DateTime(time.Now())
 	perm := &model.Permission{
-		Name: name,
-		Code: code,
-		Path: path,
+		Name:       name,
+		Code:       code,
+		Path:       path,
+		UpdateTime: now,
+		CreateTime: now,
 	}
 	record, err := s.repositoryPermission.FindByCode(code)
 	if err != nil {
@@ -338,6 +341,115 @@ func (s *service) GetRoleInfoById(id int64) (*Role, error) {
 	}, nil
 }
 
+// CreateRole 创建角色
+func (s *service) CreateRole(name string, status int, menuIds []int64) error {
+	if _, ok := role_status.Status()[status]; !ok {
+		return errors.New("状态数据不合法")
+	}
+	queryMenuIds := make([]int64, 0, len(menuIds))
+	menuIdMap := make(map[int64]struct{}, len(menuIds))
+	for _, menuId := range menuIds {
+		if menuId <= 0 {
+			continue
+		}
+		if _, ok := menuIdMap[menuId]; ok {
+			continue
+		}
+		menuIdMap[menuId] = struct{}{}
+		queryMenuIds = append(queryMenuIds, menuId)
+	}
+	validMenuIds := make([]int64, 0, len(queryMenuIds))
+	if len(queryMenuIds) > 0 {
+		menus, err := s.repositoryMenu.SelectByIds(queryMenuIds)
+		if err != nil {
+			return errors.Join(errors.New("查询菜单失败"), err)
+		}
+		menuIdMap = make(map[int64]struct{}, len(menus))
+		for _, item := range menus {
+			if item == nil || item.Id <= 0 {
+				continue
+			}
+			menuIdMap[item.Id] = struct{}{}
+		}
+		for _, menuId := range queryMenuIds {
+			if _, ok := menuIdMap[menuId]; !ok {
+				continue
+			}
+			validMenuIds = append(validMenuIds, menuId)
+		}
+	}
+	permissionCodes := make([]string, 0)
+	if len(validMenuIds) > 0 {
+		menuPermissions, err := s.repositoryMenuPermission.SelectByMenuIds(validMenuIds)
+		if err != nil {
+			return errors.Join(errors.New("查询菜单权限失败"), err)
+		}
+		permissionCodeMap := make(map[string]struct{}, len(menuPermissions))
+		permissionCodes = make([]string, 0, len(menuPermissions))
+		for _, item := range menuPermissions {
+			if item == nil || item.PermissionCode == "" {
+				continue
+			}
+			if _, ok := permissionCodeMap[item.PermissionCode]; ok {
+				continue
+			}
+			permissionCodeMap[item.PermissionCode] = struct{}{}
+			permissionCodes = append(permissionCodes, item.PermissionCode)
+		}
+	}
+	now := str.DateTime(time.Now())
+	roleData := &model.Role{
+		Name:       name,
+		Status:     status,
+		UpdateTime: now,
+		CreateTime: now,
+	}
+	err := s.database.Transaction(func(tx *gorm.DB) error {
+		err := s.repositoryRole.Create(roleData, tx)
+		if err != nil {
+			return errors.Join(errors.New("创建角色失败"), err)
+		}
+		if roleData.Id <= 0 {
+			return errors.New("创建角色失败")
+		}
+		if len(validMenuIds) > 0 {
+			roleMenus := make([]*model.RoleMenu, 0, len(validMenuIds))
+			for _, menuId := range validMenuIds {
+				roleMenus = append(roleMenus, &model.RoleMenu{
+					RoleId:     roleData.Id,
+					MenuId:     menuId,
+					UpdateTime: now,
+					CreateTime: now,
+				})
+			}
+			err = s.repositoryRoleMenu.Creates(roleMenus, tx)
+			if err != nil {
+				return errors.Join(errors.New("创建角色菜单关联失败"), err)
+			}
+		}
+		if len(permissionCodes) > 0 {
+			rolePermissions := make([]*model.RolePermission, 0, len(permissionCodes))
+			for _, permissionCode := range permissionCodes {
+				rolePermissions = append(rolePermissions, &model.RolePermission{
+					RoleId:         roleData.Id,
+					PermissionCode: permissionCode,
+					CreateTime:     now,
+				})
+			}
+			err = s.repositoryRolePermission.Creates(rolePermissions, tx)
+			if err != nil {
+				return errors.Join(errors.New("创建角色权限关联失败"), err)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	s.clearCacheWithEnums([]string{"role_names"})
+	return nil
+}
+
 // AssignRoleToUser 分配用户角色
 func (s *service) AssignRoleToUser(userId int64, roleIds []int64) error {
 	if userId <= 0 {
@@ -422,11 +534,14 @@ func (s *service) AssignRoleToUser(userId int64, roleIds []int64) error {
 		}
 	}
 
+	now := str.DateTime(time.Now())
 	userRoles := make([]*model.UserRole, 0, len(validRoleIds))
 	for _, roleId := range validRoleIds {
 		userRoles = append(userRoles, &model.UserRole{
-			UserId: userId,
-			RoleId: roleId,
+			UserId:     userId,
+			RoleId:     roleId,
+			UpdateTime: now,
+			CreateTime: now,
 		})
 	}
 	err = s.database.Transaction(func(tx *gorm.DB) error {
@@ -705,6 +820,7 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 	if Type == menu_type.Dir && len(permissionCodes) > 0 {
 		return errors.New(fmt.Sprintf("%s类型不能绑定权限", types[menu_type.Dir]))
 	}
+	now := str.DateTime(time.Now())
 	menuData := &model.Menu{
 		ParentId:   parentId,
 		Code:       code,
@@ -713,8 +829,8 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 		Icon:       icon,
 		Sort:       sort,
 		Status:     statu,
-		CreateTime: str.DateTime(time.Now()),
-		UpdateTime: str.DateTime(time.Now()),
+		CreateTime: now,
+		UpdateTime: now,
 	}
 	permissionCodeMap := make(map[string]struct{}, len(permissionCodes))
 	permissionList := make([]*model.MenuPermission, 0, len(permissionCodes))
@@ -728,6 +844,7 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 		permissionCodeMap[permissionCode] = struct{}{}
 		permissionList = append(permissionList, &model.MenuPermission{
 			PermissionCode: permissionCode,
+			CreateTime:     now,
 		})
 	}
 	if len(permissionList) > 0 {
@@ -874,6 +991,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 	permissionList := make([]*model.MenuPermission, 0)
 	newPermissionCodeMap := make(map[string]struct{})
 	if permissionCodesChanged {
+		now := str.DateTime(time.Now())
 		codes := permissionCodes
 		permissionCodeMap := make(map[string]struct{}, len(codes))
 		for _, permissionCode := range codes {
@@ -886,6 +1004,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 			permissionCodeMap[permissionCode] = struct{}{}
 			permissionList = append(permissionList, &model.MenuPermission{
 				PermissionCode: permissionCode,
+				CreateTime:     now,
 			})
 		}
 		if info.Type == menu_type.Dir && len(permissionList) > 0 {
