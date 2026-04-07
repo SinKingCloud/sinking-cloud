@@ -7,6 +7,7 @@ import (
 	"service-admin/app/http/controller/person"
 	"service-admin/app/http/controller/role"
 	"service-admin/app/http/controller/security"
+	"service-admin/app/http/controller/user"
 )
 
 var (
@@ -16,4 +17,5 @@ var (
 	Permission = &permission.Controller{}
 	Menu       = &menu.Controller{}
 	Role       = &role.Controller{}
+	User       = &user.Controller{}
 )

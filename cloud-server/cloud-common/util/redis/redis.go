@@ -82,8 +82,8 @@ func (c *Client) Lock(key string, ttl int64) bool {
 }
 
 // UnLock 解锁
-func (c *Client) UnLock(key string) bool {
-	return c.Delete(key)
+func (c *Client) UnLock(keys ...string) bool {
+	return c.Delete(keys...)
 }
 
 // IsLock 是否lock状态

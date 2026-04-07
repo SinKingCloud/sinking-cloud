@@ -2,6 +2,28 @@ package role
 
 import "service-admin/app/model"
 
+// SelectByIds 根据ID集合查询角色
+func (r *Repository) SelectByIds(ids []int64) ([]*model.Role, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	var roleList []*model.Role
+	err := r.Database.BatchExecute(ids, 1000, func(batch interface{}) error {
+		batchIds := batch.([]int64)
+		var roles []*model.Role
+		err := r.Database.Db.
+			Model(&model.Role{}).
+			Where("id IN ?", batchIds).
+			Find(&roles).Error
+		if err != nil {
+			return err
+		}
+		roleList = append(roleList, roles...)
+		return nil
+	})
+	return roleList, err
+}
+
 // SelectAll 查询全部角色
 func (r *Repository) SelectAll() ([]*model.Role, error) {
 	var roles []*model.Role

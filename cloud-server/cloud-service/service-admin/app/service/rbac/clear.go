@@ -63,6 +63,25 @@ func (s *service) clearCacheWithRoleMenus(roleIds []int64) {
 	}
 }
 
+// clearCacheWithUserRoles 清理用户角色缓存
+func (s *service) clearCacheWithUserRoles(userIds []int64) {
+	userMap := make(map[int64]struct{}, len(userIds))
+	keys := make([]string, 0, len(userIds))
+	for _, userId := range userIds {
+		if userId <= 0 {
+			continue
+		}
+		if _, ok := userMap[userId]; ok {
+			continue
+		}
+		userMap[userId] = struct{}{}
+		keys = append(keys, constant.CacheNameWithUserRoles+strconv.FormatInt(userId, 10))
+	}
+	if len(keys) > 0 {
+		s.cache.Delete(keys...)
+	}
+}
+
 // clearCacheWithMenus 清理菜单缓存
 func (s *service) clearCacheWithMenus(menus []*model.Menu) {
 	keyMap := make(map[string]struct{}, len(menus)*3)

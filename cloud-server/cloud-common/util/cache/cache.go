@@ -9,7 +9,7 @@ type Interface interface {
 	Delete(keys ...string) bool
 	Lock(key string, ttl int64) bool
 	IsLock(key string) bool
-	UnLock(key string) bool
+	UnLock(keys ...string) bool
 	Inc(key string) int
 	Dec(key string) int
 }

@@ -27,6 +27,7 @@ type Service interface {
 	GetMenuOrControlInfoById(id int64) (*MenuOrControlInfo, error)                                                                                            //获取页面或控件信息
 	GetPageControlsByUserId(userId int64, pageCode string) []*UserControl                                                                                     //根据用户ID获取页面控件
 	GetPageControlsByMenuId(id int64) []*Control                                                                                                              //根据菜单ID获取页面控件
+	AssignRoleToUser(userId int64, roleIds []int64) error                                                                                                     //分配用户角色
 	DeleteMenuOrControlByIds(ids []int64) error                                                                                                               //根据ID列表删除菜单或控件数据
 	CreateMenuOrControl(parentId int64, code string, name string, icon string, Type int, sort int, status int, permissionCodes []string) error                //创建菜单或控件数据
 	UpdateMenuOrControl(id int64, data *menu.UpdateMenu, permissionCodes []string) error                                                                      //更新菜单或控件数据

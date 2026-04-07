@@ -41,6 +41,18 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 	return err
 }
 
+// AssignRole 分配用户角色
+func (s *service) AssignRole(userId int64, roleIds []int64) error {
+	info, err := s.GetUserInfo(userId, false)
+	if err != nil {
+		return errors.Join(errors.New("查询用户失败"), err)
+	}
+	if info == nil || info.Id <= 0 {
+		return errors.New("该用户不存在")
+	}
+	return s.rbacService.AssignRoleToUser(userId, roleIds)
+}
+
 // SetUserVerifyStatus 设置用户安全验证状态
 func (s *service) SetUserVerifyStatus(userId int64, allow bool, minute int) {
 	key := constant.CacheNameWithUserVerify + strconv.FormatInt(userId, 10)

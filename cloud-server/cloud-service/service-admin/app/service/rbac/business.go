@@ -338,6 +338,118 @@ func (s *service) GetRoleInfoById(id int64) (*Role, error) {
 	}, nil
 }
 
+// AssignRoleToUser 分配用户角色
+func (s *service) AssignRoleToUser(userId int64, roleIds []int64) error {
+	if userId <= 0 {
+		return errors.New("用户ID错误")
+	}
+	userLockKey := constant.LockUserRoleAssign + strconv.FormatInt(userId, 10)
+	if !s.cache.Lock(userLockKey, constant.LockTimeUserRoleAssign) {
+		return errors.New("系统繁忙,请稍候重试")
+	}
+	defer s.cache.UnLock(userLockKey)
+
+	currentRoleIds, err := s.repositoryUserRole.SelectRoleIdsByUserId(userId)
+	if err != nil {
+		return errors.Join(errors.New("查询用户角色失败"), err)
+	}
+	queryRoleIds := make([]int64, 0, len(roleIds))
+	roleIdMap := make(map[int64]struct{}, len(roleIds))
+	for _, roleId := range roleIds {
+		if roleId <= 0 {
+			return errors.New("角色ID错误")
+		}
+		if _, ok := roleIdMap[roleId]; ok {
+			continue
+		}
+		roleIdMap[roleId] = struct{}{}
+		queryRoleIds = append(queryRoleIds, roleId)
+	}
+	lockRoleIds := make([]int64, 0, len(currentRoleIds)+len(queryRoleIds))
+	lockRoleIds = append(lockRoleIds, currentRoleIds...)
+	lockRoleIds = append(lockRoleIds, queryRoleIds...)
+	lockKeys, err := s.lockRoles(lockRoleIds)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if len(lockKeys) > 0 {
+			s.cache.UnLock(lockKeys...)
+		}
+	}()
+
+	validRoleIds := make([]int64, 0, len(queryRoleIds))
+	if len(queryRoleIds) > 0 {
+		roles, err := s.repositoryRole.SelectByIds(queryRoleIds)
+		if err != nil {
+			return errors.Join(errors.New("查询角色失败"), err)
+		}
+		if len(roles) != len(queryRoleIds) {
+			return errors.New("存在角色不存在")
+		}
+		roleIdMap = make(map[int64]struct{}, len(roles))
+		for _, item := range roles {
+			if item == nil || item.Id <= 0 {
+				continue
+			}
+			roleIdMap[item.Id] = struct{}{}
+		}
+		for _, roleId := range queryRoleIds {
+			if _, ok := roleIdMap[roleId]; !ok {
+				continue
+			}
+			validRoleIds = append(validRoleIds, roleId)
+		}
+	}
+
+	currentRoleMap := make(map[int64]struct{}, len(currentRoleIds))
+	for _, roleId := range currentRoleIds {
+		if roleId <= 0 {
+			continue
+		}
+		currentRoleMap[roleId] = struct{}{}
+	}
+	if len(currentRoleMap) == len(validRoleIds) {
+		same := true
+		for _, roleId := range validRoleIds {
+			if _, ok := currentRoleMap[roleId]; !ok {
+				same = false
+				break
+			}
+		}
+		if same {
+			return nil
+		}
+	}
+
+	userRoles := make([]*model.UserRole, 0, len(validRoleIds))
+	for _, roleId := range validRoleIds {
+		userRoles = append(userRoles, &model.UserRole{
+			UserId: userId,
+			RoleId: roleId,
+		})
+	}
+	err = s.database.Transaction(func(tx *gorm.DB) error {
+		err = s.repositoryUserRole.DeleteByUserIds([]int64{userId}, tx)
+		if err != nil {
+			return errors.Join(errors.New("删除用户角色关联失败"), err)
+		}
+		if len(userRoles) == 0 {
+			return nil
+		}
+		err = s.repositoryUserRole.Creates(userRoles, tx)
+		if err != nil {
+			return errors.Join(errors.New("创建用户角色关联失败"), err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	s.clearCacheWithUserRoles([]int64{userId})
+	return nil
+}
+
 // DeleteRoleByIds 根据ID集合删除角色
 func (s *service) DeleteRoleByIds(ids []int64) error {
 	if len(ids) == 0 {
@@ -347,7 +459,11 @@ func (s *service) DeleteRoleByIds(ids []int64) error {
 	if err != nil {
 		return err
 	}
-	defer s.unLockRoles(lockKeys)
+	defer func() {
+		if len(lockKeys) > 0 {
+			s.cache.UnLock(lockKeys...)
+		}
+	}()
 	total, err := s.repositoryUserRole.CountByRoleIds(ids)
 	if err != nil {
 		return errors.Join(errors.New("查询角色使用情况失败"), err)
