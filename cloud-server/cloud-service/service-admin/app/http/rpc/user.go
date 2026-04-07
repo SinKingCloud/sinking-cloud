@@ -17,7 +17,7 @@ func (*userService) GetUserInfo(params json.RawMessage) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	u, err := service.User.GetUserInfo(param.UserId, param.Refresh)
+	u, err := service.User.GetInfo(param.UserId, param.Refresh)
 	if err != nil {
 		return nil, err
 	}

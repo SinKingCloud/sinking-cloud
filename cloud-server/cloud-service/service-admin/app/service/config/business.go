@@ -61,31 +61,62 @@ func (s *service) GetUserConfigs(userId int64, group string, refresh bool) map[s
 }
 
 // clearUserConfigCache 清理用户配置缓存
-func (s *service) clearUserConfigCache(userId int64, key string) bool {
-	group := s.getGroupKey(key)
+func (s *service) clearUserConfigCache(userId int64, keysOrGroups ...string) bool {
+	if len(keysOrGroups) == 0 {
+		return true
+	}
 	uidStr := strconv.FormatInt(userId, 10)
-	cacheKey := constant.CacheNameWithUserConfig + uidStr + "_" + group
-	return s.cache.Delete(cacheKey)
+	cacheKeyMap := make(map[string]struct{}, len(keysOrGroups))
+	for _, key := range keysOrGroups {
+		group := s.getGroupKey(key)
+		cacheKeyMap[constant.CacheNameWithUserConfig+uidStr+"_"+group] = struct{}{}
+	}
+	cacheKeys := make([]string, 0, len(cacheKeyMap))
+	for cacheKey := range cacheKeyMap {
+		cacheKeys = append(cacheKeys, cacheKey)
+	}
+	return s.cache.Delete(cacheKeys...)
 }
 
 // SetUserConfig 修改用户配置
 func (s *service) SetUserConfig(userId int64, key string, value string) bool {
 	uidStr := strconv.FormatInt(userId, 10)
-	defer s.clearUserConfigCache(userId, key)
+	defer s.clearUserConfigCache(userId, key, "")
 	return s.setConfig(userIdentID+uidStr, key, value)
 }
 
 // SetUserConfigs 批量修改用户配置
 func (s *service) SetUserConfigs(userId int64, data map[string]string) {
 	uidStr := strconv.FormatInt(userId, 10)
-	groups := make(map[string]struct{})
+	groups := make(map[string]struct{}, len(data)+1)
+	groups[""] = struct{}{}
 	for k, v := range data {
 		s.setConfig(userIdentID+uidStr, k, v)
 		groups[s.getGroupKey(k)] = struct{}{}
 	}
+	groupList := make([]string, 0, len(groups))
 	for g := range groups {
-		s.clearUserConfigCache(userId, g)
+		groupList = append(groupList, g)
 	}
+	s.clearUserConfigCache(userId, groupList...)
+}
+
+// ClearUserConfig 删除用户配置
+func (s *service) ClearUserConfig(userId int64, group string) bool {
+	if userId <= 0 {
+		return false
+	}
+	uidStr := strconv.FormatInt(userId, 10)
+	identId := userIdentID + uidStr
+	configs, err := s.repositoryConfig.FindByIdentIdAndKey(identId, group)
+	if err != nil {
+		return false
+	}
+	if err = s.repositoryConfig.DeleteByIdentIdAndKey(identId, group); err != nil {
+		return false
+	}
+	groups := s.getConfigGroups(configs, group)
+	return s.clearUserConfigCache(userId, groups...)
 }
 
 // GetSysConfigs 获取系统配置
@@ -95,36 +126,83 @@ func (s *service) GetSysConfigs(group string, refresh bool) map[string]string {
 }
 
 // clearSysConfigCache 清理系统配置缓存
-func (s *service) clearSysConfigCache(key string) bool {
-	group := s.getGroupKey(key)
-	cacheKey := constant.CacheNameWithSysConfig + group
-	return s.cache.Delete(cacheKey)
+func (s *service) clearSysConfigCache(keysOrGroups ...string) bool {
+	if len(keysOrGroups) == 0 {
+		return true
+	}
+	cacheKeyMap := make(map[string]struct{}, len(keysOrGroups))
+	for _, key := range keysOrGroups {
+		group := s.getGroupKey(key)
+		cacheKeyMap[constant.CacheNameWithSysConfig+group] = struct{}{}
+	}
+	cacheKeys := make([]string, 0, len(cacheKeyMap))
+	for cacheKey := range cacheKeyMap {
+		cacheKeys = append(cacheKeys, cacheKey)
+	}
+	return s.cache.Delete(cacheKeys...)
 }
 
 // SetSysConfig 修改系统配置
 func (s *service) SetSysConfig(key string, value string) bool {
-	defer s.clearSysConfigCache(key)
+	defer s.clearSysConfigCache(key, "")
 	return s.setConfig(systemIdentID, key, value)
 }
 
 // SetSysConfigs 批量修改系统配置
 func (s *service) SetSysConfigs(data map[string]string) {
+	groups := make(map[string]struct{}, len(data)+1)
+	groups[""] = struct{}{}
 	for k, v := range data {
 		s.setConfig(systemIdentID, k, v)
-	}
-	groups := make(map[string]struct{})
-	for k := range data {
 		groups[s.getGroupKey(k)] = struct{}{}
 	}
+	groupList := make([]string, 0, len(groups))
 	for g := range groups {
-		s.clearSysConfigCache(g)
+		groupList = append(groupList, g)
 	}
+	s.clearSysConfigCache(groupList...)
+}
+
+// ClearSysConfig 删除系统配置
+func (s *service) ClearSysConfig(group string) bool {
+	configs, err := s.repositoryConfig.FindByIdentIdAndKey(systemIdentID, group)
+	if err != nil {
+		return false
+	}
+	if err = s.repositoryConfig.DeleteByIdentIdAndKey(systemIdentID, group); err != nil {
+		return false
+	}
+	groups := s.getConfigGroups(configs, group)
+	return s.clearSysConfigCache(groups...)
 }
 
 // getGroupKey 统一截取分组（theme.color → theme）
 func (s *service) getGroupKey(key string) string {
+	if key == "*" {
+		return ""
+	}
 	if idx := strings.Index(key, "."); idx != -1 {
 		return key[:idx]
 	}
 	return key
+}
+
+// getConfigGroups 获取需要清理的配置分组
+func (s *service) getConfigGroups(configs []*model.Config, group string) []string {
+	groupMap := make(map[string]struct{}, len(configs)+2)
+	groupMap[""] = struct{}{}
+	if group != "" {
+		groupMap[s.getGroupKey(group)] = struct{}{}
+	}
+	for _, item := range configs {
+		if item == nil || item.Key == "" {
+			continue
+		}
+		groupMap[s.getGroupKey(item.Key)] = struct{}{}
+	}
+	groups := make([]string, 0, len(groupMap))
+	for key := range groupMap {
+		groups = append(groups, key)
+	}
+	return groups
 }

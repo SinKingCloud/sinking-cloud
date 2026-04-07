@@ -10,8 +10,10 @@ import (
 // Interface 用户仓储接口
 type Interface interface {
 	SelectRoleIdsByUserId(userId int64) ([]int64, error)
+	SelectByUserIds(userIds []int64) ([]*model.UserRole, error)
 	CountByRoleIds(roleIds []int64) (int64, error)
 	Creates(data []*model.UserRole, tx ...*gorm.DB) error
+	DeleteByUserId(userId int64, tx ...*gorm.DB) error
 	DeleteByUserIds(userIds []int64, tx ...*gorm.DB) error
 }
 

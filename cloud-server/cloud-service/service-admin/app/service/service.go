@@ -43,5 +43,5 @@ func Init() {
 	Config = config.NewService(configRepository, cache)
 	Auth = auth.NewService(authService, sessionRepository, userRepository, cache)
 	Rbac = rbac.NewService(roleRepository, permissionRepository, userRoleRepository, roleMenuRepository, menuRepository, menuPermRepository, database, cache)
-	User = user.NewService(userRepository, Rbac, cache)
+	User = user.NewService(userRepository, sessionRepository, userRoleRepository, Config, Rbac, database, cache)
 }

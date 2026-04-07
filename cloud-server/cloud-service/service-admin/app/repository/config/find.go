@@ -9,7 +9,7 @@ func (r *Repository) FindByIdentIdAndKey(identId, key string) ([]*model.Config, 
 	if identId != "" {
 		query = query.Where("ident_id = ?", identId)
 	}
-	if key != "" {
+	if key != "" && key != "*" {
 		query = query.Where("key like ?", key+"%")
 	}
 	err := query.Find(&configs).Error

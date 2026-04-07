@@ -25,7 +25,7 @@ func (Controller) Verify(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	u, err := service.User.GetUserInfo(c.GetUserInfo().Id, false)
+	u, err := service.User.GetInfo(c.GetUserInfo().Id, false)
 	if err != nil || u == nil || u.Id <= 0 {
 		c.Error("获取用户信息失败")
 		return
@@ -67,7 +67,7 @@ func (Controller) Password(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	u, err := service.User.GetUserInfo(c.GetUserInfo().Id, false)
+	u, err := service.User.GetInfo(c.GetUserInfo().Id, false)
 	if err != nil || u == nil || u.Id <= 0 {
 		c.Error("获取用户信息失败")
 		return
@@ -95,17 +95,13 @@ func (Controller) Phone(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	u, err := service.User.GetUserInfo(c.GetUserInfo().Id, false)
+	u, err := service.User.GetInfo(c.GetUserInfo().Id, false)
 	if err != nil || u == nil || u.Id <= 0 {
 		c.Error("获取用户信息失败")
 		return
 	}
 	if !service.User.CheckUserVerifyStatus(u.Id, false) {
 		c.Error("请先完成安全验证")
-		return
-	}
-	if err = service.User.CheckPhoneIsUse(form.Phone); err != nil {
-		c.Error(err.Error())
 		return
 	}
 	if !service2.Auth.CheckSms(form.Phone, form.Code) {
@@ -131,17 +127,13 @@ func (Controller) Email(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	u, err := service.User.GetUserInfo(c.GetUserInfo().Id, false)
+	u, err := service.User.GetInfo(c.GetUserInfo().Id, false)
 	if err != nil || u == nil || u.Id <= 0 {
 		c.Error("获取用户信息失败")
 		return
 	}
 	if !service.User.CheckUserVerifyStatus(u.Id, false) {
 		c.Error("请先完成安全验证")
-		return
-	}
-	if err = service.User.CheckEmailIsUse(form.Mail); err != nil {
-		c.Error(err.Error())
 		return
 	}
 	if !service2.Auth.CheckMail(form.Mail, form.Code) {
@@ -166,17 +158,13 @@ func (Controller) Account(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	u, err := service.User.GetUserInfo(c.GetUserInfo().Id, false)
+	u, err := service.User.GetInfo(c.GetUserInfo().Id, false)
 	if err != nil || u == nil || u.Id <= 0 {
 		c.Error("获取用户信息失败")
 		return
 	}
 	if u.Account != "" {
 		c.Error("您的账户已修改过账号,无需修改")
-		return
-	}
-	if err = service.User.CheckAccountIsUse(form.Account); err != nil {
-		c.Error(err.Error())
 		return
 	}
 	if err = service.User.UpdateById(c.GetUserInfo().Id, &user.UpdateUser{
