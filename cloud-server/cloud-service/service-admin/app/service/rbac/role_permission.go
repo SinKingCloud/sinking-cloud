@@ -3,7 +3,6 @@ package rbac
 import (
 	"encoding/json"
 	"service-admin/app/constant"
-	"service-admin/app/enum/role_status"
 	"strconv"
 )
 
@@ -17,9 +16,12 @@ func (s *service) getPermissionCodesByRoleId(roleId int64, refresh bool) (permis
 			}
 		}
 	}
-	r, err := s.repositoryRole.FindById(roleId)
-	if err == nil && r != nil && r.Status == role_status.Enable {
-		permissionCodes, err = s.repositoryRolePermission.SelectPermissionCodesByRoleId(r.Id)
+	menuIds, err := s.getRoleMenuIdsByRoleId(roleId, false)
+	if err != nil {
+		return nil, err
+	}
+	if len(menuIds) > 0 {
+		permissionCodes, err = s.repositoryMenuPermission.SelectPermissionCodesByMenuIds(menuIds)
 		if err != nil {
 			return nil, err
 		}

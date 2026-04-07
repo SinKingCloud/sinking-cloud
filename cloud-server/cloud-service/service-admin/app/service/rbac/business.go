@@ -142,11 +142,15 @@ func (s *service) RegisterPermission(name string, code string, path string) erro
 	if err != nil {
 		return err
 	}
+	clearPaths := []string{path}
 	if record == nil || record.Id <= 0 {
 		if err = s.repositoryPermission.Create(perm); err != nil {
 			return err
 		}
 	} else {
+		if record.Path != "" {
+			clearPaths = append(clearPaths, record.Path)
+		}
 		if err = s.repositoryPermission.UpdateByCode(code, &permission.UpdatePermission{
 			Name: perm.Name,
 			Path: perm.Path,
@@ -155,7 +159,7 @@ func (s *service) RegisterPermission(name string, code string, path string) erro
 		}
 	}
 	// 刷新缓存
-	s.clearCacheWithPermissions([]string{path})
+	s.clearCacheWithPermissions(clearPaths)
 	s.clearCacheWithEnums([]string{"permission"})
 	return nil
 }
@@ -248,12 +252,16 @@ func (s *service) DeletePermissionByIds(ids []int64) error {
 			codes = append(codes, item.Code)
 		}
 	}
-	roleIds, err := s.repositoryRolePermission.SelectRoleIdsByPermissionCodes(codes)
+	menuIds, err := s.repositoryMenuPermission.SelectMenuIdsByPermissionCodes(codes)
+	if err != nil {
+		return err
+	}
+	roleIds, err := s.repositoryRoleMenu.SelectRoleIdsByMenuIds(menuIds)
 	if err != nil {
 		return err
 	}
 	err = s.database.Transaction(func(tx *gorm.DB) error {
-		err = s.repositoryRolePermission.DeleteByPermissionCodes(codes, tx)
+		err = s.repositoryMenuPermission.DeleteByPermissionCodes(codes, tx)
 		if err != nil {
 			return err
 		}
@@ -378,25 +386,6 @@ func (s *service) CreateRole(name string, status int, menuIds []int64) error {
 			validMenuIds = append(validMenuIds, menuId)
 		}
 	}
-	permissionCodes := make([]string, 0)
-	if len(validMenuIds) > 0 {
-		menuPermissions, err := s.repositoryMenuPermission.SelectByMenuIds(validMenuIds)
-		if err != nil {
-			return errors.Join(errors.New("查询菜单权限失败"), err)
-		}
-		permissionCodeMap := make(map[string]struct{}, len(menuPermissions))
-		permissionCodes = make([]string, 0, len(menuPermissions))
-		for _, item := range menuPermissions {
-			if item == nil || item.PermissionCode == "" {
-				continue
-			}
-			if _, ok := permissionCodeMap[item.PermissionCode]; ok {
-				continue
-			}
-			permissionCodeMap[item.PermissionCode] = struct{}{}
-			permissionCodes = append(permissionCodes, item.PermissionCode)
-		}
-	}
 	now := str.DateTime(time.Now())
 	roleData := &model.Role{
 		Name:       name,
@@ -425,20 +414,6 @@ func (s *service) CreateRole(name string, status int, menuIds []int64) error {
 			err = s.repositoryRoleMenu.Creates(roleMenus, tx)
 			if err != nil {
 				return errors.Join(errors.New("创建角色菜单关联失败"), err)
-			}
-		}
-		if len(permissionCodes) > 0 {
-			rolePermissions := make([]*model.RolePermission, 0, len(permissionCodes))
-			for _, permissionCode := range permissionCodes {
-				rolePermissions = append(rolePermissions, &model.RolePermission{
-					RoleId:         roleData.Id,
-					PermissionCode: permissionCode,
-					CreateTime:     now,
-				})
-			}
-			err = s.repositoryRolePermission.Creates(rolePermissions, tx)
-			if err != nil {
-				return errors.Join(errors.New("创建角色权限关联失败"), err)
 			}
 		}
 		return nil
@@ -587,10 +562,6 @@ func (s *service) DeleteRoleByIds(ids []int64) error {
 		return errors.New("存在用户正在使用该角色，不允许删除")
 	}
 	err = s.database.Transaction(func(tx *gorm.DB) error {
-		err = s.repositoryRolePermission.DeleteByRoleIds(ids, tx)
-		if err != nil {
-			return errors.Join(errors.New("删除角色权限关联失败"), err)
-		}
 		err = s.repositoryRoleMenu.DeleteByRoleIds(ids, tx)
 		if err != nil {
 			return errors.Join(errors.New("删除角色菜单关联失败"), err)
@@ -756,6 +727,15 @@ func (s *service) DeleteMenuOrControlByIds(ids []int64) error {
 	if err != nil {
 		return errors.Join(errors.New("查询角色菜单关联失败"), err)
 	}
+	lockKeys, err := s.lockRoles(roleIds)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if len(lockKeys) > 0 {
+			s.cache.UnLock(lockKeys...)
+		}
+	}()
 	err = s.database.Transaction(func(tx *gorm.DB) error {
 		err = s.repositoryMenuPermission.DeleteByMenuIds(deleteIds, tx)
 		if err != nil {
@@ -775,6 +755,7 @@ func (s *service) DeleteMenuOrControlByIds(ids []int64) error {
 		return err
 	}
 	s.clearCacheWithRoleMenus(roleIds)
+	s.clearCacheWithRolePermissions(roleIds)
 	s.clearCacheWithMenus(deleteMenus)
 	return nil
 }
@@ -902,7 +883,7 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 }
 
 // UpdateMenuOrControl 更新菜单或控件数据
-func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissionCodes []string) error {
+func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissionCodes *[]string) error {
 	if id <= 0 || data == nil {
 		return errors.New("参数错误")
 	}
@@ -987,12 +968,13 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 		}
 		hasUpdateData = true
 	}
-	permissionCodesChanged := permissionCodes != nil
+	permissionCodesChanged := false
 	permissionList := make([]*model.MenuPermission, 0)
 	newPermissionCodeMap := make(map[string]struct{})
-	if permissionCodesChanged {
+	if permissionCodes != nil {
+		permissionCodesChanged = true
 		now := str.DateTime(time.Now())
-		codes := permissionCodes
+		codes := *permissionCodes
 		permissionCodeMap := make(map[string]struct{}, len(codes))
 		for _, permissionCode := range codes {
 			if permissionCode == "" {
@@ -1074,6 +1056,22 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 	if !hasUpdateData && !permissionCodesChanged {
 		return nil
 	}
+	roleIds := make([]int64, 0)
+	if permissionCodesChanged {
+		roleIds, err = s.repositoryRoleMenu.SelectRoleIdsByMenuIds([]int64{info.Id})
+		if err != nil {
+			return errors.Join(errors.New("更新失败"), err)
+		}
+		lockKeys, err := s.lockRoles(roleIds)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if len(lockKeys) > 0 {
+				s.cache.UnLock(lockKeys...)
+			}
+		}()
+	}
 	//更新数据 并重构权限
 	err = s.database.Transaction(func(tx *gorm.DB) error {
 		if hasUpdateData {
@@ -1111,6 +1109,9 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 		clearMenus = append(clearMenus, &model.Menu{ParentId: newParentId})
 	}
 	s.clearCacheWithMenus(clearMenus)
+	if permissionCodesChanged {
+		s.clearCacheWithRolePermissions(roleIds)
+	}
 	return nil
 }
 
@@ -1126,4 +1127,159 @@ func (s *service) SelectRole(where *role.SelectRole, orderByField string, orderB
 		}
 	}
 	return s.repositoryRole.Select(where, orderByField, orderByType, page, pageSize)
+}
+
+// UpdateRole 更新角色
+func (s *service) UpdateRole(id int64, data *role.UpdateRole, menuIds *[]int64) error {
+	if id <= 0 || data == nil {
+		return errors.New("参数错误")
+	}
+	lockKeys, err := s.lockRoles([]int64{id})
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if len(lockKeys) > 0 {
+			s.cache.UnLock(lockKeys...)
+		}
+	}()
+	info, err := s.repositoryRole.FindById(id)
+	if err != nil {
+		return errors.Join(errors.New("更新失败"), err)
+	}
+	if info == nil || info.Id <= 0 {
+		return errors.New("该角色不存在")
+	}
+	hasUpdateData := false
+	nameChanged := false
+	if data.Name != nil {
+		name, ok := data.Name.(string)
+		if !ok {
+			return errors.New("名称数据不合法")
+		}
+		if name == "" {
+			return errors.New("名称不能为空")
+		}
+		if name == info.Name {
+			data.Name = nil
+		} else {
+			hasUpdateData = true
+			nameChanged = true
+		}
+	}
+	if data.Status != nil {
+		status, ok := data.Status.(int)
+		if !ok {
+			return errors.New("状态数据不合法")
+		}
+		if _, ok = role_status.Status()[status]; !ok {
+			return errors.New("状态数据不合法")
+		}
+		if status == info.Status {
+			data.Status = nil
+		} else {
+			hasUpdateData = true
+		}
+	}
+	roleMenusChanged := false
+	validMenuIds := make([]int64, 0)
+	if menuIds != nil {
+		queryMenuIds := make([]int64, 0, len(*menuIds))
+		menuIdMap := make(map[int64]struct{}, len(*menuIds))
+		for _, menuId := range *menuIds {
+			if menuId <= 0 {
+				continue
+			}
+			if _, ok := menuIdMap[menuId]; ok {
+				continue
+			}
+			menuIdMap[menuId] = struct{}{}
+			queryMenuIds = append(queryMenuIds, menuId)
+		}
+		validMenuIds = make([]int64, 0, len(queryMenuIds))
+		if len(queryMenuIds) > 0 {
+			menus, err := s.repositoryMenu.SelectByIds(queryMenuIds)
+			if err != nil {
+				return errors.Join(errors.New("更新失败"), err)
+			}
+			menuIdMap = make(map[int64]struct{}, len(menus))
+			for _, item := range menus {
+				if item == nil || item.Id <= 0 {
+					continue
+				}
+				menuIdMap[item.Id] = struct{}{}
+			}
+			for _, menuId := range queryMenuIds {
+				if _, ok := menuIdMap[menuId]; !ok {
+					continue
+				}
+				validMenuIds = append(validMenuIds, menuId)
+			}
+		}
+		currentMenuIds, err := s.repositoryRoleMenu.SelectMenuIdsByRoleId(id)
+		if err != nil {
+			return errors.Join(errors.New("更新失败"), err)
+		}
+		currentMenuMap := make(map[int64]struct{}, len(currentMenuIds))
+		for _, menuId := range currentMenuIds {
+			if menuId <= 0 {
+				continue
+			}
+			currentMenuMap[menuId] = struct{}{}
+		}
+		roleMenusChanged = len(currentMenuMap) != len(validMenuIds)
+		if !roleMenusChanged {
+			for _, menuId := range validMenuIds {
+				if _, ok := currentMenuMap[menuId]; !ok {
+					roleMenusChanged = true
+					break
+				}
+			}
+		}
+	}
+	if !hasUpdateData && !roleMenusChanged {
+		return nil
+	}
+	now := str.DateTime(time.Now())
+	err = s.database.Transaction(func(tx *gorm.DB) error {
+		if hasUpdateData {
+			err = s.repositoryRole.UpdateById(id, data, tx)
+			if err != nil {
+				return errors.Join(errors.New("更新角色失败"), err)
+			}
+		}
+		if roleMenusChanged {
+			err = s.repositoryRoleMenu.DeleteByRoleIds([]int64{id}, tx)
+			if err != nil {
+				return errors.Join(errors.New("更新角色菜单失败"), err)
+			}
+			if len(validMenuIds) > 0 {
+				roleMenus := make([]*model.RoleMenu, 0, len(validMenuIds))
+				for _, menuId := range validMenuIds {
+					roleMenus = append(roleMenus, &model.RoleMenu{
+						RoleId:     id,
+						MenuId:     menuId,
+						CreateTime: now,
+						UpdateTime: now,
+					})
+				}
+				err = s.repositoryRoleMenu.Creates(roleMenus, tx)
+				if err != nil {
+					return errors.Join(errors.New("更新角色菜单失败"), err)
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	if nameChanged {
+		s.clearCacheWithEnums([]string{"role_names"})
+	}
+	if roleMenusChanged {
+		s.clearCacheWithRoleMenus([]int64{id})
+		s.clearCacheWithRolePermissions([]int64{id})
+	}
+	return nil
 }

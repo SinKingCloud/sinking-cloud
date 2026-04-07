@@ -7,7 +7,6 @@ import (
 	"service-admin/app/repository/permission"
 	"service-admin/app/repository/role"
 	"service-admin/app/repository/role_menu"
-	"service-admin/app/repository/role_permission"
 	"service-admin/app/repository/session"
 	user2 "service-admin/app/repository/user"
 	"service-admin/app/repository/user_role"
@@ -34,7 +33,6 @@ func Init() {
 	sessionRepository := session.NewRepository(global.App.Database)
 	permissionRepository := permission.NewRepository(global.App.Database)
 	userRoleRepository := user_role.NewRepository(global.App.Database)
-	rolePermRepository := role_permission.NewRepository(global.App.Database)
 	roleMenuRepository := role_menu.NewRepository(global.App.Database)
 	menuRepository := menu.NewRepository(global.App.Database)
 	menuPermRepository := menu_permission.NewRepository(global.App.Database)
@@ -44,6 +42,6 @@ func Init() {
 
 	Config = config.NewService(configRepository, cache)
 	Auth = auth.NewService(authService, sessionRepository, userRepository, cache)
-	Rbac = rbac.NewService(roleRepository, permissionRepository, userRoleRepository, rolePermRepository, roleMenuRepository, menuRepository, menuPermRepository, database, cache)
+	Rbac = rbac.NewService(roleRepository, permissionRepository, userRoleRepository, roleMenuRepository, menuRepository, menuPermRepository, database, cache)
 	User = user.NewService(userRepository, Rbac, cache)
 }

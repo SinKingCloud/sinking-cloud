@@ -8,3 +8,9 @@ type SelectRole struct {
 	UpdateTimeStart string
 	UpdateTimeEnd   string
 }
+
+// UpdateRole 角色更新
+type UpdateRole struct {
+	Name   interface{}
+	Status interface{}
+}

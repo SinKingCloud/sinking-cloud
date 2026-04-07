@@ -7,7 +7,6 @@ import (
 	"service-admin/app/repository/permission"
 	"service-admin/app/repository/role"
 	"service-admin/app/repository/role_menu"
-	"service-admin/app/repository/role_permission"
 	"service-admin/app/repository/user_role"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
@@ -24,6 +23,7 @@ type Service interface {
 	GetAllMenuTreeByDirAndPage() []*MenuTree                                                                                                                  //获取所有菜单
 	GetAllMenuTreeByStatusEnabled() []*MenuTree                                                                                                               //获取角色菜单树
 	CreateRole(name string, status int, menuIds []int64) error                                                                                                //创建角色
+	UpdateRole(id int64, data *role.UpdateRole, menuIds *[]int64) error                                                                                       //修改角色
 	GetRoleInfoById(id int64) (*Role, error)                                                                                                                  //获取角色详情
 	GetMenuOrControlInfoById(id int64) (*MenuOrControlInfo, error)                                                                                            //获取页面或控件信息
 	GetPageControlsByUserId(userId int64, pageCode string) []*UserControl                                                                                     //根据用户ID获取页面控件
@@ -31,7 +31,7 @@ type Service interface {
 	AssignRoleToUser(userId int64, roleIds []int64) error                                                                                                     //分配用户角色
 	DeleteMenuOrControlByIds(ids []int64) error                                                                                                               //根据ID列表删除菜单或控件数据
 	CreateMenuOrControl(parentId int64, code string, name string, icon string, Type int, sort int, status int, permissionCodes []string) error                //创建菜单或控件数据
-	UpdateMenuOrControl(id int64, data *menu.UpdateMenu, permissionCodes []string) error                                                                      //更新菜单或控件数据
+	UpdateMenuOrControl(id int64, data *menu.UpdateMenu, permissionCodes *[]string) error                                                                     //更新菜单或控件数据
 	UpdatePermissionByIds(ids []int64, data *permission.UpdatePermission) error                                                                               //根据id集合更新权限
 	DeletePermissionByIds(ids []int64) error                                                                                                                  //根据ID集合删除权限
 	DeleteRoleByIds(ids []int64) error                                                                                                                        //根据ID集合删除角色
@@ -45,7 +45,6 @@ type service struct {
 	repositoryRole           role.Interface
 	repositoryPermission     permission.Interface
 	repositoryUserRole       user_role.Interface
-	repositoryRolePermission role_permission.Interface
 	repositoryRoleMenu       role_menu.Interface
 	repositoryMenu           menu.Interface
 	repositoryMenuPermission menu_permission.Interface
@@ -58,7 +57,6 @@ func NewService(
 	repositoryRole role.Interface,
 	repositoryPermission permission.Interface,
 	repositoryUserRole user_role.Interface,
-	repositoryRolePerm role_permission.Interface,
 	repositoryRoleMenu role_menu.Interface,
 	repositoryMenu menu.Interface,
 	repositoryMenuPermission menu_permission.Interface,
@@ -69,7 +67,6 @@ func NewService(
 		repositoryRole:           repositoryRole,
 		repositoryPermission:     repositoryPermission,
 		repositoryUserRole:       repositoryUserRole,
-		repositoryRolePermission: repositoryRolePerm,
 		repositoryRoleMenu:       repositoryRoleMenu,
 		repositoryMenu:           repositoryMenu,
 		repositoryMenuPermission: repositoryMenuPermission,

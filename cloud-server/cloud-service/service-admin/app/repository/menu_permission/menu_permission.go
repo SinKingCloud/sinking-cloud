@@ -11,8 +11,11 @@ import (
 type Interface interface {
 	Creates(data []*model.MenuPermission, tx ...*gorm.DB) error
 	SelectPermissionCodesByMenuId(menuId int64) ([]string, error)
+	SelectPermissionCodesByMenuIds(menuIds []int64) ([]string, error)
+	SelectMenuIdsByPermissionCodes(permissionCodes []string) ([]int64, error)
 	SelectByMenuIds(menuIds []int64) ([]*model.MenuPermission, error)
 	DeleteByMenuIds(menuIds []int64, tx ...*gorm.DB) error
+	DeleteByPermissionCodes(permissionCodes []string, tx ...*gorm.DB) error
 }
 
 // Repository 仓储

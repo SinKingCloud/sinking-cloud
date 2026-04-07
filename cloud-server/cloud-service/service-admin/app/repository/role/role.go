@@ -11,6 +11,7 @@ import (
 type Interface interface {
 	FindById(id int64) (*model.Role, error)
 	Create(data *model.Role, tx ...*gorm.DB) error
+	UpdateById(id int64, data *UpdateRole, tx ...*gorm.DB) error
 	SelectByIds(ids []int64) ([]*model.Role, error)
 	SelectAll() ([]*model.Role, error)
 	Select(where *SelectRole, orderByField string, orderByType string, page int, pageSize int) (list []*model.Role, total int64, err error)
