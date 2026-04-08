@@ -351,7 +351,7 @@ func (s *service) GetRoleInfoById(id int64) (*Role, error) {
 
 // CreateRole 创建角色
 func (s *service) CreateRole(name string, status int, menuIds []int64) error {
-	if _, ok := role_status.Status()[status]; !ok {
+	if _, ok := role_status.Map()[status]; !ok {
 		return errors.New("状态数据不合法")
 	}
 	queryMenuIds := make([]int64, 0, len(menuIds))
@@ -765,8 +765,8 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 	if parentId <= 0 {
 		parentId = 0
 	}
-	types := menu_type.Types()
-	status := menu_status.Status()
+	types := menu_type.Map()
+	status := menu_status.Map()
 	if _, ok := status[statu]; !ok {
 		return errors.New("状态数据不合法")
 	}
@@ -894,8 +894,8 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 	if info == nil || info.Id <= 0 {
 		return errors.New("该数据不存在")
 	}
-	types := menu_type.Types()
-	status := menu_status.Status()
+	types := menu_type.Map()
+	status := menu_status.Map()
 	hasUpdateData := false
 	newParentId := int64(-1)
 	if data.ParentId != nil {
@@ -1122,7 +1122,7 @@ func (s *service) SelectRole(where *role.SelectRole, orderByField string, orderB
 		if err != nil {
 			return nil, 0, errors.New("状态参数错误")
 		}
-		if _, ok := role_status.Status()[status]; !ok {
+		if _, ok := role_status.Map()[status]; !ok {
 			return nil, 0, errors.New("状态参数不合法")
 		}
 	}
@@ -1172,7 +1172,7 @@ func (s *service) UpdateRole(id int64, data *role.UpdateRole, menuIds *[]int64) 
 		if !ok {
 			return errors.New("状态数据不合法")
 		}
-		if _, ok = role_status.Status()[status]; !ok {
+		if _, ok = role_status.Map()[status]; !ok {
 			return errors.New("状态数据不合法")
 		}
 		if status == info.Status {

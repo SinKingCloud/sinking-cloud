@@ -1,7 +1,7 @@
 package constant
 
 const (
-	CacheNameWithUserInfo = "UserInfo_"       //用户信息
+	CacheNameWithUserInfo = "WebUserInfo_"    //用户信息
 	CacheTimeWithUserInfo = int64(600 * 1000) //用户信息储存时间
 
 	CacheNameWithUserVerify = "UserVerify_" //安全验证

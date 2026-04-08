@@ -5,8 +5,8 @@ const (
 	Authed        // 已实名
 )
 
-// Status 用户状态数据
-func Status() map[int]string {
+// Map 用户状态数据
+func Map() map[int]string {
 	return map[int]string{
 		UnAuth: "未实名",
 		Authed: "已实名",

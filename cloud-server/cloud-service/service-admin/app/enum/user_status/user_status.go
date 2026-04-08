@@ -5,8 +5,8 @@ const (
 	Disable        // 禁用
 )
 
-// Status 用户状态数据
-func Status() map[int]string {
+// Map 用户状态数据
+func Map() map[int]string {
 	return map[int]string{
 		Enable:  "正常",
 		Disable: "禁用",

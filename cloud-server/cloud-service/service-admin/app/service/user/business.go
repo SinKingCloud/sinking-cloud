@@ -86,7 +86,7 @@ func (s *service) Create(data *model.User) error {
 	if data.Password == "" {
 		return errors.New("密码不能为空")
 	}
-	if _, ok := user_status.Status()[data.Status]; !ok {
+	if _, ok := user_status.Map()[data.Status]; !ok {
 		return errors.New("状态数据不合法")
 	}
 	if err := s.checkAccountIsUse(data.Account); err != nil {
@@ -202,7 +202,7 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		if !ok {
 			return errors.New("状态数据不合法")
 		}
-		if _, ok = user_status.Status()[status]; !ok {
+		if _, ok = user_status.Map()[status]; !ok {
 			return errors.New("状态数据不合法")
 		}
 		if status == info.Status {

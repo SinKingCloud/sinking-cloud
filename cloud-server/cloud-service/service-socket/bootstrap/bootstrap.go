@@ -9,4 +9,5 @@ func Load() {
 	bootstrap.LoadLog()
 	bootstrap.LoadConf()
 	bootstrap.LoadConsul(constant.ServiceSocket)
+	bootstrap.LoadCache()
 }
