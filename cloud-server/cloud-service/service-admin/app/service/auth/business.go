@@ -73,7 +73,7 @@ func (s *service) Logout(token string) error {
 	if key == nil || key.User.Id <= 0 || key.User.Token == "" {
 		return errors.New("未获取到登陆信息")
 	}
-	s.cache.Delete(constant2.CacheNameWithSession + key.User.Token)
+	s.clearSessionCache(key.User.Token)
 	err := s.repositorySession.DeleteByToken(key.User.Token)
 	if err != nil {
 		return errors.New("注销登录失败")
@@ -91,7 +91,7 @@ func (s *service) GetSessionInfo(token string) *model.Session {
 		}
 	}
 	session, err := s.repositorySession.FindByToken(token)
-	if err != nil || session == nil || session.Id <= 0 {
+	if err != nil || session == nil || session.Token == "" {
 		return nil
 	}
 	if data, err := json.Marshal(session); err == nil {

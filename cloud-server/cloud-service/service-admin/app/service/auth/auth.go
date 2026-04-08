@@ -16,6 +16,8 @@ type Service interface {
 	Logout(token string) error                                                                       //登陆注销
 	GetTokenInfo(token string) (*jwt.User, error)                                                    //获取登陆信息
 	GetSessionInfo(token string) *model.Session                                                      //获取会话信息
+	SelectSessionByUserId(userId int64, where *session.SelectSession, orderByField string, orderByType string, page int, pageSize int) ([]*model.Session, int64, error)
+	LogoutByUserIdAndTokens(userId int64, tokens []string) error
 }
 
 // Session服务

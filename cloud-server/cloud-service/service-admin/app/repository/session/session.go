@@ -11,8 +11,10 @@ import (
 type Interface interface {
 	Create(session *model.Session) error
 	DeleteByToken(token string) error
+	DeleteByUserIdAndTokens(userId int64, tokens []string) error
 	DeleteByUserId(userId int64, tx ...*gorm.DB) error
 	FindByToken(token string) (*model.Session, error)
+	Select(where *SelectSession, orderByField string, orderByType string, page int, pageSize int) (list []*model.Session, total int64, err error)
 }
 
 // Repository 仓储

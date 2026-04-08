@@ -22,6 +22,8 @@ func loadApi(s *sinking_web.Engine) {
 	}
 	security := s.Group("/security")
 	{
+		security.ANY("/session", context.HandleFunc(controller.Security.Session))   //会话列表
+		security.ANY("/logout", context.HandleFunc(controller.Security.Logout))     //注销会话
 		security.ANY("/verify", context.HandleFunc(controller.Security.Verify))     //安全验证
 		security.ANY("/password", context.HandleFunc(controller.Security.Password)) //修改密码
 		security.ANY("/email", context.HandleFunc(controller.Security.Email))       //修改邮箱
@@ -54,6 +56,8 @@ func loadApi(s *sinking_web.Engine) {
 		ANY("/user/create", "创建管理员", controller.User.Create)
 		ANY("/user/update", "修改管理员", controller.User.Update)
 		ANY("/user/delete", "删除管理员", controller.User.Delete)
+		ANY("/user/session", "会话列表", controller.User.Session)
+		ANY("/user/logout", "注销会话", controller.User.Logout)
 
 		ANY("/config/get", "查看系统配置", controller.Config.Get)
 		ANY("/config/set", "修改系统配置", controller.Config.Set)

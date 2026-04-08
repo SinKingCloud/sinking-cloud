@@ -9,7 +9,6 @@ import (
 
 // Session 会话表
 type Session struct {
-	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	UserId     int64        `gorm:"column:user_id" json:"user_id"`
 	Token      string       `gorm:"column:token" json:"token"`
 	Device     string       `gorm:"column:device" json:"device"`

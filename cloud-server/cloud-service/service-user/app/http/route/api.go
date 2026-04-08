@@ -16,6 +16,8 @@ func loadApi(s *sinking_web.Engine) {
 	}
 	security := s.Group("/security")
 	{
+		security.ANY("/session", context.HandleFunc(controller.Security.Session))   //会话列表
+		security.ANY("/logout", context.HandleFunc(controller.Security.Logout))     //注销会话
 		security.ANY("/verify", context.HandleFunc(controller.Security.Verify))     //安全验证
 		security.ANY("/password", context.HandleFunc(controller.Security.Password)) //修改密码
 		security.ANY("/email", context.HandleFunc(controller.Security.Email))       //修改邮箱
