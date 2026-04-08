@@ -54,5 +54,8 @@ func loadApi(s *sinking_web.Engine) {
 		ANY("/user/create", "创建管理员", controller.User.Create)
 		ANY("/user/update", "修改管理员", controller.User.Update)
 		ANY("/user/delete", "删除管理员", controller.User.Delete)
+
+		ANY("/config/get", "查看系统配置", controller.Config.Get)
+		ANY("/config/set", "修改系统配置", controller.Config.Set)
 	})
 }

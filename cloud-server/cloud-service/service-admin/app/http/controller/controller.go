@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"service-admin/app/http/controller/config"
 	"service-admin/app/http/controller/menu"
 	"service-admin/app/http/controller/page"
 	"service-admin/app/http/controller/permission"
@@ -18,4 +19,5 @@ var (
 	Menu       = &menu.Controller{}
 	Role       = &role.Controller{}
 	User       = &user.Controller{}
+	Config     = &config.Controller{}
 )
