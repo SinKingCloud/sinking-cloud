@@ -40,11 +40,12 @@ func (a *Application) GetPostgresConfig() map[string]string {
 		return nil
 	}
 	return map[string]string{
-		constant.PostgresHost: config.GetString(constant.PostgresHost),
-		constant.PostgresPort: config.GetString(constant.PostgresPort),
-		constant.PostgresUser: config.GetString(constant.PostgresUser),
-		constant.PostgresPwd:  config.GetString(constant.PostgresPwd),
-		constant.PostgresName: config.GetString(constant.PostgresName),
+		constant.PostgresMaster: config.GetString(constant.PostgresMaster),
+		constant.PostgresSlave:  config.GetString(constant.PostgresSlave),
+		constant.PostgresPort:   config.GetString(constant.PostgresPort),
+		constant.PostgresUser:   config.GetString(constant.PostgresUser),
+		constant.PostgresPwd:    config.GetString(constant.PostgresPwd),
+		constant.PostgresName:   config.GetString(constant.PostgresName),
 	}
 }
 

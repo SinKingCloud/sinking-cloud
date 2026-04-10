@@ -77,6 +77,7 @@ require (
 	gorm.io/driver/mysql v1.6.0 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
 	gorm.io/gorm v1.31.1 // indirect
+	gorm.io/plugin/dbresolver v1.6.2 // indirect
 	modernc.org/libc v1.71.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect

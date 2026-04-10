@@ -1,6 +1,8 @@
 package bootstrap
 
 import (
+	"strings"
+
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
@@ -18,7 +20,8 @@ func LoadDatabase() {
 		return
 	}
 	global.App.SetDataBase(database.NewPostgresSql(
-		config[constant.PostgresHost],
+		strings.Split(config[constant.PostgresMaster], ","),
+		strings.Split(config[constant.PostgresSlave], ","),
 		config[constant.PostgresPort],
 		config[constant.PostgresUser],
 		config[constant.PostgresPwd],
