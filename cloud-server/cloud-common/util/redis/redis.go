@@ -10,33 +10,34 @@ import (
 )
 
 type Client struct {
-	client *redis.Client
+	client redis.UniversalClient
 }
 
 // NewClient 实例化redis
 func NewClient(host string, port string, pwd string, db int64) (*Client, error) {
 	address := fmt.Sprintf("%v:%v", host, port)
-	client := redis.NewClient(&redis.Options{
-		Addr:            address,
+	opt := &redis.UniversalOptions{
+		Addrs:           []string{address},
 		Password:        pwd,
 		DB:              int(db),
-		PoolSize:        100,             // 连接池大小
-		MinIdleConns:    10,              // 最小空闲连接数
-		MaxIdleConns:    50,              // 最大空闲连接数
-		ConnMaxLifetime: 5 * time.Minute, // 连接最大生存时间
-		ConnMaxIdleTime: 1 * time.Minute, // 连接最大空闲时间
+		PoolSize:        100,
+		MinIdleConns:    10,
+		MaxIdleConns:    50,
+		ConnMaxLifetime: 5 * time.Minute,
+		ConnMaxIdleTime: 1 * time.Minute,
+		MaxRetries:      3,
+		ReadTimeout:     2 * time.Second,
+		WriteTimeout:    2 * time.Second,
 		MaintNotificationsConfig: &maintnotifications.Config{
-			Mode: maintnotifications.ModeDisabled, // 显式禁用维护通知
+			Mode: maintnotifications.ModeDisabled,
 		},
-	})
-	// 测试连接
+	}
+	client := redis.NewUniversalClient(opt)
 	ctx := context.Background()
 	_, err := client.Ping(ctx).Result()
 	if err != nil {
 		return nil, fmt.Errorf("Redis连接失败: %v", err)
 	}
-	// 清空db,防止污染系统
-	client.FlushDB(ctx)
 	return &Client{client: client}, nil
 }
 
@@ -152,6 +153,6 @@ func (c *Client) Dec(key string) int {
 }
 
 // GetClient 获取底层Redis客户端
-func (c *Client) GetClient() *redis.Client {
+func (c *Client) GetClient() redis.UniversalClient {
 	return c.client
 }

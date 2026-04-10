@@ -15,7 +15,7 @@ import (
 var instanceCounter int64
 
 type RedisQueue struct {
-	client          *redis.Client
+	client          redis.UniversalClient
 	unicastSubs     map[string]*redis.PubSub
 	unicastCtx      map[string]context.Context
 	unicastCancel   map[string]context.CancelFunc
@@ -59,7 +59,7 @@ func (r *RedisQueue) ListenReceiveUnicast(topic string, receiveDo func(mqMsg MqM
 	consumerName := fmt.Sprintf("consumer-%d-%s", r.instanceID, topic)
 
 	// 启动一个 goroutine 持续读取 Stream
-	go func(ctx context.Context, client *redis.Client, streamKey, groupName, consumerName string) {
+	go func(ctx context.Context, client redis.UniversalClient, streamKey, groupName, consumerName string) {
 		for {
 			select {
 			case <-ctx.Done():
@@ -252,7 +252,7 @@ func (r *RedisQueue) Close() {
 }
 
 // RegisterRedisQueueClient 注册queue实例
-func RegisterRedisQueueClient(RedisClient *redis.Client) (Queue, error) {
+func RegisterRedisQueueClient(RedisClient redis.UniversalClient) (Queue, error) {
 	if RedisClient == nil {
 		return nil, errors.New("the redis client is nil")
 	}
