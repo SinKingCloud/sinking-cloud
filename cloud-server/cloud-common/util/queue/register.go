@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/job"
 )
 
 // UnicastClient 单播消息队列客户端（泛型版）
@@ -43,26 +42,6 @@ func (l *UnicastClient[T]) Stop() error {
 		l.topic.Close()
 	}
 	return nil
-}
-
-// GetConsumerStatus 获取消费者状态
-func (l *UnicastClient[T]) GetConsumerStatus() job.TaskStatus {
-	return job.TaskRunning
-}
-
-// GetProducerStatus 获取生产者状态
-func (l *UnicastClient[T]) GetProducerStatus() job.TaskStatus {
-	return job.TaskStopped
-}
-
-// GetConsumerStats 获取消费者统计
-func (l *UnicastClient[T]) GetConsumerStats() job.TaskStats {
-	return job.TaskStats{}
-}
-
-// GetProducerStats 获取生产者统计
-func (l *UnicastClient[T]) GetProducerStats() job.TaskStats {
-	return job.TaskStats{}
 }
 
 // registerUnicast 注册单播消息队列实例
@@ -145,26 +124,6 @@ func (l *BroadcastClient[T]) Stop() error {
 		l.topic.Close()
 	}
 	return nil
-}
-
-// GetConsumerStatus 获取消费者状态
-func (l *BroadcastClient[T]) GetConsumerStatus() job.TaskStatus {
-	return job.TaskRunning
-}
-
-// GetProducerStatus 获取生产者状态
-func (l *BroadcastClient[T]) GetProducerStatus() job.TaskStatus {
-	return job.TaskStopped
-}
-
-// GetConsumerStats 获取消费者统计
-func (l *BroadcastClient[T]) GetConsumerStats() job.TaskStats {
-	return job.TaskStats{}
-}
-
-// GetProducerStats 获取生产者统计
-func (l *BroadcastClient[T]) GetProducerStats() job.TaskStats {
-	return job.TaskStats{}
 }
 
 // registerBroadcast 注册广播消息队列实例
