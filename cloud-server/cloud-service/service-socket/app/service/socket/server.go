@@ -8,20 +8,16 @@ import (
 
 // Server ws服务器
 func (s *service) Server(token string) (*sinking_websocket.Server, error) {
-	registry := sinking_websocket.NewRegistry()
 	server := sinking_websocket.NewServer(
-		sinking_websocket.WithConnectionIDResolver(func(request *http.Request) (string, error) {
-			return request.URL.Query().Get("id"), nil
+		sinking_websocket.WithConnectionIDResolver(func(*http.Request) (string, error) {
+			return token, nil
 		}),
 		sinking_websocket.WithConnectHandler(func(connection *sinking_websocket.Connection) error {
-			registry.Store(connection.ID(), connection)
-			return connection.Send(sinking_websocket.TextMessage, []byte("success"))
-		}),
-		sinking_websocket.WithMessageHandler(func(connection *sinking_websocket.Connection, message sinking_websocket.Message) error {
-			return connection.Send(message.Type, message.Payload)
+			s.registry.Store(connection.ID(), connection)
+			return nil
 		}),
 		sinking_websocket.WithDisconnectHandler(func(connection *sinking_websocket.Connection, err error) {
-			registry.DeleteIfMatch(connection.ID(), connection)
+			s.registry.Delete(connection.ID())
 		}),
 	)
 	return server, nil

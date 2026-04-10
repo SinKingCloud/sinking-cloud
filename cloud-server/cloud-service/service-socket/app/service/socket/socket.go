@@ -12,12 +12,14 @@ type Service interface {
 
 // Session服务
 type service struct {
-	cache cache.Interface
+	cache    cache.Interface
+	registry *sinking_websocket.Registry
 }
 
 // NewService 实例化service
 func NewService(cache cache.Interface) *service {
 	return &service{
-		cache: cache,
+		cache:    cache,
+		registry: sinking_websocket.NewRegistry(),
 	}
 }
