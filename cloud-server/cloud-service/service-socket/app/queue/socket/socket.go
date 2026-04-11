@@ -41,10 +41,10 @@ func (s *Queue) Name(isAll bool, name ...string) string {
 	}
 	if len(name) > 0 {
 		str.WriteString("-")
-		str.WriteString(name[0])
+		str.WriteString(strings.ReplaceAll(strings.ReplaceAll(name[0], ":", "_"), ".", "_"))
 	} else if !isAll {
 		str.WriteString("-")
-		str.WriteString(service.Socket.Name())
+		str.WriteString(strings.ReplaceAll(strings.ReplaceAll(service.Socket.Name(), ":", "_"), ".", "_"))
 	}
 	return str.String()
 }
