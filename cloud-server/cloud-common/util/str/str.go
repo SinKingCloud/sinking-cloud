@@ -49,10 +49,16 @@ func (stringTool *StringTool) GetBetween(start string, end string) string {
 }
 
 // Md5 获取字符串md5值
-func (stringTool *StringTool) Md5() string {
-	h := md5.New()
-	h.Write([]byte(stringTool.string))
-	return hex.EncodeToString(h.Sum(nil))
+// Md5 获取字符串MD5值
+// 默认：返回 32位 标准MD5
+// 传参 true：返回 16位 短MD5
+func (stringTool *StringTool) Md5(short ...bool) string {
+	hash := md5.Sum([]byte(stringTool.string))
+	md5Str := hex.EncodeToString(hash[:])
+	if len(short) > 0 && short[0] {
+		return md5Str[8:24]
+	}
+	return md5Str
 }
 
 // AesCbcEncrypt aes cbc加密

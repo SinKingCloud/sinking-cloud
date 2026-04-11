@@ -43,12 +43,12 @@ func (s *service) getConnection(group string, id string) (*sinking_websocket.Con
 }
 
 // deleteConnection 删除连接
-func (s *service) deleteConnection(group string, id string) error {
+func (s *service) deleteConnection(group string, id string, conn *sinking_websocket.Connection) error {
 	registry := s.getConnectionPool(group)
 	if registry == nil {
 		return errors.New("连接池不存在")
 	}
-	exists := registry.Delete(id)
+	exists := registry.DeleteIfMatch(id, conn)
 	if !exists {
 		return errors.New("连接不存在")
 	}

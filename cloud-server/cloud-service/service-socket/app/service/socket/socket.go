@@ -1,6 +1,11 @@
 package socket
 
 import (
+	"hash/maphash"
+	"runtime"
+	"sync"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
 	"github.com/SinKingCloud/sinking-go/sinking-websocket"
 )
@@ -12,14 +17,33 @@ type Service interface {
 
 // Session服务
 type service struct {
-	cache    cache.Interface
-	registry *sinking_websocket.Registry
+	app         *global.Application
+	cache       cache.Interface
+	groupSeed   maphash.Seed
+	groupShards []sync.Map
 }
 
 // NewService 实例化service
-func NewService(cache cache.Interface) *service {
+func NewService(app *global.Application, cache cache.Interface) *service {
+	defaultShards := func() int {
+		target := runtime.GOMAXPROCS(0) * 4
+		if target <= 0 {
+			target = runtime.NumCPU() * 8
+		}
+		if target <= 0 {
+			target = 8
+		}
+		shards := 1
+		for shards < target {
+			shards <<= 1
+		}
+		return shards
+	}
+	shardCount := defaultShards()
 	return &service{
-		cache:    cache,
-		registry: sinking_websocket.NewRegistry(),
+		app:         app,
+		cache:       cache,
+		groupSeed:   maphash.MakeSeed(),
+		groupShards: make([]sync.Map, shardCount),
 	}
 }

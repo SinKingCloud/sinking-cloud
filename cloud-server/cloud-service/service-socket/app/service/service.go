@@ -11,7 +11,8 @@ var (
 )
 
 func Init() {
+	app := global.App
 	cache := global.App.Cache
 
-	Socket = socket.NewService(cache)
+	Socket = socket.NewService(app, cache)
 }
