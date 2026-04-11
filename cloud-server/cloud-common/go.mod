@@ -3,8 +3,8 @@ module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 go 1.25.0
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260410053611-05ca39b0a228
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260410053611-05ca39b0a228
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260411024335-5cf44dc652e5
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260411024335-5cf44dc652e5
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.16
 	github.com/alibabacloud-go/dm-20151123/v2 v2.9.0
@@ -14,7 +14,7 @@ require (
 	github.com/aliyun/credentials-go v1.4.12
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 	github.com/glebarez/sqlite v1.11.0
-	github.com/go-pay/gopay v1.5.117
+	github.com/go-pay/gopay v1.5.118
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.30.2
@@ -91,7 +91,7 @@ require (
 	golang.org/x/time v0.15.0 // indirect
 	gopkg.in/ini.v1 v1.67.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	modernc.org/libc v1.71.0 // indirect
+	modernc.org/libc v1.72.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 	modernc.org/sqlite v1.48.2 // indirect

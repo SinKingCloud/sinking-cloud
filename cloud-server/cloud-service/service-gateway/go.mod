@@ -4,8 +4,8 @@ go 1.25.0
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260410053611-05ca39b0a228
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260410053611-05ca39b0a228
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260411024335-5cf44dc652e5
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260411024335-5cf44dc652e5
 )
 
 require (
@@ -57,7 +57,7 @@ require (
 	gorm.io/driver/postgres v1.6.0 // indirect
 	gorm.io/gorm v1.31.1 // indirect
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
-	modernc.org/libc v1.71.0 // indirect
+	modernc.org/libc v1.72.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 	modernc.org/sqlite v1.48.2 // indirect
