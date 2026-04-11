@@ -13,11 +13,11 @@ func (s *service) Server(token string) (*sinking_websocket.Server, error) {
 			return token, nil
 		}),
 		sinking_websocket.WithConnectHandler(func(connection *sinking_websocket.Connection) error {
-			s.registry.Store(connection.ID(), connection)
+
 			return nil
 		}),
 		sinking_websocket.WithDisconnectHandler(func(connection *sinking_websocket.Connection, err error) {
-			s.registry.Delete(connection.ID())
+
 		}),
 	)
 	return server, nil
