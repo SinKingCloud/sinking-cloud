@@ -2,7 +2,6 @@ package socket
 
 import (
 	"errors"
-	"fmt"
 	"hash/maphash"
 	"net/http"
 	"service-socket/app/constant"
@@ -58,6 +57,15 @@ func (s *service) GenConnectionToken(group string, id string) (string, error) {
 	return token, nil
 }
 
+// GetConnectionIdAddr 获取ID的连接地址
+func (s *service) GetConnectionIdAddr(group string, id string) (string, error) {
+	value, exists := s.cache.Get(constant.CacheNameWithSocketAddr + group + "|" + id)
+	if !exists || value == "" {
+		return "", errors.New("获取地址失败")
+	}
+	return value, nil
+}
+
 // getConnectionTokenInfo 获取token信息
 func (s *service) getConnectionTokenInfo(token string) (group string, id string, err error) {
 	key := constant.CacheNameWithSocketToken + token
@@ -81,8 +89,7 @@ func (s *service) getConnectionTokenInfo(token string) (group string, id string,
 // setConnectionId 设置连接ID
 func (s *service) setConnectionId(group string, id string) bool {
 	key := constant.CacheNameWithSocketAddr + group + "|" + id
-	value := fmt.Sprintf("%s|%s", group, s.Name())
-	if !s.cache.SetWithExpire(key, value, constant.CacheTimeWithSocketAddr) {
+	if !s.cache.SetWithExpire(key, s.Name(), constant.CacheTimeWithSocketAddr) {
 		return false
 	}
 	return true

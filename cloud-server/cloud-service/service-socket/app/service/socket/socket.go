@@ -15,6 +15,7 @@ type Service interface {
 	Server(token string) (*sinking_websocket.Server, error)                                                        //socket服务器
 	Name() string                                                                                                  //本机名称
 	GenConnectionToken(group string, id string) (string, error)                                                    //生成连接token
+	GetConnectionIdAddr(group string, id string) (string, error)                                                   //获取连接地址
 	SendToLocalId(group string, id string, messageType int, payload []byte) error                                  //给ID发送消息(本机)
 	SendToLocalAll(group string, messageType int, payload []byte) (queued int, dropped int, closed int, err error) //给全体发送消息(本机)
 }
