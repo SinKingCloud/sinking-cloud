@@ -48,8 +48,8 @@ func (s *service) Name() string {
 	return s.app.Consul.GetAddress()
 }
 
-// GetConnectionToken 授权连接token失败
-func (s *service) GetConnectionToken(group string, id string) (string, error) {
+// GenConnectionToken 生成授权连接token
+func (s *service) GenConnectionToken(group string, id string) (string, error) {
 	token := str.NewStringTool(str.GetSnowWorkIns().GetUuid()).Md5(true)
 	primary := group + "|" + id
 	if !s.cache.SetWithExpire(constant.CacheNameWithSocketToken+token, primary, constant.CacheTimeWithSocketToken) {
