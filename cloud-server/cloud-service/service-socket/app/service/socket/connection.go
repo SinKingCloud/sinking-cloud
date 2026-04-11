@@ -14,14 +14,21 @@ func (s *service) getConnectionPool(group string) *sinking_websocket.Registry {
 	if value, ok := shard.Load(group); ok {
 		return value.(*sinking_websocket.Registry)
 	}
-	registry := sinking_websocket.NewRegistry()
-	actual, _ := shard.LoadOrStore(group, registry)
-	return actual.(*sinking_websocket.Registry)
+	return nil
 }
 
 // setConnection 设置连接
 func (s *service) setConnection(group string, id string, conn *sinking_websocket.Connection) error {
-	registry := s.getConnectionPool(group)
+	index := maphash.String(s.groupSeed, group) % uint64(len(s.groupShards))
+	shard := &s.groupShards[index]
+	value, ok := shard.Load(group)
+	var registry *sinking_websocket.Registry
+	if !ok {
+		actual, _ := shard.LoadOrStore(group, sinking_websocket.NewRegistry())
+		registry = actual.(*sinking_websocket.Registry)
+	} else {
+		registry = value.(*sinking_websocket.Registry)
+	}
 	if registry == nil {
 		return errors.New("连接池不存在")
 	}
