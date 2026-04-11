@@ -44,8 +44,8 @@ func (l *UnicastClient[T]) Stop() error {
 	return nil
 }
 
-// registerUnicast 注册单播消息队列实例
-func registerUnicast[T any](queue Queue, topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param T) error) (*UnicastClient[T], error) {
+// RegisterUnicast 注册单播消息队列实例
+func RegisterUnicast[T any](queue Queue, topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param T) error) (*UnicastClient[T], error) {
 	if topicName == "" {
 		return nil, errors.New("队列名称不能为空")
 	}
@@ -126,8 +126,8 @@ func (l *BroadcastClient[T]) Stop() error {
 	return nil
 }
 
-// registerBroadcast 注册广播消息队列实例
-func registerBroadcast[T any](queue Queue, topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param T) error) (*BroadcastClient[T], error) {
+// RegisterBroadcast 注册广播消息队列实例
+func RegisterBroadcast[T any](queue Queue, topicName string, producerThreadNum int, consumerThreadNum int, consumerFunc func(param T) error) (*BroadcastClient[T], error) {
 	if topicName == "" {
 		return nil, errors.New("队列名称不能为空")
 	}
@@ -177,7 +177,7 @@ func RegisterMemoryUnicast[T any](topicName string, producerThreadNum int, consu
 	if err != nil {
 		return nil, errors.New("注册" + topicName + "单播消费实例失败")
 	}
-	return registerUnicast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
+	return RegisterUnicast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
 }
 
 // RegisterRedisUnicast 注册Redis单播消息队列实例
@@ -186,7 +186,7 @@ func RegisterRedisUnicast[T any](topicName string, producerThreadNum int, consum
 	if err != nil {
 		return nil, errors.New("注册" + topicName + "单播消费实例失败")
 	}
-	return registerUnicast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
+	return RegisterUnicast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
 }
 
 // RegisterNatsUnicast 注册NATS单播消息队列实例
@@ -195,7 +195,7 @@ func RegisterNatsUnicast[T any](topicName string, producerThreadNum int, consume
 	if err != nil {
 		return nil, errors.New("注册" + topicName + "单播消费实例失败: " + err.Error())
 	}
-	return registerUnicast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
+	return RegisterUnicast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
 }
 
 // RegisterMemoryBroadcast 注册内存广播消息队列实例
@@ -204,7 +204,7 @@ func RegisterMemoryBroadcast[T any](topicName string, producerThreadNum int, con
 	if err != nil {
 		return nil, errors.New("注册" + topicName + "广播消费实例失败")
 	}
-	return registerBroadcast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
+	return RegisterBroadcast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
 }
 
 // RegisterRedisBroadcast 注册Redis广播消息队列实例
@@ -213,7 +213,7 @@ func RegisterRedisBroadcast[T any](topicName string, producerThreadNum int, cons
 	if err != nil {
 		return nil, errors.New("注册" + topicName + "广播消费实例失败")
 	}
-	return registerBroadcast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
+	return RegisterBroadcast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
 }
 
 // RegisterNatsBroadcast 注册NATS广播消息队列实例
@@ -222,5 +222,5 @@ func RegisterNatsBroadcast[T any](topicName string, producerThreadNum int, consu
 	if err != nil {
 		return nil, errors.New("注册" + topicName + "广播消费实例失败: " + err.Error())
 	}
-	return registerBroadcast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
+	return RegisterBroadcast(topic, topicName, producerThreadNum, consumerThreadNum, consumerFunc)
 }
