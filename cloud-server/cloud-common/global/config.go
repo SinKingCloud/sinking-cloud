@@ -2,6 +2,7 @@ package global
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 )
@@ -12,11 +13,20 @@ func (a *Application) GetNatsUrl() string {
 	if err != nil {
 		return ""
 	}
-	return fmt.Sprintf("nats://%s:%s@%s:%s",
-		config.GetString(constant.NatsUser),
-		config.GetString(constant.NatsPwd),
-		config.GetString(constant.NatsHost),
-		config.GetString(constant.NatsPort))
+	user := config.GetString(constant.NatsUser)
+	pwd := config.GetString(constant.NatsPwd)
+	host := config.GetString(constant.NatsHost)
+	port := config.GetString(constant.NatsPort)
+	hostList := strings.Split(host, ",")
+	var serverUrls []string
+	for _, h := range hostList {
+		h = strings.TrimSpace(h)
+		if h != "" {
+			url := fmt.Sprintf("nats://%s:%s@%s:%s", user, pwd, h, port)
+			serverUrls = append(serverUrls, url)
+		}
+	}
+	return strings.Join(serverUrls, ",")
 }
 
 // GetRedisConfig 获取redis配置信息
