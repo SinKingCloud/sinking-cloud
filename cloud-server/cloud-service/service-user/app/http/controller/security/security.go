@@ -27,7 +27,7 @@ func (Controller) Verify(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	u, err := service.User.GetUserInfo(c.GetUserInfo().Id, false)
+	u, err := service.User.GetInfo(c.GetUserInfo().Id, false)
 	if err != nil || u == nil || u.Id <= 0 {
 		c.Error("获取用户信息失败")
 		return
@@ -69,7 +69,7 @@ func (Controller) Password(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	u, err := service.User.GetUserInfo(c.GetUserInfo().Id, false)
+	u, err := service.User.GetInfo(c.GetUserInfo().Id, false)
 	if err != nil || u == nil || u.Id <= 0 {
 		c.Error("获取用户信息失败")
 		return
@@ -97,7 +97,7 @@ func (Controller) Phone(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	u, err := service.User.GetUserInfo(c.GetUserInfo().Id, false)
+	u, err := service.User.GetInfo(c.GetUserInfo().Id, false)
 	if err != nil || u == nil || u.Id <= 0 {
 		c.Error("获取用户信息失败")
 		return
@@ -133,7 +133,7 @@ func (Controller) Email(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	u, err := service.User.GetUserInfo(c.GetUserInfo().Id, false)
+	u, err := service.User.GetInfo(c.GetUserInfo().Id, false)
 	if err != nil || u == nil || u.Id <= 0 {
 		c.Error("获取用户信息失败")
 		return
@@ -168,7 +168,7 @@ func (Controller) Account(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	u, err := service.User.GetUserInfo(c.GetUserInfo().Id, false)
+	u, err := service.User.GetInfo(c.GetUserInfo().Id, false)
 	if err != nil || u == nil || u.Id <= 0 {
 		c.Error("获取用户信息失败")
 		return

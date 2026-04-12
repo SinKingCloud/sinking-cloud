@@ -1,9 +1,10 @@
 package middleware
 
 import (
+	"service-admin/app/enum/user_status"
 	"service-admin/app/service"
 
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 )
@@ -15,18 +16,29 @@ func CheckLogin(c *context.Context) {
 		c.Next()
 		return
 	}
-	token := c.Request.Header.Get(constant.JwtTokenName)
-	if token == "" {
-		c.NotLogin("您还未登陆,请先登陆账户")
+	u, err := service2.User.GetJwtUserInfo(c)
+	if err != nil {
+		c.NotLogin("登陆超时,请重新登陆")
 		c.Abort()
 		return
 	}
-	user, err := service.Auth.GetTokenInfo(token)
+	session := service.Auth.GetSessionInfo(u.Token)
+	if session == nil {
+		c.NotLogin("登陆超时,请重新登陆")
+		c.Abort()
+		return
+	}
+	user, err := service.User.GetInfo(u.Id, false)
 	if err != nil || user == nil || user.Id <= 0 {
-		c.TokenError("登陆超时,请重新登陆")
+		c.NotLogin("登陆超时,请重新登陆")
 		c.Abort()
 		return
 	}
-	c.SetUserInfo(user)
+	if user.Status != user_status.Enable {
+		c.NotLogin("该账户已被封禁,如有问题请咨询官方客服")
+		c.Abort()
+		return
+	}
+	c.SetUserInfo(u)
 	c.Next()
 }

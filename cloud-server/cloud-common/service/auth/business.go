@@ -99,6 +99,15 @@ func (*Service) SystemUserLogout(token string) error {
 	return nil
 }
 
+// GenWebUserSocketToken 生成网站用户socket连接token
+func (*Service) GenWebUserSocketToken(sessionToken string) (token string, err error) {
+	err = rpc.InvokeFunc(constant.ServiceUser, "GenSocketToken", sessionToken, &token)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
 // GetAdminRouteGroup 获取后台路由group
 func (*Service) GetAdminRouteGroup(s *sinking_web.Engine) *sinking_web.RouterGroup {
 	var g *sinking_web.RouterGroup

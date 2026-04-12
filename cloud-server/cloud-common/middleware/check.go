@@ -1,9 +1,8 @@
 package middleware
 
 import (
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/jwt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 )
 
@@ -14,18 +13,12 @@ func CheckLogin(c *context.Context) {
 		c.Next()
 		return
 	}
-	token := c.Request.Header.Get(constant.JwtTokenName)
-	if token == "" {
-		c.NotLogin("您还未登陆,请先登陆账户")
+	u, err := user.GetIns().GetJwtUserInfo(c)
+	if err != nil {
+		c.NotLogin(err.Error())
 		c.Abort()
 		return
 	}
-	key := jwt.CheckToken(token)
-	if key == nil || key.User == nil || key.User.Id <= 0 || key.User.Token == "" {
-		c.TokenError("登陆超时,请重新登陆")
-		c.Abort()
-		return
-	}
-	c.SetUserInfo(key.User)
+	c.SetUserInfo(u)
 	c.Next()
 }

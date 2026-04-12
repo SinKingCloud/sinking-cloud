@@ -3,7 +3,6 @@ package controller
 import (
 	"service-auth/app/service"
 
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
@@ -26,16 +25,18 @@ func Mail(c *context.Context) {
 		return
 	}
 	if form.Mail == "" {
-		middleware.CheckLogin(c)
-		if u := c.GetUserInfo(); u != nil {
-			if form.IsAdmin {
-				if user, err := service2.User.GetWebUserInfo(u.Id, false); err == nil && user != nil {
-					form.Mail = user.Email
-				}
-			} else {
-				if user, err := service2.User.GetSystemUserInfo(u.Id, false); err == nil && user != nil {
-					form.Mail = user.Email
-				}
+		u, err := service2.User.GetJwtUserInfo(c)
+		if err != nil {
+			c.Error(err)
+			return
+		}
+		if form.IsAdmin {
+			if user, err := service2.User.GetWebUserInfo(u.Id, false); err == nil && user != nil {
+				form.Mail = user.Email
+			}
+		} else {
+			if user, err := service2.User.GetSystemUserInfo(u.Id, false); err == nil && user != nil {
+				form.Mail = user.Email
 			}
 		}
 		if form.Mail == "" {

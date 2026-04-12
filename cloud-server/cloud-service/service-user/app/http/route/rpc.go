@@ -18,6 +18,7 @@ func loadRpc(s *sinking_web.Engine) {
 	rpc.RegisterFunc("GetUserConfig", rpc2.Config.GetUserConfig)                              //获取用户配置
 	rpc.RegisterFunc("SetUserConfig", rpc2.Config.SetUserConfig)                              //更新用户配置
 	rpc.RegisterFunc("SetUserConfigs", rpc2.Config.SetUserConfigs)                            //批量更新用户配置
+	rpc.RegisterFunc("GenSocketToken", rpc2.Socket.GenToken)                                  //生成socket连接token
 	rpc.RegisterFunc("Login", rpc2.Auth.Login)                                                //账号登录
 	rpc.RegisterFunc("Logout", rpc2.Auth.Logout)                                              //登陆注销
 }

@@ -23,7 +23,7 @@ const check = async (ctx: any, next: any) => {
     await next();
     const path = getCurrentPath((history as any)?.location?.pathname || "/")?.substring(1);
     if (path == userPath || path == adminPath) {
-        if ((ctx.res.code == 403 || ctx.res.code == 503)) {
+        if ((ctx.res.code == 403)) {
             historyPush(path == userPath ? "user.login" : "admin.login");//登陆页面
             return
         }

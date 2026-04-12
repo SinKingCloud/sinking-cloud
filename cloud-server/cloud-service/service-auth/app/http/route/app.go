@@ -20,4 +20,5 @@ func loadApi(s *sinking_web.Engine) {
 	s.ANY("/captcha", context.HandleFunc(controller.Captcha)) //滑块验证
 	s.ANY("/sms", context.HandleFunc(controller.Sms))         //发送短信
 	s.ANY("/mail", context.HandleFunc(controller.Mail))       //发送邮件
+	s.ANY("/socket", context.HandleFunc(controller.Socket))   //获取socket连接信息
 }

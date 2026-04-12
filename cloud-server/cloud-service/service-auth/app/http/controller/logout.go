@@ -3,7 +3,7 @@ package controller
 import (
 	"service-auth/app/service"
 
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -16,7 +16,12 @@ func Logout(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	if err := service.Auth.Logout(form.IsAdmin, c.Request.Header.Get(constant.JwtTokenName)); err != nil {
+	u, err := service2.User.GetJwtUserInfo(c)
+	if err != nil {
+		c.Error(err.Error())
+		return
+	}
+	if err = service.Auth.Logout(form.IsAdmin, u.Token); err != nil {
 		c.Error(err.Error())
 		return
 	}

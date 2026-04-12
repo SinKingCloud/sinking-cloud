@@ -16,7 +16,7 @@ type Controller struct {
 // Info 账户详情
 func (Controller) Info(c *context.Context) {
 	u := c.GetUserInfo()
-	info, err := service.User.GetUserInfo(u.Id, false)
+	info, err := service.User.GetInfo(u.Id, false)
 	if err != nil {
 		c.Error("获取用户信息失败")
 		return

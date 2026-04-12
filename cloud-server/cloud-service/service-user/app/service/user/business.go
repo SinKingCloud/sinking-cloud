@@ -9,8 +9,8 @@ import (
 	"strconv"
 )
 
-// GetUserInfo 获取用户信息
-func (s *service) GetUserInfo(userId int64, refresh bool) (user *model.User, err error) {
+// GetInfo 获取用户信息
+func (s *service) GetInfo(userId int64, refresh bool) (user *model.User, err error) {
 	cacheKey := constant.CacheNameWithUserInfo + strconv.FormatInt(userId, 10)
 	if !refresh {
 		if data, exists := s.cache.Get(cacheKey); exists && data != "" {
@@ -36,7 +36,7 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 	}
 	err := s.repositoryUser.UpdateById(id, data)
 	if err == nil {
-		_, _ = s.GetUserInfo(id, true)
+		_, _ = s.GetInfo(id, true)
 	}
 	return err
 }

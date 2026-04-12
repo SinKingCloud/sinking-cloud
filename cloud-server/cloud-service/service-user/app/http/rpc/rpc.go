@@ -4,4 +4,5 @@ var (
 	Config = &configService{}
 	Auth   = &authService{}
 	User   = &userService{}
+	Socket = &socketService{}
 )

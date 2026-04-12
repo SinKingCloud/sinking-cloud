@@ -69,12 +69,8 @@ func (s *service) Login(account string, password string, code string, userAgent 
 
 // Logout 注销登录
 func (s *service) Logout(token string) error {
-	key := jwt.CheckToken(token)
-	if key == nil || key.User.Id <= 0 || key.User.Token == "" {
-		return errors.New("未获取到登陆信息")
-	}
-	s.clearSessionCache(key.User.Token)
-	err := s.repositorySession.DeleteByToken(key.User.Token)
+	s.clearSessionCache(token)
+	err := s.repositorySession.DeleteByToken(token)
 	if err != nil {
 		return errors.New("注销登录失败")
 	}
@@ -105,18 +101,6 @@ func (s *service) GetSessionInfo(token string) *model.Session {
 		s.cache.SetWithExpire(cacheKey, string(data), constant2.CacheTimeWithSession)
 	}
 	return session
-}
-
-// GetTokenInfo 根据token获取信息
-func (s *service) GetTokenInfo(token string) (*jwt.User, error) {
-	key := jwt.CheckToken(token)
-	if key == nil || key.User == nil || key.User.Id <= 0 || key.User.Token == "" {
-		return nil, errors.New("登陆超时,请重新登陆")
-	}
-	if s.GetSessionInfo(key.User.Token) == nil {
-		return nil, errors.New("登陆超时,请重新登陆")
-	}
-	return key.User, nil
 }
 
 // GenLoginToken 创建会话
