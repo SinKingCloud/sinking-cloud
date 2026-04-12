@@ -18,13 +18,8 @@ func (*Service) GenConnectionToken(group string, id string) (token string, err e
 }
 
 // SendToId 发送单播消息
-func (*Service) SendToId(group string, id string, isText bool, data []byte) (result bool) {
-	err := rpc.InvokeFunc(constant.ServiceSocket, "SendToId", &SendToIdParam{
-		Group:  group,
-		Id:     id,
-		IsText: isText,
-		Data:   data,
-	}, &result)
+func (*Service) SendToId(list []*SendToIdParam) (result bool) {
+	err := rpc.InvokeFunc(constant.ServiceSocket, "SendToId", list, &result)
 	if err != nil {
 		return false
 	}
@@ -32,12 +27,8 @@ func (*Service) SendToId(group string, id string, isText bool, data []byte) (res
 }
 
 // SendToAll 发送全部消息
-func (*Service) SendToAll(group string, isText bool, data []byte) (result bool) {
-	err := rpc.InvokeFunc(constant.ServiceSocket, "SendToAll", &SendToAllParam{
-		Group:  group,
-		IsText: isText,
-		Data:   data,
-	}, &result)
+func (*Service) SendToAll(list []*SendToAllParam) (result bool) {
+	err := rpc.InvokeFunc(constant.ServiceSocket, "SendToAll", list, &result)
 	if err != nil {
 		return false
 	}

@@ -26,13 +26,13 @@ func (r *Repository) SelectPermissionCodesByMenuIds(menuIds []int64) (permission
 	permissionCodeMap := make(map[string]struct{}, len(menuIds))
 	err = r.Database.BatchExecute(menuIds, 1000, func(batch interface{}) error {
 		var batchCodes []string
-		err := r.Database.Db.
+		err2 := r.Database.Db.
 			Model(&model.MenuPermission{}).
 			Distinct("permission_code").
 			Where("menu_id IN ?", batch.([]int64)).
 			Pluck("permission_code", &batchCodes).Error
-		if err != nil {
-			return err
+		if err2 != nil {
+			return err2
 		}
 		for _, permissionCode := range batchCodes {
 			if permissionCode == "" {

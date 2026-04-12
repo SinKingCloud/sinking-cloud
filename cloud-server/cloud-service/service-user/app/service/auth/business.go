@@ -110,11 +110,18 @@ func (s *service) GetSessionInfo(token string) *model.Session {
 	if data, exists := s.cache.Get(cacheKey); exists && data != "" {
 		var session *model.Session
 		if err := json.Unmarshal([]byte(data), &session); err == nil {
+			if time.Time(session.ExpireTime).Before(time.Now()) {
+				s.cache.Delete(cacheKey)
+				return nil
+			}
 			return session
 		}
 	}
 	session, err := s.repositorySession.FindByToken(token)
 	if err != nil || session == nil || session.Token == "" {
+		return nil
+	}
+	if time.Time(session.ExpireTime).Before(time.Now()) {
 		return nil
 	}
 	if data, err := json.Marshal(session); err == nil {

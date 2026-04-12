@@ -24,13 +24,13 @@ func (r *Repository) SelectRoleIdsByMenuIds(menuIds []int64) (roleIds []int64, e
 	roleIdMap := make(map[int64]struct{}, len(menuIds))
 	err = r.Database.BatchExecute(menuIds, 1000, func(batch interface{}) error {
 		var batchRoleIds []int64
-		err := r.Database.Db.
+		err2 := r.Database.Db.
 			Model(&model.RoleMenu{}).
 			Distinct("role_id").
 			Where("menu_id IN ?", batch.([]int64)).
 			Pluck("role_id", &batchRoleIds).Error
-		if err != nil {
-			return err
+		if err2 != nil {
+			return err2
 		}
 		for _, roleId := range batchRoleIds {
 			if _, ok := roleIdMap[roleId]; ok {

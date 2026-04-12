@@ -32,7 +32,7 @@ func (s *service) GetInfo(userId int64, refresh bool) (user *model.User, err err
 	return user, nil
 }
 
-// SelectUser 查询用户列表
+// Select 查询用户列表
 func (s *service) Select(where *user.SelectUser, orderByField string, orderByType string, page int, pageSize int) ([]*User, int64, error) {
 	list, total, err := s.repositoryUser.Select(where, orderByField, orderByType, page, pageSize)
 	if err != nil {
@@ -75,7 +75,7 @@ func (s *service) Select(where *user.SelectUser, orderByField string, orderByTyp
 	return data, total, nil
 }
 
-// CreateUser 创建用户
+// Create 创建用户
 func (s *service) Create(data *model.User) error {
 	if data == nil {
 		return errors.New("参数错误")

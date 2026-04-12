@@ -27,22 +27,30 @@ func (*socketService) GenConnectionToken(params json.RawMessage) (interface{}, e
 
 // SendToId 发送单播消息
 func (*socketService) SendToId(params json.RawMessage) (interface{}, error) {
-	var param *socket.SendToIdParam
+	var param []*socket.SendToIdParam
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return false, err
 	}
-	queue.Socket.SendToId(param.Group, param.Id, param.IsText, param.Data)
+	for _, v := range param {
+		if v != nil && v.Group != "" && v.Id != "" {
+			queue.Socket.SendToId(v.Group, v.Id, v.IsText, v.Data)
+		}
+	}
 	return true, nil
 }
 
 // SendToAll 发送全部消息
 func (*socketService) SendToAll(params json.RawMessage) (interface{}, error) {
-	var param *socket.SendToAllParam
+	var param []*socket.SendToAllParam
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return false, err
 	}
-	queue.Socket.SendToAll(param.Group, param.IsText, param.Data)
+	for _, v := range param {
+		if v != nil && v.Group != "" {
+			queue.Socket.SendToAll(v.Group, v.IsText, v.Data)
+		}
+	}
 	return true, nil
 }

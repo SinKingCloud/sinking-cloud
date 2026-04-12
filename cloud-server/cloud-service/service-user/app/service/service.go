@@ -6,6 +6,7 @@ import (
 	user2 "service-user/app/repository/user"
 	"service-user/app/service/auth"
 	"service-user/app/service/config"
+	"service-user/app/service/socket"
 	"service-user/app/service/user"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
@@ -16,6 +17,7 @@ var (
 	Config config.Service
 	Auth   auth.Service
 	User   user.Service
+	Socket socket.Service
 )
 
 func Init() {
@@ -24,8 +26,10 @@ func Init() {
 	sessionRepository := session.NewRepository(global.App.Database)
 	cache := global.App.Cache
 	authService := service.Auth
+	socketService := service.Socket
 
 	Config = config.NewService(configRepository, cache)
 	Auth = auth.NewService(authService, sessionRepository, userRepository, cache)
 	User = user.NewService(userRepository, Config, cache)
+	Socket = socket.NewService(Auth, sessionRepository, socketService, cache)
 }
