@@ -31,14 +31,12 @@ func (s *service) SendMessage(message *Message, to ...interface{}) error {
 		return errors.New("处理消息失败")
 	}
 	if len(to) <= 0 {
-		if s.socketService.SendToAll([]*socket.SendToAllParam{{
+		s.socketService.BatchSendToAll([]*socket.SendToAllParam{{
 			Group:  constant.ServiceUser,
 			IsText: true,
 			Data:   bytes,
-		}}) {
-			return nil
-		}
-		return errors.New("发送消息失败")
+		}}, 5000)
+		return nil
 	}
 	var ids []int64
 	var sessions []string
@@ -80,17 +78,6 @@ func (s *service) SendMessage(message *Message, to ...interface{}) error {
 			Data:   bytes,
 		})
 	}
-	const batchSize = 5000
-	total := len(list)
-	for i := 0; i < total; i += batchSize {
-		end := i + batchSize
-		if end > total {
-			end = total
-		}
-		batchList := list[i:end]
-		if !s.socketService.SendToId(batchList) {
-			return errors.New("发送消息失败")
-		}
-	}
+	s.socketService.BatchSendToId(list, 5000)
 	return nil
 }
