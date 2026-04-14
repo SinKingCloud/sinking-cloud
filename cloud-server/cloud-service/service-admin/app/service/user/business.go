@@ -43,15 +43,7 @@ func (s *service) Select(where *user.SelectUser, orderByField string, orderByTyp
 	for _, item := range list {
 		userIds = append(userIds, item.Id)
 		data = append(data, &User{
-			Id:         item.Id,
-			Account:    item.Account,
-			Phone:      item.Phone,
-			Email:      item.Email,
-			Avatar:     item.Avatar,
-			NickName:   item.NickName,
-			Status:     item.Status,
-			CreateTime: item.CreateTime,
-			UpdateTime: item.UpdateTime,
+			User: item,
 		})
 	}
 	items, err := s.repositoryUserRole.SelectByUserIds(userIds)
