@@ -6,8 +6,6 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
-func Login(c *context.Context) {}
-
 // loadApi 加载API
 func loadAdmin(s *sinking_web.Engine) {
 	g := service.Auth.GetAdminRouteGroup(s)
