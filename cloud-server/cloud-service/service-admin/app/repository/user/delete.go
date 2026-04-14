@@ -19,7 +19,5 @@ func (r *Repository) DeleteById(id int64, tx ...*gorm.DB) error {
 	if len(tx) > 0 && tx[0] != nil {
 		return execute(tx[0])
 	}
-	return r.Database.Transaction(func(tx *gorm.DB) error {
-		return execute(tx)
-	})
+	return execute(r.Database.Db)
 }

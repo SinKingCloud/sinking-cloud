@@ -3,7 +3,7 @@ package user
 import "service-admin/app/model"
 
 // Select 查询用户数据
-func (r *Repository) Select(where *SelectUser, orderByField string, orderByType string, page int, pageSize int) (list []*model.User, total int64, err error) {
+func (r *Repository) Select(where *SelectUser, orderByField string, orderByType string, page int, pageSize int) (list []*User, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := r.Database.Db.Model(&model.User{})
 	if where != nil {

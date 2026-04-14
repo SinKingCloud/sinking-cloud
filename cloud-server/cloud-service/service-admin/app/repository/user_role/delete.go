@@ -19,9 +19,7 @@ func (r *Repository) DeleteByUserId(userId int64, tx ...*gorm.DB) error {
 	if len(tx) > 0 && tx[0] != nil {
 		return execute(tx[0])
 	}
-	return r.Database.Transaction(func(tx *gorm.DB) error {
-		return execute(tx)
-	})
+	return execute(r.Database.Db)
 }
 
 // DeleteByUserIds 根据用户ID集合删除用户角色关联
