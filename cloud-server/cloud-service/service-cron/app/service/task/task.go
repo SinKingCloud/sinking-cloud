@@ -5,6 +5,7 @@ import (
 	"service-cron/app/repository/task"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
+	"github.com/robfig/cron/v3"
 )
 
 // Service 接口
@@ -16,6 +17,7 @@ type service struct {
 	repositoryLog  log.Interface
 	repositoryTask task.Interface
 	cache          cache.Interface
+	cron           *cron.Cron
 }
 
 // NewService 实例化service
@@ -24,5 +26,11 @@ func NewService(repositoryLog log.Interface, repositoryTask task.Interface, cach
 		repositoryLog:  repositoryLog,
 		repositoryTask: repositoryTask,
 		cache:          cache,
+		cron: cron.New(
+			cron.WithSeconds(),
+			cron.WithChain(
+				cron.Recover(cron.DiscardLogger),
+			),
+		),
 	}
 }
