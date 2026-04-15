@@ -106,10 +106,7 @@ func (s *service) Create(data *model.Task) (err error) {
 	if err != nil || data.Id <= 0 {
 		return errors.New("任务创建失败")
 	}
-	s.notify(&reload.Message{
-		Action:  reload.Create,
-		TaskIds: []int64{data.Id},
-	})
+	s.notify(reload.Create, data.Id)
 	return nil
 }
 
@@ -132,10 +129,7 @@ func (s *service) DeleteByIds(ids []int64) error {
 	if err != nil {
 		return err
 	}
-	s.notify(&reload.Message{
-		Action:  reload.Delete,
-		TaskIds: ids,
-	})
+	s.notify(reload.Delete, ids...)
 	return nil
 }
 
@@ -194,10 +188,7 @@ func (s *service) UpdateById(id int64, data *repositoryTask.UpdateTask) error {
 	if err != nil {
 		return errors.Join(errors.New("修改任务失败"), err)
 	}
-	s.notify(&reload.Message{
-		Action:  reload.Update,
-		TaskIds: []int64{id},
-	})
+	s.notify(reload.Update, id)
 	return nil
 }
 
