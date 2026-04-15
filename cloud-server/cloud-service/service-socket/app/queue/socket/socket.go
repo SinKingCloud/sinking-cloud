@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 	"github.com/SinKingCloud/sinking-go/sinking-websocket"
@@ -33,11 +34,11 @@ type Queue struct {
 // Name 消息队列名称
 func (s *Queue) Name(isAll bool, name ...string) string {
 	str := strings.Builder{}
-	str.WriteString("socket-")
+	str.WriteString(constant.ServiceSocket)
 	if isAll {
-		str.WriteString("all")
+		str.WriteString("-all")
 	} else {
-		str.WriteString("one")
+		str.WriteString("-one")
 	}
 	if len(name) > 0 {
 		str.WriteString("-")
@@ -53,7 +54,7 @@ func (s *Queue) Name(isAll bool, name ...string) string {
 func (s *Queue) Listen() {
 	s.once.Do(func() {
 		//查找指定地址在投递
-		searchUnicast, err := queue.RegisterUnicast[*Message](s.client, "socket-send", runtime.NumCPU(), runtime.NumCPU()*2, func(message *Message) error {
+		searchUnicast, err := queue.RegisterUnicast[*Message](s.client, constant.ServiceSocket+"-send", runtime.NumCPU(), runtime.NumCPU()*2, func(message *Message) error {
 			if message == nil {
 				return errors.New("获取消息失败")
 			}

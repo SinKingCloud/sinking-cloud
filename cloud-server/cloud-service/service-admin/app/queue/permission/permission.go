@@ -3,11 +3,12 @@ package permission
 import (
 	"service-admin/app/service"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 )
 
-const TopicName = "admin-permission"
+const TopicName = constant.ServiceAdmin + "-permission"
 
 type Task struct {
 	Name string
