@@ -33,7 +33,7 @@ type Queue struct {
 // Name 消息队列名称
 func (s *Queue) Name(isAll bool, name ...string) string {
 	str := strings.Builder{}
-	str.WriteString("sock-")
+	str.WriteString("socket-")
 	if isAll {
 		str.WriteString("all")
 	} else {
@@ -53,7 +53,7 @@ func (s *Queue) Name(isAll bool, name ...string) string {
 func (s *Queue) Listen() {
 	s.once.Do(func() {
 		//查找指定地址在投递
-		searchUnicast, err := queue.RegisterUnicast[*Message](s.client, "sock-send", runtime.NumCPU(), runtime.NumCPU()*2, func(message *Message) error {
+		searchUnicast, err := queue.RegisterUnicast[*Message](s.client, "socket-send", runtime.NumCPU(), runtime.NumCPU()*2, func(message *Message) error {
 			if message == nil {
 				return errors.New("获取消息失败")
 			}

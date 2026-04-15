@@ -7,7 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 )
 
-const TopicName = "permission"
+const TopicName = "admin-permission"
 
 type Task struct {
 	Name string
