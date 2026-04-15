@@ -1,6 +1,8 @@
 package task
 
-import "service-cron/app/model"
+import (
+	"service-cron/app/model"
+)
 
 // Create 创建数据
 func (r *Repository) Create(data *model.Task) error {

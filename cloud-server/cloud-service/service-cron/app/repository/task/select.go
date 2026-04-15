@@ -5,7 +5,7 @@ import (
 )
 
 // SelectAll 查询全部任务
-func (r *Repository) SelectAll() (list []*Task, err error) {
+func (r *Repository) SelectAll() (list []*model.Task, err error) {
 	err = r.Database.Db.Model(&model.Task{}).Order("id asc").Find(&list).Error
 	return
 }
