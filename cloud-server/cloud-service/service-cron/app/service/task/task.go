@@ -23,7 +23,10 @@ type Service interface {
 	Create(data *model.Task) error
 	DeleteByIds(ids []int64) error
 	UpdateById(id int64, data *task.UpdateTask) error
+	Run(id int64) error
 	ReloadAll() error
+	TaskQueueHandle(message *task2.Message) error
+	ReloadQueueHandle(message *reload.Message) error
 }
 
 // Session服务

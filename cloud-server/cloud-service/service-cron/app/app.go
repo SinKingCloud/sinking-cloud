@@ -8,6 +8,6 @@ import (
 
 func Run() {
 	service.Init()
-	queue.Init()
+	queue.Init(service.Task.TaskQueueHandle, service.Task.ReloadQueueHandle)
 	route.Init()
 }

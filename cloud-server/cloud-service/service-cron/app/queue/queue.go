@@ -12,7 +12,7 @@ var (
 	Reload *queue.BroadcastClient[*reload.Message]
 )
 
-func Init() {
-	Task = task.Register()
-	Reload = reload.Register()
+func Init(taskHandle func(param *task.Message) error, reloadHandle func(param *reload.Message) error) {
+	Task = task.Register(taskHandle)
+	Reload = reload.Register(reloadHandle)
 }

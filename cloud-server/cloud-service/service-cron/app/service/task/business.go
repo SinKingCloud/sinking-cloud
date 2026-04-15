@@ -201,6 +201,18 @@ func (s *service) UpdateById(id int64, data *repositoryTask.UpdateTask) error {
 	return nil
 }
 
+// Run 主动运行一次任务
+func (s *service) Run(id int64) error {
+	info, err := s.FindById(id, false)
+	if err != nil {
+		return err
+	}
+	if s.taskQueue != nil {
+		s.taskQueue.SendUnicastTask(&task.Message{Id: info.Id})
+	}
+	return nil
+}
+
 // ReloadAll 重载所有任务
 func (s *service) ReloadAll() error {
 	list, err := s.repositoryTask.SelectAll()
@@ -295,9 +307,4 @@ func (s *service) reload(data *model.Task) error {
 		s.cache.SetWithExpire(constant.CacheNameWithTaskInfo+strconv.FormatInt(data.Id, 10), string(value), constant.CacheTimeWithTaskInfo)
 	}
 	return nil
-}
-
-// notify 通知其他节点重载数据
-func (s *service) notify(message *reload.Message) {
-	s.reloadQueue.SendBroadcastTask(message)
 }
