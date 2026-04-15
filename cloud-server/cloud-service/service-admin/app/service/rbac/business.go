@@ -211,23 +211,24 @@ func (s *service) UpdatePermissionByIds(ids []int64, data *permission.UpdatePerm
 		return err
 	}
 	err = s.repositoryPermission.UpdateByIds(ids, data)
-	if err == nil {
-		paths := make([]string, 0, len(perms)+1)
-		for _, item := range perms {
-			if item == nil || item.Path == "" {
-				continue
-			}
-			paths = append(paths, item.Path)
-		}
-		if data.Path != "" {
-			if value, ok := data.Path.(string); ok {
-				paths = append(paths, value)
-			}
-		}
-		s.clearCacheWithPermissions(paths)
-		s.clearCacheWithEnums([]string{"permission"})
+	if err != nil {
+		return errors.Join(errors.New("更新权限数据失败"), err)
 	}
-	return err
+	paths := make([]string, 0, len(perms)+1)
+	for _, item := range perms {
+		if item == nil || item.Path == "" {
+			continue
+		}
+		paths = append(paths, item.Path)
+	}
+	if data.Path != "" {
+		if value, ok := data.Path.(string); ok {
+			paths = append(paths, value)
+		}
+	}
+	s.clearCacheWithPermissions(paths)
+	s.clearCacheWithEnums([]string{"permission"})
+	return nil
 }
 
 // DeletePermissionByIds 批量删除权限数据
@@ -263,9 +264,13 @@ func (s *service) DeletePermissionByIds(ids []int64) error {
 	err = s.database.Transaction(func(tx *gorm.DB) error {
 		err = s.repositoryMenuPermission.DeleteByPermissionCodes(codes, tx)
 		if err != nil {
-			return err
+			return errors.Join(errors.New("清理菜单权限数据失败"), err)
 		}
-		return s.repositoryPermission.DeleteByIds(ids, tx)
+		err = s.repositoryPermission.DeleteByIds(ids, tx)
+		if err != nil {
+			return errors.Join(errors.New("清理权限数据失败"), err)
+		}
+		return nil
 	})
 	if err != nil {
 		return err
@@ -778,7 +783,7 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 	}
 	info, err := s.repositoryMenu.FindByCode(code)
 	if err != nil {
-		return errors.Join(errors.New("创建失败"), err)
+		return errors.Join(errors.New("查询信息失败"), err)
 	}
 	if info != nil && info.Id > 0 {
 		return errors.New("该数据标识已被占用")
@@ -786,7 +791,7 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 	if parentId > 0 {
 		info, err = s.repositoryMenu.FindById(parentId)
 		if err != nil {
-			return errors.Join(errors.New("创建失败"), err)
+			return errors.Join(errors.New("查询父级信息失败"), err)
 		}
 		if info == nil || info.Id <= 0 {
 			return errors.New("该父级数据不存在")
@@ -838,7 +843,7 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 		}
 		permissions, err := s.repositoryPermission.SelectByCodes(codes)
 		if err != nil {
-			return errors.Join(errors.New("创建失败"), err)
+			return errors.Join(errors.New("查询权限标识集合失败"), err)
 		}
 		permissionMap := make(map[string]struct{}, len(permissions))
 		for _, item := range permissions {
@@ -912,7 +917,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 		if parentId > 0 {
 			parentInfo, err := s.repositoryMenu.FindById(parentId)
 			if err != nil {
-				return errors.Join(errors.New("更新失败"), err)
+				return errors.Join(errors.New("查询父级数据失败"), err)
 			}
 			if parentInfo == nil || parentInfo.Id <= 0 {
 				return errors.New("该父级数据不存在")
@@ -925,7 +930,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 			}
 			menus, err := s.repositoryMenu.SelectAll()
 			if err != nil {
-				return errors.Join(errors.New("更新失败"), err)
+				return errors.Join(errors.New("查询数据失败"), err)
 			}
 			childrenMap := make(map[int64][]int64, len(menus))
 			for _, item := range menus {
@@ -1002,7 +1007,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 			}
 			permissions, err := s.repositoryPermission.SelectByCodes(codes)
 			if err != nil {
-				return errors.Join(errors.New("更新失败"), err)
+				return errors.Join(errors.New("查询权限集合失败"), err)
 			}
 			permissionMap := make(map[string]struct{}, len(permissions))
 			for _, item := range permissions {
@@ -1031,7 +1036,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 		}
 		oldPermissionCodes, err := s.repositoryMenuPermission.SelectPermissionCodesByMenuId(info.Id)
 		if err != nil {
-			return errors.Join(errors.New("更新失败"), err)
+			return errors.Join(errors.New("查询菜单权限集合失败"), err)
 		}
 		oldPermissionCodeMap := make(map[string]struct{}, len(oldPermissionCodes))
 		for _, permissionCode := range oldPermissionCodes {
@@ -1060,7 +1065,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 	if permissionCodesChanged {
 		roleIds, err = s.repositoryRoleMenu.SelectRoleIdsByMenuIds([]int64{info.Id})
 		if err != nil {
-			return errors.Join(errors.New("更新失败"), err)
+			return errors.Join(errors.New("查询角色菜单失败"), err)
 		}
 		lockKeys, err := s.lockRoles(roleIds)
 		if err != nil {
@@ -1083,7 +1088,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 		if permissionCodesChanged {
 			err = s.repositoryMenuPermission.DeleteByMenuIds([]int64{info.Id}, tx)
 			if err != nil {
-				return err
+				return errors.Join(errors.New("清理旧权限失败"), err)
 			}
 			if len(permissionList) > 0 {
 				for _, item := range permissionList {
@@ -1094,14 +1099,14 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 				}
 				err = s.repositoryMenuPermission.Creates(permissionList, tx)
 				if err != nil {
-					return err
+					return errors.Join(errors.New("保存权限集合失败"), err)
 				}
 			}
 		}
 		return nil
 	})
 	if err != nil {
-		return errors.Join(errors.New("更新失败"), err)
+		return err
 	}
 	//清理缓存
 	clearMenus := []*model.Menu{info}
@@ -1200,7 +1205,7 @@ func (s *service) UpdateRole(id int64, data *role.UpdateRole, menuIds *[]int64) 
 		if len(queryMenuIds) > 0 {
 			menus, err := s.repositoryMenu.SelectByIds(queryMenuIds)
 			if err != nil {
-				return errors.Join(errors.New("更新失败"), err)
+				return errors.Join(errors.New("查询数据失败"), err)
 			}
 			menuIdMap = make(map[int64]struct{}, len(menus))
 			for _, item := range menus {
@@ -1218,7 +1223,7 @@ func (s *service) UpdateRole(id int64, data *role.UpdateRole, menuIds *[]int64) 
 		}
 		currentMenuIds, err := s.repositoryRoleMenu.SelectMenuIdsByRoleId(id)
 		if err != nil {
-			return errors.Join(errors.New("更新失败"), err)
+			return errors.Join(errors.New("查询角色菜单数据失败"), err)
 		}
 		currentMenuMap := make(map[int64]struct{}, len(currentMenuIds))
 		for _, menuId := range currentMenuIds {
@@ -1265,7 +1270,7 @@ func (s *service) UpdateRole(id int64, data *role.UpdateRole, menuIds *[]int64) 
 				}
 				err = s.repositoryRoleMenu.Creates(roleMenus, tx)
 				if err != nil {
-					return errors.Join(errors.New("更新角色菜单失败"), err)
+					return errors.Join(errors.New("角色菜单失败"), err)
 				}
 			}
 		}
