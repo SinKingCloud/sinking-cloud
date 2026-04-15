@@ -17,16 +17,16 @@ func (r *Repository) UpdateById(id int64, data *UpdateTask) error {
 		updates["type"] = data.Type
 	}
 	if data.Name != nil {
-		updates["phone"] = data.Name
+		updates["name"] = data.Name
 	}
 	if data.Spec != nil {
-		updates["email"] = data.Spec
+		updates["spec"] = data.Spec
 	}
 	if data.Script != nil {
-		updates["password"] = data.Script
+		updates["script"] = data.Script
 	}
 	if data.Concurrent != nil {
-		updates["avatar"] = data.Concurrent
+		updates["concurrent"] = data.Concurrent
 	}
 	if data.Status != nil {
 		updates["status"] = data.Status

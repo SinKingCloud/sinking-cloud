@@ -11,6 +11,8 @@ import (
 type Interface interface {
 	Create(data *model.Task) error
 	DeleteByIds(ids []int64, tx ...*gorm.DB) error
+	FindById(id int64) (*model.Task, error)
+	SelectAll() ([]*Task, error)
 	UpdateById(id int64, data *UpdateTask) error
 	Select(where *SelectTask, orderByField string, orderByType string, page int, pageSize int) (list []*Task, total int64, err error)
 }

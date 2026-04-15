@@ -1,6 +1,14 @@
 package task
 
-import "service-cron/app/model"
+import (
+	"service-cron/app/model"
+)
+
+// SelectAll 查询全部任务
+func (r *Repository) SelectAll() (list []*Task, err error) {
+	err = r.Database.Db.Model(&model.Task{}).Order("id asc").Find(&list).Error
+	return
+}
 
 // Select 查询数据
 func (r *Repository) Select(where *SelectTask, orderByField string, orderByType string, page int, pageSize int) (list []*Task, total int64, err error) {
