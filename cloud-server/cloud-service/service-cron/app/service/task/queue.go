@@ -2,8 +2,13 @@ package task
 
 import (
 	"errors"
+	"service-cron/app/model"
 	"service-cron/app/queue/reload"
 	"service-cron/app/queue/task"
+	"strings"
+	"time"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
 // notify 通知其他节点重载数据
@@ -26,6 +31,25 @@ func (s *service) notify(action reload.Action, taskIds ...int64) {
 	s.reloadQueue.SendBroadcastTask(message)
 }
 
+// log 记录任务日志
+func (s *service) log(taskId int64, contents ...string) {
+	content := &strings.Builder{}
+	num := len(contents)
+	if num > 0 {
+		for i, v := range contents {
+			content.WriteString(v)
+			if i != len(contents)-1 {
+				content.WriteString(" ")
+			}
+		}
+	}
+	_ = s.repositoryLog.Create(&model.Log{
+		TaskId:     taskId,
+		Content:    content.String(),
+		CreateTime: str.DateTime(time.Now()),
+	})
+}
+
 // ReloadQueueHandle 执行重载handle
 func (s *service) ReloadQueueHandle(message *reload.Message) error {
 	if message == nil {
@@ -36,13 +60,11 @@ func (s *service) ReloadQueueHandle(message *reload.Message) error {
 		for _, v := range message.TaskIds {
 			info, err := s.FindById(v, false)
 			if err != nil {
-				return err
+				continue
 			}
-			if info != nil && info.Id > 0 {
-				err = s.reload(info)
-				if err != nil {
-					return err
-				}
+			err = s.reload(info)
+			if err != nil {
+				s.log(info.Id, "载入任务失败", err.Error())
 			}
 		}
 		if message.Version > s.localVersion.Load() {

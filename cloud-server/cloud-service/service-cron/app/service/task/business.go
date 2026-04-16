@@ -232,7 +232,10 @@ func (s *service) ReloadAll() error {
 			continue
 		}
 		taskIds[v.Id] = struct{}{}
-		_ = s.reload(v)
+		err = s.reload(v)
+		if err != nil {
+			s.log(v.Id, "载入任务失败", err.Error())
+		}
 	}
 	var removeIds []int64
 	s.entries.Range(func(key, value interface{}) bool {
@@ -293,9 +296,6 @@ func (s *service) reload(data *model.Task) error {
 		if err != nil {
 			return err
 		}
-	}
-	if value, err := json.Marshal(data); err == nil {
-		s.cache.SetWithExpire(constant.CacheNameWithTaskInfo+strconv.FormatInt(data.Id, 10), string(value), constant.CacheTimeWithTaskInfo)
 	}
 	return nil
 }
