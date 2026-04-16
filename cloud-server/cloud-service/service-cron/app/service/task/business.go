@@ -14,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 )
 
@@ -26,8 +25,7 @@ func (s *service) Start() {
 
 // Close 关闭任务
 func (s *service) Close() {
-	ctx := s.cron.Stop()
-	<-ctx.Done()
+	s.cron.Stop()
 }
 
 // FindById 根据ID查询任务
@@ -78,8 +76,8 @@ func (s *service) Create(data *model.Task) (err error) {
 	if strings.TrimSpace(data.Spec) == "" {
 		return errors.New("任务表达式不能为空")
 	}
-	if _, err = s.parser.Parse(data.Spec); err != nil {
-		return errors.New("任务表达式验证失败")
+	if err = s.cron.Validate(data.Spec); err != nil {
+		return err
 	}
 	err = s.repositoryTask.Create(data)
 	if err != nil || data.Id <= 0 {
@@ -164,8 +162,8 @@ func (s *service) UpdateById(id int64, data *repositoryTask.UpdateTask) error {
 		if !ok || value == "" {
 			return errors.New("任务表达式不合法")
 		}
-		if _, err := s.parser.Parse(value); err != nil {
-			return errors.New("任务表达式验证失败")
+		if err := s.cron.Validate(value); err != nil {
+			return err
 		}
 	}
 	err := s.repositoryTask.UpdateById(id, data)
@@ -222,13 +220,8 @@ func (s *service) ReloadAll() error {
 
 // remove 删除任务
 func (s *service) remove(id int64) {
-	if temp, ok := s.entries.Load(id); ok {
-		info, ok2 := temp.(*Task)
-		if ok2 {
-			s.cron.Remove(info.EntryID)
-		}
-		s.entries.Delete(id)
-	}
+	s.cron.Remove(strconv.FormatInt(id, 10))
+	s.entries.Delete(id)
 }
 
 // reload 重载任务
@@ -236,36 +229,29 @@ func (s *service) reload(data *model.Task) error {
 	if data == nil || data.Id <= 0 || data.Spec == "" {
 		return errors.New("任务不能为空")
 	}
-	if _, err := s.parser.Parse(data.Spec); err != nil {
-		return errors.New("任务表达式验证失败")
+	if err := s.cron.Validate(data.Spec); err != nil {
+		return err
 	}
-	entryId := cron.EntryID(0)
+	cronName := strconv.FormatInt(data.Id, 10)
 	specChange := false
+	statusChange := false
 	if value, ok := s.entries.Load(data.Id); ok && value != nil {
-		if info, ok2 := value.(*Task); ok2 {
-			entryId = info.EntryID
-			if info.Info.Spec != data.Spec {
+		if info, ok2 := value.(*model.Task); ok2 {
+			if info != nil && info.Spec != data.Spec {
 				specChange = true
 			}
+			if info != nil && info.Status != data.Status {
+				statusChange = true
+			}
 		}
+	} else {
+		statusChange = data.Status == task_status.Running
 	}
-	s.entries.Store(data.Id, &Task{
-		Info:    data,
-		EntryID: entryId,
-	})
-	if data.Status == task_status.Stop || specChange {
-		if entryId > 0 {
-			s.cron.Remove(entryId)
-			entryId = 0
-			s.entries.Store(data.Id, &Task{
-				Info:    data,
-				EntryID: entryId,
-			})
-		}
-	}
-	if data.Status == task_status.Running && entryId <= 0 {
-		var id cron.EntryID
-		id, err := s.cron.AddFunc(data.Spec, func() {
+	s.entries.Store(data.Id, data)
+	if data.Status == task_status.Stop {
+		s.cron.Remove(cronName)
+	} else if specChange || statusChange || !s.cron.Exists(cronName) {
+		err := s.cron.AddFunc(cronName, data.Spec, func() {
 			if s.taskQueue != nil {
 				s.taskQueue.SendUnicastTask(&task.Message{Id: data.Id})
 			}
@@ -273,10 +259,6 @@ func (s *service) reload(data *model.Task) error {
 		if err != nil {
 			return err
 		}
-		s.entries.Store(data.Id, &Task{
-			Info:    data,
-			EntryID: id,
-		})
 	}
 	if value, err := json.Marshal(data); err == nil {
 		s.cache.SetWithExpire(constant.CacheNameWithTaskInfo+strconv.FormatInt(data.Id, 10), string(value), constant.CacheTimeWithTaskInfo)

@@ -9,9 +9,9 @@ import (
 	"sync"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cron"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
-	"github.com/robfig/cron/v3"
 )
 
 // Service service接口
@@ -38,7 +38,6 @@ type service struct {
 	taskQueue      *queue.UnicastClient[*task2.Message]
 	reloadQueue    *queue.BroadcastClient[*reload.Message]
 	cron           *cron.Cron
-	parser         cron.Parser
 	entries        sync.Map
 }
 
@@ -51,15 +50,7 @@ func NewService(repositoryLog log.Interface, repositoryTask task.Interface, cach
 		cache:          cache,
 		taskQueue:      taskQueue,
 		reloadQueue:    reloadQueue,
-		cron: cron.New(
-			cron.WithSeconds(),
-			cron.WithChain(
-				cron.Recover(cron.DiscardLogger),
-			),
-		),
-		parser: cron.NewParser(
-			cron.Second | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor,
-		),
+		cron:           cron.New(),
 	}
 	ins.Start()
 	return ins
