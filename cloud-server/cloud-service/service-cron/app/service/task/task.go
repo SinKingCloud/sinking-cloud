@@ -17,6 +17,7 @@ import (
 
 // Service service接口
 type Service interface {
+	SetQueue(taskQueue *queue.UnicastClient[*task2.Message], reloadQueue *queue.BroadcastClient[*reload.Message])
 	Start()
 	Close()
 	FindById(id int64, refresh bool) (*model.Task, error)
@@ -43,17 +44,20 @@ type service struct {
 	localVersion   atomic.Int64
 }
 
+// SetQueue 设置队列实例
+func (s *service) SetQueue(taskQueue *queue.UnicastClient[*task2.Message], reloadQueue *queue.BroadcastClient[*reload.Message]) {
+	s.taskQueue = taskQueue
+	s.reloadQueue = reloadQueue
+}
+
 // NewService 实例化service
-func NewService(repositoryLog log.Interface, repositoryTask task.Interface, cache cache.Interface, database *database.Database, taskQueue *queue.UnicastClient[*task2.Message], reloadQueue *queue.BroadcastClient[*reload.Message]) *service {
+func NewService(repositoryLog log.Interface, repositoryTask task.Interface, cache cache.Interface, database *database.Database) *service {
 	ins := &service{
 		repositoryLog:  repositoryLog,
 		repositoryTask: repositoryTask,
 		database:       database,
 		cache:          cache,
-		taskQueue:      taskQueue,
-		reloadQueue:    reloadQueue,
 		cron:           cron.New(),
 	}
-	ins.Start()
 	return ins
 }

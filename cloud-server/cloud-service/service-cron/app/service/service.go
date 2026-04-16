@@ -1,7 +1,6 @@
 package service
 
 import (
-	"service-cron/app/queue"
 	log2 "service-cron/app/repository/log"
 	task2 "service-cron/app/repository/task"
 	"service-cron/app/service/log"
@@ -23,5 +22,5 @@ func Init() {
 	taskRepository := task2.NewRepository(database)
 
 	Log = log.NewService(logRepository)
-	Task = task.NewService(logRepository, taskRepository, cache, database, queue.Task, queue.Reload)
+	Task = task.NewService(logRepository, taskRepository, cache, database)
 }
