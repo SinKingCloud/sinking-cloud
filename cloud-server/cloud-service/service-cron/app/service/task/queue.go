@@ -2,12 +2,19 @@ package task
 
 import (
 	"errors"
+	"service-cron/app/constant"
+	"service-cron/app/enum/task_concurrent"
+	"service-cron/app/enum/task_type"
 	"service-cron/app/model"
 	"service-cron/app/queue/reload"
 	"service-cron/app/queue/task"
+	"strconv"
 	"strings"
 	"time"
 
+	commonConstant "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cmd"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
@@ -87,5 +94,86 @@ func (s *service) ReloadQueueHandle(message *reload.Message) error {
 
 // TaskQueueHandle 执行任务handle
 func (s *service) TaskQueueHandle(message *task.Message) error {
+	if message == nil || message.Id <= 0 {
+		return errors.New("任务消息不能为空")
+	}
+	var (
+		info *model.Task
+		err  error
+	)
+	if value, ok := s.entries.Load(message.Id); ok && value != nil {
+		if data, ok2 := value.(*model.Task); ok2 && data != nil {
+			info = data
+		}
+	}
+	if info == nil {
+		info, err = s.FindById(message.Id, false)
+		if err != nil {
+			s.log(message.Id, "获取任务失败", err.Error())
+			return err
+		}
+	}
+	if info == nil || info.Id <= 0 {
+		return errors.New("任务不存在")
+	}
+	if strings.TrimSpace(info.Script) == "" {
+		err = errors.New("任务内容不能为空")
+		s.log(info.Id, err.Error())
+		return err
+	}
+	if info.Concurrent == task_concurrent.Disable {
+		lockKey := constant.LockTask + strconv.FormatInt(info.Id, 10)
+		lockDeadline := time.Now().Add(time.Duration(constant.LockTimeTask) * time.Millisecond)
+		locked := false
+		for time.Now().Before(lockDeadline) {
+			if s.cache.Lock(lockKey, constant.LockTimeTask) {
+				locked = true
+				break
+			}
+			time.Sleep(time.Second)
+		}
+		if !locked {
+			err = errors.New("任务执行超时")
+			s.log(info.Id, err.Error())
+			return err
+		}
+		defer s.cache.UnLock(lockKey)
+	}
+	s.log(info.Id, "开始执行任务", info.Name)
+	switch info.Type {
+	case task_type.Script:
+		exec := cmd.NewScriptExec(commonConstant.TempPath, 600, func(line string) {
+			if strings.TrimSpace(line) != "" {
+				s.log(info.Id, line)
+			}
+		})
+		_, stderr, err2 := exec.Execute(info.Script)
+		if strings.TrimSpace(stderr) != "" {
+			s.log(info.Id, stderr)
+		}
+		if err2 != nil {
+			s.log(info.Id, "执行脚本失败", err2.Error())
+			return err2
+		}
+	case task_type.Rpc:
+		serviceName, action, ok := strings.Cut(info.Script, ".")
+		serviceName = strings.TrimSpace(serviceName)
+		action = strings.TrimSpace(action)
+		if !ok || serviceName == "" || action == "" {
+			err = errors.New("rpc任务格式不合法")
+			s.log(info.Id, err.Error())
+			return err
+		}
+		err = rpc.InvokeFunc(serviceName, action, nil, nil)
+		if err != nil {
+			s.log(info.Id, "执行RPC失败", err.Error())
+			return err
+		}
+	default:
+		err = errors.New("任务类型不合法")
+		s.log(info.Id, err.Error())
+		return err
+	}
+	s.log(info.Id, "任务执行成功", info.Name)
 	return nil
 }
