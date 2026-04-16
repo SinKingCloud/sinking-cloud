@@ -13,6 +13,7 @@ import (
 	repositoryTask "service-cron/app/repository/task"
 	"strconv"
 	"strings"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -26,6 +27,37 @@ func (s *service) Start() {
 // Close 关闭任务
 func (s *service) Close() {
 	s.cron.Stop()
+}
+
+// taskVersion 获取或更新任务版本
+func (s *service) taskVersion(set bool) int64 {
+	cacheKey := constant.CacheNameWithTaskVersion
+	if !set {
+		value, exists := s.cache.Get(cacheKey)
+		if !exists || value == "" {
+			return 0
+		}
+		version, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			return 0
+		}
+		return version
+	}
+	lockKey := cacheKey + "_lock"
+	for i := 0; i < 100; i++ {
+		version := int64(s.cache.Inc(cacheKey))
+		if version > 0 {
+			return version
+		}
+		if s.cache.Lock(lockKey, 3000) {
+			version = s.taskVersion(false) + 1
+			s.cache.Set(cacheKey, strconv.FormatInt(version, 10))
+			s.cache.UnLock(lockKey)
+			return version
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	return 0
 }
 
 // FindById 根据ID查询任务
@@ -189,6 +221,7 @@ func (s *service) Run(id int64) error {
 
 // ReloadAll 重载所有任务
 func (s *service) ReloadAll() error {
+	targetVersion := s.taskVersion(false)
 	list, err := s.repositoryTask.SelectAll()
 	if err != nil {
 		return errors.Join(errors.New("获取任务数据失败"), err)
@@ -215,6 +248,7 @@ func (s *service) ReloadAll() error {
 	for _, id := range removeIds {
 		s.remove(id)
 	}
+	s.localVersion.Store(targetVersion)
 	return nil
 }
 

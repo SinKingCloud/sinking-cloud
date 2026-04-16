@@ -7,6 +7,7 @@ import (
 	"service-cron/app/repository/log"
 	"service-cron/app/repository/task"
 	"sync"
+	"sync/atomic"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cron"
@@ -39,6 +40,7 @@ type service struct {
 	reloadQueue    *queue.BroadcastClient[*reload.Message]
 	cron           *cron.Cron
 	entries        sync.Map
+	localVersion   atomic.Int64
 }
 
 // NewService 实例化service

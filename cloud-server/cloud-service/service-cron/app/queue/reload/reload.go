@@ -21,6 +21,7 @@ const (
 // Message 任务消息
 type Message struct {
 	Action  Action  `json:"action"`
+	Version int64   `json:"version"`
 	TaskIds []int64 `json:"task_ids"`
 }
 
