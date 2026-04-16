@@ -13,9 +13,9 @@ const TopicName = constant.ServiceCron + "-reload"
 type Action string
 
 const (
-	Update Action = "update"
-	Create Action = "create"
-	Delete Action = "delete"
+	Reload Action = "reload"
+	Check  Action = "check"
+	Remove Action = "remove"
 )
 
 // Message 任务消息

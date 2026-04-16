@@ -33,19 +33,9 @@ func (s *service) Close() {
 // FindById 根据ID查询任务
 func (s *service) FindById(id int64, refresh bool) (data *model.Task, err error) {
 	if !refresh {
-		if value, ok := s.entries.Load(id); ok {
-			info, ok2 := value.(*Task)
-			if ok2 && info != nil && info.Info != nil {
-				return info.Info, nil
-			}
-		}
 		cacheKey := constant.CacheNameWithTaskInfo + strconv.FormatInt(id, 10)
 		if value, exists := s.cache.Get(cacheKey); exists && value != "" {
 			if err = json.Unmarshal([]byte(value), &data); err == nil && data != nil {
-				s.entries.Store(id, &Task{
-					Info:    data,
-					EntryID: cron.EntryID(0),
-				})
 				return data, nil
 			}
 		}
@@ -54,17 +44,6 @@ func (s *service) FindById(id int64, refresh bool) (data *model.Task, err error)
 	if err != nil {
 		return nil, err
 	}
-	entryId := cron.EntryID(0)
-	if value, ok := s.entries.Load(id); ok {
-		info, ok2 := value.(*Task)
-		if ok2 && info != nil {
-			entryId = info.EntryID
-		}
-	}
-	s.entries.Store(id, &Task{
-		Info:    data,
-		EntryID: entryId,
-	})
 	if value, err2 := json.Marshal(data); err2 == nil {
 		s.cache.SetWithExpire(constant.CacheNameWithTaskInfo+strconv.FormatInt(id, 10), string(value), constant.CacheTimeWithTaskInfo)
 	}
@@ -106,7 +85,7 @@ func (s *service) Create(data *model.Task) (err error) {
 	if err != nil || data.Id <= 0 {
 		return errors.New("任务创建失败")
 	}
-	s.notify(reload.Create, data.Id)
+	s.notify(reload.Reload, data.Id)
 	return nil
 }
 
@@ -129,7 +108,12 @@ func (s *service) DeleteByIds(ids []int64) error {
 	if err != nil {
 		return err
 	}
-	s.notify(reload.Delete, ids...)
+	var keys []string
+	for _, v := range ids {
+		keys = append(keys, constant.CacheNameWithTaskInfo+strconv.FormatInt(v, 10))
+	}
+	s.cache.Delete(keys...)
+	s.notify(reload.Remove, ids...)
 	return nil
 }
 
@@ -188,7 +172,8 @@ func (s *service) UpdateById(id int64, data *repositoryTask.UpdateTask) error {
 	if err != nil {
 		return errors.Join(errors.New("修改任务失败"), err)
 	}
-	s.notify(reload.Update, id)
+	s.cache.Delete(constant.CacheNameWithTaskInfo + strconv.FormatInt(id, 10))
+	s.notify(reload.Reload, id)
 	return nil
 }
 
@@ -244,7 +229,6 @@ func (s *service) remove(id int64) {
 		}
 		s.entries.Delete(id)
 	}
-	s.cache.Delete(constant.CacheNameWithTaskInfo + strconv.FormatInt(id, 10))
 }
 
 // reload 重载任务
