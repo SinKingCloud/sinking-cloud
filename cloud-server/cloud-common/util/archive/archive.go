@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-// 定义支持的压缩格式
+// 定义支持的压缩格式。
 const (
 	FormatZip      = "zip"
 	FormatTar      = "tar"
@@ -22,239 +22,15 @@ const (
 	copyBufferSize = 32 * 1024
 )
 
-// Service 实现压缩与解压缩功能
+// Service 提供压缩与解压缩能力。
 type Service struct{}
 
-// New 创建压缩服务实例
+// New 创建一个压缩服务实例。
 func New() *Service {
 	return &Service{}
 }
 
-func (s *Service) checkContext(ctx context.Context) error {
-	if ctx == nil {
-		return nil
-	}
-	return ctx.Err()
-}
-
-func (s *Service) copyWithContext(ctx context.Context, dst io.Writer, src io.Reader) (int64, error) {
-	buf := make([]byte, copyBufferSize)
-	var written int64
-
-	for {
-		if err := s.checkContext(ctx); err != nil {
-			return written, err
-		}
-
-		nr, readErr := src.Read(buf)
-		if nr > 0 {
-			if err := s.checkContext(ctx); err != nil {
-				return written, err
-			}
-
-			nw, writeErr := dst.Write(buf[:nr])
-			written += int64(nw)
-			if writeErr != nil {
-				return written, writeErr
-			}
-			if nw != nr {
-				return written, io.ErrShortWrite
-			}
-		}
-
-		if readErr == io.EOF {
-			return written, nil
-		}
-		if readErr != nil {
-			return written, readErr
-		}
-	}
-}
-
-func (s *Service) copyFileToWriter(ctx context.Context, srcPath string, dst io.Writer) (int64, error) {
-	srcFile, err := os.Open(srcPath)
-	if err != nil {
-		return 0, err
-	}
-
-	written, copyErr := s.copyWithContext(ctx, dst, srcFile)
-	closeErr := srcFile.Close()
-	if copyErr != nil {
-		return written, copyErr
-	}
-	if closeErr != nil {
-		return written, closeErr
-	}
-
-	return written, nil
-}
-
-func (s *Service) writeExtractedFile(ctx context.Context, destPath string, perm os.FileMode, src io.Reader) (int64, error) {
-	destFile, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
-	if err != nil {
-		return 0, err
-	}
-
-	written, copyErr := s.copyWithContext(ctx, destFile, src)
-	closeErr := destFile.Close()
-	if copyErr != nil {
-		return written, copyErr
-	}
-	if closeErr != nil {
-		return written, closeErr
-	}
-
-	return written, nil
-}
-
-func (s *Service) collectSourceStats(ctx context.Context, paths []string) (int64, int64, error) {
-	var totalFiles int64
-	var totalSize int64
-
-	for _, path := range paths {
-		err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if err := s.checkContext(ctx); err != nil {
-				return err
-			}
-
-			totalFiles++
-			if !info.IsDir() {
-				totalSize += info.Size()
-			}
-			return nil
-		})
-		if err != nil {
-			return 0, 0, err
-		}
-	}
-
-	return totalFiles, totalSize, nil
-}
-
-func (s *Service) buildArchiveEntryPath(srcPath, currentPath string) (string, error) {
-	relPath, err := filepath.Rel(filepath.Dir(srcPath), currentPath)
-	if err != nil {
-		return "", err
-	}
-	return filepath.ToSlash(relPath), nil
-}
-
-func (s *Service) resolveExtractPath(destRoot, entryName string) (string, error) {
-	cleanDestRoot := filepath.Clean(destRoot)
-	targetPath := filepath.Join(cleanDestRoot, filepath.Clean(entryName))
-
-	relPath, err := filepath.Rel(cleanDestRoot, targetPath)
-	if err != nil {
-		return "", err
-	}
-	if relPath == ".." || strings.HasPrefix(relPath, ".."+string(os.PathSeparator)) {
-		return "", fmt.Errorf("非法的文件路径: %s", entryName)
-	}
-
-	return targetPath, nil
-}
-
-func (s *Service) ensureNoSymlinkPath(destRoot, targetPath string) error {
-	cleanDestRoot := filepath.Clean(destRoot)
-
-	rootInfo, err := os.Lstat(cleanDestRoot)
-	if err == nil && rootInfo.Mode()&os.ModeSymlink != 0 {
-		return fmt.Errorf("目标目录不能是符号链接: %s", cleanDestRoot)
-	}
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return err
-	}
-
-	relPath, err := filepath.Rel(cleanDestRoot, targetPath)
-	if err != nil {
-		return err
-	}
-	if relPath == "." {
-		return nil
-	}
-
-	currentPath := cleanDestRoot
-	for _, part := range strings.Split(relPath, string(os.PathSeparator)) {
-		currentPath = filepath.Join(currentPath, part)
-
-		info, statErr := os.Lstat(currentPath)
-		if statErr != nil {
-			if errors.Is(statErr, os.ErrNotExist) {
-				return nil
-			}
-			return statErr
-		}
-		if info.Mode()&os.ModeSymlink != 0 {
-			return fmt.Errorf("路径包含符号链接: %s", currentPath)
-		}
-	}
-
-	return nil
-}
-
-func (s *Service) openTarStream(srcPath string, isGzipped bool) (*os.File, *tar.Reader, io.Closer, error) {
-	file, err := os.Open(srcPath)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	if !isGzipped {
-		return file, tar.NewReader(file), nil, nil
-	}
-
-	gzipReader, err := gzip.NewReader(file)
-	if err != nil {
-		_ = file.Close()
-		return nil, nil, nil, err
-	}
-
-	return file, tar.NewReader(gzipReader), gzipReader, nil
-}
-
-func (s *Service) closeTarStream(file *os.File, streamCloser io.Closer) {
-	if streamCloser != nil {
-		_ = streamCloser.Close()
-	}
-	if file != nil {
-		_ = file.Close()
-	}
-}
-
-func (s *Service) scanTarArchive(ctx context.Context, srcPath string, isGzipped bool) (int64, int64, error) {
-	file, tarReader, streamCloser, err := s.openTarStream(srcPath, isGzipped)
-	if err != nil {
-		return 0, 0, err
-	}
-	defer s.closeTarStream(file, streamCloser)
-
-	var totalFiles int64
-	var totalSize int64
-	for {
-		if err := s.checkContext(ctx); err != nil {
-			return 0, 0, err
-		}
-
-		header, err := tarReader.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return 0, 0, err
-		}
-
-		totalFiles++
-		if header.FileInfo().Mode().IsRegular() {
-			totalSize += header.Size
-		}
-	}
-
-	return totalFiles, totalSize, nil
-}
-
-// GetFormatByExt 根据文件扩展名获取压缩格式
+// GetFormatByExt 根据文件名后缀推断压缩格式。
 func (s *Service) GetFormatByExt(filename string) string {
 	lowerName := strings.ToLower(filename)
 	ext := strings.ToLower(filepath.Ext(lowerName))
@@ -280,7 +56,7 @@ func (s *Service) GetFormatByExt(filename string) string {
 	}
 }
 
-// IsSupportedFormat 判断是否为支持的压缩格式
+// IsSupportedFormat 判断给定格式是否受支持。
 func (s *Service) IsSupportedFormat(format string) bool {
 	switch format {
 	case FormatZip, FormatTar, FormatGzip, FormatTgz:
@@ -290,19 +66,14 @@ func (s *Service) IsSupportedFormat(format string) bool {
 	}
 }
 
-// CompressFiles 压缩文件或目录
+// Compress 压缩文件或目录到目标归档文件。
 // ctx: 上下文，用于取消操作
-// srcPaths: 要压缩的源文件/目录路径数组
+// srcPaths: 要压缩的源文件或目录路径列表
 // destPath: 目标压缩文件路径
-// format: 压缩格式（zip, tar, gz, tgz）
-// callback: 进度回调函数，参数为：
-//   - current: 已处理字节数
-//   - total: 总字节数
-//   - currentFile: 当前正在处理的文件名
-//   - totalFiles: 总文件数量
-//   - currentIndex: 当前文件索引（从0开始）
-//     返回false表示取消操作
-func (s *Service) CompressFiles(ctx context.Context, srcPaths []string, destPath, format string, callback func(current, total int64, currentFile string, totalFiles, currentIndex int64) bool) (err error) {
+// format: 压缩格式（zip、tar、gz、tgz）
+// callback: 进度回调函数，参数依次为已处理字节数、总字节数、当前文件、总文件数、当前索引
+// 返回 false 表示取消操作
+func (s *Service) Compress(ctx context.Context, srcPaths []string, destPath, format string, callback func(current, total int64, currentFile string, totalFiles, currentIndex int64) bool) (err error) {
 	if !s.IsSupportedFormat(format) {
 		return errors.New("不支持的压缩格式")
 	}
@@ -345,17 +116,12 @@ func (s *Service) CompressFiles(ctx context.Context, srcPaths []string, destPath
 	return err
 }
 
-// Extract 解压缩文件
+// Extract 解压指定归档文件到目标目录。
 // ctx: 上下文，用于取消操作
 // srcPath: 要解压的源文件路径
 // destPath: 解压目标目录
-// callback: 进度回调函数，参数为：
-//   - current: 已处理字节数
-//   - total: 总字节数
-//   - currentFile: 当前正在处理的文件名
-//   - totalFiles: 总文件数量
-//   - currentIndex: 当前文件索引（从0开始）
-//     返回false表示取消操作
+// callback: 进度回调函数，参数依次为已处理字节数、总字节数、当前文件、总文件数、当前索引
+// 返回 false 表示取消操作
 func (s *Service) Extract(ctx context.Context, srcPath, destPath string, callback func(current, total int64, currentFile string, totalFiles, currentIndex int64) bool) error {
 	format := s.GetFormatByExt(srcPath)
 	if !s.IsSupportedFormat(format) {
@@ -408,9 +174,242 @@ func (s *Service) Extract(ctx context.Context, srcPath, destPath string, callbac
 	return err
 }
 
-// ---------------------- ZIP 压缩与解压缩 ----------------------
+// checkContext 检查上下文是否已经取消。
+func (s *Service) checkContext(ctx context.Context) error {
+	if ctx == nil {
+		return nil
+	}
+	return ctx.Err()
+}
 
-// compressZip 将文件/目录压缩为ZIP文件
+// copyWithContext 在复制流时周期性检查上下文取消状态。
+func (s *Service) copyWithContext(ctx context.Context, dst io.Writer, src io.Reader) (int64, error) {
+	buf := make([]byte, copyBufferSize)
+	var written int64
+
+	for {
+		if err := s.checkContext(ctx); err != nil {
+			return written, err
+		}
+
+		nr, readErr := src.Read(buf)
+		if nr > 0 {
+			if err := s.checkContext(ctx); err != nil {
+				return written, err
+			}
+
+			nw, writeErr := dst.Write(buf[:nr])
+			written += int64(nw)
+			if writeErr != nil {
+				return written, writeErr
+			}
+			if nw != nr {
+				return written, io.ErrShortWrite
+			}
+		}
+
+		if readErr == io.EOF {
+			return written, nil
+		}
+		if readErr != nil {
+			return written, readErr
+		}
+	}
+}
+
+// copyFileToWriter 将本地文件内容写入目标 writer。
+func (s *Service) copyFileToWriter(ctx context.Context, srcPath string, dst io.Writer) (int64, error) {
+	srcFile, err := os.Open(srcPath)
+	if err != nil {
+		return 0, err
+	}
+
+	written, copyErr := s.copyWithContext(ctx, dst, srcFile)
+	closeErr := srcFile.Close()
+	if copyErr != nil {
+		return written, copyErr
+	}
+	if closeErr != nil {
+		return written, closeErr
+	}
+
+	return written, nil
+}
+
+// writeExtractedFile 将归档中的文件内容写入解压目标文件。
+func (s *Service) writeExtractedFile(ctx context.Context, destPath string, perm os.FileMode, src io.Reader) (int64, error) {
+	destFile, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
+	if err != nil {
+		return 0, err
+	}
+
+	written, copyErr := s.copyWithContext(ctx, destFile, src)
+	closeErr := destFile.Close()
+	if copyErr != nil {
+		return written, copyErr
+	}
+	if closeErr != nil {
+		return written, closeErr
+	}
+
+	return written, nil
+}
+
+// collectSourceStats 统计源路径中的文件总数和总大小。
+func (s *Service) collectSourceStats(ctx context.Context, paths []string) (int64, int64, error) {
+	var totalFiles int64
+	var totalSize int64
+
+	for _, path := range paths {
+		err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if err := s.checkContext(ctx); err != nil {
+				return err
+			}
+
+			totalFiles++
+			if !info.IsDir() {
+				totalSize += info.Size()
+			}
+			return nil
+		})
+		if err != nil {
+			return 0, 0, err
+		}
+	}
+
+	return totalFiles, totalSize, nil
+}
+
+// buildArchiveEntryPath 生成文件在归档内部使用的相对路径。
+func (s *Service) buildArchiveEntryPath(srcPath, currentPath string) (string, error) {
+	relPath, err := filepath.Rel(filepath.Dir(srcPath), currentPath)
+	if err != nil {
+		return "", err
+	}
+	return filepath.ToSlash(relPath), nil
+}
+
+// resolveExtractPath 计算归档条目在目标目录中的实际落盘路径。
+func (s *Service) resolveExtractPath(destRoot, entryName string) (string, error) {
+	cleanDestRoot := filepath.Clean(destRoot)
+	targetPath := filepath.Join(cleanDestRoot, filepath.Clean(entryName))
+
+	relPath, err := filepath.Rel(cleanDestRoot, targetPath)
+	if err != nil {
+		return "", err
+	}
+	if relPath == ".." || strings.HasPrefix(relPath, ".."+string(os.PathSeparator)) {
+		return "", fmt.Errorf("非法的文件路径: %s", entryName)
+	}
+
+	return targetPath, nil
+}
+
+// ensureNoSymlinkPath 检查目标路径链路中是否包含符号链接。
+func (s *Service) ensureNoSymlinkPath(destRoot, targetPath string) error {
+	cleanDestRoot := filepath.Clean(destRoot)
+
+	rootInfo, err := os.Lstat(cleanDestRoot)
+	if err == nil && rootInfo.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("目标目录不能是符号链接: %s", cleanDestRoot)
+	}
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+
+	relPath, err := filepath.Rel(cleanDestRoot, targetPath)
+	if err != nil {
+		return err
+	}
+	if relPath == "." {
+		return nil
+	}
+
+	currentPath := cleanDestRoot
+	for _, part := range strings.Split(relPath, string(os.PathSeparator)) {
+		currentPath = filepath.Join(currentPath, part)
+
+		info, statErr := os.Lstat(currentPath)
+		if statErr != nil {
+			if errors.Is(statErr, os.ErrNotExist) {
+				return nil
+			}
+			return statErr
+		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("路径包含符号链接: %s", currentPath)
+		}
+	}
+
+	return nil
+}
+
+// openTarStream 打开 tar 或 tar.gz 文件并返回对应的读取流。
+func (s *Service) openTarStream(srcPath string, isGzipped bool) (*os.File, *tar.Reader, io.Closer, error) {
+	file, err := os.Open(srcPath)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	if !isGzipped {
+		return file, tar.NewReader(file), nil, nil
+	}
+
+	gzipReader, err := gzip.NewReader(file)
+	if err != nil {
+		_ = file.Close()
+		return nil, nil, nil, err
+	}
+
+	return file, tar.NewReader(gzipReader), gzipReader, nil
+}
+
+// closeTarStream 关闭 tar 读取过程中创建的文件和压缩流。
+func (s *Service) closeTarStream(file *os.File, streamCloser io.Closer) {
+	if streamCloser != nil {
+		_ = streamCloser.Close()
+	}
+	if file != nil {
+		_ = file.Close()
+	}
+}
+
+// scanTarArchive 预扫描 tar 包，统计条目数和展开后的总大小。
+func (s *Service) scanTarArchive(ctx context.Context, srcPath string, isGzipped bool) (int64, int64, error) {
+	file, tarReader, streamCloser, err := s.openTarStream(srcPath, isGzipped)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer s.closeTarStream(file, streamCloser)
+
+	var totalFiles int64
+	var totalSize int64
+	for {
+		if err := s.checkContext(ctx); err != nil {
+			return 0, 0, err
+		}
+
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return 0, 0, err
+		}
+
+		totalFiles++
+		if header.FileInfo().Mode().IsRegular() {
+			totalSize += header.Size
+		}
+	}
+
+	return totalFiles, totalSize, nil
+}
+
+// compressZip 将文件或目录压缩为 ZIP 文件。
 func (s *Service) compressZip(ctx context.Context, srcPaths []string, destPath string, callback func(current, total int64, currentFile string, totalFiles, currentIndex int64) bool) (err error) {
 	if err = s.checkContext(ctx); err != nil {
 		return err
@@ -505,7 +504,7 @@ func (s *Service) compressZip(ctx context.Context, srcPaths []string, destPath s
 	return nil
 }
 
-// extractZip 解压ZIP文件到指定目录
+// extractZip 将 ZIP 文件解压到目标目录。
 func (s *Service) extractZip(ctx context.Context, srcPath, destPath string, callback func(current, total int64, currentFile string, totalFiles, currentIndex int64) bool) error {
 	if err := s.checkContext(ctx); err != nil {
 		return err
@@ -600,10 +599,7 @@ func (s *Service) extractZip(ctx context.Context, srcPath, destPath string, call
 	return nil
 }
 
-// ---------------------- TAR 压缩与解压缩 ----------------------
-
-// compressTar 将文件/目录压缩为TAR文件
-// 如果useGzip为true，则使用gzip压缩TAR文件
+// compressTar 将文件或目录压缩为 TAR 或 TGZ 文件。
 func (s *Service) compressTar(ctx context.Context, srcPaths []string, destPath string, useGzip bool, callback func(current, total int64, currentFile string, totalFiles, currentIndex int64) bool) (err error) {
 	if err = s.checkContext(ctx); err != nil {
 		return err
@@ -703,8 +699,7 @@ func (s *Service) compressTar(ctx context.Context, srcPaths []string, destPath s
 	return nil
 }
 
-// extractTar 解压TAR文件到指定目录
-// 如果isGzipped为true，则处理.tar.gz文件
+// extractTar 将 TAR 或 TGZ 文件解压到目标目录。
 func (s *Service) extractTar(ctx context.Context, srcPath, destPath string, isGzipped bool, callback func(current, total int64, currentFile string, totalFiles, currentIndex int64) bool) error {
 	if err := s.checkContext(ctx); err != nil {
 		return err
@@ -792,10 +787,7 @@ func (s *Service) extractTar(ctx context.Context, srcPath, destPath string, isGz
 	return nil
 }
 
-// ---------------------- GZIP 压缩与解压缩 ----------------------
-
-// compressGzip 使用gzip压缩单个文件
-// ctx: 上下文，用于取消操作
+// compressGzip 将单个文件压缩为 GZIP 文件。
 func (s *Service) compressGzip(ctx context.Context, srcPath string, destPath string) (err error) {
 	if err = s.checkContext(ctx); err != nil {
 		return err
@@ -844,8 +836,7 @@ func (s *Service) compressGzip(ctx context.Context, srcPath string, destPath str
 	return err
 }
 
-// extractGzip 解压GZIP文件到指定目录
-// ctx: 上下文，用于取消操作
+// extractGzip 将 GZIP 文件解压到目标目录。
 func (s *Service) extractGzip(ctx context.Context, srcPath string, destPath string) (err error) {
 	if err = s.checkContext(ctx); err != nil {
 		return err
@@ -904,6 +895,7 @@ func (s *Service) extractGzip(ctx context.Context, srcPath string, destPath stri
 			_ = os.Remove(destFilePath)
 		}
 	}()
+
 	_, err = s.copyWithContext(ctx, destFile, gzipReader)
 	return err
 }
