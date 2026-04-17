@@ -290,9 +290,15 @@ func (s *service) reload(data *model.Task) error {
 		s.cron.Remove(cronName)
 	} else if specChange || statusChange || !s.cron.Exists(cronName) {
 		err := s.cron.AddFunc(cronName, data.Spec, func() {
-			if s.taskQueue != nil {
-				s.taskQueue.SendUnicastTask(&task.Message{Id: data.Id})
+			if s.taskQueue == nil {
+				return
 			}
+			lockKey := constant.LockTaskDispatch + cronName
+			if !s.cache.Lock(lockKey, constant.LockTimeTaskDispatch) {
+				return
+			}
+			defer s.cache.UnLock(lockKey)
+			s.taskQueue.SendUnicastTask(&task.Message{Id: data.Id})
 		})
 		if err != nil {
 			return err
