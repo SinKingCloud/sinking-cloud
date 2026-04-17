@@ -47,11 +47,12 @@ func (s *service) taskVersion(set bool) int64 {
 	for i := 0; i < 100; i++ {
 		version := int64(s.cache.Inc(cacheKey))
 		if version > 0 {
+			s.cache.SetExpire(cacheKey, constant.CacheTimeWithTaskVersion)
 			return version
 		}
 		if s.cache.Lock(lockKey, 3000) {
 			version = s.taskVersion(false) + 1
-			s.cache.Set(cacheKey, strconv.FormatInt(version, 10))
+			s.cache.SetWithExpire(cacheKey, strconv.FormatInt(version, 10), constant.CacheTimeWithTaskVersion)
 			s.cache.UnLock(lockKey)
 			return version
 		}
