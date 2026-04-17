@@ -214,22 +214,19 @@ func (s *Service) compressZip(ctx context.Context, srcPaths []string, destPath s
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	// 获取文件总数用于进度计算
 	totalFiles, err := s.countFiles(srcPaths)
 	if err != nil {
 		return err
 	}
-
 	// 检查上下文是否已取消
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	// 计算总字节数
 	var totalSize int64
 	for _, path := range srcPaths {
-		err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
+		err = filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
@@ -246,21 +243,22 @@ func (s *Service) compressZip(ctx context.Context, srcPaths []string, destPath s
 			return err
 		}
 	}
-
 	// 检查上下文是否已取消
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	// 创建ZIP文件
 	zipFile, err := os.Create(destPath)
 	if err != nil {
 		return err
 	}
-	defer zipFile.Close()
-
+	defer func() {
+		_ = zipFile.Close()
+	}()
 	zipWriter := zip.NewWriter(zipFile)
-	defer zipWriter.Close()
+	defer func() {
+		_ = zipWriter.Close()
+	}()
 
 	var processedSize int64
 	fileIndex := int64(0)
@@ -299,7 +297,6 @@ func (s *Service) compressZip(ctx context.Context, srcPaths []string, destPath s
 					return errors.New("操作被取消")
 				}
 			}
-
 			// 计算在ZIP中的相对路径
 			relPath, err := filepath.Rel(filepath.Dir(srcPath), path)
 			if err != nil {
@@ -309,17 +306,14 @@ func (s *Service) compressZip(ctx context.Context, srcPaths []string, destPath s
 			if baseDir != "" {
 				relPath = filepath.Join(baseDir, relPath)
 			}
-
 			// 统一使用斜杠作为路径分隔符
 			relPath = filepath.ToSlash(relPath)
-
 			// 如果是目录，添加目录项
 			if info.IsDir() {
 				_, err = zipWriter.Create(relPath + "/")
 				fileIndex++
 				return err
 			}
-
 			// 创建文件项
 			fileHeader, err := zip.FileInfoHeader(info)
 			if err != nil {
@@ -327,53 +321,45 @@ func (s *Service) compressZip(ctx context.Context, srcPaths []string, destPath s
 			}
 			fileHeader.Name = relPath
 			fileHeader.Method = zip.Deflate // 使用压缩
-
 			writer, err := zipWriter.CreateHeader(fileHeader)
 			if err != nil {
 				return err
 			}
-
 			// 打开源文件
 			file, err := os.Open(path)
 			if err != nil {
 				return err
 			}
-			defer file.Close()
-
+			defer func() {
+				_ = file.Close()
+			}()
 			// 检查上下文是否已取消
 			if ctx.Err() != nil {
 				return ctx.Err()
 			}
-
 			// 复制文件内容
 			written, err := io.Copy(writer, file)
 			if err != nil {
 				return err
 			}
-
 			processedSize += written
 			fileIndex++
-
 			// 最终更新进度
 			if callback != nil {
 				if !callback(processedSize, totalSize, path, int64(totalFiles), fileIndex-1) {
 					return errors.New("操作被取消")
 				}
 			}
-
 			// 再次检查上下文是否已取消
 			if ctx.Err() != nil {
 				return ctx.Err()
 			}
-
 			return nil
 		})
-
 		if err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -383,17 +369,16 @@ func (s *Service) extractZip(ctx context.Context, srcPath, destPath string, call
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	// 打开ZIP文件
 	reader, err := zip.OpenReader(srcPath)
 	if err != nil {
 		return err
 	}
-	defer reader.Close()
-
+	defer func() {
+		_ = reader.Close()
+	}()
 	// 获取文件总数
 	totalFiles := int64(len(reader.File))
-
 	// 计算总字节数
 	var totalSize int64
 	for _, file := range reader.File {
@@ -401,12 +386,10 @@ func (s *Service) extractZip(ctx context.Context, srcPath, destPath string, call
 			totalSize += int64(file.UncompressedSize64)
 		}
 	}
-
 	// 检查上下文是否已取消
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	// 遍历ZIP文件中的所有文件
 	var processedSize int64
 	for i, file := range reader.File {
@@ -414,79 +397,65 @@ func (s *Service) extractZip(ctx context.Context, srcPath, destPath string, call
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-
 		// 更新进度
 		if callback != nil {
 			if !callback(processedSize, totalSize, file.Name, totalFiles, int64(i)) {
 				return errors.New("操作被取消")
 			}
 		}
-
 		// 构建解压后的文件路径
 		destFilePath := filepath.Join(destPath, file.Name)
-
 		// 检查文件路径是否在目标路径内（防止路径穿越攻击）
 		if !strings.HasPrefix(destFilePath, filepath.Clean(destPath)+string(os.PathSeparator)) {
 			return fmt.Errorf("非法的文件路径: %s", file.Name)
 		}
-
 		// 如果是目录，创建目录
 		if file.FileInfo().IsDir() {
-			if err := os.MkdirAll(destFilePath, file.Mode()); err != nil {
+			if err = os.MkdirAll(destFilePath, file.Mode()); err != nil {
 				return err
 			}
 			continue
 		}
-
 		// 确保父目录存在
-		if err := os.MkdirAll(filepath.Dir(destFilePath), 0755); err != nil {
+		if err = os.MkdirAll(filepath.Dir(destFilePath), 0755); err != nil {
 			return err
 		}
-
 		// 创建文件
 		destFile, err := os.OpenFile(destFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
 		if err != nil {
 			return err
 		}
-
 		// 打开ZIP中的文件
 		srcFile, err := file.Open()
 		if err != nil {
-			destFile.Close()
+			_ = destFile.Close()
 			return err
 		}
-
 		// 检查上下文是否已取消
 		if ctx.Err() != nil {
-			srcFile.Close()
-			destFile.Close()
+			_ = srcFile.Close()
+			_ = destFile.Close()
 			return ctx.Err()
 		}
-
 		// 复制文件内容
 		written, err := io.Copy(destFile, srcFile)
-		srcFile.Close()
-		destFile.Close()
-
+		_ = srcFile.Close()
+		_ = destFile.Close()
 		if err != nil {
 			return err
 		}
-
 		processedSize += written
-
 		// 最终更新进度
 		if callback != nil {
 			if !callback(processedSize, totalSize, file.Name, totalFiles, int64(i)) {
 				return errors.New("操作被取消")
 			}
 		}
-
 		// 再次检查上下文是否已取消
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
 	}
-
 	return nil
 }
 
@@ -499,22 +468,19 @@ func (s *Service) compressTar(ctx context.Context, srcPaths []string, destPath s
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	// 获取文件总数用于进度计算
 	totalFiles, err := s.countFiles(srcPaths)
 	if err != nil {
 		return err
 	}
-
 	// 检查上下文是否已取消
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	// 计算总字节数
 	var totalSize int64
 	for _, path := range srcPaths {
-		err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
+		err = filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
@@ -531,33 +497,34 @@ func (s *Service) compressTar(ctx context.Context, srcPaths []string, destPath s
 			return err
 		}
 	}
-
 	// 检查上下文是否已取消
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	// 创建TAR文件
 	tarFile, err := os.Create(destPath)
 	if err != nil {
 		return err
 	}
-	defer tarFile.Close()
-
+	defer func() {
+		_ = tarFile.Close()
+	}()
 	var tarWriter *tar.Writer
 	var gzipWriter *gzip.Writer
-
 	if useGzip {
 		// 使用gzip压缩
 		gzipWriter = gzip.NewWriter(tarFile)
-		defer gzipWriter.Close()
+		defer func() {
+			_ = gzipWriter.Close()
+		}()
 		tarWriter = tar.NewWriter(gzipWriter)
 	} else {
 		// 不使用gzip压缩
 		tarWriter = tar.NewWriter(tarFile)
 	}
-	defer tarWriter.Close()
-
+	defer func() {
+		_ = tarWriter.Close()
+	}()
 	var processedSize int64
 	fileIndex := int64(0)
 	for _, srcPath := range srcPaths {
@@ -565,37 +532,31 @@ func (s *Service) compressTar(ctx context.Context, srcPaths []string, destPath s
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-
 		// 获取源路径的基础信息
 		srcInfo, err := os.Stat(srcPath)
 		if err != nil {
 			return err
 		}
-
 		// 获取源路径的基础名称
 		baseDir := ""
 		if srcInfo.IsDir() {
 			baseDir = filepath.Base(srcPath)
 		}
-
 		// 遍历源路径中的所有文件和目录
 		err = filepath.Walk(srcPath, func(path string, info os.FileInfo, err error) error {
 			// 每个文件检查一次上下文状态
 			if ctx.Err() != nil {
 				return ctx.Err()
 			}
-
 			if err != nil {
 				return err
 			}
-
 			// 更新进度
 			if callback != nil {
 				if !callback(processedSize, totalSize, path, int64(totalFiles), fileIndex) {
 					return errors.New("操作被取消")
 				}
 			}
-
 			// 计算在TAR中的相对路径
 			relPath, err := filepath.Rel(filepath.Dir(srcPath), path)
 			if err != nil {
@@ -614,7 +575,7 @@ func (s *Service) compressTar(ctx context.Context, srcPaths []string, destPath s
 			header.Name = filepath.ToSlash(relPath)
 
 			// 写入TAR头部
-			if err := tarWriter.WriteHeader(header); err != nil {
+			if err = tarWriter.WriteHeader(header); err != nil {
 				return err
 			}
 
@@ -624,7 +585,9 @@ func (s *Service) compressTar(ctx context.Context, srcPaths []string, destPath s
 				if err != nil {
 					return err
 				}
-				defer file.Close()
+				defer func() {
+					_ = file.Close()
+				}()
 
 				// 检查上下文是否已取消
 				if ctx.Err() != nil {
@@ -638,29 +601,23 @@ func (s *Service) compressTar(ctx context.Context, srcPaths []string, destPath s
 
 				processedSize += written
 			}
-
 			fileIndex++
-
 			// 最终更新进度
 			if callback != nil && info.Mode().IsRegular() {
 				if !callback(processedSize, totalSize, path, int64(totalFiles), fileIndex-1) {
 					return errors.New("操作被取消")
 				}
 			}
-
 			// 再次检查上下文是否已取消
 			if ctx.Err() != nil {
 				return ctx.Err()
 			}
-
 			return nil
 		})
-
 		if err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -671,21 +628,20 @@ func (s *Service) extractTar(ctx context.Context, srcPath, destPath string, isGz
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	// 打开TAR文件
 	file, err := os.Open(srcPath)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-
+	defer func() {
+		_ = file.Close()
+	}()
 	// 获取源文件大小作为总大小的估计值
 	fileInfo, err := file.Stat()
 	if err != nil {
 		return err
 	}
 	totalSize := fileInfo.Size()
-
 	var tarReader *tar.Reader
 	if isGzipped {
 		// 使用gzip解压
@@ -693,18 +649,18 @@ func (s *Service) extractTar(ctx context.Context, srcPath, destPath string, isGz
 		if err != nil {
 			return err
 		}
-		defer gzipReader.Close()
+		defer func() {
+			_ = gzipReader.Close()
+		}()
 		tarReader = tar.NewReader(gzipReader)
 	} else {
 		// 不使用gzip解压
 		tarReader = tar.NewReader(file)
 	}
-
 	// 检查上下文是否已取消
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	// 首先计算文件总数
 	fileCount := 0
 	var headers []*tar.Header
@@ -713,7 +669,6 @@ func (s *Service) extractTar(ctx context.Context, srcPath, destPath string, isGz
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-
 		header, err := tarReader.Next()
 		if err == io.EOF {
 			break
@@ -724,31 +679,31 @@ func (s *Service) extractTar(ctx context.Context, srcPath, destPath string, isGz
 		headers = append(headers, header)
 		fileCount++
 	}
-
 	// 检查上下文是否已取消
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	// 重新打开文件
-	file.Close()
+	_ = file.Close()
 	file, err = os.Open(srcPath)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-
+	defer func() {
+		_ = file.Close()
+	}()
 	if isGzipped {
 		gzipReader, err := gzip.NewReader(file)
 		if err != nil {
 			return err
 		}
-		defer gzipReader.Close()
+		defer func() {
+			_ = gzipReader.Close()
+		}()
 		tarReader = tar.NewReader(gzipReader)
 	} else {
 		tarReader = tar.NewReader(file)
 	}
-
 	// 解压文件
 	var processedSize int64
 	for i := 0; i < fileCount; i++ {
@@ -756,7 +711,6 @@ func (s *Service) extractTar(ctx context.Context, srcPath, destPath string, isGz
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-
 		// 读取TAR头部
 		header, err := tarReader.Next()
 		if err == io.EOF {
@@ -765,56 +719,49 @@ func (s *Service) extractTar(ctx context.Context, srcPath, destPath string, isGz
 		if err != nil {
 			return err
 		}
-
 		// 更新进度
 		if callback != nil {
 			if !callback(processedSize, totalSize, header.Name, int64(fileCount), int64(i)) {
 				return errors.New("操作被取消")
 			}
 		}
-
 		// 构建解压后的文件路径
 		destFilePath := filepath.Join(destPath, header.Name)
-
 		// 检查文件路径是否在目标路径内（防止路径穿越攻击）
 		if !strings.HasPrefix(destFilePath, filepath.Clean(destPath)+string(os.PathSeparator)) {
 			return fmt.Errorf("非法的文件路径: %s", header.Name)
 		}
-
 		// 根据头部类型处理
 		switch header.Typeflag {
 		case tar.TypeDir:
 			// 创建目录
-			if err := os.MkdirAll(destFilePath, 0755); err != nil {
+			if err = os.MkdirAll(destFilePath, 0755); err != nil {
 				return err
 			}
 		case tar.TypeReg:
 			// 确保父目录存在
-			if err := os.MkdirAll(filepath.Dir(destFilePath), 0755); err != nil {
+			if err = os.MkdirAll(filepath.Dir(destFilePath), 0755); err != nil {
 				return err
 			}
 
 			// 创建文件
-			file, err := os.OpenFile(destFilePath, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			file, err = os.OpenFile(destFilePath, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
 			if err != nil {
 				return err
 			}
-
 			// 检查上下文是否已取消
 			if ctx.Err() != nil {
-				file.Close()
+				_ = file.Close()
 				return ctx.Err()
 			}
-
 			// 复制文件内容
 			written, err := io.Copy(file, tarReader)
-			file.Close()
+			_ = file.Close()
 			if err != nil {
 				return err
 			}
 			processedSize += written
 		}
-
 		// 最终更新进度
 		if callback != nil {
 			if !callback(processedSize, totalSize, header.Name, int64(fileCount), int64(i)) {
@@ -822,7 +769,6 @@ func (s *Service) extractTar(ctx context.Context, srcPath, destPath string, isGz
 			}
 		}
 	}
-
 	return nil
 }
 
@@ -835,7 +781,6 @@ func (s *Service) compressGzip(ctx context.Context, srcPath string, destPath str
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	// 检查源文件是否是目录
 	srcInfo, err := os.Stat(srcPath)
 	if err != nil {
@@ -844,7 +789,6 @@ func (s *Service) compressGzip(ctx context.Context, srcPath string, destPath str
 	if srcInfo.IsDir() {
 		return errors.New("不能直接用gzip压缩目录，请使用tgz格式")
 	}
-
 	// 打开源文件
 	srcFile, err := os.Open(srcPath)
 	if err != nil {
@@ -853,13 +797,11 @@ func (s *Service) compressGzip(ctx context.Context, srcPath string, destPath str
 	defer func() {
 		_ = srcFile.Close()
 	}()
-
 	// 创建目标文件
 	destFile, err := os.Create(destPath)
 	if err != nil {
 		return err
 	}
-
 	// 使用defer处理清理逻辑
 	success := false
 	defer func() {
@@ -870,16 +812,13 @@ func (s *Service) compressGzip(ctx context.Context, srcPath string, destPath str
 			_ = os.Remove(destPath)
 		}
 	}()
-
 	// 创建gzip写入器
 	gzipWriter := gzip.NewWriter(destFile)
 	defer func() {
 		_ = gzipWriter.Close()
 	}()
-
 	// 设置文件名
 	gzipWriter.Name = filepath.Base(srcPath)
-
 	// 使用缓冲区进行复制，并定期检查上下文状态
 	buf := make([]byte, 32*1024) // 32KB 缓冲区
 	for {
@@ -887,7 +826,6 @@ func (s *Service) compressGzip(ctx context.Context, srcPath string, destPath str
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-
 		n, readErr := srcFile.Read(buf)
 		if n > 0 {
 			// 写入前再次检查上下文
@@ -899,7 +837,6 @@ func (s *Service) compressGzip(ctx context.Context, srcPath string, destPath str
 				return writeErr
 			}
 		}
-
 		if readErr == io.EOF {
 			break
 		}
@@ -907,7 +844,6 @@ func (s *Service) compressGzip(ctx context.Context, srcPath string, destPath str
 			return readErr
 		}
 	}
-
 	// 标记操作成功完成
 	success = true
 	return nil
@@ -920,7 +856,6 @@ func (s *Service) extractGzip(ctx context.Context, srcPath string, destPath stri
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	// 打开源文件
 	srcFile, err := os.Open(srcPath)
 	if err != nil {
@@ -929,7 +864,6 @@ func (s *Service) extractGzip(ctx context.Context, srcPath string, destPath stri
 	defer func() {
 		_ = srcFile.Close()
 	}()
-
 	// 创建gzip读取器
 	gzipReader, err := gzip.NewReader(srcFile)
 	if err != nil {
@@ -938,7 +872,6 @@ func (s *Service) extractGzip(ctx context.Context, srcPath string, destPath stri
 	defer func() {
 		_ = gzipReader.Close()
 	}()
-
 	// 确定目标文件名
 	var destFilePath string
 	if gzipReader.Name != "" {
@@ -951,34 +884,28 @@ func (s *Service) extractGzip(ctx context.Context, srcPath string, destPath stri
 		}
 		destFilePath = filepath.Join(destPath, baseName)
 	}
-
 	// 检查文件路径是否在目标路径内（防止路径穿越攻击）
 	if !strings.HasPrefix(destFilePath, filepath.Clean(destPath)+string(os.PathSeparator)) {
 		return fmt.Errorf("非法的文件路径: %s", gzipReader.Name)
 	}
-
 	// 确保父目录存在
 	if err := os.MkdirAll(filepath.Dir(destFilePath), 0755); err != nil {
 		return err
 	}
-
 	// 创建目标文件
 	destFile, err := os.Create(destFilePath)
 	if err != nil {
 		return err
 	}
-
 	// 使用defer处理清理逻辑
 	success := false
 	defer func() {
 		_ = destFile.Close()
-
 		// 如果操作未成功完成，删除部分创建的文件
 		if !success {
 			_ = os.Remove(destFilePath)
 		}
 	}()
-
 	// 使用缓冲区进行复制，并定期检查上下文状态
 	buf := make([]byte, 32*1024) // 32KB 缓冲区
 	for {
@@ -986,7 +913,6 @@ func (s *Service) extractGzip(ctx context.Context, srcPath string, destPath stri
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-
 		n, readErr := gzipReader.Read(buf)
 		if n > 0 {
 			// 写入前再次检查上下文
@@ -998,7 +924,6 @@ func (s *Service) extractGzip(ctx context.Context, srcPath string, destPath stri
 				return writeErr
 			}
 		}
-
 		if readErr == io.EOF {
 			break
 		}
@@ -1006,7 +931,6 @@ func (s *Service) extractGzip(ctx context.Context, srcPath string, destPath stri
 			return readErr
 		}
 	}
-
 	// 标记操作成功完成
 	success = true
 	return nil
