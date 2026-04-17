@@ -1,7 +1,6 @@
 package task
 
 import (
-	"service-cron/app/constant"
 	"service-cron/app/model"
 	"service-cron/app/queue/reload"
 	task2 "service-cron/app/queue/task"
@@ -9,7 +8,6 @@ import (
 	"service-cron/app/repository/task"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cron"
@@ -70,67 +68,4 @@ func NewService(repositoryLog log.Interface, repositoryTask task.Interface, cach
 		dispatchNode:   "cron-" + str.NewStringTool(str.GetSnowWorkIns().GetUuid()).Md5(true),
 	}
 	return ins
-}
-
-// keepDispatchNode 保持投递节点身份
-func (s *service) keepDispatchNode() {
-	ticker := time.NewTicker(2 * time.Second)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-s.closeChan:
-			if s.isDispatchNode.Load() {
-				if value, exists := s.cache.Get(constant.CacheNameWithTaskDispatchNode); exists && value == s.dispatchNode {
-					s.cache.Delete(constant.CacheNameWithTaskDispatchNode)
-				}
-				s.isDispatchNode.Store(false)
-			}
-			return
-		case <-ticker.C:
-			if s.isDispatchNode.Load() {
-				if !s.cache.Lock(constant.LockTaskDispatchRenew, constant.LockTimeTaskDispatchRenew) {
-					continue
-				}
-				value, exists := s.cache.Get(constant.CacheNameWithTaskDispatchNode)
-				if !exists || value == "" || value != s.dispatchNode {
-					s.isDispatchNode.Store(false)
-					s.cache.UnLock(constant.LockTaskDispatchRenew)
-					continue
-				}
-				if !s.cache.SetWithExpire(constant.CacheNameWithTaskDispatchNode, s.dispatchNode, constant.CacheTimeWithTaskDispatchNode) {
-					s.isDispatchNode.Store(false)
-				}
-				s.cache.UnLock(constant.LockTaskDispatchRenew)
-				continue
-			}
-			if value, exists := s.cache.Get(constant.CacheNameWithTaskDispatchNode); exists && value != "" {
-				if value == s.dispatchNode {
-					if !s.isDispatchNode.Load() {
-						s.isDispatchNode.Store(true)
-					}
-				} else if s.isDispatchNode.Load() {
-					s.isDispatchNode.Store(false)
-				}
-				continue
-			}
-			if !s.cache.Lock(constant.LockTaskDispatch, constant.LockTimeTaskDispatch) {
-				continue
-			}
-			if value, exists := s.cache.Get(constant.CacheNameWithTaskDispatchNode); exists && value != "" {
-				if value == s.dispatchNode {
-					if !s.isDispatchNode.Load() {
-						s.isDispatchNode.Store(true)
-					}
-				} else if s.isDispatchNode.Load() {
-					s.isDispatchNode.Store(false)
-				}
-				s.cache.UnLock(constant.LockTaskDispatch)
-				continue
-			}
-			if s.cache.SetWithExpire(constant.CacheNameWithTaskDispatchNode, s.dispatchNode, constant.CacheTimeWithTaskDispatchNode) {
-				s.isDispatchNode.Store(true)
-			}
-			s.cache.UnLock(constant.LockTaskDispatch)
-		}
-	}
 }
