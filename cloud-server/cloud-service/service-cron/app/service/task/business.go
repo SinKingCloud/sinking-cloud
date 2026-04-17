@@ -20,12 +20,21 @@ import (
 
 // Start 启动任务
 func (s *service) Start() {
+	if s.closed.Load() || !s.started.CompareAndSwap(false, true) {
+		return
+	}
 	_ = s.ReloadAll()
+	go s.keepDispatchNode()
 	s.cron.Start()
 }
 
 // Close 关闭任务
 func (s *service) Close() {
+	if !s.closed.CompareAndSwap(false, true) {
+		return
+	}
+	s.started.Store(false)
+	close(s.closeChan)
 	s.cron.Stop()
 }
 
@@ -290,7 +299,7 @@ func (s *service) reload(data *model.Task) error {
 		s.cron.Remove(cronName)
 	} else if specChange || statusChange || !s.cron.Exists(cronName) {
 		err := s.cron.AddFunc(cronName, data.Spec, func() {
-			if s.taskQueue == nil {
+			if s.taskQueue == nil || !s.isDispatchNode.Load() {
 				return
 			}
 			lockKey := constant.LockTaskDispatch + cronName
@@ -298,6 +307,11 @@ func (s *service) reload(data *model.Task) error {
 				return
 			}
 			defer s.cache.UnLock(lockKey)
+			value, exists := s.cache.Get(constant.CacheNameWithTaskDispatchNode)
+			if !exists || value == "" || value != s.dispatchNode {
+				s.isDispatchNode.Store(false)
+				return
+			}
 			s.taskQueue.SendUnicastTask(&task.Message{Id: data.Id})
 		})
 		if err != nil {
