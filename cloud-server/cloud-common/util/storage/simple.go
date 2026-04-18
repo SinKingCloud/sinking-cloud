@@ -9,6 +9,7 @@ import (
 // Storage 定义对业务层暴露的极简存储接口。
 type Storage interface {
 	Put(ctx context.Context, key string, body io.Reader) (*ObjectInfo, error)
+	UploadLarge(ctx context.Context, key string, body io.Reader, size, chunkSize int64) (*ObjectInfo, error)
 	StartUpload(ctx context.Context, key string, size, chunkSize int64) (string, error)
 	UploadPart(ctx context.Context, uploadID string, partNumber int, body io.Reader, size int64) error
 	GetUpload(ctx context.Context, uploadID string) (*UploadState, error)
@@ -29,6 +30,21 @@ func (c *Client) Put(ctx context.Context, key string, body io.Reader) (*ObjectIn
 	return c.upload(ctx, uploadRequest{
 		key:  key,
 		body: body,
+	})
+}
+
+// UploadLarge 以极简方式上传大对象，内部自动完成分片上传和合并。
+//
+// size 传实际文件大小，未知时可传 0。
+// chunkSize 传单个分片大小，传 0 时自动使用驱动默认策略。
+func (c *Client) UploadLarge(ctx context.Context, key string, body io.Reader, size, chunkSize int64) (*ObjectInfo, error) {
+	return c.uploadLarge(ctx, largeUploadRequest{
+		uploadRequest: uploadRequest{
+			key:  key,
+			body: body,
+			size: size,
+		},
+		chunkSize: chunkSize,
 	})
 }
 
