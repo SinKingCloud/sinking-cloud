@@ -2,55 +2,41 @@ package storage
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"mime"
+	"net/http"
+	"net/url"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 )
 
 const (
-	// DefaultChunkSize 是默认分块大小，兼顾主流云厂商兼容性和服务端内存占用。
-	DefaultChunkSize int64 = 8 << 20
-	// MinCompatibleChunkSize 是跨云存储场景下较稳妥的最小分块大小。
-	MinCompatibleChunkSize int64 = 5 << 20
-
-	// Deprecated: 请改用 DefaultChunkSize。
-	DefaultMultipartPartSize int64 = DefaultChunkSize
-	// Deprecated: 请改用 MinCompatibleChunkSize。
-	MinCompatiblePartSize int64 = MinCompatibleChunkSize
+	defaultChunkSize       int64 = 8 << 20
+	minCompatibleChunkSize int64 = 5 << 20
 )
 
 var (
-	// ErrUnsupportedProvider 表示当前 provider 还没有实现驱动。
-	ErrUnsupportedProvider = errors.New("storage provider is not implemented")
-	// ErrInvalidObjectKey 表示对象 key 非法。
-	ErrInvalidObjectKey = errors.New("invalid storage object key")
-	// ErrLargeUploadNotSupported 表示当前驱动不支持大文件分块上传。
-	ErrLargeUploadNotSupported = errors.New("large upload is not supported")
-	// ErrUploadStatusNotSupported 表示当前驱动不支持查询上传进度。
-	ErrUploadStatusNotSupported = errors.New("upload status query is not supported")
-	// ErrCopyObjectNotSupported 表示当前驱动不支持对象复制。
-	ErrCopyObjectNotSupported = errors.New("copy object is not supported")
-	// ErrSignedURLNotSupported 表示当前驱动不支持签名访问地址。
-	ErrSignedURLNotSupported = errors.New("signed URL is not supported")
-	// ErrUploadBodyRequired 表示上传必须提供文件流。
-	ErrUploadBodyRequired = errors.New("upload body is required")
-	// ErrInvalidUploadSession 表示上传会话非法。
-	ErrInvalidUploadSession = errors.New("invalid upload session")
-	// ErrInvalidUploadChunk 表示上传分块请求非法。
-	ErrInvalidUploadChunk = errors.New("invalid upload chunk request")
-	// ErrInvalidCompleteUpload 表示完成上传请求非法。
-	ErrInvalidCompleteUpload = errors.New("invalid complete upload request")
-
-	// Deprecated: 请改用 ErrLargeUploadNotSupported。
-	ErrMultipartNotSupported = ErrLargeUploadNotSupported
-	// Deprecated: 请改用 ErrInvalidCompleteUpload 或 ErrInvalidUploadChunk。
-	ErrInvalidMultipartUpload = ErrInvalidCompleteUpload
+	errUnsupportedProvider      = errors.New("storage provider is not implemented")
+	errInvalidObjectKey         = errors.New("invalid storage object key")
+	errLargeUploadNotSupported  = errors.New("large upload is not supported")
+	errUploadStatusNotSupported = errors.New("upload status query is not supported")
+	errCopyObjectNotSupported   = errors.New("copy object is not supported")
+	errSignedURLNotSupported    = errors.New("signed URL is not supported")
+	errUploadBodyRequired       = errors.New("upload body is required")
+	errInvalidUploadSession     = errors.New("invalid upload session")
+	errInvalidUploadChunk       = errors.New("invalid upload chunk request")
+	errInvalidCompleteUpload    = errors.New("invalid complete upload request")
+	errInvalidUploadID          = errors.New("invalid upload ID")
 )
 
-// checkContext 检查上下文是否已经取消。
 func checkContext(ctx context.Context) error {
 	if ctx == nil {
 		return nil
@@ -58,23 +44,21 @@ func checkContext(ctx context.Context) error {
 	return ctx.Err()
 }
 
-// normalizeObjectKey 规范化对象 key，并拦截路径穿越。
 func normalizeObjectKey(key string) (string, error) {
 	key = strings.TrimSpace(strings.ReplaceAll(key, "\\", "/"))
 	key = strings.TrimPrefix(key, "/")
 	if key == "" {
-		return "", ErrInvalidObjectKey
+		return "", errInvalidObjectKey
 	}
 
 	cleanKey := path.Clean(key)
 	if cleanKey == "." || cleanKey == "/" || cleanKey == "" || cleanKey == ".." || strings.HasPrefix(cleanKey, "../") {
-		return "", ErrInvalidObjectKey
+		return "", errInvalidObjectKey
 	}
 
 	return strings.TrimPrefix(cleanKey, "/"), nil
 }
 
-// normalizePrefix 规范化配置中的基础前缀。
 func normalizePrefix(prefix string) string {
 	prefix = strings.TrimSpace(strings.ReplaceAll(prefix, "\\", "/"))
 	prefix = strings.Trim(prefix, "/")
@@ -90,7 +74,6 @@ func normalizePrefix(prefix string) string {
 	return strings.Trim(cleanPrefix, "/")
 }
 
-// normalizeListPrefix 规范化列表查询前缀。
 func normalizeListPrefix(prefix string) string {
 	prefix = strings.TrimSpace(strings.ReplaceAll(prefix, "\\", "/"))
 	prefix = strings.Trim(prefix, "/")
@@ -106,7 +89,6 @@ func normalizeListPrefix(prefix string) string {
 	return strings.Trim(cleanPrefix, "/")
 }
 
-// buildProviderKey 将逻辑 key 映射为实际存储 provider 使用的 key。
 func buildProviderKey(prefix, key string) (string, error) {
 	logicalKey, err := normalizeObjectKey(key)
 	if err != nil {
@@ -121,7 +103,6 @@ func buildProviderKey(prefix, key string) (string, error) {
 	return path.Join(prefix, logicalKey), nil
 }
 
-// buildProviderPrefix 将逻辑列表前缀映射为实际存储 provider 使用的前缀。
 func buildProviderPrefix(prefix, listPrefix string) string {
 	basePrefix := normalizePrefix(prefix)
 	logicalPrefix := normalizeListPrefix(listPrefix)
@@ -138,7 +119,6 @@ func buildProviderPrefix(prefix, listPrefix string) string {
 	}
 }
 
-// stripProviderPrefix 将真实 provider key 转回逻辑 key。
 func stripProviderPrefix(prefix, providerKey string) string {
 	prefix = normalizePrefix(prefix)
 	providerKey = strings.Trim(strings.ReplaceAll(providerKey, "\\", "/"), "/")
@@ -158,40 +138,38 @@ func stripProviderPrefix(prefix, providerKey string) string {
 	return providerKey
 }
 
-// normalizeChunkSize 根据驱动分块策略归一化分块大小。
-func normalizeChunkSize(chunkSize int64, policy ChunkPolicy, objectSize int64) int64 {
-	if policy.DefaultSize <= 0 {
-		policy.DefaultSize = DefaultChunkSize
+func normalizeChunkSize(chunkSize int64, policy chunkPolicy, objectSize int64) int64 {
+	if policy.defaultSize <= 0 {
+		policy.defaultSize = defaultChunkSize
 	}
-	if policy.MinSize <= 0 {
-		policy.MinSize = MinCompatibleChunkSize
+	if policy.minSize <= 0 {
+		policy.minSize = minCompatibleChunkSize
 	}
 
 	if chunkSize <= 0 {
-		chunkSize = policy.DefaultSize
+		chunkSize = policy.defaultSize
 	}
-	if chunkSize < policy.MinSize {
-		chunkSize = policy.MinSize
+	if chunkSize < policy.minSize {
+		chunkSize = policy.minSize
 	}
 
-	if policy.MaxChunks > 0 && objectSize > 0 {
-		minSizeByCount := (objectSize + int64(policy.MaxChunks) - 1) / int64(policy.MaxChunks)
+	if policy.maxChunks > 0 && objectSize > 0 {
+		minSizeByCount := (objectSize + int64(policy.maxChunks) - 1) / int64(policy.maxChunks)
 		if minSizeByCount > chunkSize {
 			chunkSize = minSizeByCount
 		}
 	}
 
-	if policy.SizeMultiple > 0 {
-		chunkSize = roundUpMultiple(chunkSize, policy.SizeMultiple)
+	if policy.sizeMultiple > 0 {
+		chunkSize = roundUpMultiple(chunkSize, policy.sizeMultiple)
 	}
 
-	if chunkSize < policy.MinSize {
-		chunkSize = policy.MinSize
+	if chunkSize < policy.minSize {
+		chunkSize = policy.minSize
 	}
 	return chunkSize
 }
 
-// detectContentType 推断内容类型。
 func detectContentType(contentType, key string) string {
 	if strings.TrimSpace(contentType) != "" {
 		return contentType
@@ -204,7 +182,6 @@ func detectContentType(contentType, key string) string {
 	return "application/octet-stream"
 }
 
-// cloneMetadata 复制 metadata，避免外部 map 被内部修改。
 func cloneMetadata(metadata map[string]string) map[string]string {
 	if len(metadata) == 0 {
 		return nil
@@ -218,27 +195,25 @@ func cloneMetadata(metadata map[string]string) map[string]string {
 	return cloned
 }
 
-// sortUploadedChunks 对已上传分块结果按序排序。
-func sortUploadedChunks(chunks []UploadedChunk) []UploadedChunk {
-	sorted := make([]UploadedChunk, len(chunks))
+func sortUploadedChunks(chunks []uploadedChunk) []uploadedChunk {
+	sorted := make([]uploadedChunk, len(chunks))
 	copy(sorted, chunks)
 	sort.Slice(sorted, func(i, j int) bool {
 		left := sorted[i]
 		right := sorted[j]
 
 		switch {
-		case left.Index > 0 && right.Index > 0 && left.Index != right.Index:
-			return left.Index < right.Index
-		case left.Offset != right.Offset:
-			return left.Offset < right.Offset
+		case left.index > 0 && right.index > 0 && left.index != right.index:
+			return left.index < right.index
+		case left.offset != right.offset:
+			return left.offset < right.offset
 		default:
-			return left.Index < right.Index
+			return left.index < right.index
 		}
 	})
 	return sorted
 }
 
-// ensurePositiveExpire 对签名 URL 有效期做兜底。
 func ensurePositiveExpire(expire time.Duration) time.Duration {
 	if expire <= 0 {
 		return 15 * time.Minute
@@ -246,7 +221,6 @@ func ensurePositiveExpire(expire time.Duration) time.Duration {
 	return expire
 }
 
-// roundUpMultiple 将分块大小向上对齐到指定倍数。
 func roundUpMultiple(value, multiple int64) int64 {
 	if multiple <= 0 {
 		return value
@@ -256,4 +230,209 @@ func roundUpMultiple(value, multiple int64) int64 {
 		return value
 	}
 	return value + multiple - remainder
+}
+
+func newDriver(config Config) (driver, error) {
+	switch config.Provider {
+	case ProviderAliyunOSS:
+		return newAliyunOSSDriver(config)
+	default:
+		return nil, fmt.Errorf("%w: %s", errUnsupportedProvider, config.Provider)
+	}
+}
+
+func newAliyunOSSDriver(config Config) (*aliyunOSSDriver, error) {
+	if strings.TrimSpace(config.Endpoint) == "" ||
+		strings.TrimSpace(config.Bucket) == "" ||
+		strings.TrimSpace(config.AccessKeyID) == "" ||
+		strings.TrimSpace(config.AccessKeySecret) == "" {
+		return nil, fmt.Errorf("aliyun oss config is incomplete")
+	}
+
+	config.UseHTTPS = resolveHTTPSPreference(config.UseHTTPS, config.Endpoint, config.Domain)
+	config.Prefix = normalizePrefix(config.Prefix)
+
+	clientOptions := make([]oss.ClientOption, 0, 4)
+	if strings.TrimSpace(config.SecurityToken) != "" {
+		clientOptions = append(clientOptions, oss.SecurityToken(config.SecurityToken))
+	}
+	if strings.TrimSpace(config.Region) != "" {
+		clientOptions = append(clientOptions, oss.Region(config.Region), oss.AuthVersion(oss.AuthV4))
+	}
+
+	client, err := oss.New(config.Endpoint, config.AccessKeyID, config.AccessKeySecret, clientOptions...)
+	if err != nil {
+		return nil, fmt.Errorf("create aliyun oss client failed: %w", err)
+	}
+
+	bucket, err := client.Bucket(config.Bucket)
+	if err != nil {
+		return nil, fmt.Errorf("open aliyun oss bucket failed: %w", err)
+	}
+
+	return &aliyunOSSDriver{
+		client: client,
+		bucket: bucket,
+		config: config,
+	}, nil
+}
+
+func encodeUploadID(session uploadSession) (string, error) {
+	payload, err := json.Marshal(uploadSessionPayload{
+		Provider:           session.provider,
+		Protocol:           string(session.protocol),
+		Bucket:             session.bucket,
+		Key:                session.key,
+		ProviderKey:        session.providerKey,
+		SessionID:          session.sessionID,
+		Size:               session.size,
+		ChunkSize:          session.chunkSize,
+		ContentType:        session.contentType,
+		CacheControl:       session.cacheControl,
+		ContentDisposition: session.contentDisposition,
+		Metadata:           cloneMetadata(session.metadata),
+		Opaque:             cloneMetadata(session.opaque),
+		CreatedAt:          session.createdAt,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return base64.RawURLEncoding.EncodeToString(payload), nil
+}
+
+func decodeUploadID(uploadID string) (uploadSession, error) {
+	if strings.TrimSpace(uploadID) == "" {
+		return uploadSession{}, errInvalidUploadID
+	}
+
+	payload, err := base64.RawURLEncoding.DecodeString(uploadID)
+	if err != nil {
+		return uploadSession{}, errInvalidUploadID
+	}
+
+	var session uploadSessionPayload
+	if err := json.Unmarshal(payload, &session); err != nil {
+		return uploadSession{}, errInvalidUploadID
+	}
+	if strings.TrimSpace(session.SessionID) == "" || strings.TrimSpace(session.ProviderKey) == "" {
+		return uploadSession{}, errInvalidUploadID
+	}
+
+	return uploadSession{
+		provider:           session.Provider,
+		protocol:           uploadProtocol(session.Protocol),
+		bucket:             session.Bucket,
+		key:                session.Key,
+		providerKey:        session.ProviderKey,
+		sessionID:          session.SessionID,
+		size:               session.Size,
+		chunkSize:          session.ChunkSize,
+		contentType:        session.ContentType,
+		cacheControl:       session.CacheControl,
+		contentDisposition: session.ContentDisposition,
+		metadata:           cloneMetadata(session.Metadata),
+		opaque:             cloneMetadata(session.Opaque),
+		createdAt:          session.CreatedAt,
+	}, nil
+}
+
+func buildChunkID(partNumber int) string {
+	return base64.RawURLEncoding.EncodeToString([]byte(strconv.Itoa(partNumber)))
+}
+
+type uploadSessionPayload struct {
+	Provider           Provider          `json:"provider"`
+	Protocol           string            `json:"protocol"`
+	Bucket             string            `json:"bucket"`
+	Key                string            `json:"key"`
+	ProviderKey        string            `json:"providerKey"`
+	SessionID          string            `json:"sessionId"`
+	Size               int64             `json:"size"`
+	ChunkSize          int64             `json:"chunkSize"`
+	ContentType        string            `json:"contentType"`
+	CacheControl       string            `json:"cacheControl"`
+	ContentDisposition string            `json:"contentDisposition"`
+	Metadata           map[string]string `json:"metadata,omitempty"`
+	Opaque             map[string]string `json:"opaque,omitempty"`
+	CreatedAt          time.Time         `json:"createdAt"`
+}
+
+func metadataFromHeaders(headers http.Header, prefix string) map[string]string {
+	if len(headers) == 0 {
+		return nil
+	}
+
+	prefix = strings.ToLower(strings.TrimSpace(prefix))
+	if prefix == "" {
+		return nil
+	}
+
+	metadata := make(map[string]string)
+	for key, values := range headers {
+		if len(values) == 0 {
+			continue
+		}
+
+		lowerKey := strings.ToLower(key)
+		if !strings.HasPrefix(lowerKey, prefix) {
+			continue
+		}
+
+		metadata[strings.TrimPrefix(lowerKey, prefix)] = values[0]
+	}
+
+	if len(metadata) == 0 {
+		return nil
+	}
+	return metadata
+}
+
+func resolveHTTPSPreference(useHTTPS bool, values ...string) bool {
+	for _, value := range values {
+		value = strings.ToLower(strings.TrimSpace(value))
+		switch {
+		case strings.HasPrefix(value, "http://"):
+			return false
+		case strings.HasPrefix(value, "https://"):
+			return true
+		}
+	}
+
+	if useHTTPS {
+		return true
+	}
+	return true
+}
+
+func ensureScheme(raw string, useHTTPS bool) string {
+	raw = strings.TrimSpace(raw)
+	if strings.HasPrefix(raw, "http://") || strings.HasPrefix(raw, "https://") {
+		return raw
+	}
+
+	scheme := "https://"
+	if !useHTTPS {
+		scheme = "http://"
+	}
+
+	if parsed, err := url.Parse(raw); err == nil && parsed.Scheme != "" {
+		return raw
+	}
+
+	return scheme + raw
+}
+
+func maxInt64(a, b int64) int64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func capacityBySize(size, chunkSize int64) int64 {
+	if size <= 0 || chunkSize <= 0 {
+		return 1
+	}
+	return (size + chunkSize - 1) / chunkSize
 }
