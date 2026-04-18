@@ -10,16 +10,19 @@ import (
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 )
 
+// aliyunOSSDriver 是阿里云 OSS 的具体驱动实现。
 type aliyunOSSDriver struct {
-	client *oss.Client
-	bucket *oss.Bucket
-	config Config
+	client *oss.Client // 是阿里云 OSS SDK 客户端。
+	bucket *oss.Bucket // 是已经绑定好的 Bucket 句柄。
+	config Config      // 保存当前驱动初始化配置。
 }
 
+// provider 返回当前驱动对应的存储厂商。
 func (d *aliyunOSSDriver) provider() Provider {
 	return ProviderAliyunOSS
 }
 
+// capabilities 返回阿里云 OSS 驱动支持的能力集合。
 func (d *aliyunOSSDriver) capabilities() capabilities {
 	return capabilities{
 		smallUpload:       true,
@@ -38,6 +41,7 @@ func (d *aliyunOSSDriver) capabilities() capabilities {
 	}
 }
 
+// upload 执行一次阿里云 OSS 普通对象上传。
 func (d *aliyunOSSDriver) upload(ctx context.Context, request uploadRequest) (*ObjectInfo, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -65,6 +69,7 @@ func (d *aliyunOSSDriver) upload(ctx context.Context, request uploadRequest) (*O
 	return d.statByProviderKey(ctx, providerKey)
 }
 
+// startUploadSession 初始化一个阿里云 OSS multipart 上传会话。
 func (d *aliyunOSSDriver) startUploadSession(ctx context.Context, request startUploadSessionRequest) (*uploadSession, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -101,6 +106,7 @@ func (d *aliyunOSSDriver) startUploadSession(ctx context.Context, request startU
 	}, nil
 }
 
+// uploadChunk 上传 multipart 中的单个分片。
 func (d *aliyunOSSDriver) uploadChunk(ctx context.Context, request uploadChunkRequest) (*uploadedChunk, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -123,6 +129,7 @@ func (d *aliyunOSSDriver) uploadChunk(ctx context.Context, request uploadChunkRe
 	}, nil
 }
 
+// getUploadStatus 查询当前 multipart 会话下已上传的全部分片。
 func (d *aliyunOSSDriver) getUploadStatus(ctx context.Context, session uploadSession) (*uploadStatus, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -131,22 +138,22 @@ func (d *aliyunOSSDriver) getUploadStatus(ctx context.Context, session uploadSes
 		return nil, err
 	}
 
-	result, err := d.bucket.ListUploadedParts(d.uploadSessionHandle(session))
-	if err != nil {
-		return nil, fmt.Errorf("get upload status failed: %w", err)
-	}
+	chunks, committedBytes, err := collectUploadedChunks(func(partNumberMarker int) (oss.ListUploadedPartsResult, error) {
+		options := []oss.Option{
+			oss.MaxParts(1000),
+		}
+		if partNumberMarker > 0 {
+			options = append(options, oss.PartNumberMarker(partNumberMarker))
+		}
 
-	chunks := make([]uploadedChunk, 0, len(result.UploadedParts))
-	var committedBytes int64
-	for _, part := range result.UploadedParts {
-		size := int64(part.Size)
-		chunks = append(chunks, uploadedChunk{
-			index:        part.PartNumber,
-			size:         size,
-			etag:         strings.Trim(part.ETag, "\""),
-			lastModified: part.LastModified,
-		})
-		committedBytes += size
+		result, err := d.bucket.ListUploadedParts(d.uploadSessionHandle(session), options...)
+		if err != nil {
+			return oss.ListUploadedPartsResult{}, fmt.Errorf("get upload status failed: %w", err)
+		}
+		return result, nil
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return &uploadStatus{
@@ -156,6 +163,7 @@ func (d *aliyunOSSDriver) getUploadStatus(ctx context.Context, session uploadSes
 	}, nil
 }
 
+// completeUpload 使用阿里云返回的分片清单完成 multipart 上传。
 func (d *aliyunOSSDriver) completeUpload(ctx context.Context, request completeUploadRequest) (*ObjectInfo, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -186,6 +194,7 @@ func (d *aliyunOSSDriver) completeUpload(ctx context.Context, request completeUp
 	return d.statByProviderKey(ctx, request.session.providerKey)
 }
 
+// abortUpload 终止一个尚未完成的 multipart 上传会话。
 func (d *aliyunOSSDriver) abortUpload(ctx context.Context, session uploadSession) error {
 	if err := checkContext(ctx); err != nil {
 		return err
@@ -199,6 +208,7 @@ func (d *aliyunOSSDriver) abortUpload(ctx context.Context, session uploadSession
 	return nil
 }
 
+// delete 删除单个阿里云 OSS 对象。
 func (d *aliyunOSSDriver) delete(ctx context.Context, key string) error {
 	if err := checkContext(ctx); err != nil {
 		return err
@@ -214,6 +224,7 @@ func (d *aliyunOSSDriver) delete(ctx context.Context, key string) error {
 	return nil
 }
 
+// deleteMany 批量删除多个阿里云 OSS 对象。
 func (d *aliyunOSSDriver) deleteMany(ctx context.Context, keys []string) error {
 	if err := checkContext(ctx); err != nil {
 		return err
@@ -234,6 +245,7 @@ func (d *aliyunOSSDriver) deleteMany(ctx context.Context, keys []string) error {
 	return nil
 }
 
+// stat 获取单个对象的元信息。
 func (d *aliyunOSSDriver) stat(ctx context.Context, key string) (*ObjectInfo, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -247,6 +259,7 @@ func (d *aliyunOSSDriver) stat(ctx context.Context, key string) (*ObjectInfo, er
 	return d.statByProviderKey(ctx, providerKey)
 }
 
+// exists 判断指定对象在阿里云 OSS 中是否存在。
 func (d *aliyunOSSDriver) exists(ctx context.Context, key string) (bool, error) {
 	if err := checkContext(ctx); err != nil {
 		return false, err
@@ -264,6 +277,7 @@ func (d *aliyunOSSDriver) exists(ctx context.Context, key string) (bool, error) 
 	return exists, nil
 }
 
+// list 按条件列出阿里云 OSS 中的对象。
 func (d *aliyunOSSDriver) list(ctx context.Context, request ListRequest) (*ListResult, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -300,6 +314,7 @@ func (d *aliyunOSSDriver) list(ctx context.Context, request ListRequest) (*ListR
 	}, nil
 }
 
+// copy 在阿里云 OSS 侧复制一个对象。
 func (d *aliyunOSSDriver) copy(ctx context.Context, sourceKey, destinationKey string) (*CopyResult, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -331,6 +346,17 @@ func (d *aliyunOSSDriver) copy(ctx context.Context, sourceKey, destinationKey st
 	}, nil
 }
 
+// publicURL 生成对象的公开访问地址。
+func (d *aliyunOSSDriver) publicURL(key string) (string, error) {
+	providerKey, err := buildProviderKey(d.config.Prefix, key)
+	if err != nil {
+		return "", err
+	}
+
+	return d.objectURL(providerKey), nil
+}
+
+// signedURL 生成对象的临时签名访问地址。
 func (d *aliyunOSSDriver) signedURL(ctx context.Context, key string, expire time.Duration) (string, error) {
 	if err := checkContext(ctx); err != nil {
 		return "", err
@@ -348,6 +374,7 @@ func (d *aliyunOSSDriver) signedURL(ctx context.Context, key string, expire time
 	return signedURL, nil
 }
 
+// buildObjectOptions 将通用对象属性转换成阿里云 OSS SDK 选项。
 func (d *aliyunOSSDriver) buildObjectOptions(contentType, cacheControl, contentDisposition string, metadata map[string]string) []oss.Option {
 	options := make([]oss.Option, 0, len(metadata)+3)
 
@@ -370,6 +397,7 @@ func (d *aliyunOSSDriver) buildObjectOptions(contentType, cacheControl, contentD
 	return options
 }
 
+// uploadSessionHandle 将内部上传会话转换成 OSS SDK 需要的句柄结构。
 func (d *aliyunOSSDriver) uploadSessionHandle(session uploadSession) oss.InitiateMultipartUploadResult {
 	return oss.InitiateMultipartUploadResult{
 		Bucket:   d.config.Bucket,
@@ -378,6 +406,7 @@ func (d *aliyunOSSDriver) uploadSessionHandle(session uploadSession) oss.Initiat
 	}
 }
 
+// validateUploadSession 校验内部上传会话是否满足阿里云 OSS 调用要求。
 func (d *aliyunOSSDriver) validateUploadSession(session uploadSession) error {
 	if strings.TrimSpace(session.providerKey) == "" || strings.TrimSpace(session.sessionID) == "" {
 		return errInvalidUploadSession
@@ -388,6 +417,7 @@ func (d *aliyunOSSDriver) validateUploadSession(session uploadSession) error {
 	return nil
 }
 
+// validateUploadChunkRequest 校验单个分片上传参数是否合法。
 func (d *aliyunOSSDriver) validateUploadChunkRequest(request uploadChunkRequest) error {
 	if err := d.validateUploadSession(request.session); err != nil {
 		return err
@@ -398,6 +428,7 @@ func (d *aliyunOSSDriver) validateUploadChunkRequest(request uploadChunkRequest)
 	return nil
 }
 
+// statByProviderKey 根据底层厂商对象路径获取对象元信息。
 func (d *aliyunOSSDriver) statByProviderKey(ctx context.Context, providerKey string) (*ObjectInfo, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -430,6 +461,7 @@ func (d *aliyunOSSDriver) statByProviderKey(ctx context.Context, providerKey str
 	}, nil
 }
 
+// objectFromListObject 将 OSS 列表结果转换成统一对象信息。
 func (d *aliyunOSSDriver) objectFromListObject(object oss.ObjectProperties) ObjectInfo {
 	return ObjectInfo{
 		Key:          stripProviderPrefix(d.config.Prefix, object.Key),
@@ -441,6 +473,7 @@ func (d *aliyunOSSDriver) objectFromListObject(object oss.ObjectProperties) Obje
 	}
 }
 
+// objectURL 根据当前配置生成对象访问地址。
 func (d *aliyunOSSDriver) objectURL(providerKey string) string {
 	if strings.TrimSpace(d.config.Domain) != "" {
 		return strings.TrimRight(ensureScheme(d.config.Domain, d.config.UseHTTPS), "/") + "/" + providerKey

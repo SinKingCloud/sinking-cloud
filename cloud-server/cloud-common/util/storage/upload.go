@@ -8,6 +8,7 @@ import (
 	"io"
 )
 
+// upload 执行一次普通对象上传。
 func (c *Client) upload(ctx context.Context, request uploadRequest) (*ObjectInfo, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -19,6 +20,7 @@ func (c *Client) upload(ctx context.Context, request uploadRequest) (*ObjectInfo
 	return c.driver.upload(ctx, request)
 }
 
+// uploadLarge 以服务端托管方式完成一次自动分片上传。
 func (c *Client) uploadLarge(ctx context.Context, request largeUploadRequest) (_ *ObjectInfo, err error) {
 	if err = checkContext(ctx); err != nil {
 		return nil, err
@@ -122,6 +124,7 @@ func (c *Client) uploadLarge(ctx context.Context, request largeUploadRequest) (_
 	return result, nil
 }
 
+// startUploadSession 初始化一个内部上传会话。
 func (c *Client) startUploadSession(ctx context.Context, request startUploadSessionRequest) (*uploadSession, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -134,6 +137,7 @@ func (c *Client) startUploadSession(ctx context.Context, request startUploadSess
 	return c.driver.startUploadSession(ctx, request)
 }
 
+// uploadChunk 上传单个分片到当前驱动。
 func (c *Client) uploadChunk(ctx context.Context, request uploadChunkRequest) (*uploadedChunk, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -148,6 +152,7 @@ func (c *Client) uploadChunk(ctx context.Context, request uploadChunkRequest) (*
 	return c.driver.uploadChunk(ctx, request)
 }
 
+// getUploadStatus 查询上传会话当前已提交的分片状态。
 func (c *Client) getUploadStatus(ctx context.Context, session uploadSession) (*uploadStatus, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -165,6 +170,7 @@ func (c *Client) getUploadStatus(ctx context.Context, session uploadSession) (*u
 	return status, nil
 }
 
+// completeUpload 根据分片清单完成整个上传任务。
 func (c *Client) completeUpload(ctx context.Context, request completeUploadRequest) (*ObjectInfo, error) {
 	if err := checkContext(ctx); err != nil {
 		return nil, err
@@ -177,6 +183,7 @@ func (c *Client) completeUpload(ctx context.Context, request completeUploadReque
 	return c.driver.completeUpload(ctx, request)
 }
 
+// abortUpload 终止一个尚未完成的上传会话。
 func (c *Client) abortUpload(ctx context.Context, session uploadSession) error {
 	if err := checkContext(ctx); err != nil {
 		return err

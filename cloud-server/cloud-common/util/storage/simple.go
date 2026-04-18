@@ -8,20 +8,37 @@ import (
 
 // Storage 定义对业务层暴露的极简存储接口。
 type Storage interface {
+	// Put 以普通方式上传一个对象。
 	Put(ctx context.Context, key string, body io.Reader) (*ObjectInfo, error)
+	// UploadLarge 以自动分片方式上传一个大对象。
 	UploadLarge(ctx context.Context, key string, body io.Reader, size, chunkSize int64) (*ObjectInfo, error)
+	// StartUpload 创建一个可续传的分片上传任务。
 	StartUpload(ctx context.Context, key string, size, chunkSize int64) (string, error)
+	// UploadPart 上传指定上传任务的单个分片。
 	UploadPart(ctx context.Context, uploadID string, partNumber int, body io.Reader, size int64) error
+	// GetUpload 查询上传任务当前状态。
 	GetUpload(ctx context.Context, uploadID string) (*UploadState, error)
+	// FinishUpload 完成一个已经上传完分片的任务。
 	FinishUpload(ctx context.Context, uploadID string) (*ObjectInfo, error)
+	// CancelUpload 取消一个未完成的上传任务。
 	CancelUpload(ctx context.Context, uploadID string) error
+	// Delete 删除单个对象。
 	Delete(ctx context.Context, key string) error
+	// DeleteMany 批量删除多个对象。
 	DeleteMany(ctx context.Context, keys []string) error
+	// Stat 获取对象元信息。
 	Stat(ctx context.Context, key string) (*ObjectInfo, error)
+	// Exists 判断对象是否存在。
 	Exists(ctx context.Context, key string) (bool, error)
+	// List 按前缀分页列出对象。
 	List(ctx context.Context, request ListRequest) (*ListResult, error)
+	// Copy 在存储侧复制一个对象。
 	Copy(ctx context.Context, sourceKey, destinationKey string) (*CopyResult, error)
+	// Move 移动对象到新的逻辑路径。
 	Move(ctx context.Context, sourceKey, destinationKey string) (*CopyResult, error)
+	// PublicURL 生成对象的公开访问地址。
+	PublicURL(key string) (string, error)
+	// SignedURL 生成对象的临时签名访问地址。
 	SignedURL(ctx context.Context, key string, expire time.Duration) (string, error)
 }
 
@@ -59,12 +76,12 @@ func (c *Client) StartUpload(ctx context.Context, key string, size, chunkSize in
 		return "", err
 	}
 
-	return encodeUploadID(*session)
+	return c.encodeUploadID(*session)
 }
 
 // UploadPart 上传一个分片，只需要 uploadID、分片序号和内容。
 func (c *Client) UploadPart(ctx context.Context, uploadID string, partNumber int, body io.Reader, size int64) error {
-	session, err := decodeUploadID(uploadID)
+	session, err := c.decodeUploadID(uploadID)
 	if err != nil {
 		return err
 	}
@@ -92,7 +109,7 @@ func (c *Client) UploadPart(ctx context.Context, uploadID string, partNumber int
 
 // GetUpload 查询上传任务状态。
 func (c *Client) GetUpload(ctx context.Context, uploadID string) (*UploadState, error) {
-	session, err := decodeUploadID(uploadID)
+	session, err := c.decodeUploadID(uploadID)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +139,7 @@ func (c *Client) GetUpload(ctx context.Context, uploadID string) (*UploadState, 
 
 // FinishUpload 完成一个分片上传任务。
 func (c *Client) FinishUpload(ctx context.Context, uploadID string) (*ObjectInfo, error) {
-	session, err := decodeUploadID(uploadID)
+	session, err := c.decodeUploadID(uploadID)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +160,7 @@ func (c *Client) FinishUpload(ctx context.Context, uploadID string) (*ObjectInfo
 
 // CancelUpload 取消一个未完成的分片上传任务。
 func (c *Client) CancelUpload(ctx context.Context, uploadID string) error {
-	session, err := decodeUploadID(uploadID)
+	session, err := c.decodeUploadID(uploadID)
 	if err != nil {
 		return err
 	}

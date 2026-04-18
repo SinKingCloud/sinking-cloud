@@ -2,6 +2,8 @@ package storage
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -21,6 +23,7 @@ import (
 const (
 	defaultChunkSize       int64 = 8 << 20
 	minCompatibleChunkSize int64 = 5 << 20
+	uploadIDVersion              = "v1"
 )
 
 var (
@@ -277,7 +280,25 @@ func newAliyunOSSDriver(config Config) (*aliyunOSSDriver, error) {
 	}, nil
 }
 
-func encodeUploadID(session uploadSession) (string, error) {
+func buildUploadIDSecret(config Config) []byte {
+	material := strings.Join([]string{
+		"storage-upload-id-secret",
+		string(config.Provider),
+		strings.TrimSpace(config.Endpoint),
+		strings.TrimSpace(config.Region),
+		strings.TrimSpace(config.Bucket),
+		strings.TrimSpace(config.AccessKeyID),
+		strings.TrimSpace(config.AccessKeySecret),
+		normalizePrefix(config.Prefix),
+	}, "\n")
+
+	sum := sha256.Sum256([]byte(material))
+	secret := make([]byte, len(sum))
+	copy(secret, sum[:])
+	return secret
+}
+
+func encodeUploadID(secret []byte, session uploadSession) (string, error) {
 	payload, err := json.Marshal(uploadSessionPayload{
 		Provider:           session.provider,
 		Protocol:           string(session.protocol),
@@ -298,16 +319,33 @@ func encodeUploadID(session uploadSession) (string, error) {
 		return "", err
 	}
 
-	return base64.RawURLEncoding.EncodeToString(payload), nil
+	signature := signUploadIDPayload(secret, payload)
+	return strings.Join([]string{
+		uploadIDVersion,
+		base64.RawURLEncoding.EncodeToString(payload),
+		base64.RawURLEncoding.EncodeToString(signature),
+	}, "."), nil
 }
 
-func decodeUploadID(uploadID string) (uploadSession, error) {
+func decodeUploadID(secret []byte, uploadID string) (uploadSession, error) {
 	if strings.TrimSpace(uploadID) == "" {
 		return uploadSession{}, errInvalidUploadID
 	}
 
-	payload, err := base64.RawURLEncoding.DecodeString(uploadID)
+	parts := strings.Split(uploadID, ".")
+	if len(parts) != 3 || parts[0] != uploadIDVersion {
+		return uploadSession{}, errInvalidUploadID
+	}
+
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
 	if err != nil {
+		return uploadSession{}, errInvalidUploadID
+	}
+	signature, err := base64.RawURLEncoding.DecodeString(parts[2])
+	if err != nil {
+		return uploadSession{}, errInvalidUploadID
+	}
+	if !hmac.Equal(signature, signUploadIDPayload(secret, payload)) {
 		return uploadSession{}, errInvalidUploadID
 	}
 
@@ -337,25 +375,66 @@ func decodeUploadID(uploadID string) (uploadSession, error) {
 	}, nil
 }
 
+func signUploadIDPayload(secret, payload []byte) []byte {
+	mac := hmac.New(sha256.New, secret)
+	_, _ = mac.Write(payload)
+	return mac.Sum(nil)
+}
+
 func buildChunkID(partNumber int) string {
 	return base64.RawURLEncoding.EncodeToString([]byte(strconv.Itoa(partNumber)))
 }
 
+func collectUploadedChunks(fetchPage func(partNumberMarker int) (oss.ListUploadedPartsResult, error)) ([]uploadedChunk, int64, error) {
+	chunks := make([]uploadedChunk, 0, 16)
+	var committedBytes int64
+	partNumberMarker := 0
+
+	for {
+		result, err := fetchPage(partNumberMarker)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		for _, part := range result.UploadedParts {
+			size := int64(part.Size)
+			chunks = append(chunks, uploadedChunk{
+				index:        part.PartNumber,
+				size:         size,
+				etag:         strings.Trim(part.ETag, "\""),
+				lastModified: part.LastModified,
+			})
+			committedBytes += size
+		}
+
+		if !result.IsTruncated {
+			return chunks, committedBytes, nil
+		}
+
+		nextMarker, err := strconv.Atoi(strings.TrimSpace(result.NextPartNumberMarker))
+		if err != nil || nextMarker <= partNumberMarker {
+			return nil, 0, fmt.Errorf("invalid uploaded parts pagination marker")
+		}
+		partNumberMarker = nextMarker
+	}
+}
+
+// uploadSessionPayload 是用于编码上传任务 ID 的可序列化会话结构。
 type uploadSessionPayload struct {
-	Provider           Provider          `json:"provider"`
-	Protocol           string            `json:"protocol"`
-	Bucket             string            `json:"bucket"`
-	Key                string            `json:"key"`
-	ProviderKey        string            `json:"providerKey"`
-	SessionID          string            `json:"sessionId"`
-	Size               int64             `json:"size"`
-	ChunkSize          int64             `json:"chunkSize"`
-	ContentType        string            `json:"contentType"`
-	CacheControl       string            `json:"cacheControl"`
-	ContentDisposition string            `json:"contentDisposition"`
-	Metadata           map[string]string `json:"metadata,omitempty"`
-	Opaque             map[string]string `json:"opaque,omitempty"`
-	CreatedAt          time.Time         `json:"createdAt"`
+	Provider           Provider          `json:"provider"`           // 标识当前会话所属的存储厂商。
+	Protocol           string            `json:"protocol"`           // 标识当前会话采用的上传协议。
+	Bucket             string            `json:"bucket"`             // 是当前会话所属的 Bucket 名称。
+	Key                string            `json:"key"`                // 是业务层看到的逻辑对象路径。
+	ProviderKey        string            `json:"providerKey"`        // 是底层厂商实际使用的对象路径。
+	SessionID          string            `json:"sessionId"`          // 是厂商返回的原始上传会话 ID。
+	Size               int64             `json:"size"`               // 是整个文件总大小，单位为字节。
+	ChunkSize          int64             `json:"chunkSize"`          // 是当前会话采用的分片大小。
+	ContentType        string            `json:"contentType"`        // 是对象的内容类型。
+	CacheControl       string            `json:"cacheControl"`       // 是对象的缓存控制头。
+	ContentDisposition string            `json:"contentDisposition"` // 是对象的下载展示方式。
+	Metadata           map[string]string `json:"metadata,omitempty"` // 是对象自定义元数据。
+	Opaque             map[string]string `json:"opaque,omitempty"`   // 用于承载不同厂商的私有扩展字段。
+	CreatedAt          time.Time         `json:"createdAt"`          // 是会话初始化时间。
 }
 
 func metadataFromHeaders(headers http.Header, prefix string) map[string]string {

@@ -93,6 +93,11 @@ func (c *Client) Move(ctx context.Context, sourceKey, destinationKey string) (*C
 	return result, nil
 }
 
+// PublicURL 生成对象的公开访问地址。
+func (c *Client) PublicURL(key string) (string, error) {
+	return c.driver.publicURL(key)
+}
+
 // SignedURL 生成对象的临时访问地址。
 func (c *Client) SignedURL(ctx context.Context, key string, expire time.Duration) (string, error) {
 	if err := checkContext(ctx); err != nil {
