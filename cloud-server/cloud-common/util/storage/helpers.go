@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"bytes"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
@@ -8,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"mime"
 	"net/http"
 	"net/url"
@@ -39,6 +41,43 @@ var (
 	errInvalidCompleteUpload    = errors.New("invalid complete upload request")
 	errInvalidUploadID          = errors.New("invalid upload ID")
 )
+
+var commonContentTypes = map[string]string{
+	".7z":   "application/x-7z-compressed",
+	".avi":  "video/x-msvideo",
+	".bmp":  "image/bmp",
+	".css":  "text/css",
+	".doc":  "application/msword",
+	".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+	".flv":  "video/x-flv",
+	".gif":  "image/gif",
+	".gz":   "application/gzip",
+	".htm":  "text/html",
+	".html": "text/html",
+	".ico":  "image/x-icon",
+	".jpeg": "image/jpeg",
+	".jpg":  "image/jpeg",
+	".js":   "application/javascript",
+	".json": "application/json",
+	".mov":  "video/quicktime",
+	".mp3":  "audio/mpeg",
+	".mp4":  "video/mp4",
+	".pdf":  "application/pdf",
+	".png":  "image/png",
+	".ppt":  "application/vnd.ms-powerpoint",
+	".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+	".rar":  "application/x-rar-compressed",
+	".svg":  "image/svg+xml",
+	".tar":  "application/x-tar",
+	".txt":  "text/plain",
+	".wav":  "audio/wav",
+	".webp": "image/webp",
+	".wmv":  "video/x-ms-wmv",
+	".xls":  "application/vnd.ms-excel",
+	".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+	".xml":  "application/xml",
+	".zip":  "application/zip",
+}
 
 func checkContext(ctx context.Context) error {
 	if ctx == nil {
@@ -174,15 +213,47 @@ func normalizeChunkSize(chunkSize int64, policy chunkPolicy, objectSize int64) i
 }
 
 func detectContentType(contentType, key string) string {
-	if strings.TrimSpace(contentType) != "" {
+	if contentType = strings.TrimSpace(contentType); contentType != "" {
 		return contentType
 	}
 
-	if guessed := mime.TypeByExtension(strings.ToLower(path.Ext(key))); guessed != "" {
+	extension := strings.ToLower(path.Ext(key))
+	if guessed := commonContentTypes[extension]; guessed != "" {
+		return guessed
+	}
+	if guessed := mime.TypeByExtension(extension); guessed != "" {
 		return guessed
 	}
 
 	return "application/octet-stream"
+}
+
+// prepareUploadBodyWithContentType 在不破坏读取顺序的前提下解析更可靠的内容类型。
+func prepareUploadBodyWithContentType(contentType, key string, body io.Reader) (io.Reader, string, error) {
+	resolvedContentType := detectContentType(contentType, key)
+	if body == nil || resolvedContentType != "application/octet-stream" {
+		return body, resolvedContentType, nil
+	}
+
+	head := make([]byte, 512)
+	n, err := io.ReadFull(body, head)
+	switch {
+	case err == nil:
+	case errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
+	default:
+		return nil, "", fmt.Errorf("detect upload content type failed: %w", err)
+	}
+
+	if n == 0 {
+		return body, resolvedContentType, nil
+	}
+
+	sniffedContentType := http.DetectContentType(head[:n])
+	if sniffedContentType != "" {
+		resolvedContentType = sniffedContentType
+	}
+
+	return io.MultiReader(bytes.NewReader(head[:n]), body), resolvedContentType, nil
 }
 
 func cloneMetadata(metadata map[string]string) map[string]string {

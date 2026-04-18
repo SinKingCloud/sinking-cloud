@@ -16,6 +16,12 @@ func (c *Client) upload(ctx context.Context, request uploadRequest) (*ObjectInfo
 	if request.body == nil {
 		return nil, errUploadBodyRequired
 	}
+	body, contentType, err := prepareUploadBodyWithContentType(request.contentType, request.key, request.body)
+	if err != nil {
+		return nil, err
+	}
+	request.body = body
+	request.contentType = contentType
 
 	return c.driver.upload(ctx, request)
 }
@@ -33,6 +39,12 @@ func (c *Client) uploadLarge(ctx context.Context, request largeUploadRequest) (_
 	if !capabilities.largeUpload {
 		return nil, errLargeUploadNotSupported
 	}
+	body, contentType, err := prepareUploadBodyWithContentType(request.contentType, request.key, request.body)
+	if err != nil {
+		return nil, err
+	}
+	request.body = body
+	request.contentType = contentType
 
 	chunkSize := normalizeChunkSize(request.chunkSize, capabilities.chunkPolicy, request.size)
 	if request.size > 0 && request.size <= chunkSize {
