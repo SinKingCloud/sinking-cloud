@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"service-driver/app/model"
 	"service-driver/app/repository/file"
 	"service-driver/app/repository/scene"
 
@@ -10,6 +11,9 @@ import (
 
 // Service service接口
 type Service interface {
+	Select(where *scene.SelectScene, orderByField string, orderByType string, page int, pageSize int) (list []*model.Scene, total int64, err error) //查询数据
+	GetIdNameMap(refresh bool) (map[int64]string, error)                                                                                            //获取id name映射
+	DeleteById(id int64) error                                                                                                                      //通过ID删除数据
 }
 
 // Session服务

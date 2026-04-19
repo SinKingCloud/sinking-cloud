@@ -2,22 +2,13 @@ package channel
 
 import (
 	"service-driver/app/model"
-
-	"gorm.io/gorm"
 )
 
 // DeleteById 根据ID删除数据
-func (r *Repository) DeleteById(id int64, tx ...*gorm.DB) error {
+func (r *Repository) DeleteById(id int64) error {
 	if id <= 0 {
 		return nil
 	}
-	execute := func(db *gorm.DB) error {
-		return db.
-			Where("id = ?", id).
-			Delete(&model.Channel{}).Error
-	}
-	if len(tx) > 0 && tx[0] != nil {
-		return execute(tx[0])
-	}
-	return execute(r.Database.Db)
+	return r.Database.Db.Where("id = ?", id).
+		Delete(&model.Channel{}).Error
 }

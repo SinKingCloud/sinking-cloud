@@ -1,6 +1,7 @@
 package file
 
 import (
+	"service-driver/app/model"
 	"service-driver/app/repository/channel"
 	"service-driver/app/repository/file"
 	"service-driver/app/repository/scene"
@@ -11,6 +12,7 @@ import (
 
 // Service service接口
 type Service interface {
+	Select(where *file.SelectFile, orderByField string, orderByType string, page int, pageSize int) (list []*model.File, total int64, err error) //查询数据
 }
 
 // Session服务

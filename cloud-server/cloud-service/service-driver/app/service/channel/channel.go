@@ -11,6 +11,9 @@ import (
 
 // Service service接口
 type Service interface {
+	Select(where *channel.SelectChannel, orderByField string, orderByType string, page int, pageSize int) (list []*channel.Channel, total int64, err error) //查询数据
+	GetIdNameMap(refresh bool) (map[int64]string, error)                                                                                                    //获取id name映射
+	DeleteById(id int64) error                                                                                                                              //通过ID删除数据
 }
 
 // Session服务

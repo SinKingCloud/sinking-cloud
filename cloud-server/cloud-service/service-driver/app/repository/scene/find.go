@@ -19,3 +19,15 @@ func (r *Repository) FindById(id int64) (*model.Scene, error) {
 	}
 	return data, nil
 }
+
+// ExistsByChannelId 判断channelId是否被使用
+func (r *Repository) ExistsByChannelId(channelId int64) (bool, error) {
+	var data *model.Scene
+	err := r.Database.Db.
+		Where("channel_id = ?", channelId).
+		First(&data).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, err
+	}
+	return data.Id > 0, nil
+}
