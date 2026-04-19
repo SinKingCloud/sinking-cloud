@@ -26,12 +26,12 @@ type UpdateTask struct {
 
 // Task 计划任务
 type Task struct {
-	Id         int64        `json:"id"`
-	Type       int          `json:"type"`
-	Name       string       `json:"name"`
-	Spec       string       `json:"spec"`
-	Concurrent int          `json:"concurrent"`
-	Status     int          `json:"status"`
-	CreateTime str.DateTime `json:"create_time"`
-	UpdateTime str.DateTime `json:"update_time"`
+	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
+	Type       int          `gorm:"column:type" json:"type"`
+	Name       string       `gorm:"column:name" json:"name"`
+	Spec       string       `gorm:"column:spec" json:"spec"`
+	Concurrent int          `gorm:"column:concurrent" json:"concurrent"`
+	Status     int          `gorm:"column:status" json:"status"`
+	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
+	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }

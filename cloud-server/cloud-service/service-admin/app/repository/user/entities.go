@@ -28,13 +28,13 @@ type UpdateUser struct {
 
 // User 用户列表展示数据
 type User struct {
-	Id         int64        `json:"id"`
-	Account    string       `json:"account"`
-	Phone      string       `json:"phone"`
-	Email      string       `json:"email"`
-	Avatar     string       `json:"avatar"`
-	NickName   string       `json:"nick_name"`
-	Status     int          `json:"status"`
-	CreateTime str.DateTime `json:"create_time"`
-	UpdateTime str.DateTime `json:"update_time"`
+	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
+	Account    string       `gorm:"column:account" json:"account"`
+	Phone      string       `gorm:"column:phone" json:"phone"`
+	Email      string       `gorm:"column:email" json:"email"`
+	Avatar     string       `gorm:"column:avatar" json:"avatar"`
+	NickName   string       `gorm:"column:nick_name" json:"nick_name"`
+	Status     int          `gorm:"column:status" json:"status"`
+	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
+	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }
