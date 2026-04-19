@@ -24,17 +24,25 @@ func (r *Repository) SelectByIds(ids []int64) ([]*model.Role, error) {
 	return roleList, err
 }
 
-// SelectAll 查询全部角色
-func (r *Repository) SelectAll() ([]*model.Role, error) {
-	var roles []*model.Role
+// SelectIdNameMap 查询id name 映射
+func (r *Repository) SelectIdNameMap() (map[int64]string, error) {
+	var data []struct {
+		Id   int64  `gorm:"column:id" json:"id"`
+		Name string `gorm:"column:name" json:"name"`
+	}
 	err := r.Database.Db.
 		Model(&model.Role{}).
+		Select("id", "name").
 		Order("id ASC").
-		Find(&roles).Error
+		Find(&data).Error
 	if err != nil {
 		return nil, err
 	}
-	return roles, nil
+	result := make(map[int64]string, len(data))
+	for _, c := range data {
+		result[c.Id] = c.Name
+	}
+	return result, nil
 }
 
 // Select 查询数据

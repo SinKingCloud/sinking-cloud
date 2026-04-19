@@ -16,19 +16,12 @@ func (s *service) GetRoleNameEnum(refresh bool) (map[int64]string, error) {
 			}
 		}
 	}
-	roles, err := s.repositoryRole.SelectAll()
+	maps, err := s.repositoryRole.SelectIdNameMap()
 	if err != nil {
 		return nil, err
 	}
-	result := map[int64]string{}
-	for _, item := range roles {
-		if item == nil || item.Id <= 0 {
-			continue
-		}
-		result[item.Id] = item.Name
-	}
-	if data, err2 := json.Marshal(result); err2 == nil {
+	if data, err2 := json.Marshal(maps); err2 == nil {
 		s.cache.SetWithExpire(cacheKey, string(data), constant.CacheTimeWithEnum)
 	}
-	return result, nil
+	return maps, nil
 }

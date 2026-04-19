@@ -17,21 +17,14 @@ func (s *service) GetPermissionEnum(refresh bool) (map[string]string, error) {
 			}
 		}
 	}
-	permissions, err := s.repositoryPermission.SelectAll()
+	permissions, err := s.repositoryPermission.SelectCodeNameMap()
 	if err != nil {
 		return nil, err
 	}
-	result := map[string]string{}
-	for _, item := range permissions {
-		if item == nil || item.Code == "" {
-			continue
-		}
-		result[item.Code] = item.Name
-	}
-	if data, err2 := json.Marshal(result); err2 == nil {
+	if data, err2 := json.Marshal(permissions); err2 == nil {
 		s.cache.SetWithExpire(cacheKey, string(data), constant.CacheTimeWithEnum)
 	}
-	return result, nil
+	return permissions, nil
 }
 
 // getPermissionByPath 根据path查询权限

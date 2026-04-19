@@ -2,17 +2,25 @@ package permission
 
 import "service-admin/app/model"
 
-// SelectAll 查询全部权限
-func (r *Repository) SelectAll() ([]*model.Permission, error) {
-	var permissions []*model.Permission
+// SelectCodeNameMap 查询code name 映射
+func (r *Repository) SelectCodeNameMap() (map[string]string, error) {
+	var data []struct {
+		Code string `gorm:"column:code" json:"code"`
+		Name string `gorm:"column:name" json:"name"`
+	}
 	err := r.Database.Db.
 		Model(&model.Permission{}).
+		Select("code", "name").
 		Order("id ASC").
-		Find(&permissions).Error
+		Find(&data).Error
 	if err != nil {
 		return nil, err
 	}
-	return permissions, nil
+	result := make(map[string]string, len(data))
+	for _, c := range data {
+		result[c.Code] = c.Name
+	}
+	return result, nil
 }
 
 // SelectByCodes 根据标识集合查询权限
