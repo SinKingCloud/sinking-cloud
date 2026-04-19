@@ -5,11 +5,10 @@ import (
 	"time"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"gorm.io/gorm"
 )
 
-// UpdateByIds 根据 ids 更新
-func (r *Repository) UpdateByIds(ids []int64, perm *UpdateChannel) error {
+// UpdateById 根据 id 更新
+func (r *Repository) UpdateById(id int64, perm *UpdateChannel) error {
 	if perm == nil {
 		return nil
 	}
@@ -30,11 +29,5 @@ func (r *Repository) UpdateByIds(ids []int64, perm *UpdateChannel) error {
 		return nil
 	}
 	updates["update_time"] = str.DateTime(time.Now())
-	return r.Database.Transaction(func(tx *gorm.DB) error {
-		return r.Database.BatchExecute(ids, 1000, func(batch interface{}) error {
-			return tx.Model(&model.Channel{}).
-				Where("id IN ?", batch.([]int64)).
-				Updates(updates).Error
-		})
-	})
+	return r.Database.Db.Model(&model.Channel{}).Where("id = ?", id).Updates(updates).Error
 }
