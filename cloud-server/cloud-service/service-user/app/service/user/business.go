@@ -66,11 +66,11 @@ func (s *service) CheckUserVerifyStatus(userId int64, clear bool) bool {
 
 // CheckPhoneIsUse 判断手机号是否被使用
 func (s *service) CheckPhoneIsUse(phone string) error {
-	num, err := s.repositoryUser.CountByPhone(phone)
+	exists, err := s.repositoryUser.ExistsByPhone(phone)
 	if err != nil {
-		return errors.New("获取统计数量失败")
+		return errors.New("获取结果失败")
 	}
-	if num > 0 {
+	if exists {
 		return errors.New("该手机号已被使用")
 	}
 	return nil
@@ -78,11 +78,11 @@ func (s *service) CheckPhoneIsUse(phone string) error {
 
 // CheckEmailIsUse 判断邮箱是否被使用
 func (s *service) CheckEmailIsUse(email string) error {
-	num, err := s.repositoryUser.CountByEmail(email)
+	exists, err := s.repositoryUser.ExistsByEmail(email)
 	if err != nil {
-		return errors.New("获取统计数量失败")
+		return errors.New("获取结果失败")
 	}
-	if num > 0 {
+	if exists {
 		return errors.New("该邮箱已被使用")
 	}
 	return nil
@@ -90,11 +90,11 @@ func (s *service) CheckEmailIsUse(email string) error {
 
 // CheckAccountIsUse 判断账号是否被使用
 func (s *service) CheckAccountIsUse(email string) error {
-	num, err := s.repositoryUser.CountByAccount(email)
+	exists, err := s.repositoryUser.ExistsByAccount(email)
 	if err != nil {
-		return errors.New("获取统计数量失败")
+		return errors.New("获取结果失败")
 	}
-	if num > 0 {
+	if exists {
 		return errors.New("该账号已被使用")
 	}
 	return nil
