@@ -8,28 +8,28 @@ import (
 )
 
 // UpdateById 根据 id 更新
-func (r *Repository) UpdateById(id int64, perm *UpdateScene) error {
-	if perm == nil {
+func (r *Repository) UpdateById(id int64, data *UpdateScene) error {
+	if data == nil {
 		return nil
 	}
 	updates := make(map[string]interface{})
-	if perm.Name != nil {
-		updates["name"] = perm.Name
+	if data.Name != nil {
+		updates["name"] = data.Name
 	}
-	if perm.MaxSize != nil {
-		updates["max_size"] = perm.MaxSize
+	if data.MaxSize != nil {
+		updates["max_size"] = data.MaxSize
 	}
-	if perm.AllowExt != nil {
-		updates["allow_ext"] = perm.AllowExt
+	if data.AllowExt != nil {
+		updates["allow_ext"] = data.AllowExt
 	}
-	if perm.ChannelId != nil {
-		updates["channel_id"] = perm.ChannelId
+	if data.ChannelId != nil {
+		updates["channel_id"] = data.ChannelId
 	}
-	if perm.Remark != nil {
-		updates["remark"] = perm.Remark
+	if data.Remark != nil {
+		updates["remark"] = data.Remark
 	}
-	if perm.Status != nil {
-		updates["status"] = perm.Status
+	if data.Status != nil {
+		updates["status"] = data.Status
 	}
 	if len(updates) == 0 {
 		return nil

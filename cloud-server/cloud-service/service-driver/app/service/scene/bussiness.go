@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"service-driver/app/constant"
+	"service-driver/app/enum/scene_status"
 	"service-driver/app/model"
 	"service-driver/app/repository/scene"
+	"strings"
 )
 
 // Select 查询数据
@@ -46,6 +48,80 @@ func (s *service) DeleteById(id int64) error {
 	err = s.repositoryScene.DeleteById(id)
 	if err != nil {
 		return errors.Join(errors.New("删除失败"), err)
+	}
+	return nil
+}
+
+// UpdateById 通过ID更新数据
+func (s *service) UpdateById(id int64, data *scene.UpdateScene) error {
+	if id <= 0 {
+		return errors.New("ID不合法")
+	}
+	update := &scene.UpdateScene{}
+	if data.Name != nil {
+		if _, ok := data.Name.(string); !ok {
+			return errors.New("场景名称不合法")
+		}
+		update.Name = data.Name
+	}
+	if data.AllowExt != nil {
+		if _, ok := data.AllowExt.(string); !ok {
+			return errors.New("允许类型不合法")
+		}
+		update.AllowExt = data.AllowExt
+	}
+	if data.Remark != nil {
+		if _, ok := data.Remark.(string); !ok {
+			return errors.New("场景备注不合法")
+		}
+		update.Remark = data.Remark
+	}
+	if data.MaxSize != nil {
+		if _, ok := data.MaxSize.(int64); !ok {
+			return errors.New("文件最大限制不合法")
+		}
+		update.MaxSize = data.MaxSize
+	}
+	if data.Status != nil {
+		if value, ok := data.Status.(int); ok {
+			if _, ok = scene_status.Map()[value]; !ok {
+				return errors.New("场景状态不合法")
+			}
+		} else {
+			return errors.New("场景状态不合法")
+		}
+		update.Status = data.Status
+	}
+	err := s.repositoryScene.UpdateById(id, data)
+	if err != nil {
+		return errors.Join(errors.New("更新失败"), err)
+	}
+	return nil
+}
+
+// Create 创建数据
+func (s *service) Create(data *model.Scene) error {
+	if strings.TrimSpace(data.Name) == "" {
+		return errors.New("场景名称不能为空")
+	}
+	if _, ok := scene_status.Map()[data.Status]; !ok {
+		return errors.New("场景状态字段不合法")
+	}
+	if data.ChannelId <= 0 {
+		return errors.New("存储通道字段不合法")
+	}
+	if data.MaxSize <= 0 {
+		data.MaxSize = 0
+	}
+	if strings.TrimSpace(data.AllowExt) == "" {
+		data.AllowExt = "*"
+	}
+	if info, err := s.repositoryChannel.FindById(data.Id); err != nil || info == nil {
+		return errors.New("存储通道不存在")
+	}
+	err := s.repositoryScene.Create(data)
+	if err != nil {
+		return errors.Join(errors.New("创建失败"), err)
 	}
 	return nil
 }

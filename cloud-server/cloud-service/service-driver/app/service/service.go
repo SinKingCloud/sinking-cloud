@@ -21,11 +21,11 @@ func Init() {
 	cache := global.App.Cache
 	database := global.App.Database
 
-	channelRepository := channel2.NewRepository(global.App.Database)
-	sceneRepository := scene2.NewRepository(global.App.Database)
-	fileRepository := file2.NewRepository(global.App.Database)
+	channelRepository := channel2.NewRepository(database)
+	sceneRepository := scene2.NewRepository(database)
+	fileRepository := file2.NewRepository(database)
 
-	Channel = channel.NewService(channelRepository, sceneRepository, fileRepository, database, cache)
-	Scene = scene.NewService(sceneRepository, fileRepository, database, cache)
+	Channel = channel.NewService(channelRepository, sceneRepository, fileRepository, cache)
+	Scene = scene.NewService(channelRepository, sceneRepository, fileRepository, cache)
 	File = file.NewService(channelRepository, sceneRepository, fileRepository, database, cache)
 }

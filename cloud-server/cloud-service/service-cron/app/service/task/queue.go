@@ -160,7 +160,7 @@ func (s *service) TaskQueueHandle(message *task.Message) error {
 		serviceName = strings.TrimSpace(serviceName)
 		action = strings.TrimSpace(action)
 		if !ok || serviceName == "" || action == "" {
-			err = errors.New("rpc任务格式不合法")
+			err = errors.New("rpc任务格式字段不合法")
 			s.log(info.Id, err.Error())
 			return err
 		}
@@ -170,7 +170,7 @@ func (s *service) TaskQueueHandle(message *task.Message) error {
 			return err
 		}
 	default:
-		err = errors.New("任务类型不合法")
+		err = errors.New("任务类型字段不合法")
 		s.log(info.Id, err.Error())
 		return err
 	}

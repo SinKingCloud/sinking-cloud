@@ -892,6 +892,20 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 	if id <= 0 || data == nil {
 		return errors.New("参数错误")
 	}
+	if data.Status != nil {
+		if value, ok := data.Status.(int); ok {
+			if _, ok = menu_status.Map()[value]; !ok {
+				return errors.New("状态数据不合法")
+			}
+		} else {
+			return errors.New("状态数据不合法")
+		}
+	}
+	if data.Sort != nil {
+		if _, ok := data.Sort.(int); !ok {
+			return errors.New("排序数据不合法")
+		}
+	}
 	info, err := s.repositoryMenu.FindById(id)
 	if err != nil {
 		return errors.Join(errors.New("更新失败"), err)
@@ -1138,6 +1152,15 @@ func (s *service) SelectRole(where *role.SelectRole, orderByField string, orderB
 func (s *service) UpdateRole(id int64, data *role.UpdateRole, menuIds *[]int64) error {
 	if id <= 0 || data == nil {
 		return errors.New("参数错误")
+	}
+	if data.Status != nil {
+		if value, ok := data.Status.(int); ok {
+			if _, ok = role_status.Map()[value]; !ok {
+				return errors.New("状态数据不合法")
+			}
+		} else {
+			return errors.New("状态数据不合法")
+		}
 	}
 	lockKeys, err := s.lockRoles([]int64{id})
 	if err != nil {
