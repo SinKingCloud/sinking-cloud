@@ -25,7 +25,7 @@ func (s *service) Select(where *file.SelectFile, orderByField string, orderByTyp
 // UpdateByIds 批量更新数据
 func (s *service) UpdateByIds(ids []int64, data *file.UpdateFile) error {
 	if len(ids) == 0 || data == nil {
-		return nil
+		return errors.New("参数错误")
 	}
 	update := &file.UpdateFile{}
 	if data.Status != nil {
@@ -41,6 +41,18 @@ func (s *service) UpdateByIds(ids []int64, data *file.UpdateFile) error {
 	err := s.repositoryFile.UpdateByIds(ids, update)
 	if err != nil {
 		return errors.Join(errors.New("更新失败"), err)
+	}
+	return nil
+}
+
+// DeleteByIds 批量删除数据
+func (s *service) DeleteByIds(ids []int64) error {
+	if len(ids) == 0 {
+		return errors.New("参数错误")
+	}
+	err := s.repositoryFile.DeleteByIds(ids)
+	if err != nil {
+		return errors.Join(errors.New("删除失败"), err)
 	}
 	return nil
 }
