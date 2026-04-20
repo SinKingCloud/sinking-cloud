@@ -34,6 +34,15 @@ func (s *service) GetInfo(userId int64, refresh bool) (user *model.User, err err
 
 // Select 查询用户列表
 func (s *service) Select(where *user.SelectUser, orderByField string, orderByType string, page int, pageSize int) ([]*User, int64, error) {
+	if where.Status != "" {
+		status, err := strconv.Atoi(where.Status)
+		if err != nil {
+			return nil, 0, errors.New("状态参数错误")
+		}
+		if _, ok := user_status.Map()[status]; !ok {
+			return nil, 0, errors.New("状态参数不合法")
+		}
+	}
 	list, total, err := s.repositoryUser.Select(where, orderByField, orderByType, page, pageSize)
 	if err != nil {
 		return nil, 0, err

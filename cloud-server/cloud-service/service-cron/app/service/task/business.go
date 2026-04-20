@@ -92,6 +92,33 @@ func (s *service) FindById(id int64, refresh bool) (data *model.Task, err error)
 
 // Select 查询任务列表
 func (s *service) Select(where *repositoryTask.SelectTask, orderByField string, orderByType string, page int, pageSize int) (list []*repositoryTask.Task, total int64, err error) {
+	if where.Status != "" {
+		status, err := strconv.Atoi(where.Status)
+		if err != nil {
+			return nil, 0, errors.New("状态参数错误")
+		}
+		if _, ok := task_status.Map()[status]; !ok {
+			return nil, 0, errors.New("状态参数不合法")
+		}
+	}
+	if where.Type != "" {
+		Type, err := strconv.Atoi(where.Type)
+		if err != nil {
+			return nil, 0, errors.New("类型参数错误")
+		}
+		if _, ok := task_type.Map()[Type]; !ok {
+			return nil, 0, errors.New("类型参数不合法")
+		}
+	}
+	if where.Concurrent != "" {
+		Concurrent, err := strconv.Atoi(where.Concurrent)
+		if err != nil {
+			return nil, 0, errors.New("并发参数错误")
+		}
+		if _, ok := task_concurrent.Map()[Concurrent]; !ok {
+			return nil, 0, errors.New("并发参数不合法")
+		}
+	}
 	return s.repositoryTask.Select(where, orderByField, orderByType, page, pageSize)
 }
 
