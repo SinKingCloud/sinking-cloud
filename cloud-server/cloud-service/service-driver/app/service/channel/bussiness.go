@@ -9,10 +9,31 @@ import (
 	"service-driver/app/model"
 	"service-driver/app/repository/channel"
 	"strconv"
+	"time"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
 // Select 查询数据
 func (s *service) Select(where *channel.SelectChannel, orderByField string, orderByType string, page int, pageSize int) (list []*channel.Channel, total int64, err error) {
+	if where.Status != "" {
+		status, err := strconv.Atoi(where.Status)
+		if err != nil {
+			return nil, 0, errors.New("状态参数错误")
+		}
+		if _, ok := channel_status.Map()[status]; !ok {
+			return nil, 0, errors.New("状态参数不合法")
+		}
+	}
+	if where.Type != "" {
+		Type, err := strconv.Atoi(where.Type)
+		if err != nil {
+			return nil, 0, errors.New("类型参数错误")
+		}
+		if _, ok := channel_type.Map()[Type]; !ok {
+			return nil, 0, errors.New("类型参数不合法")
+		}
+	}
 	return s.repositoryChannel.Select(where, orderByField, orderByType, page, pageSize)
 }
 
@@ -61,7 +82,7 @@ func (s *service) DeleteById(id int64) error {
 }
 
 // Create 创建数据
-func (s *service) Create(name string, types int, status int) error {
+func (s *service) Create(name string, types int, status int, config string) error {
 	if name == "" {
 		return errors.New("通道名称不能为空")
 	}
@@ -71,11 +92,22 @@ func (s *service) Create(name string, types int, status int) error {
 	if _, ok := channel_status.Map()[status]; !ok {
 		return errors.New("通道状态不合法")
 	}
+	if config != "" {
+		value, err := s.checkSetting(config, types)
+		if err != nil {
+			return errors.Join(errors.New("设置不正确"), err)
+		}
+		config = value
+	} else {
+		config = "{}"
+	}
 	err := s.repositoryChannel.Create(&model.Channel{
-		Type:   types,
-		Name:   name,
-		Config: "{}",
-		Status: status,
+		Type:       types,
+		Name:       name,
+		Config:     config,
+		Status:     status,
+		CreateTime: str.DateTime(time.Now()),
+		UpdateTime: str.DateTime(time.Now()),
 	})
 	if err != nil {
 		return errors.Join(errors.New("创建失败"), err)

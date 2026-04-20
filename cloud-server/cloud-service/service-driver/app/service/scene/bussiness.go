@@ -7,11 +7,27 @@ import (
 	"service-driver/app/enum/scene_status"
 	"service-driver/app/model"
 	"service-driver/app/repository/scene"
+	"strconv"
 	"strings"
 )
 
 // Select 查询数据
 func (s *service) Select(where *scene.SelectScene, orderByField string, orderByType string, page int, pageSize int) (list []*model.Scene, total int64, err error) {
+	if where.Status != "" {
+		status, err := strconv.Atoi(where.Status)
+		if err != nil {
+			return nil, 0, errors.New("状态参数错误")
+		}
+		if _, ok := scene_status.Map()[status]; !ok {
+			return nil, 0, errors.New("状态参数不合法")
+		}
+	}
+	if where.ChannelId != "" {
+		_, err = strconv.Atoi(where.ChannelId)
+		if err != nil {
+			return nil, 0, errors.New("通道参数错误")
+		}
+	}
 	return s.repositoryScene.Select(where, orderByField, orderByType, page, pageSize)
 }
 

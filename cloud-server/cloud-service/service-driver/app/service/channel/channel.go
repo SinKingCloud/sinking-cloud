@@ -10,7 +10,7 @@ import (
 
 // Service service接口
 type Service interface {
-	Create(name string, types int, status int) error                                                                                                        //创建数据
+	Create(name string, types int, status int, config string) error                                                                                         //创建数据
 	Select(where *channel.SelectChannel, orderByField string, orderByType string, page int, pageSize int) (list []*channel.Channel, total int64, err error) //查询数据
 	GetIdNameMap(refresh bool) (map[int64]string, error)                                                                                                    //获取id name映射
 	DeleteById(id int64) error                                                                                                                              //通过ID删除数据
