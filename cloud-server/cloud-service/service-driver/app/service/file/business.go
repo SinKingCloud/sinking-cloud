@@ -1,11 +1,46 @@
 package file
 
 import (
+	"errors"
+	"service-driver/app/enum/file_status"
 	"service-driver/app/model"
 	"service-driver/app/repository/file"
+	"strconv"
 )
 
 // Select 查询数据
 func (s *service) Select(where *file.SelectFile, orderByField string, orderByType string, page int, pageSize int) (list []*model.File, total int64, err error) {
+	if where.Status != "" {
+		status, err := strconv.Atoi(where.Status)
+		if err != nil {
+			return nil, 0, errors.New("状态参数错误")
+		}
+		if _, ok := file_status.Map()[status]; !ok {
+			return nil, 0, errors.New("状态参数不合法")
+		}
+	}
 	return s.repositoryFile.Select(where, orderByField, orderByType, page, pageSize)
+}
+
+// UpdateByIds 批量更新数据
+func (s *service) UpdateByIds(ids []int64, data *file.UpdateFile) error {
+	if len(ids) == 0 || data == nil {
+		return nil
+	}
+	update := &file.UpdateFile{}
+	if data.Status != nil {
+		if value, ok := data.Status.(int); ok {
+			if _, ok = file_status.Map()[value]; !ok {
+				return errors.New("文件状态不合法")
+			}
+		} else {
+			return errors.New("文件状态不合法")
+		}
+		update.Status = data.Status
+	}
+	err := s.repositoryFile.UpdateByIds(ids, update)
+	if err != nil {
+		return errors.Join(errors.New("更新失败"), err)
+	}
+	return nil
 }

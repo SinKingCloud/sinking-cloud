@@ -13,3 +13,7 @@ type SelectFile struct {
 	UpdateTimeStart string
 	UpdateTimeEnd   string
 }
+
+type UpdateFile struct {
+	Status interface{}
+}

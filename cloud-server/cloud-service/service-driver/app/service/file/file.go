@@ -13,6 +13,7 @@ import (
 // Service service接口
 type Service interface {
 	Select(where *file.SelectFile, orderByField string, orderByType string, page int, pageSize int) (list []*model.File, total int64, err error) //查询数据
+	UpdateByIds(ids []int64, data *file.UpdateFile) error                                                                                        //批量更新数据
 }
 
 // Session服务
