@@ -8,6 +8,7 @@ import (
 	"service-driver/app/enum/channel_type"
 	"service-driver/app/model"
 	"service-driver/app/repository/channel"
+	"strconv"
 )
 
 // Select 查询数据
@@ -128,7 +129,7 @@ func (s *service) UpdateById(id int64, data *channel.UpdateChannel) error {
 
 // FindById 通过ID查询数据
 func (s *service) FindById(id int64, refresh bool) (*Channel, error) {
-	cacheKey := constant.CacheNameWithChannel + "channel_names"
+	cacheKey := constant.CacheNameWithChannel + strconv.FormatInt(id, 10)
 	if !refresh {
 		if data, exists := s.cache.Get(cacheKey); exists && data != "" {
 			var result *Channel
