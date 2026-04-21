@@ -124,7 +124,7 @@ func (s *service) UpdateById(id int64, data *channel.UpdateChannel) error {
 		return errors.New("通道ID不合法")
 	}
 	info, err := s.FindById(id, false)
-	if err != nil {
+	if err != nil || info == nil {
 		return errors.New("获取通道信息失败")
 	}
 	update := &channel.UpdateChannel{}
@@ -247,7 +247,7 @@ func (s *service) checkSetting(str string, types int) (res string, err error) {
 // GetStorage 获取储存对象
 func (s *service) GetStorage(id int64) (storage.Storage, error) {
 	info, err := s.FindById(id, false)
-	if err != nil {
+	if err != nil || info == nil {
 		return nil, errors.Join(errors.New("获取通道信息失败"), err)
 	}
 	var client storage.Storage
