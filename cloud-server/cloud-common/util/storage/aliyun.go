@@ -229,7 +229,10 @@ func (d *aliyunOSSDriver) deleteMany(ctx context.Context, keys []string) error {
 	if err := checkContext(ctx); err != nil {
 		return err
 	}
-
+	if len(keys) == 0 {
+		return nil
+	}
+	const aliyunDeleteManyBatchSize = 1000
 	providerKeys := make([]string, 0, len(keys))
 	for _, key := range keys {
 		providerKey, err := buildProviderKey(d.config.Prefix, key)
@@ -238,9 +241,18 @@ func (d *aliyunOSSDriver) deleteMany(ctx context.Context, keys []string) error {
 		}
 		providerKeys = append(providerKeys, providerKey)
 	}
-
-	if _, err := d.bucket.DeleteObjects(providerKeys); err != nil {
-		return fmt.Errorf("batch delete objects failed: %w", err)
+	num := len(providerKeys)
+	for start := 0; start < num; start += aliyunDeleteManyBatchSize {
+		if err := checkContext(ctx); err != nil {
+			return err
+		}
+		end := start + aliyunDeleteManyBatchSize
+		if end > num {
+			end = num
+		}
+		if _, err := d.bucket.DeleteObjects(providerKeys[start:end]); err != nil {
+			return fmt.Errorf("batch delete objects failed: %w", err)
+		}
 	}
 	return nil
 }
