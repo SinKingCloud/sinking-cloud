@@ -14,7 +14,7 @@ func (r *Repository) FindById(id int64) (*model.Channel, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
-	if data.Id <= 0 {
+	if data == nil || data.Id <= 0 {
 		return nil, nil
 	}
 	return data, nil

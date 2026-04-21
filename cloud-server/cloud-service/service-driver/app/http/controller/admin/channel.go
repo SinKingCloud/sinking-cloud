@@ -81,7 +81,6 @@ func (channelController) Update(c *context.Context) {
 	var form struct {
 		Id     int64  `json:"id" default:"" validate:"required,min=1" label:"记录ID"`
 		Name   string `json:"name" default:"" validate:"omitempty" label:"名称"`
-		Type   string `json:"type" default:"" validate:"omitempty,numeric" label:"类型"`
 		Config string `json:"config" default:"" validate:"omitempty" label:"配置"`
 		Status string `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
 	}
@@ -92,9 +91,6 @@ func (channelController) Update(c *context.Context) {
 	data := &channel.UpdateChannel{}
 	if form.Name != "" {
 		data.Name = form.Name
-	}
-	if form.Type != "" {
-		data.Type, _ = strconv.Atoi(form.Type)
 	}
 	if form.Config != "" {
 		data.Config = form.Config

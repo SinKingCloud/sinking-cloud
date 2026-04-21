@@ -233,6 +233,13 @@ func (s *service) checkSetting(str string, types int) (res string, err error) {
 		if data.Path == "" {
 			err = errors.New("path不能为空")
 		}
+		bytes, err2 := json.Marshal(data)
+		if err2 != nil {
+			err = errors.New("配置格式化失败")
+		} else {
+			res = string(bytes)
+		}
+		break
 	}
 	return res, err
 }

@@ -109,7 +109,7 @@ func (s *service) UpdateById(id int64, data *scene.UpdateScene) error {
 		}
 		update.Status = data.Status
 	}
-	err := s.repositoryScene.UpdateById(id, data)
+	err := s.repositoryScene.UpdateById(id, update)
 	if err != nil {
 		return errors.Join(errors.New("更新失败"), err)
 	}
@@ -134,7 +134,7 @@ func (s *service) Create(data *model.Scene) error {
 	if strings.TrimSpace(data.AllowExt) == "" {
 		data.AllowExt = "*"
 	}
-	if info, err := s.repositoryChannel.FindById(data.Id); err != nil || info == nil {
+	if info, err := s.repositoryChannel.FindById(data.ChannelId); err != nil || info == nil {
 		return errors.New("存储通道不存在")
 	}
 	err := s.repositoryScene.Create(data)

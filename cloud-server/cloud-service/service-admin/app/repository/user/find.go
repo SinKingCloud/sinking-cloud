@@ -16,7 +16,7 @@ func (r *Repository) FindById(id int64) (*model.User, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
-	if user.Id <= 0 {
+	if user == nil || user.Id <= 0 {
 		return nil, nil
 	}
 	return user, nil

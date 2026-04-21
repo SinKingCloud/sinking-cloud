@@ -83,7 +83,7 @@ func (sceneController) Update(c *context.Context) {
 		data.Name = form.Name
 	}
 	if form.MaxSize != "" {
-		data.MaxSize, _ = strconv.Atoi(form.MaxSize)
+		data.MaxSize, _ = strconv.ParseInt(form.MaxSize, 10, 64)
 	}
 	if form.AllowExt != "" {
 		data.AllowExt = form.AllowExt
