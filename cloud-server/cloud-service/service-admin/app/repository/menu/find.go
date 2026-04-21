@@ -17,7 +17,7 @@ func (r *Repository) FindByCode(code string) (*model.Menu, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
-	if menu.Id <= 0 {
+	if menu == nil || menu.Id <= 0 {
 		return nil, nil
 	}
 	return menu, nil

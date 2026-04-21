@@ -16,7 +16,7 @@ func (r *Repository) ExistsByChannelId(channelId int64) (bool, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, err
 	}
-	return data.Id > 0, nil
+	return data != nil && data.Id > 0, nil
 }
 
 // ExistsBySceneId 判断sceneId是否被使用
@@ -28,5 +28,5 @@ func (r *Repository) ExistsBySceneId(sceneId int64) (bool, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, err
 	}
-	return data.Id > 0, nil
+	return data != nil && data.Id > 0, nil
 }

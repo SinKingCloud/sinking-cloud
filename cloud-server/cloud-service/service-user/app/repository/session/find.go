@@ -16,7 +16,7 @@ func (r *Repository) FindByToken(token string) (*model.Session, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
-	if session.Token == "" {
+	if session == nil || session.Token == "" {
 		return nil, nil
 	}
 	return session, nil

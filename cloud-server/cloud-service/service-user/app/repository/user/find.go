@@ -16,7 +16,7 @@ func (r *Repository) FindByIdentifier(identifier string) (*model.User, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
-	if user.Id <= 0 {
+	if user == nil || user.Id <= 0 {
 		return nil, nil
 	}
 	return user, nil
@@ -46,7 +46,7 @@ func (r *Repository) ExistsByPhone(phone string) (bool, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, err
 	}
-	return user.Id > 0, nil
+	return user != nil && user.Id > 0, nil
 }
 
 // ExistsByEmail 判断邮箱是否存在
@@ -58,7 +58,7 @@ func (r *Repository) ExistsByEmail(email string) (bool, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, err
 	}
-	return user.Id > 0, nil
+	return user != nil && user.Id > 0, nil
 }
 
 // ExistsByAccount 判断账号是否存在
@@ -70,5 +70,5 @@ func (r *Repository) ExistsByAccount(account string) (bool, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, err
 	}
-	return user.Id > 0, nil
+	return user != nil && user.Id > 0, nil
 }

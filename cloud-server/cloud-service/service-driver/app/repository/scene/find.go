@@ -29,5 +29,5 @@ func (r *Repository) ExistsByChannelId(channelId int64) (bool, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, err
 	}
-	return data.Id > 0, nil
+	return data != nil && data.Id > 0, nil
 }
