@@ -3,10 +3,12 @@ package file
 import (
 	"context"
 	"errors"
+	"service-driver/app/constant"
 	"service-driver/app/enum/file_status"
 	"service-driver/app/model"
 	"service-driver/app/repository/file"
 	"strconv"
+	"strings"
 )
 
 // Select 查询数据
@@ -23,10 +25,62 @@ func (s *service) Select(where *file.SelectFile, orderByField string, orderByTyp
 	return s.repositoryFile.Select(where, orderByField, orderByType, page, pageSize)
 }
 
+// GetUrlByHash 根据 hash 获取文件公开地址。
+func (s *service) GetUrlByHash(hash string) (string, error) {
+	if hash == "" {
+		return "", errors.New("文件哈希不能为空")
+	}
+	const cacheErrorPrefix = "error:"
+	cacheKey := constant.CacheNameWithFilePreview + hash
+	if data, exists := s.cache.Get(cacheKey); exists {
+		if data == "" {
+			return "", errors.New("文件不存在")
+		}
+		if strings.HasPrefix(data, cacheErrorPrefix) {
+			return "", errors.New(strings.TrimPrefix(data, cacheErrorPrefix))
+		}
+		return data, nil
+	}
+	cacheError := func(err error) (string, error) {
+		s.cache.SetWithExpire(cacheKey, cacheErrorPrefix+err.Error(), constant.CacheTimeWithFilePreview)
+		return "", err
+	}
+	info, err := s.repositoryFile.FindByHash(hash)
+	if err != nil {
+		return cacheError(errors.Join(errors.New("获取文件信息失败"), err))
+	}
+	if info == nil {
+		return cacheError(errors.New("文件不存在"))
+	}
+	if info.Status != file_status.Enable {
+		return cacheError(errors.New("文件不可访问"))
+	}
+	if info.ChannelId <= 0 {
+		return cacheError(errors.New("文件通道不存在"))
+	}
+	if info.Path == "" {
+		return cacheError(errors.New("文件路径不存在"))
+	}
+	client, err := s.channelService.GetStorage(info.ChannelId)
+	if err != nil {
+		return cacheError(errors.Join(errors.New("获取存储信息失败"), err))
+	}
+	url, err := client.PublicURL(info.Path)
+	if err != nil {
+		return cacheError(errors.Join(errors.New("获取文件访问地址失败"), err))
+	}
+	s.cache.SetWithExpire(cacheKey, url, constant.CacheTimeWithFilePreview)
+	return url, nil
+}
+
 // UpdateByIds 批量更新数据
 func (s *service) UpdateByIds(ids []int64, data *file.UpdateFile) error {
 	if len(ids) == 0 || data == nil {
 		return errors.New("参数错误")
+	}
+	list, err := s.repositoryFile.SelectChannelIdHashPathByIds(ids)
+	if err != nil {
+		return errors.Join(errors.New("获取文件信息失败"), err)
 	}
 	update := &file.UpdateFile{}
 	if data.Status != nil {
@@ -39,10 +93,11 @@ func (s *service) UpdateByIds(ids []int64, data *file.UpdateFile) error {
 		}
 		update.Status = data.Status
 	}
-	err := s.repositoryFile.UpdateByIds(ids, update)
+	err = s.repositoryFile.UpdateByIds(ids, update)
 	if err != nil {
 		return errors.Join(errors.New("更新失败"), err)
 	}
+	s.clearCache(list)
 	return nil
 }
 
@@ -51,12 +106,12 @@ func (s *service) DeleteByIds(ids []int64, clear bool) error {
 	if len(ids) == 0 {
 		return errors.New("参数错误")
 	}
+	list, err := s.repositoryFile.SelectChannelIdHashPathByIds(ids)
+	if err != nil {
+		return errors.Join(errors.New("获取文件信息失败"), err)
+	}
 	var paths map[int64][]string
 	if clear {
-		list, err := s.repositoryFile.SelectChannelIdWithPathByIds(ids)
-		if err != nil {
-			return errors.Join(errors.New("获取清理路径失败"), err)
-		}
 		paths = make(map[int64][]string)
 		for _, item := range list {
 			if item == nil || item.ChannelId <= 0 || item.Path == "" {
@@ -65,14 +120,32 @@ func (s *service) DeleteByIds(ids []int64, clear bool) error {
 			paths[item.ChannelId] = append(paths[item.ChannelId], item.Path)
 		}
 	}
-	err := s.repositoryFile.DeleteByIds(ids)
+	err = s.repositoryFile.DeleteByIds(ids)
 	if err != nil {
 		return errors.Join(errors.New("删除失败"), err)
 	}
+	s.clearCache(list)
 	for k, v := range paths {
 		if client, err2 := s.channelService.GetStorage(k); err2 == nil && client != nil {
 			_ = client.DeleteMany(context.Background(), v)
 		}
 	}
 	return nil
+}
+
+// clearCache 清理文件缓存。
+func (s *service) clearCache(list []*model.File) {
+	if len(list) == 0 {
+		return
+	}
+	keys := make([]string, 0, len(list))
+	for _, item := range list {
+		if item == nil {
+			continue
+		}
+		keys = append(keys, constant.CacheNameWithFilePreview+item.Hash)
+	}
+	if len(keys) > 0 {
+		s.cache.Delete(keys...)
+	}
 }

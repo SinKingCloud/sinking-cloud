@@ -13,5 +13,5 @@ func loadApi(s *sinking_web.Engine) {
 	upload.ANY("/simple", context.HandleFunc(controller.Api.Upload.Simple))
 
 	file := s.Group("/preview")
-	file.ANY("/*", context.HandleFunc(controller.Api.File.Preview))
+	file.ANY("/:hash", context.HandleFunc(controller.Api.File.Preview))
 }

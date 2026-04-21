@@ -14,6 +14,7 @@ import (
 // Service service接口
 type Service interface {
 	Select(where *file.SelectFile, orderByField string, orderByType string, page int, pageSize int) (list []*model.File, total int64, err error) //查询数据
+	GetUrlByHash(hash string) (string, error)                                                                                                    //根据hash获取文件公开地址
 	UpdateByIds(ids []int64, data *file.UpdateFile) error                                                                                        //批量更新数据
 	DeleteByIds(ids []int64, clear bool) error                                                                                                   //批量删除数据
 }
