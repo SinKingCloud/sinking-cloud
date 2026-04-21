@@ -10,6 +10,7 @@ import (
 	"service-driver/app/enum/file_status"
 	"service-driver/app/enum/scene_status"
 	"service-driver/app/model"
+	"strconv"
 	"strings"
 	"time"
 
@@ -72,7 +73,7 @@ func (s *service) SimpleUpload(ctx context.Context, sceneId int64, body io.Reade
 		return "", errors.Join(errors.New("获取文件信息失败"), err)
 	}
 	if exists != nil {
-		return s.buildPreviewUrl(hash), nil
+		return s.buildPreviewUrl(sceneInfo.Id, hash), nil
 	}
 	client, err := s.channelService.GetStorage(sceneInfo.ChannelId)
 	if err != nil {
@@ -101,7 +102,7 @@ func (s *service) SimpleUpload(ctx context.Context, sceneId int64, body io.Reade
 		return "", errors.Join(errors.New("创建文件记录失败"), err)
 	}
 	s.clearCache([]*model.File{data})
-	return s.buildPreviewUrl(hash), nil
+	return s.buildPreviewUrl(sceneInfo.Id, hash), nil
 }
 
 // allowUploadExt 判断场景是否允许当前扩展名。
@@ -144,6 +145,6 @@ func (s *service) buildUploadPath(hash string, ext string) string {
 }
 
 // buildPreviewUrl 生成文件预览地址。
-func (s *service) buildPreviewUrl(hash string) string {
-	return "/preview/" + hash
+func (s *service) buildPreviewUrl(sceneId int64, hash string) string {
+	return "/preview/" + hash + "?scene_id=" + strconv.FormatInt(sceneId, 10)
 }

@@ -26,12 +26,15 @@ func (s *service) Select(where *file.SelectFile, orderByField string, orderByTyp
 }
 
 // GetUrlByHash 根据 hash 获取文件公开地址。
-func (s *service) GetUrlByHash(hash string) (string, error) {
+func (s *service) GetUrlByHash(sceneId int64, hash string) (string, error) {
+	if sceneId <= 0 {
+		return "", errors.New("文件场景不能为空")
+	}
 	if hash == "" {
 		return "", errors.New("文件哈希不能为空")
 	}
 	const cacheErrorPrefix = "error:"
-	cacheKey := constant.CacheNameWithFilePreview + hash
+	cacheKey := s.buildPreviewCacheKey(sceneId, hash)
 	if data, exists := s.cache.Get(cacheKey); exists {
 		if data == "" {
 			return "", errors.New("文件不存在")
@@ -45,7 +48,7 @@ func (s *service) GetUrlByHash(hash string) (string, error) {
 		s.cache.SetWithExpire(cacheKey, cacheErrorPrefix+err.Error(), constant.CacheTimeWithFilePreview)
 		return "", err
 	}
-	info, err := s.repositoryFile.FindByHash(hash)
+	info, err := s.repositoryFile.FindByHashWithSceneId(hash, sceneId)
 	if err != nil {
 		return cacheError(errors.Join(errors.New("获取文件信息失败"), err))
 	}
@@ -78,7 +81,7 @@ func (s *service) UpdateByIds(ids []int64, data *file.UpdateFile) error {
 	if len(ids) == 0 || data == nil {
 		return errors.New("参数错误")
 	}
-	list, err := s.repositoryFile.SelectChannelIdHashPathByIds(ids)
+	list, err := s.repositoryFile.SelectChannelIdSceneIdHashPathByIds(ids)
 	if err != nil {
 		return errors.Join(errors.New("获取文件信息失败"), err)
 	}
@@ -106,7 +109,7 @@ func (s *service) DeleteByIds(ids []int64, clear bool) error {
 	if len(ids) == 0 {
 		return errors.New("参数错误")
 	}
-	list, err := s.repositoryFile.SelectChannelIdHashPathByIds(ids)
+	list, err := s.repositoryFile.SelectChannelIdSceneIdHashPathByIds(ids)
 	if err != nil {
 		return errors.Join(errors.New("获取文件信息失败"), err)
 	}
@@ -139,13 +142,24 @@ func (s *service) clearCache(list []*model.File) {
 		return
 	}
 	keys := make([]string, 0, len(list))
+	seen := make(map[string]struct{}, len(list))
 	for _, item := range list {
-		if item == nil {
+		if item == nil || item.SceneId <= 0 || item.Hash == "" {
 			continue
 		}
-		keys = append(keys, constant.CacheNameWithFilePreview+item.Hash)
+		cacheKey := s.buildPreviewCacheKey(item.SceneId, item.Hash)
+		if _, exists := seen[cacheKey]; exists {
+			continue
+		}
+		seen[cacheKey] = struct{}{}
+		keys = append(keys, cacheKey)
 	}
 	if len(keys) > 0 {
 		s.cache.Delete(keys...)
 	}
+}
+
+// buildPreviewCacheKey 生成文件预览缓存key。
+func (s *service) buildPreviewCacheKey(sceneId int64, hash string) string {
+	return constant.CacheNameWithFilePreview + strconv.FormatInt(sceneId, 10) + "_" + hash
 }

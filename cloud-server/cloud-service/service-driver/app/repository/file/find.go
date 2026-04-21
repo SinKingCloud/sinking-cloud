@@ -7,21 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// FindByHash 根据hash查询文件。
-func (r *Repository) FindByHash(hash string) (*model.File, error) {
-	var data *model.File
-	err := r.Database.Db.
-		Where("hash = ?", hash).
-		First(&data).Error
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, err
-	}
-	if data == nil || data.Id <= 0 {
-		return nil, nil
-	}
-	return data, nil
-}
-
 // FindByHashWithSceneId 根据hash和场景查询文件。
 func (r *Repository) FindByHashWithSceneId(hash string, sceneId int64) (*model.File, error) {
 	var data *model.File
