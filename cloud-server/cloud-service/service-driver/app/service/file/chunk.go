@@ -31,6 +31,32 @@ func (s *service) ChunkUpload(ctx context.Context, step string, sceneId int64, u
 	if err != nil {
 		return nil, err
 	}
+	switch step {
+	case ChunkUploadStepInit:
+		return s.chunkUploadInit(ctx, client, sceneInfo, hash, filename, totalSize, chunkSize)
+	case ChunkUploadStepUpload:
+		return s.chunkUploadPart(ctx, client, uploadId, partNumber, body, size)
+	case ChunkUploadStepStatus:
+		return s.chunkUploadStatus(ctx, client, uploadId)
+	case ChunkUploadStepFinish:
+		return s.chunkUploadFinish(ctx, client, sceneInfo, uploadId, hash, filename)
+	default:
+		return nil, errors.New("分片上传步骤不合法")
+	}
+}
+
+// chunkUploadInit 初始化上传任务。
+func (s *service) chunkUploadInit(ctx context.Context, client storage.Storage, sceneInfo *model.Scene, hash string, filename string, totalSize int64, chunkSize int64) (*ChunkUploadResult, error) {
+	_, ext, err := s.prepareChunkFilename(sceneInfo, filename)
+	if err != nil {
+		return nil, err
+	}
+	if totalSize <= 0 {
+		return nil, errors.New("文件总大小不合法")
+	}
+	if sceneInfo.MaxSize > 0 && totalSize > sceneInfo.MaxSize {
+		return nil, errors.New("上传文件大小超过场景限制")
+	}
 	exists, err := s.findByHashWithSceneId(hash, sceneInfo.Id, false)
 	if err != nil {
 		return nil, errors.Join(errors.New("获取文件信息失败"), err)
@@ -42,16 +68,13 @@ func (s *service) ChunkUpload(ctx context.Context, step string, sceneId int64, u
 			CommittedBytes: exists.Size,
 		}, nil
 	}
-	switch step {
-	case ChunkUploadStepUpload:
-		return s.chunkUploadPart(ctx, client, sceneInfo, uploadId, hash, filename, totalSize, chunkSize, partNumber, body, size)
-	case ChunkUploadStepStatus:
-		return s.chunkUploadStatus(ctx, client, uploadId)
-	case ChunkUploadStepFinish:
-		return s.chunkUploadFinish(ctx, client, sceneInfo, uploadId, hash, filename)
-	default:
-		return nil, errors.New("分片上传步骤不合法")
+	uploadId, err := client.StartUpload(ctx, s.buildUploadPath(hash, ext), totalSize, chunkSize)
+	if err != nil {
+		return nil, errors.Join(errors.New("创建上传任务失败"), err)
 	}
+	return &ChunkUploadResult{
+		UploadId: uploadId,
+	}, nil
 }
 
 // prepareChunkUpload 加载分片上传场景和存储客户端。
@@ -84,19 +107,12 @@ func (s *service) prepareChunkUpload(sceneId int64) (*model.Scene, storage.Stora
 }
 
 // chunkUploadPart 上传单个分片。
-func (s *service) chunkUploadPart(ctx context.Context, client storage.Storage, sceneInfo *model.Scene, uploadId string, hash string, filename string, totalSize int64, chunkSize int64, partNumber int, body io.Reader, size int64) (*ChunkUploadResult, error) {
+func (s *service) chunkUploadPart(ctx context.Context, client storage.Storage, uploadId string, partNumber int, body io.Reader, size int64) (*ChunkUploadResult, error) {
 	if body == nil {
 		return nil, errors.New("上传文件不能为空")
 	}
-	_, ext, err := s.prepareChunkFilename(sceneInfo, filename)
-	if err != nil {
-		return nil, err
-	}
-	if totalSize <= 0 {
-		return nil, errors.New("文件总大小不合法")
-	}
-	if sceneInfo.MaxSize > 0 && totalSize > sceneInfo.MaxSize {
-		return nil, errors.New("上传文件大小超过场景限制")
+	if strings.TrimSpace(uploadId) == "" {
+		return nil, errors.New("上传任务ID不能为空")
 	}
 	if size <= 0 {
 		return nil, errors.New("分片大小不合法")
@@ -104,17 +120,7 @@ func (s *service) chunkUploadPart(ctx context.Context, client storage.Storage, s
 	if partNumber <= 0 {
 		return nil, errors.New("分片序号不合法")
 	}
-	path := s.buildUploadPath(hash, ext)
-	if chunkSize <= 0 {
-		chunkSize = size
-	}
-	if uploadId == "" {
-		uploadId, err = client.StartUpload(ctx, path, totalSize, chunkSize)
-		if err != nil {
-			return nil, errors.Join(errors.New("创建上传任务失败"), err)
-		}
-	}
-	if err = client.UploadPart(ctx, uploadId, partNumber, body, size); err != nil {
+	if err := client.UploadPart(ctx, uploadId, partNumber, body, size); err != nil {
 		return nil, errors.Join(errors.New("上传分片失败"), err)
 	}
 	return &ChunkUploadResult{

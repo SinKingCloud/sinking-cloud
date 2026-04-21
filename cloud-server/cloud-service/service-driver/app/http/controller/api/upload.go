@@ -73,7 +73,7 @@ func (uploadController) Chunk(c *context.Context) {
 		headerSize int64
 	)
 	switch step {
-	case fileService.ChunkUploadStepUpload:
+	case fileService.ChunkUploadStepInit:
 		totalSizeText := c.Request.FormValue("total_size")
 		if totalSizeText == "" {
 			c.Error("文件总大小不能为空")
@@ -82,6 +82,23 @@ func (uploadController) Chunk(c *context.Context) {
 		totalSize, err = strconv.ParseInt(totalSizeText, 10, 64)
 		if err != nil || totalSize <= 0 {
 			c.Error("文件总大小不合法")
+			return
+		}
+		chunkSizeText := c.Request.FormValue("chunk_size")
+		if chunkSizeText != "" {
+			chunkSize, err = strconv.ParseInt(chunkSizeText, 10, 64)
+			if err != nil || chunkSize <= 0 {
+				c.Error("分片大小不合法")
+				return
+			}
+		}
+		if strings.TrimSpace(filename) == "" {
+			c.Error("上传文件名称不能为空")
+			return
+		}
+	case fileService.ChunkUploadStepUpload:
+		if strings.TrimSpace(uploadId) == "" {
+			c.Error("上传任务ID不能为空")
 			return
 		}
 		partNumberText := c.Request.FormValue("part_number")
@@ -94,14 +111,6 @@ func (uploadController) Chunk(c *context.Context) {
 			c.Error("分片序号不合法")
 			return
 		}
-		chunkSizeText := c.Request.FormValue("chunk_size")
-		if chunkSizeText != "" {
-			chunkSize, err = strconv.ParseInt(chunkSizeText, 10, 64)
-			if err != nil || chunkSize <= 0 {
-				c.Error("分片大小不合法")
-				return
-			}
-		}
 		formFile, header, err := c.Request.FormFile("file")
 		if err != nil {
 			c.Error("上传文件不能为空")
@@ -112,9 +121,6 @@ func (uploadController) Chunk(c *context.Context) {
 		}()
 		body = formFile
 		headerSize = header.Size
-		if filename == "" {
-			filename = header.Filename
-		}
 	case fileService.ChunkUploadStepStatus:
 		if strings.TrimSpace(uploadId) == "" {
 			c.Error("上传任务ID不能为空")
