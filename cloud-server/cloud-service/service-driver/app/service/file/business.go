@@ -2,6 +2,7 @@ package file
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"service-driver/app/constant"
 	"service-driver/app/enum/file_status"
@@ -48,7 +49,7 @@ func (s *service) GetUrlByHash(sceneId int64, hash string) (string, error) {
 		s.cache.SetWithExpire(cacheKey, cacheErrorPrefix+err.Error(), constant.CacheTimeWithFilePreview)
 		return "", err
 	}
-	info, err := s.repositoryFile.FindByHashWithSceneId(hash, sceneId)
+	info, err := s.findByHashWithSceneId(hash, sceneId, false)
 	if err != nil {
 		return cacheError(errors.Join(errors.New("获取文件信息失败"), err))
 	}
@@ -136,6 +137,33 @@ func (s *service) DeleteByIds(ids []int64, clear bool) error {
 	return nil
 }
 
+// findByHashWithSceneId 根据 hash 和场景查询文件，并优先使用缓存。
+func (s *service) findByHashWithSceneId(hash string, sceneId int64, refresh bool) (*model.File, error) {
+	if sceneId <= 0 || hash == "" {
+		return nil, nil
+	}
+	cacheKey := s.buildFileCacheKey(sceneId, hash)
+	if !refresh {
+		if data, exists := s.cache.Get(cacheKey); exists {
+			if data == "" {
+				return nil, nil
+			}
+			var result *model.File
+			if err := json.Unmarshal([]byte(data), &result); err == nil {
+				return result, nil
+			}
+		}
+	}
+	info, err := s.repositoryFile.FindByHashWithSceneId(hash, sceneId)
+	if err != nil {
+		return nil, err
+	}
+	if data, err := json.Marshal(info); err == nil {
+		s.cache.SetWithExpire(cacheKey, string(data), constant.CacheTimeWithFile)
+	}
+	return info, nil
+}
+
 // clearCache 清理文件缓存。
 func (s *service) clearCache(list []*model.File) {
 	if len(list) == 0 {
@@ -147,16 +175,26 @@ func (s *service) clearCache(list []*model.File) {
 		if item == nil || item.SceneId <= 0 || item.Hash == "" {
 			continue
 		}
-		cacheKey := s.buildPreviewCacheKey(item.SceneId, item.Hash)
-		if _, exists := seen[cacheKey]; exists {
-			continue
+		cacheKeys := []string{
+			s.buildFileCacheKey(item.SceneId, item.Hash),
+			s.buildPreviewCacheKey(item.SceneId, item.Hash),
 		}
-		seen[cacheKey] = struct{}{}
-		keys = append(keys, cacheKey)
+		for _, cacheKey := range cacheKeys {
+			if _, exists := seen[cacheKey]; exists {
+				continue
+			}
+			seen[cacheKey] = struct{}{}
+			keys = append(keys, cacheKey)
+		}
 	}
 	if len(keys) > 0 {
 		s.cache.Delete(keys...)
 	}
+}
+
+// buildFileCacheKey 生成文件缓存key。
+func (s *service) buildFileCacheKey(sceneId int64, hash string) string {
+	return constant.CacheNameWithFile + strconv.FormatInt(sceneId, 10) + "_" + hash
 }
 
 // buildPreviewCacheKey 生成文件预览缓存key。

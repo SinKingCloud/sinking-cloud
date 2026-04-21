@@ -68,7 +68,7 @@ func (s *service) SimpleUpload(ctx context.Context, sceneId int64, body io.Reade
 	if err != nil {
 		return "", errors.New("生成文件哈希失败")
 	}
-	exists, err := s.repositoryFile.FindByHashWithSceneId(hash, sceneInfo.Id)
+	exists, err := s.findByHashWithSceneId(hash, sceneInfo.Id, false)
 	if err != nil {
 		return "", errors.Join(errors.New("获取文件信息失败"), err)
 	}
@@ -146,5 +146,5 @@ func (s *service) buildUploadPath(hash string, ext string) string {
 
 // buildPreviewUrl 生成文件预览地址。
 func (s *service) buildPreviewUrl(sceneId int64, hash string) string {
-	return "/preview/" + hash + "?scene_id=" + strconv.FormatInt(sceneId, 10)
+	return "/preview/" + strconv.FormatInt(sceneId, 10) + "/" + hash
 }
