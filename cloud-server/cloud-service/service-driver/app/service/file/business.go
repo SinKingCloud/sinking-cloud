@@ -1,6 +1,7 @@
 package file
 
 import (
+	"context"
 	"errors"
 	"service-driver/app/enum/file_status"
 	"service-driver/app/model"
@@ -50,13 +51,28 @@ func (s *service) DeleteByIds(ids []int64, clear bool) error {
 	if len(ids) == 0 {
 		return errors.New("参数错误")
 	}
+	var paths map[int64][]string
 	if clear {
-		//构建[]string
+		list, err := s.repositoryFile.SelectChannelIdWithPathByIds(ids)
+		if err != nil {
+			return errors.Join(errors.New("获取清理路径失败"), err)
+		}
+		paths = make(map[int64][]string)
+		for _, item := range list {
+			if item == nil || item.ChannelId <= 0 || item.Path == "" {
+				continue
+			}
+			paths[item.ChannelId] = append(paths[item.ChannelId], item.Path)
+		}
 	}
 	err := s.repositoryFile.DeleteByIds(ids)
 	if err != nil {
 		return errors.Join(errors.New("删除失败"), err)
 	}
-
+	for k, v := range paths {
+		if client, err2 := s.channelService.GetStorage(k); err2 == nil && client != nil {
+			_ = client.DeleteMany(context.Background(), v)
+		}
+	}
 	return nil
 }

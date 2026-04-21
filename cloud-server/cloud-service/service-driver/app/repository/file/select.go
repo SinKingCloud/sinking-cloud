@@ -2,6 +2,28 @@ package file
 
 import "service-driver/app/model"
 
+// SelectChannelIdWithPathByIds 根据 ids 查询清理所需的通道和路径。
+func (r *Repository) SelectChannelIdWithPathByIds(ids []int64) ([]*model.File, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	list := make([]*model.File, 0, len(ids))
+	err := r.Database.BatchExecute(ids, 1000, func(batch interface{}) error {
+		var rows []*model.File
+		err := r.Database.Db.
+			Model(&model.File{}).
+			Select("id", "channel_id", "path").
+			Where("id IN ?", batch.([]int64)).
+			Find(&rows).Error
+		if err != nil {
+			return err
+		}
+		list = append(list, rows...)
+		return nil
+	})
+	return list, err
+}
+
 // Select 查询数据
 func (r *Repository) Select(where *SelectFile, orderByField string, orderByType string, page int, pageSize int) (list []*model.File, total int64, err error) {
 	offset := pageSize * (page - 1)
