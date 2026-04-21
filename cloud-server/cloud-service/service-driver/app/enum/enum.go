@@ -5,6 +5,7 @@ import (
 	"service-driver/app/enum/channel_status"
 	"service-driver/app/enum/channel_type"
 	"service-driver/app/enum/file_status"
+	"service-driver/app/enum/scene_name"
 	"service-driver/app/enum/scene_status"
 )
 
@@ -23,7 +24,7 @@ var Data = map[string]interface{}{
 	"scene": func() interface{} {
 		return map[string]interface{}{
 			"status": scene_status.Map(), //场景状态
-			"name":   scene_status.Map(), //场景名称
+			"name":   scene_name.Map(),   //场景名称
 		}
 	},
 }
