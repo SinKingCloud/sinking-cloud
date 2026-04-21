@@ -16,6 +16,7 @@ type Service interface {
 	GetIdNameMap(refresh bool) (map[int64]string, error)                                                                                            //获取id name映射
 	DeleteById(id int64) error                                                                                                                      //通过ID删除数据
 	UpdateById(id int64, data *scene.UpdateScene) error                                                                                             //通过ID更新数据
+	FindById(id int64, refresh bool) (*model.Scene, error)                                                                                          //通过ID查询数据
 }
 
 // Session服务

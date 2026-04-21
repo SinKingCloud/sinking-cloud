@@ -4,6 +4,12 @@ const (
 	CacheNameWithChannel = "Channel_"        //通道缓存
 	CacheTimeWithChannel = int64(600 * 1000) //通道缓存储存时间
 
-	CacheNameWithEnum = "Enum_"           //枚举缓存
-	CacheTimeWithEnum = int64(600 * 1000) //枚举缓存储存时间
+	CacheNameWithScene = "Scene_"          //场景缓存
+	CacheTimeWithScene = int64(600 * 1000) //场景缓存储存时间
+
+	CacheNameWithChannelNameEnum = "ChannelNameEnum" //枚举缓存
+	CacheTimeWithChannelNameEnum = int64(600 * 1000) //枚举缓存储存时间
+
+	CacheNameWithSceneNameEnum = "SceneNameEnum"   //枚举缓存
+	CacheTimeWithSceneNameEnum = int64(600 * 1000) //枚举缓存储存时间
 )

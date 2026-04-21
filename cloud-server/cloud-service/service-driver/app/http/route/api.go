@@ -11,7 +11,6 @@ import (
 func loadApi(s *sinking_web.Engine) {
 	upload := s.Group("/upload")
 	upload.ANY("/simple", context.HandleFunc(controller.Api.Upload.Simple))
-	upload.ANY("/chunk", context.HandleFunc(controller.Api.Upload.Chunk))
 
 	file := s.Group("/preview")
 	file.ANY("/*", context.HandleFunc(controller.Api.File.Preview))

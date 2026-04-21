@@ -46,13 +46,17 @@ func (s *service) UpdateByIds(ids []int64, data *file.UpdateFile) error {
 }
 
 // DeleteByIds 批量删除数据
-func (s *service) DeleteByIds(ids []int64) error {
+func (s *service) DeleteByIds(ids []int64, clear bool) error {
 	if len(ids) == 0 {
 		return errors.New("参数错误")
+	}
+	if clear {
+		//构建[]string
 	}
 	err := s.repositoryFile.DeleteByIds(ids)
 	if err != nil {
 		return errors.Join(errors.New("删除失败"), err)
 	}
+
 	return nil
 }

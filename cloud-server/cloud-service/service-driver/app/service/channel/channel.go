@@ -6,6 +6,7 @@ import (
 	"service-driver/app/repository/scene"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/storage"
 )
 
 // Service service接口
@@ -16,6 +17,7 @@ type Service interface {
 	DeleteById(id int64) error                                                                                                                              //通过ID删除数据
 	UpdateById(id int64, data *channel.UpdateChannel) error                                                                                                 //通过ID更新数据
 	FindById(id int64, refresh bool) (*Channel, error)                                                                                                      //通过ID查询数据
+	GetStorage(id int64) (storage.Storage, error)                                                                                                           //获取储存对象
 }
 
 // Session服务

@@ -9,8 +9,3 @@ type uploadController struct {
 func (uploadController) Simple(c *context.Context) {
 
 }
-
-// Chunk 分片上传
-func (uploadController) Chunk(c *context.Context) {
-
-}

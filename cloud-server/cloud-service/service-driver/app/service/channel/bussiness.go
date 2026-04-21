@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/storage"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
@@ -39,7 +40,7 @@ func (s *service) Select(where *channel.SelectChannel, orderByField string, orde
 
 // GetIdNameMap 获取id name映射
 func (s *service) GetIdNameMap(refresh bool) (map[int64]string, error) {
-	cacheKey := constant.CacheNameWithEnum + "channel_names"
+	cacheKey := constant.CacheNameWithChannelNameEnum
 	if !refresh {
 		if data, exists := s.cache.Get(cacheKey); exists && data != "" {
 			var result map[int64]string
@@ -53,7 +54,7 @@ func (s *service) GetIdNameMap(refresh bool) (map[int64]string, error) {
 		return nil, err
 	}
 	if data, err2 := json.Marshal(maps); err2 == nil {
-		s.cache.SetWithExpire(cacheKey, string(data), constant.CacheTimeWithEnum)
+		s.cache.SetWithExpire(cacheKey, string(data), constant.CacheTimeWithChannelNameEnum)
 	}
 	return maps, nil
 }
@@ -78,6 +79,7 @@ func (s *service) DeleteById(id int64) error {
 	if err != nil {
 		return errors.Join(errors.New("删除失败"), err)
 	}
+	s.cache.Delete(constant.CacheNameWithChannelNameEnum, constant.CacheNameWithChannel+strconv.FormatInt(id, 10))
 	return nil
 }
 
@@ -112,6 +114,7 @@ func (s *service) Create(name string, types int, status int, config string) erro
 	if err != nil {
 		return errors.Join(errors.New("创建失败"), err)
 	}
+	s.cache.Delete(constant.CacheNameWithChannelNameEnum)
 	return nil
 }
 
@@ -156,6 +159,7 @@ func (s *service) UpdateById(id int64, data *channel.UpdateChannel) error {
 	if err != nil {
 		return errors.Join(errors.New("更新失败"), err)
 	}
+	s.cache.Delete(constant.CacheNameWithChannelNameEnum, constant.CacheNameWithChannel+strconv.FormatInt(id, 10))
 	return nil
 }
 
@@ -231,4 +235,35 @@ func (s *service) checkSetting(str string, types int) (res string, err error) {
 		}
 	}
 	return res, err
+}
+
+// GetStorage 获取储存对象
+func (s *service) GetStorage(id int64) (storage.Storage, error) {
+	info, err := s.FindById(id, false)
+	if err != nil {
+		return nil, errors.Join(errors.New("获取通道信息失败"), err)
+	}
+	var client storage.Storage
+	switch info.Type {
+	case channel_type.Aliyun:
+		config, ok := info.Config.(AliyunSetting)
+		if !ok {
+			return nil, errors.New("通道配置错误")
+		}
+		client, err = storage.NewAliyunOSS(storage.AliyunOSSConfig{
+			Endpoint:        config.Endpoint,
+			Bucket:          config.Bucket,
+			AccessKeyID:     config.AccessKeyID,
+			AccessKeySecret: config.AccessKeySecret,
+			Prefix:          config.Path,
+			Domain:          config.Domain,
+			UseHTTPS:        true,
+		})
+		if err != nil {
+			return nil, errors.New("实例化通道失败")
+		}
+		return client, nil
+	default:
+		return nil, errors.New("不支持的通道类型")
+	}
 }

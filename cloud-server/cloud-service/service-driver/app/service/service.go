@@ -27,5 +27,5 @@ func Init() {
 
 	Channel = channel.NewService(channelRepository, sceneRepository, fileRepository, cache)
 	Scene = scene.NewService(channelRepository, sceneRepository, fileRepository, cache)
-	File = file.NewService(channelRepository, sceneRepository, fileRepository, database, cache)
+	File = file.NewService(channelRepository, sceneRepository, fileRepository, Channel, Scene, cache)
 }
