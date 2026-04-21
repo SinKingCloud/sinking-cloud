@@ -1,6 +1,8 @@
 package file
 
 import (
+	"context"
+	"io"
 	"service-driver/app/model"
 	"service-driver/app/repository/channel"
 	"service-driver/app/repository/file"
@@ -13,6 +15,7 @@ import (
 
 // Service service接口
 type Service interface {
+	SimpleUpload(ctx context.Context, sceneId int64, body io.Reader, filename string, size int64) (string, error)                                //简单上传
 	Select(where *file.SelectFile, orderByField string, orderByType string, page int, pageSize int) (list []*model.File, total int64, err error) //查询数据
 	GetUrlByHash(hash string) (string, error)                                                                                                    //根据hash获取文件公开地址
 	UpdateByIds(ids []int64, data *file.UpdateFile) error                                                                                        //批量更新数据

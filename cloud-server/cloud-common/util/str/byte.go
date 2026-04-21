@@ -3,22 +3,30 @@ package str
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
+	"io"
 )
 
-// ByteTool 字节工具
+// ByteTool 字节流工具
 type ByteTool struct {
-	byte []byte
+	reader io.Reader
 }
 
-// NetByteTool 实例化工具类
-func NetByteTool(str []byte) *ByteTool {
-	return &ByteTool{byte: str}
+// NewByteTool 实例化工具类
+func NewByteTool(reader io.Reader) *ByteTool {
+	return &ByteTool{reader: reader}
 }
 
 // Md5 获取md5
-func (s *ByteTool) Md5() string {
+func (s *ByteTool) Md5() (string, error) {
+	if s == nil || s.reader == nil {
+		return "", errors.New("reader不能为空")
+	}
 	hash := md5.New()
-	hash.Write(s.byte)
+	buffer := make([]byte, 32*1024)
+	if _, err := io.CopyBuffer(hash, s.reader, buffer); err != nil {
+		return "", err
+	}
 	md5Str := hex.EncodeToString(hash.Sum(nil))
-	return md5Str
+	return md5Str, nil
 }

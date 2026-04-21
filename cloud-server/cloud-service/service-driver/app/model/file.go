@@ -17,7 +17,6 @@ type File struct {
 	Hash       string       `gorm:"column:hash" json:"hash"`
 	Size       int64        `gorm:"column:size" json:"size"`
 	Path       string       `gorm:"column:path" json:"path"`
-	Remark     string       `gorm:"column:remark" json:"remark"`
 	Status     int          `gorm:"column:status" json:"status"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`

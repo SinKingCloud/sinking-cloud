@@ -13,6 +13,7 @@ type Interface interface {
 	ExistsByChannelId(channelId int64) (bool, error)                                                                                        //判断channelId是否被使用
 	ExistsBySceneId(sceneId int64) (bool, error)                                                                                            //判断sceneId是否被使用
 	FindByHash(hash string) (*model.File, error)                                                                                            //根据hash查询文件
+	FindByHashWithSceneId(hash string, sceneId int64) (*model.File, error)                                                                  //根据hash和场景查询文件
 	SelectChannelIdHashPathByIds(ids []int64) (list []*model.File, err error)                                                               //根据ids查询清理所需的通道、哈希和路径
 	Select(where *SelectFile, orderByField string, orderByType string, page int, pageSize int) (list []*model.File, total int64, err error) //查询数据
 	UpdateByIds(ids []int64, perm *UpdateFile) error                                                                                        //根据 ids 更新数据
