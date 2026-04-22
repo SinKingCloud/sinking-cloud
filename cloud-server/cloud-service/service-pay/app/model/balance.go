@@ -15,7 +15,6 @@ type Balance struct {
 	Frozen        float64      `gorm:"column:frozen" json:"frozen"`
 	TotalRecharge float64      `gorm:"column:total_recharge" json:"total_recharge"`
 	TotalConsume  float64      `gorm:"column:total_consume" json:"total_consume"`
-	Version       int64        `gorm:"column:version" json:"version"`
 	CreateTime    str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime    str.DateTime `gorm:"column:update_time" json:"update_time"`
 }

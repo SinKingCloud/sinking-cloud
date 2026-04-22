@@ -7,8 +7,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// Notice 通知表
-type Notice struct {
+// Message 消息表
+type Message struct {
 	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	UserId     int64        `gorm:"column:user_id" json:"user_id"`
 	Title      string       `gorm:"column:title" json:"title"`
@@ -20,19 +20,19 @@ type Notice struct {
 }
 
 // TableName 获取表名
-func (*Notice) TableName() string {
-	return "cloud_notices"
+func (*Message) TableName() string {
+	return "cloud_messages"
 }
 
 // BeforeCreate 创建前
-func (t *Notice) BeforeCreate(_ *gorm.DB) error {
+func (t *Message) BeforeCreate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	t.CreateTime = str.DateTime(time.Now())
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (t *Notice) BeforeUpdate(_ *gorm.DB) error {
+func (t *Message) BeforeUpdate(_ *gorm.DB) error {
 	t.UpdateTime = str.DateTime(time.Now())
 	return nil
 }

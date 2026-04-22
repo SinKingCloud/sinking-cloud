@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// BalanceLog 用户余额记录表
+// BalanceLog 用户余额明细
 type BalanceLog struct {
 	Id           int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	UserId       int64        `gorm:"column:user_id" json:"user_id"`
