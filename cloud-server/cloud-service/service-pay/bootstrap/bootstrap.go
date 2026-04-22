@@ -6,7 +6,5 @@ import (
 )
 
 func Load() {
-	bootstrap.LoadLog()
-	bootstrap.LoadConf()
-	bootstrap.LoadConsul(constant.ServicePay)
+	bootstrap.Load(constant.ServicePay)
 }
