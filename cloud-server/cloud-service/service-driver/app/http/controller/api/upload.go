@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -33,7 +34,12 @@ func (uploadController) Simple(c *context.Context) {
 	defer func() {
 		_ = file.Close()
 	}()
-	url, err := service.File.SimpleUpload(c.Request.Context(), sceneId, file, header.Filename, header.Size)
+	var isLogin bool
+	u, err := service2.User.GetJwtUserInfo(c)
+	if err == nil && u != nil && u.Id > 0 {
+		isLogin = true
+	}
+	url, err := service.File.SimpleUpload(c.Request.Context(), isLogin, sceneId, file, header.Filename, header.Size)
 	if err != nil {
 		c.Error(err.Error())
 		return
@@ -139,7 +145,12 @@ func (uploadController) Chunk(c *context.Context) {
 		c.Error("分片上传步骤不合法")
 		return
 	}
-	data, err := service.File.ChunkUpload(c.Request.Context(), step, sceneId, uploadId, hash, filename, totalSize, chunkSize, partNumber, body, headerSize)
+	var isLogin bool
+	u, err := service2.User.GetJwtUserInfo(c)
+	if err == nil && u != nil && u.Id > 0 {
+		isLogin = true
+	}
+	data, err := service.File.ChunkUpload(c.Request.Context(), isLogin, step, sceneId, uploadId, hash, filename, totalSize, chunkSize, partNumber, body, headerSize)
 	if err != nil {
 		c.Error(err.Error())
 		return

@@ -13,6 +13,7 @@ type Scene struct {
 	Name       string       `gorm:"column:name" json:"name"`
 	MaxSize    int64        `gorm:"column:max_size" json:"max_size"`
 	AllowExt   string       `gorm:"column:allow_ext" json:"allow_ext"`
+	Login      int          `gorm:"column:login" json:"login"`
 	ChannelId  int64        `gorm:"column:channel_id" json:"channel_id"`
 	Remark     string       `gorm:"column:remark" json:"remark"`
 	Status     int          `gorm:"column:status" json:"status"`

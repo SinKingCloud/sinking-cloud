@@ -22,6 +22,9 @@ func (r *Repository) UpdateById(id int64, data *UpdateScene) error {
 	if data.AllowExt != nil {
 		updates["allow_ext"] = data.AllowExt
 	}
+	if data.Login != nil {
+		updates["login"] = data.Login
+	}
 	if data.ChannelId != nil {
 		updates["channel_id"] = data.ChannelId
 	}

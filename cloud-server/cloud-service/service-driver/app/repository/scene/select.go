@@ -34,6 +34,9 @@ func (r *Repository) Select(where *SelectScene, orderByField string, orderByType
 		if where.Status != "" {
 			query = query.Where("status = ?", where.Status)
 		}
+		if where.Login != "" {
+			query = query.Where("login = ?", where.Login)
+		}
 		if where.Name != "" {
 			query = query.Where("name LIKE ?", "%"+where.Name+"%")
 		}

@@ -4,6 +4,7 @@ type SelectScene struct {
 	Name            string
 	ChannelId       string
 	Status          string
+	Login           string
 	Remark          string
 	CreateTimeStart string
 	CreateTimeEnd   string
@@ -15,6 +16,7 @@ type UpdateScene struct {
 	Name      interface{}
 	MaxSize   interface{}
 	AllowExt  interface{}
+	Login     interface{}
 	ChannelId interface{}
 	Remark    interface{}
 	Status    interface{}
