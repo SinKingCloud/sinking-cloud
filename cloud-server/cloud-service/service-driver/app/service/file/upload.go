@@ -27,35 +27,16 @@ func (s *service) SimpleUpload(ctx context.Context, isLogin bool, sceneId int64,
 	if body == nil {
 		return "", errors.New("上传文件不能为空")
 	}
-	filename = strings.TrimSpace(filepath.Base(filename))
-	if filename == "" {
-		return "", errors.New("上传文件名称不能为空")
-	}
-	sceneInfo, err := s.sceneService.FindById(sceneId, false)
+	sceneInfo, client, err := s.prepareUpload(sceneId, isLogin)
 	if err != nil {
-		return "", errors.Join(errors.New("获取上传场景失败"), err)
-	}
-	if sceneInfo == nil {
-		return "", errors.New("上传场景不存在")
-	}
-	if sceneInfo.Status != scene_status.Enable {
-		return "", errors.New("上传场景不可用")
-	}
-	if sceneInfo.Login == scene_login.Yes && !isLogin {
-		return "", errors.New("您还未登录")
-	}
-	channelInfo, err := s.channelService.FindById(sceneInfo.ChannelId, false)
-	if err != nil {
-		return "", errors.Join(errors.New("获取存储通道失败"), err)
-	}
-	if channelInfo == nil {
-		return "", errors.New("存储通道不存在")
-	}
-	if channelInfo.Status != channel_status.Enable {
-		return "", errors.New("存储通道不可用")
+		return "", err
 	}
 	if sceneInfo.MaxSize > 0 && size > 0 && size > sceneInfo.MaxSize {
 		return "", errors.New("上传文件大小超过场景限制")
+	}
+	filename, ext, err := s.prepareUploadFilename(sceneInfo, filename)
+	if err != nil {
+		return "", err
 	}
 	content, err := io.ReadAll(body)
 	if err != nil {
@@ -64,10 +45,6 @@ func (s *service) SimpleUpload(ctx context.Context, isLogin bool, sceneId int64,
 	fileSize := int64(len(content))
 	if sceneInfo.MaxSize > 0 && fileSize > sceneInfo.MaxSize {
 		return "", errors.New("上传文件大小超过场景限制")
-	}
-	ext := strings.TrimPrefix(strings.ToLower(filepath.Ext(filename)), ".")
-	if !s.allowUploadExt(sceneInfo.AllowExt, ext) {
-		return "", errors.New("上传文件类型不允许")
 	}
 	hash, err := str.NewByteTool(bytes.NewReader(content)).Md5()
 	if err != nil {
@@ -79,10 +56,6 @@ func (s *service) SimpleUpload(ctx context.Context, isLogin bool, sceneId int64,
 	}
 	if exists != nil {
 		return s.buildPreviewUrl(sceneInfo.Id, hash), nil
-	}
-	client, err := s.channelService.GetStorage(sceneInfo.ChannelId)
-	if err != nil {
-		return "", errors.Join(errors.New("获取存储信息失败"), err)
 	}
 	path := s.buildUploadPath(hash, ext)
 	_, err = client.Put(ctx, path, bytes.NewReader(content))
@@ -167,7 +140,7 @@ func (s *service) ChunkUpload(ctx context.Context, isLogin bool, step string, sc
 	if len(hash) != 32 {
 		return nil, errors.New("文件哈希不合法")
 	}
-	sceneInfo, client, err := s.prepareChunkUpload(sceneId, isLogin)
+	sceneInfo, client, err := s.prepareUpload(sceneId, isLogin)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +160,7 @@ func (s *service) ChunkUpload(ctx context.Context, isLogin bool, step string, sc
 
 // chunkUploadInit 初始化上传任务。
 func (s *service) chunkUploadInit(ctx context.Context, client storage.Storage, sceneInfo *model.Scene, hash string, filename string, totalSize int64, chunkSize int64) (*ChunkUploadResult, error) {
-	_, ext, err := s.prepareChunkFilename(sceneInfo, filename)
+	_, ext, err := s.prepareUploadFilename(sceneInfo, filename)
 	if err != nil {
 		return nil, err
 	}
@@ -217,8 +190,8 @@ func (s *service) chunkUploadInit(ctx context.Context, client storage.Storage, s
 	}, nil
 }
 
-// prepareChunkUpload 加载分片上传场景和存储客户端。
-func (s *service) prepareChunkUpload(sceneId int64, isLogin bool) (*model.Scene, storage.Storage, error) {
+// prepareUpload 加载上传场景和存储客户端。
+func (s *service) prepareUpload(sceneId int64, isLogin bool) (*model.Scene, storage.Storage, error) {
 	sceneInfo, err := s.sceneService.FindById(sceneId, false)
 	if err != nil {
 		return nil, nil, errors.Join(errors.New("获取上传场景失败"), err)
@@ -297,7 +270,7 @@ func (s *service) chunkUploadFinish(ctx context.Context, client storage.Storage,
 	if strings.TrimSpace(uploadId) == "" {
 		return nil, errors.New("上传任务ID不能为空")
 	}
-	filename, ext, err := s.prepareChunkFilename(sceneInfo, filename)
+	filename, ext, err := s.prepareUploadFilename(sceneInfo, filename)
 	if err != nil {
 		return nil, err
 	}
@@ -339,8 +312,8 @@ func (s *service) chunkUploadFinish(ctx context.Context, client storage.Storage,
 	}, nil
 }
 
-// prepareChunkFilename 规范化文件名并校验扩展名。
-func (s *service) prepareChunkFilename(sceneInfo *model.Scene, filename string) (string, string, error) {
+// prepareUploadFilename 规范化文件名并校验扩展名。
+func (s *service) prepareUploadFilename(sceneInfo *model.Scene, filename string) (string, string, error) {
 	filename = strings.TrimSpace(filepath.Base(filename))
 	if filename == "" {
 		return "", "", errors.New("上传文件名称不能为空")
