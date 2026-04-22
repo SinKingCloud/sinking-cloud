@@ -5,7 +5,7 @@ const (
 	No
 )
 
-// Map 菜单状态数据
+// Map 映射数据
 func Map() map[int]string {
 	return map[int]string{
 		Yes: "需要登录",

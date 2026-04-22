@@ -115,8 +115,8 @@ func (*Service) GetAdminRouteGroup(s *sinking_web.Engine) *sinking_web.RouterGro
 		g = s.Group("/")
 	} else {
 		g = s.Group("/" + constant.ServiceAdmin)
+		g.Use(context.HandleFunc(middleware.CheckLogin))
 	}
-	g.Use(context.HandleFunc(middleware.CheckLogin))
 	return g
 }
 
@@ -158,7 +158,7 @@ func (*Service) GetUserRouteGroup(s *sinking_web.Engine) *sinking_web.RouterGrou
 		g = s.Group("/")
 	} else {
 		g = s.Group("/" + constant.ServiceUser)
+		g.Use(context.HandleFunc(middleware.CheckLogin))
 	}
-	g.Use(context.HandleFunc(middleware.CheckLogin))
 	return g
 }
