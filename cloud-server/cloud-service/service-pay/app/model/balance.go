@@ -10,7 +10,7 @@ import (
 // Balance 用户余额
 type Balance struct {
 	Id            int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
-	UserId        int64        `gorm:"column:user_id;uniqueIndex" json:"user_id"`
+	UserId        int64        `gorm:"column:user_id" json:"user_id"`
 	Money         float64      `gorm:"column:money" json:"money"`
 	Frozen        float64      `gorm:"column:frozen" json:"frozen"`
 	TotalRecharge float64      `gorm:"column:total_recharge" json:"total_recharge"`
