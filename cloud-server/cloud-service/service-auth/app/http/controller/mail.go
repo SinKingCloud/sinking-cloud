@@ -31,11 +31,11 @@ func Mail(c *context.Context) {
 			return
 		}
 		if form.IsAdmin {
-			if user, err := service2.User.GetWebUserInfo(u.Id, false); err == nil && user != nil {
+			if user, err := service2.User.GetWebUserInfo(u.Id, false); err == nil && user != nil && user.Id > 0 {
 				form.Mail = user.Email
 			}
 		} else {
-			if user, err := service2.User.GetSystemUserInfo(u.Id, false); err == nil && user != nil {
+			if user, err := service2.User.GetSystemUserInfo(u.Id, false); err == nil && user != nil && user.Id > 0 {
 				form.Mail = user.Email
 			}
 		}

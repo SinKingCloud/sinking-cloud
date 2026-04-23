@@ -134,10 +134,14 @@ func (s *service) Create(data *model.Scene) error {
 	if strings.TrimSpace(data.AllowExt) == "" {
 		data.AllowExt = "*"
 	}
-	if info, err := s.repositoryChannel.FindById(data.ChannelId); err != nil || info == nil {
+	info, err := s.repositoryChannel.FindById(data.ChannelId)
+	if err != nil {
+		return errors.Join(errors.New("获取存储通道信息失败"), err)
+	}
+	if info == nil || info.Id <= 0 {
 		return errors.New("存储通道不存在")
 	}
-	err := s.repositoryScene.Create(data)
+	err = s.repositoryScene.Create(data)
 	if err != nil {
 		return errors.Join(errors.New("创建失败"), err)
 	}
@@ -159,6 +163,9 @@ func (s *service) FindById(id int64, refresh bool) (*model.Scene, error) {
 	info, err := s.repositoryScene.FindById(id)
 	if err != nil {
 		return nil, err
+	}
+	if info == nil || info.Id <= 0 {
+		return nil, errors.New("场景不存在")
 	}
 	if bytes, err2 := json.Marshal(info); err2 == nil {
 		s.cache.SetWithExpire(cacheKey, string(bytes), constant.CacheTimeWithScene)

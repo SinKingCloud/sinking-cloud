@@ -178,7 +178,7 @@ func (s *service) FindById(id int64, refresh bool) (*Channel, error) {
 	if err != nil {
 		return nil, err
 	}
-	if info == nil {
+	if info == nil || info.Id <= 0 {
 		return nil, errors.New("通道信息不存在")
 	}
 	data := &Channel{

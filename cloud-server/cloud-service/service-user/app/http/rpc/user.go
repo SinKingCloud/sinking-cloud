@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"encoding/json"
+	"errors"
 	"service-user/app/service"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user"
@@ -20,6 +21,9 @@ func (*userService) GetUserInfo(params json.RawMessage) (interface{}, error) {
 	u, err := service.User.GetInfo(param.UserId, param.Refresh)
 	if err != nil {
 		return nil, err
+	}
+	if u == nil || u.Id <= 0 {
+		return nil, errors.New("用户不存在")
 	}
 	return u, nil
 }

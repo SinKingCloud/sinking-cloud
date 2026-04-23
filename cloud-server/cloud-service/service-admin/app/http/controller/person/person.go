@@ -16,7 +16,7 @@ type Controller struct {
 func (Controller) Info(c *context.Context) {
 	u := c.GetUserInfo()
 	info, err := service.User.GetInfo(u.Id, false)
-	if err != nil {
+	if err != nil || info == nil || info.Id <= 0 {
 		c.Error("获取用户信息失败")
 		return
 	}

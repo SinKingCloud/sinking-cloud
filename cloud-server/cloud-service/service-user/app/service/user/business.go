@@ -23,6 +23,9 @@ func (s *service) GetInfo(userId int64, refresh bool) (user *model.User, err err
 	if err != nil {
 		return nil, err
 	}
+	if user == nil || user.Id <= 0 {
+		return nil, errors.New("未查询到用户信息")
+	}
 	if data, err2 := json.Marshal(user); err2 == nil {
 		s.cache.SetWithExpire(cacheKey, string(data), constant.CacheTimeWithUserInfo)
 	}

@@ -84,6 +84,9 @@ func (s *service) FindById(id int64, refresh bool) (data *model.Task, err error)
 	if err != nil {
 		return nil, err
 	}
+	if data == nil || data.Id <= 0 {
+		return nil, errors.New("任务不存在")
+	}
 	if value, err2 := json.Marshal(data); err2 == nil {
 		s.cache.SetWithExpire(constant.CacheNameWithTaskInfo+strconv.FormatInt(id, 10), string(value), constant.CacheTimeWithTaskInfo)
 	}

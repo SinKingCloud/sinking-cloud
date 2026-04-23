@@ -18,7 +18,7 @@ func (s *service) getRoleMenuIdsByRoleId(roleId int64, refresh bool) (menuIds []
 		}
 	}
 	r, err := s.repositoryRole.FindById(roleId)
-	if err == nil && r != nil && r.Status == role_status.Enable {
+	if err == nil && r != nil && r.Id > 0 && r.Status == role_status.Enable {
 		menuIds, err = s.repositoryRoleMenu.SelectMenuIdsByRoleId(r.Id)
 		if err != nil {
 			return nil, err
