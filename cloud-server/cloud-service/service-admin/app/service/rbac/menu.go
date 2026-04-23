@@ -2,6 +2,7 @@ package rbac
 
 import (
 	"encoding/json"
+	"errors"
 	"service-admin/app/constant"
 	"service-admin/app/enum/menu_status"
 	"service-admin/app/enum/menu_type"
@@ -74,6 +75,9 @@ func (s *service) getMenuByCode(code string, refresh bool) (menu *model.Menu, er
 	menu, err = s.repositoryMenu.FindByCode(code)
 	if err != nil {
 		return nil, err
+	}
+	if menu == nil || menu.Id <= 0 {
+		return nil, errors.New("菜单不存在")
 	}
 	if data, err2 := json.Marshal(menu); err2 == nil {
 		s.cache.SetWithExpire(cacheKey, string(data), constant.CacheTimeWithMenus)
