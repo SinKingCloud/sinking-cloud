@@ -9,6 +9,7 @@ import (
 
 // Service service接口
 type Service interface {
+	SelectLogByUserId(userId int64, where *balance_log.SelectBalanceLog, orderByField string, orderByType string, page int, pageSize int) (list []*Log, total int64, err error) //查询用户余额明细
 }
 
 // Session服务
