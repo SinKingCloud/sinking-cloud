@@ -9,10 +9,10 @@ import (
 )
 
 // FindOrCreateByUserId 查询记录(不存在则创建)
-func (r *Repository) FindOrCreateByUserId(userId int64) (*model.Balance, error) {
+func (r *Repository) FindOrCreateByUserId(userId int64, tx ...*gorm.DB) (*model.Balance, error) {
 	var balance *model.Balance
-	err := r.Database.Transaction(func(tx *gorm.DB) error {
-		err := tx.Clauses(clause.OnConflict{
+	execute := func(db *gorm.DB) error {
+		err := db.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "user_id"}},
 			DoNothing: true,
 		}).Create(&model.Balance{
@@ -21,8 +21,18 @@ func (r *Repository) FindOrCreateByUserId(userId int64) (*model.Balance, error) 
 		if err != nil {
 			return err
 		}
-		return tx.Where("user_id = ?", userId).First(&balance).Error
-	})
+		query := db.Where("user_id = ?", userId)
+		if len(tx) > 0 && tx[0] != nil {
+			query = query.Clauses(clause.Locking{Strength: "UPDATE"})
+		}
+		return query.First(&balance).Error
+	}
+	var err error
+	if len(tx) > 0 && tx[0] != nil {
+		err = execute(tx[0])
+	} else {
+		err = r.Database.Transaction(execute)
+	}
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}

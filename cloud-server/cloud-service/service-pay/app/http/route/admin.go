@@ -13,6 +13,7 @@ func loadAdmin(s *sinking_web.Engine) {
 	g := service.Auth.GetAdminRouteGroup(s)
 	service.Auth.LoadAdminRouteWithRegister(g, func(ANY func(string, string, func(*context.Context))) {
 		ANY("/balance/info", "余额详情", controller.Admin.Balance.Info)
+		ANY("/balance/operate", "余额操作", controller.Admin.Balance.Operate)
 		ANY("/balance/log", "余额明细", controller.Admin.Balance.Log)
 
 		ANY("/order/list", "订单列表", controller.Admin.Order.List)

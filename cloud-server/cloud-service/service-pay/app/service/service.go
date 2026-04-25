@@ -25,6 +25,6 @@ func Init() {
 	orderRepository := order2.NewRepository(database)
 	orderLogRepository := order_log.NewRepository(database)
 
-	Balance = balance.NewService(balanceRepository, balanceLogRepository, cache)
+	Balance = balance.NewService(balanceRepository, balanceLogRepository, database, cache)
 	Order = order.NewService(orderRepository, orderLogRepository, cache)
 }

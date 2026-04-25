@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"service-pay/app/enum/balance_log_type"
 	"service-pay/app/repository/balance_log"
 	"service-pay/app/service"
 	"strconv"
@@ -27,6 +28,30 @@ func (balanceController) Info(c *context.Context) {
 		return
 	}
 	c.SuccessWithData("获取数据成功", info)
+}
+
+// Operate 操作用户余额
+func (balanceController) Operate(c *context.Context) {
+	var form struct {
+		UserId   int64   `json:"user_id" default:"0" validate:"required,numeric,min=1" label:"用户ID"`
+		Money    float64 `json:"money" default:"0" validate:"required" label:"金额"`
+		Describe string  `json:"describe" default:"" validate:"required" label:"描述"`
+	}
+	if ok, msg := c.ValidatorAll(&form); !ok {
+		c.Error(msg)
+		return
+	}
+	logType := balance_log_type.Additional
+	if form.Money < 0 {
+		logType = balance_log_type.Deduct
+	}
+	describe := "操作人ID:" + strconv.FormatInt(c.GetUserInfo().Id, 10) + "; " + form.Describe
+	err := service.Balance.OperateMoney(form.UserId, form.Money, logType, describe)
+	if err != nil {
+		c.Error(err.Error())
+		return
+	}
+	c.Success("操作成功")
 }
 
 // Log 余额明细
