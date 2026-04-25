@@ -48,7 +48,7 @@ func (s *service) FindByUserId(userId int64, refresh bool) (*Balance, error) {
 }
 
 // OperateMoney 操作用户余额并写入明细
-func (s *service) OperateMoney(userId int64, money float64, logType int, describe string) error {
+func (s *service) OperateMoney(userId int64, money float64, isOperateFrozen bool, logType int, describe string) error {
 	if userId <= 0 {
 		return errors.New("用户ID错误")
 	}
@@ -71,21 +71,42 @@ func (s *service) OperateMoney(userId int64, money float64, logType int, describ
 		if info == nil || info.Id <= 0 {
 			return errors.New("获取余额信息失败")
 		}
+		moneyBefore := info.Money
 		moneyAfter := info.Money + money
+		frozenBefore := info.Frozen
+		frozenAfter := info.Frozen
+		logMoney := money
+		if isOperateFrozen {
+			moneyAfter = info.Money - money
+			frozenAfter = info.Frozen + money
+			logMoney = -money
+		}
 		if moneyAfter < 0 {
 			return errors.New("余额不足")
 		}
-		if err = s.balanceRepository.Money(userId, money, tx); err != nil {
-			return errors.Join(errors.New("更新余额失败"), err)
+		if frozenAfter < 0 {
+			return errors.New("冻结余额不足")
+		}
+		if isOperateFrozen {
+			if err = s.balanceRepository.Money(userId, -money, tx); err != nil {
+				return errors.Join(errors.New("更新余额失败"), err)
+			}
+			if err = s.balanceRepository.Frozen(userId, money, tx); err != nil {
+				return errors.Join(errors.New("更新冻结余额失败"), err)
+			}
+		} else {
+			if err = s.balanceRepository.Money(userId, money, tx); err != nil {
+				return errors.Join(errors.New("更新余额失败"), err)
+			}
 		}
 		err = s.balanceLogRepository.Create(&model.BalanceLog{
 			UserId:       userId,
 			Type:         logType,
-			Money:        money,
-			MoneyBefore:  info.Money,
+			Money:        logMoney,
+			MoneyBefore:  moneyBefore,
 			MoneyAfter:   moneyAfter,
-			FrozenBefore: info.Frozen,
-			FrozenAfter:  info.Frozen,
+			FrozenBefore: frozenBefore,
+			FrozenAfter:  frozenAfter,
 			Describe:     describe,
 		}, tx)
 		if err != nil {
