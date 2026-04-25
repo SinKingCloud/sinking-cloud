@@ -16,7 +16,7 @@ func loadAdmin(s *sinking_web.Engine) {
 		ANY("/channel/update", "更新通道", controller.Admin.Channel.Update)
 		ANY("/channel/create", "创建通道", controller.Admin.Channel.Create)
 		ANY("/channel/delete", "删除通道", controller.Admin.Channel.Delete)
-		ANY("/channel/info", "通道详情¬", controller.Admin.Channel.Info)
+		ANY("/channel/info", "通道详情", controller.Admin.Channel.Info)
 
 		ANY("/balance/info", "余额详情", controller.Admin.Balance.Info)
 		ANY("/balance/operate", "余额操作", controller.Admin.Balance.Operate)
