@@ -1,7 +1,7 @@
 package constant
 
 const (
-	CacheNameWithChannel = "Channel_"        //通道缓存
+	CacheNameWithChannel = "StorageChannel_" //通道缓存
 	CacheTimeWithChannel = int64(600 * 1000) //通道缓存储存时间
 
 	CacheNameWithScene = "Scene_"          //场景缓存
