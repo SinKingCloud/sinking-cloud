@@ -1,21 +1,59 @@
 package balance
 
 import (
+	"encoding/json"
 	"errors"
+	"service-pay/app/constant"
 	"service-pay/app/enum/balance_log_type"
 	"service-pay/app/repository/balance_log"
 	"strconv"
 )
 
-// SelectLogByUserId 查询用户余额明细
-func (s *service) SelectLogByUserId(userId int64, where *balance_log.SelectBalanceLog, orderByField string, orderByType string, page int, pageSize int) (list []*Log, total int64, err error) {
+// FindByUserId 通过用户ID查询余额
+func (s *service) FindByUserId(userId int64, refresh bool) (*Balance, error) {
 	if userId <= 0 {
-		return nil, 0, errors.New("用户ID错误")
+		return nil, errors.New("用户ID错误")
 	}
+	cacheKey := constant.CacheNameWithBalance + strconv.FormatInt(userId, 10)
+	if !refresh {
+		if data, exists := s.cache.Get(cacheKey); exists && data != "" {
+			var result *Balance
+			if err := json.Unmarshal([]byte(data), &result); err == nil {
+				return result, nil
+			}
+		}
+	}
+	info, err := s.balanceRepository.FindOrCreateByUserId(userId)
+	if err != nil {
+		return nil, err
+	}
+	if info == nil || info.Id <= 0 {
+		return nil, errors.New("获取余额信息失败")
+	}
+	data := &Balance{
+		Money:         info.Money,
+		Frozen:        info.Frozen,
+		TotalRecharge: info.TotalRecharge,
+		TotalConsume:  info.TotalConsume,
+		CreateTime:    info.CreateTime,
+		UpdateTime:    info.UpdateTime,
+	}
+	if bytes, err2 := json.Marshal(data); err2 == nil {
+		s.cache.SetWithExpire(cacheKey, string(bytes), constant.CacheTimeWithBalance)
+	}
+	return data, nil
+}
+
+// SelectLog 查询用户余额明细
+func (s *service) SelectLog(where *balance_log.SelectBalanceLog, orderByField string, orderByType string, page int, pageSize int) (list []*Log, total int64, err error) {
 	if where == nil {
-		where = &balance_log.SelectBalanceLog{}
+		return nil, 0, errors.New("参数错误")
 	}
-	where.UserId = strconv.FormatInt(userId, 10)
+	if where.UserId != "" {
+		if _, err = strconv.ParseInt(where.UserId, 10, 64); err != nil {
+			return nil, 0, errors.New("用户ID格式错误")
+		}
+	}
 	if where.Type != "" {
 		logType, err := strconv.Atoi(where.Type)
 		if err != nil {
