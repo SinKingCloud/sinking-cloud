@@ -14,4 +14,9 @@ func loadUser(s *sinking_web.Engine) {
 		balance.ANY("/info", context.HandleFunc(controller.User.Balance.Info))
 		balance.ANY("/log", context.HandleFunc(controller.User.Balance.Log))
 	}
+	order := s.Group("/order")
+	{
+		order.ANY("/list", context.HandleFunc(controller.User.Order.List))
+		order.ANY("/log", context.HandleFunc(controller.User.Order.Log))
+	}
 }
