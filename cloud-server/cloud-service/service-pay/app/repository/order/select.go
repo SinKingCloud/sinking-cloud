@@ -9,6 +9,9 @@ func (r *Repository) Select(where *SelectOrder, orderByField string, orderByType
 		if where.UserId != "" {
 			query = query.Where("user_id = ?", where.UserId)
 		}
+		if where.ChannelId != "" {
+			query = query.Where("channel_id = ?", where.ChannelId)
+		}
 		if where.TradeNo != "" {
 			query = query.Where("trade_no = ?", where.TradeNo)
 		}

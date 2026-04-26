@@ -11,6 +11,7 @@ import (
 	"service-pay/app/service/order"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 )
 
 var (
@@ -28,8 +29,9 @@ func Init() {
 	orderRepository := order2.NewRepository(database)
 	orderLogRepository := order_log.NewRepository(database)
 	channelRepository := channel2.NewRepository(database)
+	configService := service.Config
 
-	Channel = channel.NewService(channelRepository, cache)
+	Channel = channel.NewService(channelRepository, orderRepository, configService, cache)
 	Balance = balance.NewService(balanceRepository, balanceLogRepository, database, cache)
 	Order = order.NewService(orderRepository, orderLogRepository, cache)
 }

@@ -9,6 +9,7 @@ import (
 	"service-pay/app/model"
 	"service-pay/app/repository/channel"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
@@ -39,7 +40,17 @@ func (s *service) Select(where *channel.SelectChannel, orderByField string, orde
 
 // DeleteById 通过ID删除数据
 func (s *service) DeleteById(id int64) error {
-	err := s.repositoryChannel.DeleteById(id)
+	if id <= 0 {
+		return errors.New("通道ID不合法")
+	}
+	exists, err := s.orderRepository.CheckChannelHasUnPayOrder(id)
+	if err != nil {
+		return errors.Join(errors.New("查询未支付订单失败"), err)
+	}
+	if exists {
+		return errors.New("当前通道存在未过期且未支付的订单，不能删除")
+	}
+	err = s.repositoryChannel.DeleteById(id)
 	if err != nil {
 		return errors.Join(errors.New("删除失败"), err)
 	}
@@ -85,6 +96,13 @@ func (s *service) Create(name string, types int, status int, config string) erro
 func (s *service) UpdateById(id int64, data *channel.UpdateChannel) error {
 	if id <= 0 {
 		return errors.New("通道ID不合法")
+	}
+	exists, err := s.orderRepository.CheckChannelHasUnPayOrder(id)
+	if err != nil {
+		return errors.Join(errors.New("查询未支付订单失败"), err)
+	}
+	if exists {
+		return errors.New("当前通道存在未过期且未支付的订单，不能修改")
 	}
 	info, err := s.FindById(id, false)
 	if err != nil || info == nil {
@@ -223,4 +241,88 @@ func (s *service) checkSetting(str string, types int) (res string, err error) {
 		break
 	}
 	return res, err
+}
+
+// GetConfig 获取支付配置
+func (s *service) GetConfig(refresh bool) *Config {
+	if s.configService == nil {
+		return &Config{}
+	}
+	if !refresh {
+		if data, exists := s.cache.Get(constant.CacheNameWithPayConfig); exists && data != "" {
+			var result *Config
+			if err := json.Unmarshal([]byte(data), &result); err == nil {
+				return result
+			}
+		}
+	}
+	values := s.configService.GetSystemConfig(constant.PayGroup, false)
+
+	minPay, _ := strconv.ParseFloat(strings.TrimSpace(values[constant.PayMin]), 64)
+	maxPay, _ := strconv.ParseFloat(strings.TrimSpace(values[constant.PayMax]), 64)
+	if minPay < 0 {
+		minPay = 0
+	}
+	if maxPay < 0 {
+		maxPay = 0
+	}
+	alipay, _ := strconv.ParseInt(strings.TrimSpace(values[constant.PayAlipay]), 10, 64)
+	wxpay, _ := strconv.ParseInt(strings.TrimSpace(values[constant.PayWxpay]), 10, 64)
+	if alipay < 0 {
+		alipay = 0
+	}
+	if wxpay < 0 {
+		wxpay = 0
+	}
+	result := &Config{
+		Min:    minPay,
+		Max:    maxPay,
+		Alipay: alipay,
+		Wxpay:  wxpay,
+	}
+	if bytes, err := json.Marshal(result); err == nil {
+		s.cache.SetWithExpire(constant.CacheNameWithPayConfig, string(bytes), constant.CacheTimeWithPayConfig)
+	}
+	return result
+}
+
+// SetConfig 更新支付配置
+func (s *service) SetConfig(data *Config) error {
+	if s.configService == nil {
+		return errors.New("配置服务不存在")
+	}
+	if data == nil {
+		return errors.New("支付配置不能为空")
+	}
+	if data.Min > 0 && data.Max > 0 && data.Min > data.Max {
+		return errors.New("最小充值金额不能大于最大充值金额")
+	}
+	if data.Alipay != 0 {
+		info, err := s.FindById(data.Alipay, false)
+		if err != nil {
+			return errors.Join(errors.New("支付宝支付通道不存在"), err)
+		}
+		if info.Status != channel_status.Enable {
+			return errors.New("支付宝支付通道已禁用")
+		}
+	}
+	if data.Wxpay != 0 {
+		info, err := s.FindById(data.Wxpay, false)
+		if err != nil {
+			return errors.Join(errors.New("微信支付通道不存在"), err)
+		}
+		if info.Status != channel_status.Enable {
+			return errors.New("微信支付通道已禁用")
+		}
+	}
+	if !s.configService.SetSystemConfigs(map[string]string{
+		constant.PayMin:    strconv.FormatFloat(data.Min, 'f', -1, 64),
+		constant.PayMax:    strconv.FormatFloat(data.Max, 'f', -1, 64),
+		constant.PayAlipay: strconv.FormatInt(data.Alipay, 10),
+		constant.PayWxpay:  strconv.FormatInt(data.Wxpay, 10),
+	}) {
+		return errors.New("更新支付配置失败")
+	}
+	s.cache.Delete(constant.CacheNameWithPayConfig)
+	return nil
 }

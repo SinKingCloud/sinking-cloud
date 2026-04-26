@@ -12,17 +12,20 @@ import (
 func loadAdmin(s *sinking_web.Engine) {
 	g := service.Auth.GetAdminRouteGroup(s)
 	service.Auth.LoadAdminRouteWithRegister(g, func(ANY func(string, string, func(*context.Context))) {
-		ANY("/channel/list", "通道列表", controller.Admin.Channel.List)
-		ANY("/channel/update", "更新通道", controller.Admin.Channel.Update)
-		ANY("/channel/create", "创建通道", controller.Admin.Channel.Create)
-		ANY("/channel/delete", "删除通道", controller.Admin.Channel.Delete)
-		ANY("/channel/info", "通道详情", controller.Admin.Channel.Info)
+		ANY("/config/get", "获取支付配置", controller.Admin.Config.Get)
+		ANY("/config/set", "更新支付配置", controller.Admin.Config.Set)
 
-		ANY("/balance/info", "余额详情", controller.Admin.Balance.Info)
-		ANY("/balance/operate", "余额操作", controller.Admin.Balance.Operate)
-		ANY("/balance/log", "余额明细", controller.Admin.Balance.Log)
+		ANY("/channel/list", "支付通道列表", controller.Admin.Channel.List)
+		ANY("/channel/update", "更新支付通道", controller.Admin.Channel.Update)
+		ANY("/channel/create", "创建支付通道", controller.Admin.Channel.Create)
+		ANY("/channel/delete", "删除支付通道", controller.Admin.Channel.Delete)
+		ANY("/channel/info", "支付通道详情", controller.Admin.Channel.Info)
 
-		ANY("/order/list", "订单列表", controller.Admin.Order.List)
-		ANY("/order/log", "订单日志", controller.Admin.Order.Log)
+		ANY("/balance/info", "用户余额详情", controller.Admin.Balance.Info)
+		ANY("/balance/operate", "用户余额操作", controller.Admin.Balance.Operate)
+		ANY("/balance/log", "用户余额明细", controller.Admin.Balance.Log)
+
+		ANY("/order/list", "系统订单列表", controller.Admin.Order.List)
+		ANY("/order/log", "订单操作日志", controller.Admin.Order.Log)
 	})
 }

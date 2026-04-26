@@ -38,6 +38,12 @@ func (s *service) Select(where *orderRepository.SelectOrder, orderByField string
 				return nil, 0, errors.New("用户ID错误")
 			}
 		}
+		if where.ChannelId != "" {
+			channelId, err := strconv.ParseInt(where.ChannelId, 10, 64)
+			if err != nil || channelId <= 0 {
+				return nil, 0, errors.New("通道ID错误")
+			}
+		}
 		if where.Type != "" {
 			if err = s.checkEnumValue(where.Type, order_type.Map(), "订单类型"); err != nil {
 				return nil, 0, err
@@ -115,6 +121,7 @@ func (s *service) SelectLog(where *orderLogRepository.SelectOrderLog, orderByFie
 	return s.orderLogRepository.Select(where, orderByField, orderByType, page, pageSize)
 }
 
+// checkEnumValue 判断枚举类型
 func (s *service) checkEnumValue(value string, data map[int]string, name string) error {
 	key, err := strconv.Atoi(value)
 	if err != nil {

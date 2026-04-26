@@ -13,6 +13,14 @@ type Channel struct {
 	UpdateTime str.DateTime `json:"update_time"`
 }
 
+// Config 支付配置
+type Config struct {
+	Min    float64 `json:"min"`    //最小充值金额(0为不限制)
+	Max    float64 `json:"max"`    //最大充值金额(0为不限制)
+	Alipay int64   `json:"alipay"` //支付宝支付通道(0为关闭)
+	Wxpay  int64   `json:"wxpay"`  //微信支付通道(0为关闭)
+}
+
 // Alipay 阿里云设置
 type Alipay struct {
 	AppId      string `json:"app_id"`      //应用ID

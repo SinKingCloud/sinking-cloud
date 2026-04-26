@@ -13,6 +13,7 @@ func loadUser(s *sinking_web.Engine) {
 	{
 		balance.ANY("/info", context.HandleFunc(controller.User.Balance.Info))
 		balance.ANY("/log", context.HandleFunc(controller.User.Balance.Log))
+		balance.ANY("/recharge", context.HandleFunc(controller.User.Balance.Recharge))
 	}
 	order := s.Group("/order")
 	{

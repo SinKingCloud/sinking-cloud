@@ -15,9 +15,10 @@ type orderController struct {
 // List 订单列表
 func (orderController) List(c *context.Context) {
 	pageNum, pageSize := c.ValidatePage()
-	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,user_id,type,status,pay_status,pay_type,pay_time,expired_time,complete_time,create_time,update_time")
+	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,user_id,channel_id,type,status,pay_status,pay_type,pay_time,expired_time,complete_time,create_time,update_time")
 	var form struct {
 		UserId            string `json:"user_id" default:"" validate:"omitempty,numeric" label:"用户ID"`
+		ChannelId         string `json:"channel_id" default:"" validate:"omitempty,numeric" label:"通道ID"`
 		TradeNo           string `json:"trade_no" default:"" validate:"omitempty" label:"订单号"`
 		Type              string `json:"type" default:"" validate:"omitempty,numeric" label:"订单类型"`
 		Status            string `json:"status" default:"" validate:"omitempty,numeric" label:"订单状态"`
@@ -40,6 +41,9 @@ func (orderController) List(c *context.Context) {
 	where := &order.SelectOrder{}
 	if form.UserId != "" {
 		where.UserId = form.UserId
+	}
+	if form.ChannelId != "" {
+		where.ChannelId = form.ChannelId
 	}
 	if form.TradeNo != "" {
 		where.TradeNo = form.TradeNo

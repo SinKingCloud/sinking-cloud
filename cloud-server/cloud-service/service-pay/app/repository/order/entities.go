@@ -6,6 +6,7 @@ import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str
 type Order struct {
 	Id           int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	UserId       int64        `gorm:"column:user_id" json:"user_id"`
+	ChannelId    int64        `gorm:"column:channel_id" json:"channel_id"`
 	TradeNo      string       `gorm:"column:trade_no" json:"trade_no"`
 	Name         string       `gorm:"column:name" json:"name"`
 	Type         int          `gorm:"column:type" json:"type"`
@@ -25,6 +26,7 @@ type Order struct {
 
 type SelectOrder struct {
 	UserId            string
+	ChannelId         string
 	TradeNo           string
 	Type              string
 	Status            string
