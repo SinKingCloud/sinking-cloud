@@ -3,38 +3,74 @@ package config
 import (
 	"service-admin/app/service"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
 type Controller struct {
 }
 
-// Get 获取配置
-func (Controller) Get(c *context.Context) {
-	var form struct {
-		Group string `json:"group" default:"" validate:"omitempty,max=100" label:"配置分组"`
-	}
-	if ok, msg := c.ValidatorAll(&form); !ok {
-		c.Error(msg)
-		return
-	}
-	data := service.Config.GetSysConfigs(form.Group, false)
-	c.SuccessWithData("获取数据成功", data)
+// Ui 界面配置
+func (s Controller) Ui(c *context.Context) {
+	s.config(c, constant.UiGroup, []string{
+		constant.UiLayout,
+		constant.UiWaterMark,
+		constant.UiTheme,
+		constant.UiCompact,
+		constant.UiColor,
+		constant.UiRadius,
+	})
 }
 
-// Set 更新配置
-func (Controller) Set(c *context.Context) {
+// Web 网站配置
+func (s Controller) Web(c *context.Context) {
+	s.config(c, constant.WebGroup, []string{
+		constant.WebUrl,
+		constant.WebName,
+		constant.WebTitle,
+		constant.WebKeyWords,
+		constant.WebDescribe,
+		constant.WebContact,
+		constant.WebLogo,
+	})
+}
+
+// Sms 短信配置
+func (s Controller) Sms(c *context.Context) {
+	s.config(c, constant.AliGroup, []string{
+		constant.AliKey,
+		constant.AliSecret,
+		constant.AliSmsSign,
+		constant.AliSmsTemplate,
+		constant.AliSmsVar,
+	})
+}
+
+// config 处理配置获取和更新
+func (Controller) config(c *context.Context, group string, keys []string) {
 	var form struct {
-		Data map[string]string `json:"data" default:"" label:"配置数据"`
+		Action string            `json:"action" default:"get" validate:"required,oneof=get set" label:"操作类型"`
+		Data   map[string]string `json:"data" default:"" label:"配置数据"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}
-	if len(form.Data) == 0 {
-		c.Error("配置数据不能为空")
+	if form.Action == "set" {
+		data := map[string]string{}
+		for _, key := range keys {
+			if value, ok := form.Data[key]; ok {
+				data[key] = value
+			}
+		}
+		if len(data) == 0 {
+			c.Error("配置数据不能为空")
+			return
+		}
+		service.Config.SetSysConfigs(data)
+		c.Success("更新数据成功")
 		return
 	}
-	service.Config.SetSysConfigs(form.Data)
-	c.Success("更新数据成功")
+	configs := service.Config.GetSysConfigs(group, false)
+	c.SuccessWithData("获取数据成功", configs)
 }

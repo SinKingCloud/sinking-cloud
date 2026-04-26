@@ -59,7 +59,8 @@ func loadApi(s *sinking_web.Engine) {
 		ANY("/user/session", "会话列表", controller.User.Session)
 		ANY("/user/logout", "注销会话", controller.User.Logout)
 
-		ANY("/config/get", "查看系统配置", controller.Config.Get)
-		ANY("/config/set", "修改系统配置", controller.Config.Set)
+		ANY("/config/ui", "界面配置", controller.Config.Ui)
+		ANY("/config/web", "网站配置", controller.Config.Web)
+		ANY("/config/sms", "短信配置", controller.Config.Sms)
 	})
 }
