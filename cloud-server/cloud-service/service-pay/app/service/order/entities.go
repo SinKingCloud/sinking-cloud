@@ -1,6 +1,10 @@
 package order
 
-import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+import (
+	"encoding/json"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+)
 
 // UserOrder 用户订单
 type UserOrder struct {
@@ -23,7 +27,7 @@ type UserOrder struct {
 
 // Extra 订单扩展信息
 type Extra struct {
-	RpcService string            `json:"rpc_service"` //支付成功后调用的rpc服务名
-	RpcFunc    string            `json:"rpc_func"`    //支付成功后调用的rpc服务方法名
-	Param      map[string]string `json:"param"`       //订单其他信息
+	RpcService string          `json:"rpc_service"` //支付成功后调用的rpc服务名
+	RpcFunc    string          `json:"rpc_func"`    //支付成功后调用的rpc服务方法名
+	Param      json.RawMessage `json:"param"`       //其他参数
 }

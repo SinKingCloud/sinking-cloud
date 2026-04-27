@@ -156,7 +156,7 @@ func (s *service) checkEnumValue(value string, data map[int]string, name string)
 }
 
 // Create 创建订单
-func (s *service) Create(userId int64, name string, Type int, payType string, amount float64, param map[string]string, callbackRpcService string, callbackRpcFunc string) (string, error) {
+func (s *service) Create(userId int64, name string, Type int, payType string, amount float64, param interface{}, callbackRpcService string, callbackRpcFunc string) (string, error) {
 	if userId <= 0 {
 		return "", errors.New("用户ID错误")
 	}
@@ -184,11 +184,14 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 	} else if payType == pay_type.Balance {
 		channelID = 0
 	}
-	extra, err := json.Marshal(Extra{
+	extra := Extra{
 		RpcService: callbackRpcService,
 		RpcFunc:    callbackRpcFunc,
-		Param:      param,
-	})
+	}
+	if param != nil {
+		extra.Param, _ = json.Marshal(param)
+	}
+	extraBytes, err := json.Marshal(extra)
 	if err != nil {
 		return "", errors.Join(errors.New("生成订单扩展信息失败"), err)
 	}
@@ -199,7 +202,7 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 		TradeNo:      tradeNo,
 		Name:         name,
 		Type:         Type,
-		Extra:        string(extra),
+		Extra:        string(extraBytes),
 		Amount:       amount,
 		Status:       order_status.UnPay,
 		PayStatus:    order_pay_status.UnPay,
