@@ -10,6 +10,12 @@ type Interface interface {
 	// ParseCallback 解析回调参数
 	ParseCallback(req *http.Request) (*CallbackData, error)
 
+	// SuccessResponse 获取成功响应状态码、响应头和响应内容
+	SuccessResponse() (int, http.Header, string)
+
+	// FailResponse 获取失败响应状态码、响应头和响应内容
+	FailResponse() (int, http.Header, string)
+
 	// QueryOrder 查询订单状态
 	QueryOrder(tradeNo string) (*OrderStatus, error)
 }

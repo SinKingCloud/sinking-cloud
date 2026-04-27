@@ -104,6 +104,16 @@ func (e *EpayGateway) ParseCallback(req *http.Request) (*CallbackData, error) {
 	}, nil
 }
 
+// SuccessResponse 获取成功响应状态码、响应头和响应内容
+func (e *EpayGateway) SuccessResponse() (int, http.Header, string) {
+	return http.StatusOK, http.Header{"Content-Type": []string{"text/plain; charset=utf-8"}}, "success"
+}
+
+// FailResponse 获取失败响应状态码、响应头和响应内容
+func (e *EpayGateway) FailResponse() (int, http.Header, string) {
+	return http.StatusOK, http.Header{"Content-Type": []string{"text/plain; charset=utf-8"}}, "fail"
+}
+
 // QueryOrder 查询订单状态（实现PaymentGateway接口）
 func (e *EpayGateway) QueryOrder(tradeNo string) (*OrderStatus, error) {
 	result := e.queryOrderAPI(tradeNo)

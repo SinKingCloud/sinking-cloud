@@ -91,6 +91,16 @@ func (a *AlipayGateway) ParseCallback(req *http.Request) (*CallbackData, error) 
 	}, nil
 }
 
+// SuccessResponse 获取成功响应状态码、响应头和响应内容
+func (a *AlipayGateway) SuccessResponse() (int, http.Header, string) {
+	return http.StatusOK, http.Header{"Content-Type": []string{"text/plain; charset=utf-8"}}, "success"
+}
+
+// FailResponse 获取失败响应状态码、响应头和响应内容
+func (a *AlipayGateway) FailResponse() (int, http.Header, string) {
+	return http.StatusOK, http.Header{"Content-Type": []string{"text/plain; charset=utf-8"}}, "fail"
+}
+
 // QueryOrder 查询订单状态
 func (a *AlipayGateway) QueryOrder(tradeNo string) (*OrderStatus, error) {
 	ctx := context.Background()
