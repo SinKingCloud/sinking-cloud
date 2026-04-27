@@ -44,7 +44,7 @@ func (s *service) Server(token string) (*sinking_websocket.Server, error) {
 
 // Name 本地名称
 func (s *service) Name() string {
-	return s.app.Consul.GetAddress()
+	return s.name
 }
 
 // GenConnectionToken 生成授权连接token

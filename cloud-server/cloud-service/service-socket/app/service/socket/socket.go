@@ -5,7 +5,6 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
 	"github.com/SinKingCloud/sinking-go/sinking-websocket"
 )
@@ -22,14 +21,14 @@ type Service interface {
 
 // Session服务
 type service struct {
-	app         *global.Application
+	name        string
 	cache       cache.Interface
 	groupSeed   maphash.Seed
 	groupShards []sync.Map
 }
 
 // NewService 实例化service
-func NewService(app *global.Application, cache cache.Interface) *service {
+func NewService(name string, cache cache.Interface) *service {
 	defaultShards := func() int {
 		target := runtime.GOMAXPROCS(0) * 4
 		if target <= 0 {
@@ -46,7 +45,7 @@ func NewService(app *global.Application, cache cache.Interface) *service {
 	}
 	shardCount := defaultShards()
 	return &service{
-		app:         app,
+		name:        name,
 		cache:       cache,
 		groupSeed:   maphash.MakeSeed(),
 		groupShards: make([]sync.Map, shardCount),
