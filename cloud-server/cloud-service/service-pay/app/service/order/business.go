@@ -128,6 +128,21 @@ func (s *service) SelectLog(where *orderLogRepository.SelectOrderLog, orderByFie
 	return s.orderLogRepository.Select(where, orderByField, orderByType, page, pageSize)
 }
 
+// FindLogById 根据ID查询日志
+func (s *service) FindLogById(id int64) (*model.OrderLog, error) {
+	if id <= 0 {
+		return nil, errors.New("订单ID错误")
+	}
+	info, err := s.orderLogRepository.FindById(id)
+	if err != nil {
+		return nil, err
+	}
+	if info == nil || info.Id <= 0 {
+		return nil, errors.New("订单不存在")
+	}
+	return info, nil
+}
+
 // checkEnumValue 判断枚举类型
 func (s *service) checkEnumValue(value string, data map[int]string, name string) error {
 	key, err := strconv.Atoi(value)
@@ -169,7 +184,7 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 	} else if payType == pay_type.Balance {
 		channelID = 0
 	}
-	extra, err := json.Marshal(&Extra{
+	extra, err := json.Marshal(Extra{
 		RpcService: callbackRpcService,
 		RpcFunc:    callbackRpcFunc,
 		Param:      param,

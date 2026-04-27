@@ -26,6 +26,9 @@ func loadAdmin(s *sinking_web.Engine) {
 		ANY("/balance/log", "用户余额明细", controller.Admin.Balance.Log)
 
 		ANY("/order/list", "系统订单列表", controller.Admin.Order.List)
-		ANY("/order/log", "订单操作日志", controller.Admin.Order.Log)
+		ANY("/order/info", "系统订单详情", controller.Admin.Order.Info)
+
+		ANY("/log/list", "订单日志列表", controller.Admin.Log.List)
+		ANY("/log/info", "订单日志详情", controller.Admin.Log.Info)
 	})
 }

@@ -16,6 +16,7 @@ type Service interface {
 	Select(where *order.SelectOrder, orderByField string, orderByType string, page int, pageSize int) (list []*order.Order, total int64, err error)                         //查询订单列表
 	SelectByUserId(userId int64, where *order.SelectOrder, orderByField string, orderByType string, page int, pageSize int) (list []*UserOrder, total int64, err error)     //查询用户订单列表
 	SelectLog(where *order_log.SelectOrderLog, orderByField string, orderByType string, page int, pageSize int) (list []*order_log.OrderLog, total int64, err error)        //查询订单日志
+	FindLogById(id int64) (*model.OrderLog, error)                                                                                                                          //根据ID查询日志
 	Create(userId int64, name string, Type int, payType string, amount float64, param map[string]string, callbackRpcService string, callbackRpcFunc string) (string, error) //创建订单
 }
 
