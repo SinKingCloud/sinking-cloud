@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/pay"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
@@ -105,7 +106,7 @@ func (s *service) UpdateById(id int64, data *channel.UpdateChannel) error {
 		return errors.New("当前通道存在未过期且未支付的订单，不能修改")
 	}
 	info, err := s.FindById(id, false)
-	if err != nil || info == nil {
+	if err != nil {
 		return errors.New("获取通道信息失败")
 	}
 	update := &channel.UpdateChannel{}
@@ -177,6 +178,133 @@ func (s *service) FindById(id int64, refresh bool) (*Channel, error) {
 	return data, nil
 }
 
+// GetConfig 获取支付配置
+func (s *service) GetConfig(refresh bool) *Config {
+	if s.configService == nil {
+		return &Config{}
+	}
+	if !refresh {
+		if data, exists := s.cache.Get(constant.CacheNameWithPayConfig); exists && data != "" {
+			var result *Config
+			if err := json.Unmarshal([]byte(data), &result); err == nil {
+				return result
+			}
+		}
+	}
+	values := s.configService.GetSystemConfig(constant.PayGroup, false)
+
+	minPay, _ := strconv.ParseFloat(strings.TrimSpace(values[constant.PayMin]), 64)
+	maxPay, _ := strconv.ParseFloat(strings.TrimSpace(values[constant.PayMax]), 64)
+	if minPay < 0 {
+		minPay = 0
+	}
+	if maxPay < 0 {
+		maxPay = 0
+	}
+	balance, _ := strconv.ParseInt(strings.TrimSpace(values[constant.PayBalance]), 10, 64)
+	alipay, _ := strconv.ParseInt(strings.TrimSpace(values[constant.PayAlipay]), 10, 64)
+	wxpay, _ := strconv.ParseInt(strings.TrimSpace(values[constant.PayWxpay]), 10, 64)
+	expire, _ := strconv.ParseInt(strings.TrimSpace(values[constant.PayExpire]), 10, 64)
+	if balance < 0 {
+		balance = 0
+	}
+	if alipay < 0 {
+		alipay = 0
+	}
+	if wxpay < 0 {
+		wxpay = 0
+	}
+	if expire < 5 {
+		expire = 5
+	}
+	result := &Config{
+		Min:     minPay,
+		Max:     maxPay,
+		Balance: balance,
+		Alipay:  alipay,
+		Wxpay:   wxpay,
+		Expire:  expire,
+	}
+	if bytes, err := json.Marshal(result); err == nil {
+		s.cache.SetWithExpire(constant.CacheNameWithPayConfig, string(bytes), constant.CacheTimeWithPayConfig)
+	}
+	return result
+}
+
+// SetConfig 更新支付配置
+func (s *service) SetConfig(data *Config) error {
+	if data == nil {
+		return errors.New("支付配置不能为空")
+	}
+	if data.Min > 0 && data.Max > 0 && data.Min > data.Max {
+		return errors.New("最小充值金额不能大于最大充值金额")
+	}
+	if data.Expire < 5 {
+		data.Expire = 5
+	}
+	if data.Alipay != 0 {
+		info, err := s.FindById(data.Alipay, false)
+		if err != nil {
+			return errors.Join(errors.New("支付宝支付通道不存在"), err)
+		}
+		if info.Status != channel_status.Enable {
+			return errors.New("支付宝支付通道已禁用")
+		}
+	}
+	if data.Wxpay != 0 {
+		info, err := s.FindById(data.Wxpay, false)
+		if err != nil {
+			return errors.Join(errors.New("微信支付通道不存在"), err)
+		}
+		if info.Status != channel_status.Enable {
+			return errors.New("微信支付通道已禁用")
+		}
+	}
+	if !s.configService.SetSystemConfigs(map[string]string{
+		constant.PayMin:     strconv.FormatFloat(data.Min, 'f', -1, 64),
+		constant.PayMax:     strconv.FormatFloat(data.Max, 'f', -1, 64),
+		constant.PayBalance: strconv.FormatInt(data.Balance, 10),
+		constant.PayAlipay:  strconv.FormatInt(data.Alipay, 10),
+		constant.PayWxpay:   strconv.FormatInt(data.Wxpay, 10),
+		constant.PayExpire:  strconv.FormatInt(data.Expire, 10),
+	}) {
+		return errors.New("更新支付配置失败")
+	}
+	s.cache.Delete(constant.CacheNameWithPayConfig)
+	return nil
+}
+
+// getPay 获取支付对象
+func (s *service) getPay(id int64) (client pay.Interface, err error) {
+	info, err := s.FindById(id, false)
+	if err != nil {
+		return nil, errors.Join(errors.New("获取支付通道信息失败"), err)
+	}
+	switch info.Type {
+	case channel_type.Alipay:
+		config, ok := info.Config.(Alipay)
+		if !ok {
+			client, err = nil, errors.New("获取支付通道配置信息失败")
+		} else {
+			client, err = pay.NewAlipayGateway(config.AppId, config.PrivateKey, config.PublicKey)
+		}
+		break
+	case channel_type.Epay:
+		config, ok := info.Config.(Epay)
+		if !ok {
+			client, err = nil, errors.New("获取支付通道配置信息失败")
+		} else {
+			client, err = pay.NewEpayGateway(config.Pid, config.Key, config.Url)
+		}
+		break
+	default:
+		client = nil
+		err = errors.New("获取支付通道类型失败")
+		break
+	}
+	return client, err
+}
+
 // formatSetting 格式化设置
 func (s *service) formatSetting(str string, types int) interface{} {
 	var res interface{}
@@ -241,88 +369,4 @@ func (s *service) checkSetting(str string, types int) (res string, err error) {
 		break
 	}
 	return res, err
-}
-
-// GetConfig 获取支付配置
-func (s *service) GetConfig(refresh bool) *Config {
-	if s.configService == nil {
-		return &Config{}
-	}
-	if !refresh {
-		if data, exists := s.cache.Get(constant.CacheNameWithPayConfig); exists && data != "" {
-			var result *Config
-			if err := json.Unmarshal([]byte(data), &result); err == nil {
-				return result
-			}
-		}
-	}
-	values := s.configService.GetSystemConfig(constant.PayGroup, false)
-
-	minPay, _ := strconv.ParseFloat(strings.TrimSpace(values[constant.PayMin]), 64)
-	maxPay, _ := strconv.ParseFloat(strings.TrimSpace(values[constant.PayMax]), 64)
-	if minPay < 0 {
-		minPay = 0
-	}
-	if maxPay < 0 {
-		maxPay = 0
-	}
-	alipay, _ := strconv.ParseInt(strings.TrimSpace(values[constant.PayAlipay]), 10, 64)
-	wxpay, _ := strconv.ParseInt(strings.TrimSpace(values[constant.PayWxpay]), 10, 64)
-	if alipay < 0 {
-		alipay = 0
-	}
-	if wxpay < 0 {
-		wxpay = 0
-	}
-	result := &Config{
-		Min:    minPay,
-		Max:    maxPay,
-		Alipay: alipay,
-		Wxpay:  wxpay,
-	}
-	if bytes, err := json.Marshal(result); err == nil {
-		s.cache.SetWithExpire(constant.CacheNameWithPayConfig, string(bytes), constant.CacheTimeWithPayConfig)
-	}
-	return result
-}
-
-// SetConfig 更新支付配置
-func (s *service) SetConfig(data *Config) error {
-	if s.configService == nil {
-		return errors.New("配置服务不存在")
-	}
-	if data == nil {
-		return errors.New("支付配置不能为空")
-	}
-	if data.Min > 0 && data.Max > 0 && data.Min > data.Max {
-		return errors.New("最小充值金额不能大于最大充值金额")
-	}
-	if data.Alipay != 0 {
-		info, err := s.FindById(data.Alipay, false)
-		if err != nil {
-			return errors.Join(errors.New("支付宝支付通道不存在"), err)
-		}
-		if info.Status != channel_status.Enable {
-			return errors.New("支付宝支付通道已禁用")
-		}
-	}
-	if data.Wxpay != 0 {
-		info, err := s.FindById(data.Wxpay, false)
-		if err != nil {
-			return errors.Join(errors.New("微信支付通道不存在"), err)
-		}
-		if info.Status != channel_status.Enable {
-			return errors.New("微信支付通道已禁用")
-		}
-	}
-	if !s.configService.SetSystemConfigs(map[string]string{
-		constant.PayMin:    strconv.FormatFloat(data.Min, 'f', -1, 64),
-		constant.PayMax:    strconv.FormatFloat(data.Max, 'f', -1, 64),
-		constant.PayAlipay: strconv.FormatInt(data.Alipay, 10),
-		constant.PayWxpay:  strconv.FormatInt(data.Wxpay, 10),
-	}) {
-		return errors.New("更新支付配置失败")
-	}
-	s.cache.Delete(constant.CacheNameWithPayConfig)
-	return nil
 }

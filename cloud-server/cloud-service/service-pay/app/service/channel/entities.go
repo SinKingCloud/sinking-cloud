@@ -15,10 +15,12 @@ type Channel struct {
 
 // Config 支付配置
 type Config struct {
-	Min    float64 `json:"min"`    //最小充值金额(0为不限制)
-	Max    float64 `json:"max"`    //最大充值金额(0为不限制)
-	Alipay int64   `json:"alipay"` //支付宝支付通道(0为关闭)
-	Wxpay  int64   `json:"wxpay"`  //微信支付通道(0为关闭)
+	Min     float64 `json:"min"`     //最小充值金额(0为不限制)
+	Max     float64 `json:"max"`     //最大充值金额(0为不限制)
+	Balance int64   `json:"balance"` //余额支付通道(0为关闭)
+	Alipay  int64   `json:"alipay"`  //支付宝支付通道(0为关闭)
+	Wxpay   int64   `json:"wxpay"`   //微信支付通道(0为关闭)
+	Expire  int64   `json:"expire"`  //订单有效期(分钟)
 }
 
 // Alipay 阿里云设置

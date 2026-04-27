@@ -33,5 +33,5 @@ func Init() {
 
 	Channel = channel.NewService(channelRepository, orderRepository, configService, cache)
 	Balance = balance.NewService(balanceRepository, balanceLogRepository, database, cache)
-	Order = order.NewService(orderRepository, orderLogRepository, cache)
+	Order = order.NewService(orderRepository, orderLogRepository, Channel, database, cache)
 }

@@ -22,7 +22,6 @@ type EpayGateway struct {
 	mapiURL   string
 	apiURL    string
 	signType  string
-	channel   string
 }
 
 // NewEpayGateway 创建Epay网关实例
@@ -30,7 +29,10 @@ type EpayGateway struct {
 // key: 商户密钥
 // url: 易支付接口地址
 // channel: 渠道标识（1或2）
-func NewEpayGateway(pid, key, apiUrl, channel string) *EpayGateway {
+func NewEpayGateway(pid, key, apiUrl string) (*EpayGateway, error) {
+	if pid == "" || key == "" || apiUrl == "" {
+		return nil, errors.New("初始化易支付客户端失败: 参数不能为空")
+	}
 	if !strings.HasSuffix(apiUrl, "/") {
 		apiUrl = apiUrl + "/"
 	}
@@ -41,8 +43,7 @@ func NewEpayGateway(pid, key, apiUrl, channel string) *EpayGateway {
 		mapiURL:   apiUrl + "mapi.php",
 		apiURL:    apiUrl + "api.php",
 		signType:  "MD5",
-		channel:   channel,
-	}
+	}, nil
 }
 
 // Submit 提交支付（实现PaymentGateway接口）

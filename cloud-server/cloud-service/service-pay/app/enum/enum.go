@@ -10,10 +10,14 @@ import (
 	"service-pay/app/enum/order_pay_type"
 	"service-pay/app/enum/order_status"
 	"service-pay/app/enum/order_type"
+	"service-pay/app/enum/pay_type"
 )
 
 // Data 枚举信息
 var Data = map[string]interface{}{
+	"pay": map[string]interface{}{
+		"type": pay_type.Map(), //允许支付类型
+	},
 	"channel": map[string]interface{}{
 		"status": channel_status.Map(), //通道状态
 		"type":   channel_type.Map(),   //通道类型

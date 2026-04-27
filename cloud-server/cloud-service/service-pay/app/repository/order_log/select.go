@@ -3,7 +3,7 @@ package order_log
 import "service-pay/app/model"
 
 // Select 查询数据
-func (r *Repository) Select(where *SelectOrderLog, orderByField string, orderByType string, page int, pageSize int) (list []*model.OrderLog, total int64, err error) {
+func (r *Repository) Select(where *SelectOrderLog, orderByField string, orderByType string, page int, pageSize int) (list []*OrderLog, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := r.Database.Db.Model(&model.OrderLog{})
 	if where != nil {

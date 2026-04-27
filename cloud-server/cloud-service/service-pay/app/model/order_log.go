@@ -14,7 +14,7 @@ type OrderLog struct {
 	OperatorId   int64        `gorm:"column:operator_id" json:"operator_id"`
 	OperatorType int64        `gorm:"column:operator_type" json:"operator_type"`
 	Type         int          `gorm:"column:type" json:"type"`
-	Content      int          `gorm:"column:content" json:"content"`
+	Content      string       `gorm:"column:content" json:"content"`
 	BeforeInfo   string       `gorm:"column:before_info" json:"before_info"`
 	AfterInfo    string       `gorm:"column:after_info" json:"after_info"`
 	CreateTime   str.DateTime `gorm:"column:create_time" json:"create_time"`
