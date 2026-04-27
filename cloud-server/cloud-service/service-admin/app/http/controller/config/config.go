@@ -72,5 +72,10 @@ func (Controller) config(c *context.Context, group string, keys []string) {
 		return
 	}
 	configs := service.Config.GetSysConfigs(group, false)
+	for _, key := range keys {
+		if _, ok := configs[key]; !ok {
+			configs[key] = ""
+		}
+	}
 	c.SuccessWithData("获取数据成功", configs)
 }
