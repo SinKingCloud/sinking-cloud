@@ -56,3 +56,22 @@ func (balanceController) Log(c *context.Context) {
 	}
 	c.SuccessWithData("获取数据成功", page.NewPage(total, pageNum, pageSize, data))
 }
+
+// Recharge 充值
+func (balanceController) Recharge(c *context.Context) {
+	var form struct {
+		Money int    `json:"money" default:"" validate:"min=1,max=99999" label:"充值金额"`
+		Type  string `json:"type" default:"" label:"充值方式"`
+	}
+	if ok, msg := c.ValidatorAll(&form); !ok {
+		c.Error(msg)
+		return
+	}
+	u := c.GetUserInfo()
+	tradeNo, err := service.Balance.CreateRechargeOrder(u.Id, form.Money, form.Type)
+	if err != nil {
+		c.Error(err.Error())
+		return
+	}
+	c.SuccessWithData("创建订单成功", tradeNo)
+}

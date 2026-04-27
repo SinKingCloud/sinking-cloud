@@ -169,9 +169,6 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 	if _, ok := pay_type.Map()[payType]; !ok {
 		return "", errors.New("支付类型不合法")
 	}
-	if amount <= 0 {
-		amount = 0
-	}
 	payConfig := s.channelService.GetConfig(false)
 	if payConfig == nil {
 		return "", errors.New("获取支付配置失败")
@@ -183,6 +180,15 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 		channelID = payConfig.Wxpay
 	} else if payType == pay_type.Balance {
 		channelID = 0
+	}
+	if payType != pay_type.Balance && channelID <= 0 {
+		return "", errors.New("未开启该支付方式")
+	}
+	if Type == order_type.Recharge && payType == pay_type.Balance {
+		return "", errors.New("支付类型不合法")
+	}
+	if amount <= 0 {
+		amount = 0
 	}
 	extra := Extra{
 		RpcService: callbackRpcService,

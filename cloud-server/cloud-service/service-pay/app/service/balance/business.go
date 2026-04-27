@@ -5,6 +5,7 @@ import (
 	"errors"
 	"service-pay/app/constant"
 	"service-pay/app/enum/balance_log_type"
+	"service-pay/app/enum/order_type"
 	"service-pay/app/model"
 	"service-pay/app/repository/balance_log"
 	"strconv"
@@ -185,4 +186,20 @@ func (s *service) SelectLog(where *balance_log.SelectBalanceLog, orderByField st
 		})
 	}
 	return list, total, nil
+}
+
+// CreateRechargeOrder 创建充值订单
+func (s *service) CreateRechargeOrder(userId int64, money int, payType string) (string, error) {
+	tradeNo, err := s.orderService.Create(userId,
+		"在线充值",
+		order_type.Recharge,
+		payType,
+		float64(money),
+		nil,
+		s.consul.GetName(),
+		"rechargeOrderNotify")
+	if err != nil {
+		return "", err
+	}
+	return tradeNo, nil
 }

@@ -21,8 +21,10 @@ var (
 )
 
 func Init() {
-	cache := global.App.Cache
-	database := global.App.Database
+	app := global.App
+	cache := app.Cache
+	database := app.Database
+	consul := app.Consul
 
 	balanceRepository := balance2.NewRepository(database)
 	balanceLogRepository := balance_log.NewRepository(database)
@@ -32,6 +34,6 @@ func Init() {
 	configService := service.Config
 
 	Channel = channel.NewService(channelRepository, orderRepository, configService, cache)
-	Balance = balance.NewService(balanceRepository, balanceLogRepository, database, cache)
 	Order = order.NewService(orderRepository, orderLogRepository, Channel, database, cache)
+	Balance = balance.NewService(balanceRepository, balanceLogRepository, Order, consul, database, cache)
 }
