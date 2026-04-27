@@ -8,7 +8,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
-	consul "github.com/SinKingCloud/sinking-go/sinking-consul/client"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/client"
 )
 
 // Service service接口
@@ -22,7 +22,7 @@ type Service interface {
 
 // Session服务
 type service struct {
-	consul               *consul.Client
+	consul               *client.Client
 	balanceRepository    balance.Interface
 	balanceLogRepository balance_log.Interface
 	orderService         order.Service
@@ -32,7 +32,7 @@ type service struct {
 }
 
 // NewService 实例化service
-func NewService(balanceRepository balance.Interface, balanceLogRepository balance_log.Interface, orderService order.Service, consul *consul.Client, database *database.Database, cache cache.Interface) *service {
+func NewService(balanceRepository balance.Interface, balanceLogRepository balance_log.Interface, orderService order.Service, consul *client.Client, database *database.Database, cache cache.Interface) *service {
 	return &service{
 		balanceRepository:    balanceRepository,
 		balanceLogRepository: balanceLogRepository,
