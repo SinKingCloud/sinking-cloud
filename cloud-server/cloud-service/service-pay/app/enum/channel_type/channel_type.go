@@ -1,14 +1,14 @@
 package channel_type
 
 const (
-	Alipay = iota
-	Epay
+	Alipay = "alipay"
+	Wxpay  = "wxpay"
 )
 
 // Map 数据
-func Map() map[int]string {
-	return map[int]string{
+func Map() map[string]string {
+	return map[string]string{
 		Alipay: "支付宝",
-		Epay:   "易支付",
+		Wxpay:  "微信",
 	}
 }

@@ -10,7 +10,8 @@ import (
 // Channel 支付通道
 type Channel struct {
 	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
-	Type       int          `gorm:"column:type" json:"type"`
+	Type       string       `gorm:"column:type" json:"type"`
+	Plugin     int          `gorm:"column:plugin" json:"plugin"`
 	Name       string       `gorm:"column:name" json:"name"`
 	Config     string       `gorm:"column:config" json:"config"`
 	Status     int          `gorm:"column:status" json:"status"`

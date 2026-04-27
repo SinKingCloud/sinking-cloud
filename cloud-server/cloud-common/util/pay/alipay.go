@@ -85,7 +85,7 @@ func (a *AlipayGateway) ParseCallback(req *http.Request) (*CallbackData, error) 
 	return &CallbackData{
 		TradeNo:    bm.GetString("out_trade_no"), // 商户订单号
 		OutTradeNo: bm.GetString("trade_no"),     // 支付宝交易号
-		Status:     "TRADE_SUCCESS",              // TRADE_SUCCESS 或 TRADE_FINISHED
+		Status:     bm.GetString("trade_status") == "TRADE_SUCCESS",
 		Money:      money,
 		PayTime:    bm.GetString("gmt_payment"), // 支付时间
 	}, nil

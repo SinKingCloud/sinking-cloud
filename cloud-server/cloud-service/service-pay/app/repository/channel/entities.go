@@ -5,7 +5,8 @@ import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str
 // Channel 存储通道
 type Channel struct {
 	Id         int64        `gorm:"column:id;PRIMARY_KEY" json:"id"`
-	Type       int          `gorm:"column:type" json:"type"`
+	Type       string       `gorm:"column:type" json:"type"`
+	Plugin     int          `gorm:"column:plugin" json:"plugin"`
 	Name       string       `gorm:"column:name" json:"name"`
 	Status     int          `gorm:"column:status" json:"status"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
@@ -15,6 +16,7 @@ type Channel struct {
 type SelectChannel struct {
 	Name            string
 	Type            string
+	Plugin          string
 	Status          string
 	CreateTimeStart string
 	CreateTimeEnd   string
@@ -24,6 +26,7 @@ type SelectChannel struct {
 
 type UpdateChannel struct {
 	Type   interface{}
+	Plugin interface{}
 	Name   interface{}
 	Config interface{}
 	Status interface{}

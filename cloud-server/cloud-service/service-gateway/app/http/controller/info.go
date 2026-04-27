@@ -19,6 +19,7 @@ func Info(c *context.Context) {
 		"describe": c.GetStringWithDefault(web[constant.WebDescribe], "默认名称"),
 		"contact":  c.GetStringWithDefault(web[constant.WebContact], ""),
 		"url":      c.GetStringWithDefault(web[constant.WebUrl], ""),
+		"api":      c.GetStringWithDefault(web[constant.WebApi], ""),
 		"logo":     c.GetStringWithDefault(web[constant.WebLogo], ""),
 		"ui": sinking_web.H{
 			"layout":    c.GetStringWithDefault(ui[constant.UiLayout], "left"),

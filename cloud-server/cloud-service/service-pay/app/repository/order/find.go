@@ -2,7 +2,6 @@ package order
 
 import (
 	"errors"
-	"service-pay/app/enum/order_pay_status"
 	"service-pay/app/enum/order_status"
 	"service-pay/app/model"
 	"time"
@@ -45,10 +44,9 @@ func (r *Repository) CheckChannelHasUnPayOrder(channelId int64) (bool, error) {
 	err := r.Database.Db.Model(&model.Order{}).
 		Select("id").
 		Where(
-			"channel_id = ? AND status = ? AND pay_status = ? AND expired_time > ?",
+			"channel_id = ? AND status = ? AND expired_time > ?",
 			channelId,
 			order_status.UnPay,
-			order_pay_status.UnPay,
 			time.Now().Format("2006-01-02 15:04:05"),
 		).
 		First(&data).Error

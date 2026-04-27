@@ -98,7 +98,7 @@ func (e *EpayGateway) ParseCallback(req *http.Request) (*CallbackData, error) {
 	return &CallbackData{
 		TradeNo:    params["out_trade_no"],
 		OutTradeNo: params["trade_no"],
-		Status:     params["trade_status"],
+		Status:     params["trade_status"] == "TRADE_SUCCESS",
 		Money:      money,
 		PayTime:    params["time"],
 	}, nil

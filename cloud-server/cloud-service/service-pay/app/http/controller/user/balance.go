@@ -60,7 +60,7 @@ func (balanceController) Log(c *context.Context) {
 // Recharge 充值
 func (balanceController) Recharge(c *context.Context) {
 	var form struct {
-		Money int    `json:"money" default:"" validate:"min=1,max=99999" label:"充值金额"`
+		Money int    `json:"money" default:"" validate:"min=1" label:"充值金额"`
 		Type  string `json:"type" default:"" label:"充值方式"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {

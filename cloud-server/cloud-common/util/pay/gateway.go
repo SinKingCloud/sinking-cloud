@@ -35,7 +35,7 @@ type CallbackData struct {
 	TradeNo    string  // 商户订单号
 	OutTradeNo string  // 第三方订单号
 	Money      float64 // 支付金额
-	Status     string  // 支付状态
+	Status     bool    // 是否支付成功
 	PayTime    string  // 支付时间
 }
 

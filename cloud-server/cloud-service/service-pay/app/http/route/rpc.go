@@ -2,6 +2,7 @@ package route
 
 import (
 	"service-pay/app/enum"
+	rpc2 "service-pay/app/http/rpc"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
@@ -13,4 +14,5 @@ import (
 func loadRpc(s *sinking_web.Engine) {
 	rpc.RegisterHandle(s)
 	rpc.RegisterFunc(constant.RpcGetEnumDataFunName, service.Enum.GetDataHandler(enum.Data)) //获取枚举配置
+	rpc.RegisterFunc("RechargeOrderNotify", rpc2.Balance.RechargeOrderNotify)                //充值订单回调
 }

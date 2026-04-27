@@ -26,6 +26,7 @@ func (s Controller) Ui(c *context.Context) {
 func (s Controller) Web(c *context.Context) {
 	s.config(c, constant.WebGroup, []string{
 		constant.WebUrl,
+		constant.WebApi,
 		constant.WebName,
 		constant.WebTitle,
 		constant.WebKeyWords,

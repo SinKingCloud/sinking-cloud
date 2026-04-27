@@ -10,6 +10,9 @@ func (r *Repository) Select(where *SelectChannel, orderByField string, orderByTy
 		if where.Type != "" {
 			query = query.Where("type = ?", where.Type)
 		}
+		if where.Plugin != "" {
+			query = query.Where("plugin = ?", where.Plugin)
+		}
 		if where.Status != "" {
 			query = query.Where("status = ?", where.Status)
 		}

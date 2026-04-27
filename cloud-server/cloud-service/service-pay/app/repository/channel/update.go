@@ -16,6 +16,9 @@ func (r *Repository) UpdateById(id int64, perm *UpdateChannel) error {
 	if perm.Type != nil {
 		updates["type"] = perm.Type
 	}
+	if perm.Plugin != nil {
+		updates["plugin"] = perm.Plugin
+	}
 	if perm.Name != nil {
 		updates["name"] = perm.Name
 	}

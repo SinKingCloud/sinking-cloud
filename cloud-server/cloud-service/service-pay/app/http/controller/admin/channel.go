@@ -18,7 +18,7 @@ func (channelController) List(c *context.Context) {
 	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,create_time,update_time")
 	var form struct {
 		Name            string `json:"name" default:"" validate:"omitempty" label:"名称"`
-		Type            string `json:"type" default:"" validate:"omitempty,numeric" label:"类型"`
+		Plugin          string `json:"plugin" default:"" validate:"omitempty,numeric" label:"插件"`
 		Status          string `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
 		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
 		CreateTimeEnd   string `json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
@@ -33,8 +33,8 @@ func (channelController) List(c *context.Context) {
 	if form.Name != "" {
 		where.Name = form.Name
 	}
-	if form.Type != "" {
-		where.Type = form.Type
+	if form.Plugin != "" {
+		where.Plugin = form.Plugin
 	}
 	if form.Status != "" {
 		where.Status = form.Status
@@ -110,15 +110,16 @@ func (channelController) Update(c *context.Context) {
 func (channelController) Create(c *context.Context) {
 	var form struct {
 		Name   string `json:"name" default:"" validate:"required" label:"通道名称"`
-		Type   int    `json:"type" default:"0" validate:"required" label:"通道类型"`
-		Status int    `json:"status" default:"0" validate:"required" label:"通道状态"`
-		Config string `json:"config" default:"" validate:"omitempty" label:"通道配置"`
+		Type   string `json:"type" default:"" validate:"required" label:"通道类型"`
+		Plugin int    `json:"plugin" default:"" label:"使用插件"`
+		Status int    `json:"status" default:"" label:"通道状态"`
+		Config string `json:"config" default:"" label:"通道配置"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}
-	err := service.Channel.Create(form.Name, form.Type, form.Status, form.Config)
+	err := service.Channel.Create(form.Name, form.Type, form.Plugin, form.Status, form.Config)
 	if err != nil {
 		c.Error(err.Error())
 		return

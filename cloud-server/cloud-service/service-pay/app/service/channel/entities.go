@@ -5,7 +5,8 @@ import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str
 // Channel 存储通道
 type Channel struct {
 	Id         int64        `json:"id"`
-	Type       int          `json:"type"`
+	Type       string       `json:"type"`
+	Plugin     int          `json:"plugin"`
 	Name       string       `json:"name"`
 	Config     interface{}  `json:"config"`
 	Status     int          `json:"status"`

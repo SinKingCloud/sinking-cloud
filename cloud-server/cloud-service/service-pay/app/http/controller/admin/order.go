@@ -14,7 +14,7 @@ type orderController struct {
 // List 订单列表
 func (orderController) List(c *context.Context) {
 	pageNum, pageSize := c.ValidatePage()
-	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,user_id,channel_id,type,status,pay_status,pay_type,pay_time,expired_time,complete_time,create_time,update_time")
+	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,user_id,channel_id,type,status,pay_status,pay_time,expired_time,complete_time,create_time,update_time")
 	var form struct {
 		UserId            string `json:"user_id" default:"" validate:"omitempty,numeric" label:"用户ID"`
 		ChannelId         string `json:"channel_id" default:"" validate:"omitempty,numeric" label:"通道ID"`
@@ -23,7 +23,6 @@ func (orderController) List(c *context.Context) {
 		Status            string `json:"status" default:"" validate:"omitempty,numeric" label:"订单状态"`
 		OutTradeNo        string `json:"out_trade_no" default:"" validate:"omitempty" label:"外部订单号"`
 		PayStatus         string `json:"pay_status" default:"" validate:"omitempty,numeric" label:"支付状态"`
-		PayType           string `json:"pay_type" default:"" validate:"omitempty,numeric" label:"支付类型"`
 		PayTimeStart      string `json:"pay_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"支付起始时间"`
 		PayTimeEnd        string `json:"pay_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"支付结束时间"`
 		CompleteTimeStart string `json:"complete_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"完成起始时间"`
@@ -58,9 +57,6 @@ func (orderController) List(c *context.Context) {
 	}
 	if form.PayStatus != "" {
 		where.PayStatus = form.PayStatus
-	}
-	if form.PayType != "" {
-		where.PayType = form.PayType
 	}
 	if form.PayTimeStart != "" {
 		where.PayTimeStart = form.PayTimeStart

@@ -11,5 +11,5 @@ import (
 func loadApi(s *sinking_web.Engine) {
 	s.ANY("/config", context.HandleFunc(controller.Api.Config))
 	s.ANY("/submit", context.HandleFunc(controller.Api.Submit))
-	s.ANY("/callback", context.HandleFunc(controller.Api.Callback))
+	s.ANY("/callback/:id/:method", context.HandleFunc(controller.Api.Callback))
 }

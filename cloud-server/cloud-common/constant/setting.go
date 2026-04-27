@@ -2,7 +2,8 @@ package constant
 
 const (
 	WebGroup    = "web"                  //网站配置
-	WebUrl      = WebGroup + ".url"      //网站名称
+	WebUrl      = WebGroup + ".url"      //网站地址
+	WebApi      = WebGroup + ".api"      //网站API地址
 	WebName     = WebGroup + ".name"     //网站名称
 	WebTitle    = WebGroup + ".title"    //网站标题
 	WebKeyWords = WebGroup + ".keywords" //网站关键词

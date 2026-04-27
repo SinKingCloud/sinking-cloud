@@ -33,7 +33,7 @@ func Init() {
 	channelRepository := channel2.NewRepository(database)
 	configService := service.Config
 
-	Channel = channel.NewService(channelRepository, orderRepository, configService, cache)
+	Channel = channel.NewService(channelRepository, orderRepository, configService, consul, cache)
 	Order = order.NewService(orderRepository, orderLogRepository, Channel, database, cache)
-	Balance = balance.NewService(balanceRepository, balanceLogRepository, Order, consul, database, cache)
+	Balance = balance.NewService(balanceRepository, balanceLogRepository, Order, Channel, consul, database, cache)
 }
