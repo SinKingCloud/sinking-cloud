@@ -2,6 +2,8 @@ package order
 
 import (
 	"service-pay/app/model"
+	balanceRepo "service-pay/app/repository/balance"
+	balanceLogRepo "service-pay/app/repository/balance_log"
 	"service-pay/app/repository/order"
 	"service-pay/app/repository/order_log"
 	"service-pay/app/service/channel"
@@ -21,24 +23,30 @@ type Service interface {
 	FindLogById(id int64) (*model.OrderLog, error)                                                                                                                                     //根据ID查询日志
 	Create(userId int64, name string, Type int, payType string, amount float64, param interface{}, callbackRpcService string, callbackRpcFunc string, describe string) (string, error) //创建订单
 	Callback(tradeNo string, outTradeNo string, payAmount float64, payTime str.DateTime) error                                                                                         //订单回调
+	Deliver(id int64, operatorId int64) error                                                                                                                                          //订单发货
+	Refound(id int64, money float64, operatorId int64) error                                                                                                                           //订单退款
 }
 
 // Session服务
 type service struct {
-	cache              cache.Interface
-	database           *database.Database
-	channelService     channel.Service
-	orderRepository    order.Interface
-	orderLogRepository order_log.Interface
+	cache                cache.Interface
+	database             *database.Database
+	channelService       channel.Service
+	balanceRepository    balanceRepo.Interface
+	balanceLogRepository balanceLogRepo.Interface
+	orderRepository      order.Interface
+	orderLogRepository   order_log.Interface
 }
 
 // NewService 实例化service
-func NewService(orderRepository order.Interface, orderLogRepository order_log.Interface, channelService channel.Service, database *database.Database, cache cache.Interface) *service {
+func NewService(orderRepository order.Interface, orderLogRepository order_log.Interface, balanceRepository balanceRepo.Interface, balanceLogRepository balanceLogRepo.Interface, channelService channel.Service, database *database.Database, cache cache.Interface) *service {
 	return &service{
-		orderRepository:    orderRepository,
-		orderLogRepository: orderLogRepository,
-		channelService:     channelService,
-		database:           database,
-		cache:              cache,
+		orderRepository:      orderRepository,
+		orderLogRepository:   orderLogRepository,
+		balanceRepository:    balanceRepository,
+		balanceLogRepository: balanceLogRepository,
+		channelService:       channelService,
+		database:             database,
+		cache:                cache,
 	}
 }

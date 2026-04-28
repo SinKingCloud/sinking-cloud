@@ -46,7 +46,12 @@ func (Controller) Submit(c *context.Context) {
 		return
 	}
 	if info.Status != order_status.UnPay {
-		c.Error("该订单已支付或已关闭")
+		c.Error("该订单已支付或已关闭,无需支付")
+		return
+	}
+	expiredTime := time.Time(info.ExpiredTime)
+	if !expiredTime.IsZero() && !expiredTime.After(time.Now()) {
+		c.Error("该订单已过期,请重新下单")
 		return
 	}
 	var link string

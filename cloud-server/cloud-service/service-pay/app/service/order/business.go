@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"service-pay/app/constant"
+	"service-pay/app/enum/balance_log_type"
 	"service-pay/app/enum/order_log_operator_type"
 	"service-pay/app/enum/order_log_type"
 	"service-pay/app/enum/order_pay_status"
@@ -252,8 +253,158 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 
 // Callback 订单回调
 func (s *service) Callback(tradeNo string, outTradeNo string, payAmount float64, payTime str.DateTime) error {
+	return s.callback(tradeNo, outTradeNo, payAmount, payTime, 0, order_log_operator_type.System, "在线支付订单成功,发货成功")
+}
+
+// Deliver 订单发货
+func (s *service) Deliver(id int64, operatorId int64) error {
+	if id <= 0 {
+		return errors.New("订单ID错误")
+	}
+	info, err := s.FindById(id)
+	if err != nil {
+		return errors.Join(errors.New("获取订单信息失败"), err)
+	}
+	if info.Status != order_status.UnPay {
+		return errors.New("订单状态异常")
+	}
+	return s.callback(info.TradeNo, strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10), info.Amount, str.DateTime(time.Now()), operatorId, order_log_operator_type.Admin, "后台手动发货")
+}
+
+// Refound 订单退款
+func (s *service) Refound(id int64, money float64, operatorId int64) error {
+	if id <= 0 {
+		return errors.New("订单ID错误")
+	}
+	if money < 0 {
+		return errors.New("退款金额不能小于0")
+	}
+	info, err := s.FindById(id)
+	if err != nil {
+		return errors.Join(errors.New("获取订单信息失败"), err)
+	}
+	lockKey := constant.LockOrderCallback + info.TradeNo
+	if !s.cache.Lock(lockKey, constant.LockTimeOrderCallback) {
+		return errors.New("系统繁忙,请稍候重试")
+	}
+	defer s.cache.UnLock(lockKey)
+
+	balanceLockKey := constant.LockBalanceOperate + strconv.FormatInt(info.UserId, 10)
+	if !s.cache.Lock(balanceLockKey, constant.LockTimeBalanceOperate) {
+		return errors.New("系统繁忙,请稍候重试")
+	}
+	defer s.cache.UnLock(balanceLockKey)
+
+	info, err = s.FindById(id)
+	if err != nil {
+		return errors.Join(errors.New("获取订单信息失败"), err)
+	}
+	if info.Type == order_type.Recharge {
+		return errors.New("充值订单不允许退款")
+	}
+	if info.PayStatus != order_pay_status.Payed {
+		return errors.New("该订单未支付,不能退款")
+	}
+	if info.PayAmount <= 0 {
+		return errors.New("该订单实际支付金额为0,无需退款")
+	}
+	refundableMoney := info.PayAmount - info.RefundAmount
+	if refundableMoney <= 0 {
+		return errors.New("该订单已全部退款,无需重复退款")
+	}
+	refundMoney := money
+	if refundMoney == 0 || refundMoney > info.Amount {
+		refundMoney = refundableMoney
+	}
+	if refundMoney <= 0 {
+		return errors.New("退款金额必须大于0")
+	}
+	if refundMoney > refundableMoney {
+		return errors.New("退款金额不能大于订单可退款金额")
+	}
+
+	newRefundAmount := info.RefundAmount + refundMoney
+	newStatus := info.Status
+	if newRefundAmount >= info.PayAmount {
+		newStatus = order_status.Refunded
+	}
+	update := &orderRepository.UpdateOrder{
+		RefundAmount: newRefundAmount,
+	}
+	if newStatus != info.Status {
+		update.Status = newStatus
+	}
+	after := *info
+	after.RefundAmount = newRefundAmount
+	after.Status = newStatus
+	after.UpdateTime = str.DateTime(time.Now())
+
+	beforeInfo, err := json.Marshal(info)
+	if err != nil {
+		return errors.Join(errors.New("生成订单日志失败"), err)
+	}
+	afterInfo, err := json.Marshal(&after)
+	if err != nil {
+		return errors.Join(errors.New("生成订单日志失败"), err)
+	}
+	err = s.database.Transaction(func(tx *gorm.DB) error {
+		balanceInfo, err := s.balanceRepository.FindOrCreateByUserId(info.UserId, tx)
+		if err != nil {
+			return errors.Join(errors.New("获取余额信息失败"), err)
+		}
+		if balanceInfo == nil || balanceInfo.Id <= 0 {
+			return errors.New("获取余额信息失败")
+		}
+		moneyBefore := balanceInfo.Money
+		moneyAfter := balanceInfo.Money + refundMoney
+		frozenBefore := balanceInfo.Frozen
+		frozenAfter := balanceInfo.Frozen
+		if err = s.orderRepository.UpdateById(info.Id, update, tx); err != nil {
+			return errors.Join(errors.New("更新订单失败"), err)
+		}
+		if err = s.orderLogRepository.Create(&model.OrderLog{
+			OrderId:      info.Id,
+			OperatorId:   operatorId,
+			OperatorType: order_log_operator_type.Admin,
+			Type:         order_log_type.Refunded,
+			Content:      "系统退款金额:" + strconv.FormatFloat(refundMoney, 'f', 2, 64) + "元",
+			BeforeInfo:   string(beforeInfo),
+			AfterInfo:    string(afterInfo),
+		}, tx); err != nil {
+			return errors.Join(errors.New("创建订单日志失败"), err)
+		}
+		if err = s.balanceRepository.Money(info.UserId, refundMoney, tx); err != nil {
+			return errors.Join(errors.New("更新余额失败"), err)
+		}
+		if err = s.balanceLogRepository.Create(&model.BalanceLog{
+			Id:           str.GetSnowWorkIns().GetId(),
+			UserId:       info.UserId,
+			Type:         balance_log_type.Refunded,
+			Money:        refundMoney,
+			MoneyBefore:  moneyBefore,
+			MoneyAfter:   moneyAfter,
+			FrozenBefore: frozenBefore,
+			FrozenAfter:  frozenAfter,
+			Describe:     "订单[" + info.TradeNo + "]退款",
+		}, tx); err != nil {
+			return errors.Join(errors.New("创建余额明细失败"), err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	s.cache.Delete(constant.CacheNameWithBalance + strconv.FormatInt(info.UserId, 10))
+	return nil
+}
+
+// callback 订单回调
+func (s *service) callback(tradeNo string, outTradeNo string, payAmount float64, payTime str.DateTime, operatorId int64, operatorType int64, content string) error {
 	if tradeNo == "" {
 		return errors.New("订单号不能为空")
+	}
+	if content == "" {
+		content = "订单发货成功"
 	}
 	lockKey := constant.LockOrderCallback + tradeNo
 	if !s.cache.Lock(lockKey, constant.LockTimeOrderCallback) {
@@ -320,10 +471,10 @@ func (s *service) Callback(tradeNo string, outTradeNo string, payAmount float64,
 		}
 		if err := s.orderLogRepository.Create(&model.OrderLog{
 			OrderId:      info.Id,
-			OperatorId:   info.UserId,
-			OperatorType: order_log_operator_type.System,
+			OperatorId:   operatorId,
+			OperatorType: operatorType,
 			Type:         order_log_type.Pay,
-			Content:      "在线支付订单成功,发货成功",
+			Content:      content,
 			BeforeInfo:   string(beforeInfo),
 			AfterInfo:    string(afterInfo),
 		}, tx); err != nil {

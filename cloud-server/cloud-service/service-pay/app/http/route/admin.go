@@ -27,6 +27,8 @@ func loadAdmin(s *sinking_web.Engine) {
 
 		ANY("/order/list", "系统订单列表", controller.Admin.Order.List)
 		ANY("/order/info", "系统订单详情", controller.Admin.Order.Info)
+		ANY("/order/deliver", "系统订单发货", controller.Admin.Order.Deliver)
+		ANY("/order/refound", "系统订单退款", controller.Admin.Order.Refound)
 
 		ANY("/log/list", "订单日志列表", controller.Admin.Log.List)
 		ANY("/log/info", "订单日志详情", controller.Admin.Log.Info)
