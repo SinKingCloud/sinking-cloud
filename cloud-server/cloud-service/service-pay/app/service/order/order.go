@@ -8,7 +8,7 @@ import (
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
-	pay2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/pay"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
 // Service service接口
@@ -20,7 +20,7 @@ type Service interface {
 	SelectLog(where *order_log.SelectOrderLog, orderByField string, orderByType string, page int, pageSize int) (list []*order_log.OrderLog, total int64, err error)    //查询订单日志
 	FindLogById(id int64) (*model.OrderLog, error)                                                                                                                      //根据ID查询日志
 	Create(userId int64, name string, Type int, payType string, amount float64, param interface{}, callbackRpcService string, callbackRpcFunc string) (string, error)   //创建订单
-	Callback(order *pay2.CallbackData) error                                                                                                                            //订单回调
+	Callback(tradeNo string, outTradeNo string, payAmount float64, payTime str.DateTime) error                                                                          //订单回调
 }
 
 // Session服务

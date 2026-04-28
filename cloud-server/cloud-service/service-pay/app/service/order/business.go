@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"service-pay/app/constant"
 	"service-pay/app/enum/order_log_operator_type"
 	"service-pay/app/enum/order_log_type"
 	"service-pay/app/enum/order_pay_status"
-	"service-pay/app/enum/order_pay_type"
 	"service-pay/app/enum/order_status"
 	"service-pay/app/enum/order_type"
 	"service-pay/app/enum/pay_type"
@@ -17,6 +17,8 @@ import (
 	"strconv"
 	"time"
 
+	payService "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/pay"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"gorm.io/gorm"
 )
@@ -27,6 +29,21 @@ func (s *service) FindById(id int64) (*model.Order, error) {
 		return nil, errors.New("订单ID错误")
 	}
 	info, err := s.orderRepository.FindById(id)
+	if err != nil {
+		return nil, err
+	}
+	if info == nil || info.Id <= 0 {
+		return nil, errors.New("订单不存在")
+	}
+	return info, nil
+}
+
+// FindByTradeNo 根据traderNo查询订单
+func (s *service) FindByTradeNo(tradeNo string) (*model.Order, error) {
+	if tradeNo == "" {
+		return nil, errors.New("订单ID错误")
+	}
+	info, err := s.orderRepository.FindByTradeNo(tradeNo)
 	if err != nil {
 		return nil, err
 	}
@@ -66,11 +83,6 @@ func (s *service) Select(where *orderRepository.SelectOrder, orderByField string
 				return nil, 0, err
 			}
 		}
-		if where.PayType != "" {
-			if err = s.checkEnumValue(where.PayType, order_pay_type.Map(), "支付类型"); err != nil {
-				return nil, 0, err
-			}
-		}
 	}
 	return s.orderRepository.Select(where, orderByField, orderByType, page, pageSize)
 }
@@ -100,7 +112,6 @@ func (s *service) SelectByUserId(userId int64, where *orderRepository.SelectOrde
 			PayAmount:    item.PayAmount,
 			RefundAmount: item.RefundAmount,
 			PayStatus:    item.PayStatus,
-			PayType:      item.PayType,
 			PayTime:      item.PayTime,
 			ExpiredTime:  item.ExpiredTime,
 			CompleteTime: item.CompleteTime,
@@ -169,24 +180,15 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 	if _, ok := pay_type.Map()[payType]; !ok {
 		return "", errors.New("支付类型不合法")
 	}
-	payConfig := s.channelService.GetConfig(false)
-	if payConfig == nil {
-		return "", errors.New("获取支付配置失败")
-	}
-	var channelID int64
-	if payType == pay_type.Alipay {
-		channelID = payConfig.Alipay
-	} else if payType == pay_type.Wxpay {
-		channelID = payConfig.Wxpay
-	} else if payType == pay_type.Balance {
-		channelID = 0
-	}
-	if payType != pay_type.Balance && channelID <= 0 {
-		return "", errors.New("未开启该支付方式")
+	channelID, err := s.channelService.GetChannelId(payType)
+	if err != nil {
+		return "", err
 	}
 	if Type == order_type.Recharge && payType == pay_type.Balance {
 		return "", errors.New("支付类型不合法")
 	}
+	payConfig := s.channelService.GetConfig(false)
+	expireTime := str.DateTime(time.Now().Add(time.Duration(payConfig.Expire) * time.Minute))
 	if amount <= 0 {
 		amount = 0
 	}
@@ -212,15 +214,14 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 		Amount:       amount,
 		Status:       order_status.UnPay,
 		PayStatus:    order_pay_status.UnPay,
-		PayType:      order_pay_type.Unset,
-		ExpiredTime:  str.DateTime(time.Now().Add(time.Duration(payConfig.Expire) * time.Minute)),
+		ExpiredTime:  expireTime,
 		PayAmount:    0,
 		RefundAmount: 0,
 		CreateTime:   str.DateTime(time.Now()),
 		UpdateTime:   str.DateTime(time.Now()),
 	}
 	err = s.database.Transaction(func(tx *gorm.DB) error {
-		if err2 := s.orderRepository.Create(data, tx); err != nil {
+		if err2 := s.orderRepository.Create(data, tx); err2 != nil {
 			return errors.Join(errors.New("创建订单失败"), err2)
 		}
 		if data.Id <= 0 {
@@ -248,4 +249,94 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 		return "", err
 	}
 	return tradeNo, nil
+}
+
+// Callback 订单回调
+func (s *service) Callback(tradeNo string, outTradeNo string, payAmount float64, payTime str.DateTime) error {
+	if tradeNo == "" {
+		return errors.New("订单号不能为空")
+	}
+	lockKey := constant.LockOrderCallback + tradeNo
+	if !s.cache.Lock(lockKey, constant.LockTimeOrderCallback) {
+		return errors.New("系统繁忙,请稍候重试")
+	}
+	defer s.cache.UnLock(lockKey)
+	info, err := s.FindByTradeNo(tradeNo)
+	if err != nil {
+		return errors.Join(errors.New("获取订单信息失败"), err)
+	}
+	if info.Status == order_status.Payed || info.PayStatus == order_pay_status.Payed {
+		return nil
+	}
+	extra := Extra{}
+	if info.Extra != "" {
+		if err = json.Unmarshal([]byte(info.Extra), &extra); err != nil {
+			return errors.Join(errors.New("订单扩展信息错误"), err)
+		}
+	}
+	if extra.RpcService == "" || extra.RpcFunc == "" {
+		return errors.New("订单回调RPC配置不能为空")
+	}
+
+	notify := &payService.NotifyInfo{
+		UserId:     info.UserId,
+		TradeNo:    info.TradeNo,
+		Extra:      string(extra.Param),
+		Amount:     info.Amount,
+		OutTradeNo: outTradeNo,
+		PayAmount:  payAmount,
+		PayTime:    payTime,
+	}
+	completeTime := str.DateTime(time.Now())
+	update := &orderRepository.UpdateOrder{
+		Status:       order_status.Payed,
+		OutTradeNo:   outTradeNo,
+		PayAmount:    payAmount,
+		PayStatus:    order_pay_status.Payed,
+		PayTime:      payTime,
+		CompleteTime: completeTime,
+	}
+
+	after := *info
+	after.Status = order_status.Payed
+	after.OutTradeNo = outTradeNo
+	after.PayAmount = payAmount
+	after.PayStatus = order_pay_status.Payed
+	after.PayTime = payTime
+	after.CompleteTime = completeTime
+	after.UpdateTime = str.DateTime(time.Now())
+
+	beforeInfo, err := json.Marshal(info)
+	if err != nil {
+		return errors.Join(errors.New("生成订单日志失败"), err)
+	}
+	afterInfo, err := json.Marshal(&after)
+	if err != nil {
+		return errors.Join(errors.New("生成订单日志失败"), err)
+	}
+
+	return s.database.Transaction(func(tx *gorm.DB) error {
+		if err := s.orderRepository.UpdateById(info.Id, update, tx); err != nil {
+			return errors.Join(errors.New("更新订单失败"), err)
+		}
+		if err := s.orderLogRepository.Create(&model.OrderLog{
+			OrderId:      info.Id,
+			OperatorId:   info.UserId,
+			OperatorType: order_log_operator_type.System,
+			Type:         order_log_type.Pay,
+			Content:      fmt.Sprintf("支付订单[%s]", tradeNo),
+			BeforeInfo:   string(beforeInfo),
+			AfterInfo:    string(afterInfo),
+		}, tx); err != nil {
+			return errors.Join(errors.New("创建订单日志失败"), err)
+		}
+		var result bool
+		if err := rpc.InvokeFunc(extra.RpcService, extra.RpcFunc, notify, &result); err != nil {
+			return errors.Join(errors.New("业务回调失败"), err)
+		}
+		if !result {
+			return errors.New("业务回调返回失败")
+		}
+		return nil
+	})
 }

@@ -13,16 +13,17 @@ import (
 
 // Service service接口
 type Service interface {
-	Create(name string, Type string, plugin int, status int, config string) error                                                                                                     //创建数据
-	Select(where *channel.SelectChannel, orderByField string, orderByType string, page int, pageSize int) (list []*channel.Channel, total int64, err error)                           //查询数据
-	DeleteById(id int64) error                                                                                                                                                        //通过ID删除数据
-	UpdateById(id int64, data *channel.UpdateChannel) error                                                                                                                           //通过ID更新数据
-	FindById(id int64, refresh bool) (*Channel, error)                                                                                                                                //通过ID查询数据
-	GetConfig(refresh bool) *Config                                                                                                                                                   //获取支付配置
-	SetConfig(data *Config) error                                                                                                                                                     //更新支付配置
-	GetPayUrl(channelId int64, tradeNo string, name string, money float64) (string, error)                                                                                            //获取支付跳转链接
-	ValidateCallback(channelId int64, req *http.Request, successFun func(data *pay.CallbackData) bool) (code int, header http.Header, body string, data *pay.CallbackData, err error) //验证支付回调
-	GetChannelId(payType string) (int64, error)                                                                                                                                       //获取支付通道ID
+	Create(name string, Type string, plugin int, status int, config string) error                                                                                                      //创建数据
+	Select(where *channel.SelectChannel, orderByField string, orderByType string, page int, pageSize int) (list []*channel.Channel, total int64, err error)                            //查询数据
+	DeleteById(id int64) error                                                                                                                                                         //通过ID删除数据
+	UpdateById(id int64, data *channel.UpdateChannel) error                                                                                                                            //通过ID更新数据
+	FindById(id int64, refresh bool) (*Channel, error)                                                                                                                                 //通过ID查询数据
+	GetConfig(refresh bool) *Config                                                                                                                                                    //获取支付配置
+	SetConfig(data *Config) error                                                                                                                                                      //更新支付配置
+	GetPayResultPageUrl(code int) string                                                                                                                                               //获取支付结果页地址
+	GetPayUrl(channelId int64, tradeNo string, name string, money float64) (string, error)                                                                                             //获取支付跳转链接
+	ValidateCallback(channelId int64, req *http.Request, successFun func(data *pay.CallbackData) error) (code int, header http.Header, body string, data *pay.CallbackData, err error) //验证支付回调
+	GetChannelId(payType string) (int64, error)                                                                                                                                        //获取支付通道ID
 }
 
 // Session服务

@@ -1,14 +1,18 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 	"service-pay/app/enum/order_status"
 	"service-pay/app/enum/pay_type"
 	"service-pay/app/service"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/pay"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
@@ -45,10 +49,19 @@ func (Controller) Submit(c *context.Context) {
 		c.Error("该订单已支付或已关闭")
 		return
 	}
-	link, err := service.Channel.GetPayUrl(info.ChannelId, info.TradeNo, info.Name, info.Amount)
-	if err != nil {
-		c.Error(err.Error())
-		return
+	var link string
+	if info.Amount <= 0 {
+		if err = service.Order.Callback(info.TradeNo, strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10), 0, str.DateTime(time.Now())); err != nil {
+			c.Error(err.Error())
+			return
+		}
+		link = service.Channel.GetPayResultPageUrl(200)
+	} else {
+		link, err = service.Channel.GetPayUrl(info.ChannelId, info.TradeNo, info.Name, info.Amount)
+		if err != nil {
+			c.Error(err.Error())
+			return
+		}
 	}
 	c.SuccessWithData("获取支付信息成功", link)
 }
@@ -61,20 +74,29 @@ func (Controller) Callback(c *context.Context) {
 		c.Error("参数错误")
 		return
 	}
-	code, header, body, _, err := service.Channel.ValidateCallback(id, c.Request, func(data *pay.CallbackData) bool {
-		err := service.Order.Callback(data)
-		if err == nil {
-			return true
+	code, header, body, _, err := service.Channel.ValidateCallback(id, c.Request, func(data *pay.CallbackData) error {
+		if data == nil {
+			return errors.New("回调信息不能为空")
 		}
-		return false
+		tradeNo := strings.TrimSpace(data.TradeNo)
+		if tradeNo == "" {
+			return errors.New("订单号不能为空")
+		}
+		payTime := str.DateTime(time.Now())
+		payTimeStr := strings.TrimSpace(data.PayTime)
+		if payTimeStr != "" {
+			if t, err := time.ParseInLocation("2006-01-02 15:04:05", payTimeStr, time.Local); err == nil {
+				payTime = str.DateTime(t)
+			}
+		}
+		return service.Order.Callback(tradeNo, strings.TrimSpace(data.OutTradeNo), data.Money, payTime)
 	})
 	if method == "return" {
-		if err == nil {
-			c.SetHeader("content-type", "text/html;charset=utf-8;")
-			c.Data(http.StatusOK, []byte("<script>window.location.href=\"/?s#/pay\"</script>"))
-		} else {
-			c.String(http.StatusOK, "充值失败,请联系管理员")
+		res := 200
+		if err != nil {
+			res = 500
 		}
+		c.Redirect(http.StatusOK, service.Channel.GetPayResultPageUrl(res))
 	} else {
 		for k, v := range header {
 			c.SetHeader(k, v[0])

@@ -14,7 +14,7 @@ type Interface interface {
 	FindById(id int64) (*model.Order, error)                                                                                            //根据ID查询记录
 	CheckChannelHasUnPayOrder(channelId int64) (bool, error)                                                                            //根据通道ID判断是否存在未过期且未支付订单
 	Select(where *SelectOrder, orderByField string, orderByType string, page int, pageSize int) (list []*Order, total int64, err error) //查询数据
-	UpdateById(id int64, data *UpdateOrder) error                                                                                       //根据id更新数据
+	UpdateById(id int64, data *UpdateOrder, tx ...*gorm.DB) error                                                                       //根据id更新数据
 }
 
 // Repository 仓储

@@ -3,15 +3,19 @@ package channel
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
 	"service-pay/app/constant"
+	"service-pay/app/enum/channel_plugin"
 	"service-pay/app/enum/channel_status"
 	"service-pay/app/enum/channel_type"
+	"service-pay/app/enum/pay_type"
 	"service-pay/app/model"
 	"service-pay/app/repository/channel"
 	"strconv"
 	"strings"
 	"time"
 
+	commonConstant "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/pay"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
@@ -27,12 +31,12 @@ func (s *service) Select(where *channel.SelectChannel, orderByField string, orde
 			return nil, 0, errors.New("状态参数不合法")
 		}
 	}
-	if where.Type != "" {
-		Type, err := strconv.Atoi(where.Type)
+	if where.Plugin != "" {
+		plugin, err := strconv.Atoi(where.Plugin)
 		if err != nil {
 			return nil, 0, errors.New("类型参数错误")
 		}
-		if _, ok := channel_type.Map()[Type]; !ok {
+		if _, ok := channel_plugin.Map()[plugin]; !ok {
 			return nil, 0, errors.New("类型参数不合法")
 		}
 	}
@@ -55,23 +59,26 @@ func (s *service) DeleteById(id int64) error {
 	if err != nil {
 		return errors.Join(errors.New("删除失败"), err)
 	}
-	s.cache.Delete(constant.CacheNameWithChannel + strconv.FormatInt(id, 10))
+	s.cache.Delete(constant.CacheNameWithPayConfig, constant.CacheNameWithChannel+strconv.FormatInt(id, 10))
 	return nil
 }
 
 // Create 创建数据
-func (s *service) Create(name string, types int, status int, config string) error {
+func (s *service) Create(name string, Type string, plugin int, status int, config string) error {
 	if name == "" {
 		return errors.New("通道名称不能为空")
 	}
-	if _, ok := channel_type.Map()[types]; !ok {
+	if _, ok := channel_type.Map()[Type]; !ok {
 		return errors.New("通道类型不合法")
+	}
+	if _, ok := channel_plugin.Map()[plugin]; !ok {
+		return errors.New("通道插件不合法")
 	}
 	if _, ok := channel_status.Map()[status]; !ok {
 		return errors.New("通道状态不合法")
 	}
 	if config != "" {
-		value, err := s.checkSetting(config, types)
+		value, err := s.checkSetting(config, plugin)
 		if err != nil {
 			return errors.Join(errors.New("设置不正确"), err)
 		}
@@ -80,7 +87,8 @@ func (s *service) Create(name string, types int, status int, config string) erro
 		config = "{}"
 	}
 	err := s.repositoryChannel.Create(&model.Channel{
-		Type:       types,
+		Type:       Type,
+		Plugin:     plugin,
 		Name:       name,
 		Config:     config,
 		Status:     status,
@@ -131,7 +139,7 @@ func (s *service) UpdateById(id int64, data *channel.UpdateChannel) error {
 		if !ok {
 			return errors.New("通道配置内容不合法")
 		}
-		value, err = s.checkSetting(value, info.Type)
+		value, err = s.checkSetting(value, info.Plugin)
 		if err != nil {
 			return errors.Join(errors.New("设置不正确"), err)
 		}
@@ -141,7 +149,7 @@ func (s *service) UpdateById(id int64, data *channel.UpdateChannel) error {
 	if err != nil {
 		return errors.Join(errors.New("更新失败"), err)
 	}
-	s.cache.Delete(constant.CacheNameWithChannel + strconv.FormatInt(id, 10))
+	s.cache.Delete(constant.CacheNameWithPayConfig, constant.CacheNameWithChannel+strconv.FormatInt(id, 10))
 	return nil
 }
 
@@ -166,8 +174,9 @@ func (s *service) FindById(id int64, refresh bool) (*Channel, error) {
 	data := &Channel{
 		Id:         info.Id,
 		Type:       info.Type,
+		Plugin:     info.Plugin,
 		Name:       info.Name,
-		Config:     s.formatSetting(info.Config, info.Type),
+		Config:     s.formatSetting(info.Config, info.Plugin),
 		Status:     info.Status,
 		CreateTime: info.CreateTime,
 		UpdateTime: info.UpdateTime,
@@ -180,9 +189,6 @@ func (s *service) FindById(id int64, refresh bool) (*Channel, error) {
 
 // GetConfig 获取支付配置
 func (s *service) GetConfig(refresh bool) *Config {
-	if s.configService == nil {
-		return &Config{}
-	}
 	if !refresh {
 		if data, exists := s.cache.Get(constant.CacheNameWithPayConfig); exists && data != "" {
 			var result *Config
@@ -213,6 +219,18 @@ func (s *service) GetConfig(refresh bool) *Config {
 	}
 	if wxpay < 0 {
 		wxpay = 0
+	}
+	if alipay != 0 {
+		info, err := s.FindById(alipay, false)
+		if err != nil || info == nil || info.Id <= 0 || info.Status != channel_status.Enable {
+			alipay = 0
+		}
+	}
+	if wxpay != 0 {
+		info, err := s.FindById(wxpay, false)
+		if err != nil || info == nil || info.Id <= 0 || info.Status != channel_status.Enable {
+			wxpay = 0
+		}
 	}
 	if expire < 5 {
 		expire = 5
@@ -274,14 +292,96 @@ func (s *service) SetConfig(data *Config) error {
 	return nil
 }
 
+// GetPayResultPageUrl 获取支付结果页地址
+func (s *service) GetPayResultPageUrl(code int) string {
+	config := s.configService.GetSystemConfig(commonConstant.WebGroup, false)
+	webUrl := strings.TrimRight(strings.TrimSpace(config[commonConstant.WebUrl]), "/")
+	return webUrl + "/pay?" + strconv.Itoa(code)
+}
+
+// GetPayUrl 获取支付跳转链接
+func (s *service) GetPayUrl(channelId int64, tradeNo string, name string, money float64) (string, error) {
+	config := s.configService.GetSystemConfig(commonConstant.WebGroup, false)
+	apiUrl := strings.TrimRight(strings.TrimSpace(config[commonConstant.WebApi]), "/")
+	if apiUrl == "" {
+		return "", errors.New("网站API地址不能为空")
+	}
+	client, channelInfo, err := s.getPay(channelId)
+	if err != nil {
+		return "", err
+	}
+	notifyUrl := apiUrl + strings.ReplaceAll("/"+s.consul.GetName()+"/callback/"+strconv.FormatInt(channelInfo.Id, 10)+"/notify", "//", "/")
+	returnUrl := apiUrl + strings.ReplaceAll("/"+s.consul.GetName()+"/callback/"+strconv.FormatInt(channelInfo.Id, 10)+"/return", "//", "/")
+	url, err := client.Submit(&pay.Order{
+		TradeNo:   tradeNo,
+		Name:      name,
+		Money:     money,
+		NotifyUrl: notifyUrl,
+		ReturnUrl: returnUrl,
+		PayType:   channelInfo.Type,
+	})
+	if err != nil {
+		return "", errors.New("获取支付信息失败")
+	}
+	return url, nil
+}
+
+// ValidateCallback 验证回调
+func (s *service) ValidateCallback(channelId int64, req *http.Request, successFun func(data *pay.CallbackData) error) (code int, header http.Header, body string, data *pay.CallbackData, err error) {
+	client, _, err := s.getPay(channelId)
+	if err != nil {
+		return 500, nil, "fail", nil, err
+	}
+	data, err = client.ParseCallback(req)
+	if err == nil {
+		if data == nil {
+			err = errors.New("回调信息不能为空")
+			code, header, body = client.FailResponse()
+		} else if !data.Status {
+			err = errors.New("该订单回调信息支付状态为未支付")
+			code, header, body = client.FailResponse()
+		} else if err = successFun(data); err != nil {
+			code, header, body = client.FailResponse()
+		} else {
+			code, header, body = client.SuccessResponse()
+		}
+	} else {
+		code, header, body = client.FailResponse()
+	}
+	return code, header, body, data, err
+}
+
+// GetChannelId 获取支付通道ID
+func (s *service) GetChannelId(payType string) (int64, error) {
+	payConfig := s.GetConfig(false)
+	var channelID int64
+	if payType == pay_type.Alipay {
+		channelID = payConfig.Alipay
+	} else if payType == pay_type.Wxpay {
+		channelID = payConfig.Wxpay
+	} else if payType == pay_type.Balance {
+		channelID = 0
+	}
+	if payType != pay_type.Balance && channelID <= 0 {
+		return 0, errors.New("未开启该支付方式")
+	}
+	if payType == pay_type.Balance && payConfig.Balance <= 0 {
+		return 0, errors.New("未开启该支付方式")
+	}
+	return channelID, nil
+}
+
 // getPay 获取支付对象
-func (s *service) getPay(id int64) (client pay.Interface, err error) {
+func (s *service) getPay(id int64) (client pay.Interface, channel *Channel, err error) {
 	info, err := s.FindById(id, false)
 	if err != nil {
-		return nil, errors.Join(errors.New("获取支付通道信息失败"), err)
+		return nil, nil, errors.Join(errors.New("获取支付通道信息失败"), err)
 	}
-	switch info.Type {
-	case channel_type.Alipay:
+	if info.Status != channel_status.Enable {
+		return nil, nil, errors.Join(errors.New("获取支付通道信息失败"), errors.New("该通道已被禁用,请重新发起支付"))
+	}
+	switch info.Plugin {
+	case channel_plugin.Alipay:
 		config, ok := info.Config.(Alipay)
 		if !ok {
 			client, err = nil, errors.New("获取支付通道配置信息失败")
@@ -289,7 +389,7 @@ func (s *service) getPay(id int64) (client pay.Interface, err error) {
 			client, err = pay.NewAlipayGateway(config.AppId, config.PrivateKey, config.PublicKey)
 		}
 		break
-	case channel_type.Epay:
+	case channel_plugin.Epay:
 		config, ok := info.Config.(Epay)
 		if !ok {
 			client, err = nil, errors.New("获取支付通道配置信息失败")
@@ -302,19 +402,19 @@ func (s *service) getPay(id int64) (client pay.Interface, err error) {
 		err = errors.New("获取支付通道类型失败")
 		break
 	}
-	return client, err
+	return client, info, err
 }
 
 // formatSetting 格式化设置
-func (s *service) formatSetting(str string, types int) interface{} {
+func (s *service) formatSetting(str string, plugin int) interface{} {
 	var res interface{}
-	switch types {
-	case channel_type.Alipay:
+	switch plugin {
+	case channel_plugin.Alipay:
 		data := Alipay{}
 		_ = json.Unmarshal([]byte(str), &data)
 		res = data
 		break
-	case channel_type.Epay:
+	case channel_plugin.Epay:
 		data := Epay{}
 		_ = json.Unmarshal([]byte(str), &data)
 		res = data
@@ -327,9 +427,9 @@ func (s *service) formatSetting(str string, types int) interface{} {
 }
 
 // formatSetting 格式化设置
-func (s *service) checkSetting(str string, types int) (res string, err error) {
-	switch types {
-	case channel_type.Alipay:
+func (s *service) checkSetting(str string, plugin int) (res string, err error) {
+	switch plugin {
+	case channel_plugin.Alipay:
 		data := Alipay{}
 		_ = json.Unmarshal([]byte(str), &data)
 		if data.AppId == "" {
@@ -348,7 +448,7 @@ func (s *service) checkSetting(str string, types int) (res string, err error) {
 			res = string(bytes)
 		}
 		break
-	case channel_type.Epay:
+	case channel_plugin.Epay:
 		data := Epay{}
 		_ = json.Unmarshal([]byte(str), &data)
 		if data.Pid == "" {
