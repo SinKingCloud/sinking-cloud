@@ -3,7 +3,6 @@ package order
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"service-pay/app/constant"
 	"service-pay/app/enum/order_log_operator_type"
 	"service-pay/app/enum/order_log_type"
@@ -167,7 +166,7 @@ func (s *service) checkEnumValue(value string, data map[int]string, name string)
 }
 
 // Create 创建订单
-func (s *service) Create(userId int64, name string, Type int, payType string, amount float64, param interface{}, callbackRpcService string, callbackRpcFunc string) (string, error) {
+func (s *service) Create(userId int64, name string, Type int, payType string, amount float64, param interface{}, callbackRpcService string, callbackRpcFunc string, describe string) (string, error) {
 	if userId <= 0 {
 		return "", errors.New("用户ID错误")
 	}
@@ -236,7 +235,7 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 			OperatorId:   data.UserId,
 			OperatorType: order_log_operator_type.User,
 			Type:         order_log_type.Create,
-			Content:      fmt.Sprintf("在线创建订单[%s]", tradeNo),
+			Content:      describe,
 			BeforeInfo:   "{}",
 			AfterInfo:    string(afterInfo),
 		}, tx)
@@ -324,7 +323,7 @@ func (s *service) Callback(tradeNo string, outTradeNo string, payAmount float64,
 			OperatorId:   info.UserId,
 			OperatorType: order_log_operator_type.System,
 			Type:         order_log_type.Pay,
-			Content:      fmt.Sprintf("支付订单[%s]", tradeNo),
+			Content:      "在线支付订单成功,发货成功",
 			BeforeInfo:   string(beforeInfo),
 			AfterInfo:    string(afterInfo),
 		}, tx); err != nil {

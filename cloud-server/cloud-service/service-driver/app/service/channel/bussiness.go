@@ -168,9 +168,17 @@ func (s *service) FindById(id int64, refresh bool) (*Channel, error) {
 	cacheKey := constant.CacheNameWithChannel + strconv.FormatInt(id, 10)
 	if !refresh {
 		if data, exists := s.cache.Get(cacheKey); exists && data != "" {
-			var result *Channel
-			if err := json.Unmarshal([]byte(data), &result); err == nil {
-				return result, nil
+			var result *model.Channel
+			if err := json.Unmarshal([]byte(data), &result); err == nil && result != nil && result.Id > 0 {
+				return &Channel{
+					Id:         result.Id,
+					Type:       result.Type,
+					Name:       result.Name,
+					Config:     s.formatSetting(result.Config, result.Type),
+					Status:     result.Status,
+					CreateTime: result.CreateTime,
+					UpdateTime: result.UpdateTime,
+				}, nil
 			}
 		}
 	}
@@ -181,7 +189,10 @@ func (s *service) FindById(id int64, refresh bool) (*Channel, error) {
 	if info == nil || info.Id <= 0 {
 		return nil, errors.New("通道信息不存在")
 	}
-	data := &Channel{
+	if bytes, err2 := json.Marshal(info); err2 == nil {
+		s.cache.SetWithExpire(cacheKey, string(bytes), constant.CacheTimeWithChannel)
+	}
+	return &Channel{
 		Id:         info.Id,
 		Type:       info.Type,
 		Name:       info.Name,
@@ -189,11 +200,7 @@ func (s *service) FindById(id int64, refresh bool) (*Channel, error) {
 		Status:     info.Status,
 		CreateTime: info.CreateTime,
 		UpdateTime: info.UpdateTime,
-	}
-	if bytes, err2 := json.Marshal(data); err2 == nil {
-		s.cache.SetWithExpire(cacheKey, string(bytes), constant.CacheTimeWithChannel)
-	}
-	return data, nil
+	}, nil
 }
 
 // formatSetting 格式化设置
@@ -212,7 +219,7 @@ func (s *service) formatSetting(str string, types int) interface{} {
 	return res
 }
 
-// formatSetting 格式化设置
+// checkSetting 判断设置
 func (s *service) checkSetting(str string, types int) (res string, err error) {
 	switch types {
 	case channel_type.Aliyun:

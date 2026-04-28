@@ -218,7 +218,7 @@ func (s *service) CreateRechargeOrder(userId int64, money int, payType string) (
 		amount,
 		nil,
 		s.consul.GetName(),
-		"RechargeOrderNotify")
+		"RechargeOrderNotify", "发起在线充值订单")
 	if err != nil {
 		return "", err
 	}
