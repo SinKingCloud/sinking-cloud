@@ -3,6 +3,7 @@ package balance
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"service-pay/app/constant"
 	"service-pay/app/enum/balance_log_type"
 	"service-pay/app/enum/order_type"
@@ -10,6 +11,8 @@ import (
 	"service-pay/app/repository/balance_log"
 	"strconv"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/pay"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"gorm.io/gorm"
 )
 
@@ -101,6 +104,7 @@ func (s *service) OperateMoney(userId int64, money float64, isOperateFrozen bool
 			}
 		}
 		err = s.balanceLogRepository.Create(&model.BalanceLog{
+			Id:           str.GetSnowWorkIns().GetId(),
 			UserId:       userId,
 			Type:         logType,
 			Money:        logMoney,
@@ -190,16 +194,103 @@ func (s *service) SelectLog(where *balance_log.SelectBalanceLog, orderByField st
 
 // CreateRechargeOrder 创建充值订单
 func (s *service) CreateRechargeOrder(userId int64, money int, payType string) (string, error) {
+	if money <= 0 {
+		return "", errors.New("充值金额必须大于0")
+	}
+	if s.channelService == nil {
+		return "", errors.New("获取支付配置失败")
+	}
+	payConfig := s.channelService.GetConfig(false)
+	if payConfig == nil {
+		return "", errors.New("获取支付配置失败")
+	}
+	amount := float64(money)
+	if payConfig.Min > 0 && amount < payConfig.Min {
+		return "", errors.New("充值金额不能小于" + strconv.FormatFloat(payConfig.Min, 'f', -1, 64) + "元")
+	}
+	if payConfig.Max > 0 && amount > payConfig.Max {
+		return "", errors.New("充值金额不能大于" + strconv.FormatFloat(payConfig.Max, 'f', -1, 64) + "元")
+	}
 	tradeNo, err := s.orderService.Create(userId,
 		"在线充值",
 		order_type.Recharge,
 		payType,
-		float64(money),
+		amount,
 		nil,
 		s.consul.GetName(),
-		"rechargeOrderNotify")
+		"RechargeOrderNotify")
 	if err != nil {
 		return "", err
 	}
 	return tradeNo, nil
+}
+
+// RechargeOrderNotify 充值订单回调
+func (s *service) RechargeOrderNotify(order *pay.NotifyInfo) error {
+	if order == nil {
+		return errors.New("订单信息不能为空")
+	}
+	if order.UserId <= 0 {
+		return errors.New("用户ID错误")
+	}
+	if order.TradeNo == "" {
+		return errors.New("订单号不能为空")
+	}
+	logId, err := strconv.ParseInt(order.TradeNo, 10, 64)
+	if err != nil || logId <= 0 {
+		return errors.New("订单号错误")
+	}
+	if order.PayAmount <= 0 {
+		return errors.New("支付金额必须大于0")
+	}
+	lockKey := constant.LockBalanceOperate + strconv.FormatInt(order.UserId, 10)
+	if !s.cache.Lock(lockKey, constant.LockTimeBalanceOperate) {
+		return errors.New("系统繁忙,请稍候重试")
+	}
+	defer s.cache.UnLock(lockKey)
+	logInfo, err := s.balanceLogRepository.FindById(logId)
+	if err != nil {
+		return errors.Join(errors.New("查询充值明细失败"), err)
+	}
+	if logInfo != nil && logInfo.Id > 0 {
+		return nil
+	}
+	err = s.database.Transaction(func(tx *gorm.DB) error {
+		info, err := s.balanceRepository.FindOrCreateByUserId(order.UserId, tx)
+		if err != nil {
+			return errors.Join(errors.New("获取余额信息失败"), err)
+		}
+		if info == nil || info.Id <= 0 {
+			return errors.New("获取余额信息失败")
+		}
+		moneyBefore := info.Money
+		moneyAfter := info.Money + order.PayAmount
+		frozenBefore := info.Frozen
+		frozenAfter := info.Frozen
+		if err = s.balanceRepository.Money(order.UserId, order.PayAmount, tx); err != nil {
+			return errors.Join(errors.New("更新余额失败"), err)
+		}
+		if err = s.balanceRepository.TotalRecharge(order.UserId, order.PayAmount, tx); err != nil {
+			return errors.Join(errors.New("更新累计充值失败"), err)
+		}
+		if err = s.balanceLogRepository.Create(&model.BalanceLog{
+			Id:           logId,
+			UserId:       order.UserId,
+			Type:         balance_log_type.Recharge,
+			Money:        order.PayAmount,
+			MoneyBefore:  moneyBefore,
+			MoneyAfter:   moneyAfter,
+			FrozenBefore: frozenBefore,
+			FrozenAfter:  frozenAfter,
+			Describe:     fmt.Sprintf("在线充值[%s]", order.TradeNo),
+		}, tx); err != nil {
+			return errors.Join(errors.New("创建余额明细失败"), err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	s.cache.Delete(constant.CacheNameWithBalance + strconv.FormatInt(order.UserId, 10))
+	return nil
 }

@@ -10,6 +10,7 @@ import (
 // Interface 仓储接口
 type Interface interface {
 	Create(data *model.BalanceLog, tx ...*gorm.DB) error                                                                                                //创建数据
+	FindById(id int64) (*model.BalanceLog, error)                                                                                                       //通过ID查询数据
 	Select(where *SelectBalanceLog, orderByField string, orderByType string, page int, pageSize int) (list []*model.BalanceLog, total int64, err error) //查询数据
 }
 

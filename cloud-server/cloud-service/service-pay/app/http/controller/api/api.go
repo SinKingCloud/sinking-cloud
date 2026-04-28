@@ -96,7 +96,7 @@ func (Controller) Callback(c *context.Context) {
 		if err != nil {
 			res = 500
 		}
-		c.Redirect(http.StatusOK, service.Channel.GetPayResultPageUrl(res))
+		c.Redirect(http.StatusFound, service.Channel.GetPayResultPageUrl(res))
 	} else {
 		for k, v := range header {
 			c.SetHeader(k, v[0])
