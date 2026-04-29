@@ -375,7 +375,7 @@ func (s *service) Refound(id int64, money float64, operatorId int64) error {
 			OperatorId:   operatorId,
 			OperatorType: order_log_operator_type.Admin,
 			Type:         order_log_type.Refunded,
-			Content:      "系统退款金额:" + strconv.FormatFloat(refundMoney, 'f', 2, 64) + "元",
+			Content:      "退款金额:" + strconv.FormatFloat(refundMoney, 'f', 2, 64) + "元",
 			BeforeInfo:   string(beforeInfo),
 			AfterInfo:    string(afterInfo),
 		}, tx); err != nil {
