@@ -1,10 +1,7 @@
 package model
 
 import (
-	"time"
-
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
-	"gorm.io/gorm"
 )
 
 // Log 计划任务表
@@ -18,10 +15,4 @@ type Log struct {
 // TableName 获取表名
 func (*Log) TableName() string {
 	return "cloud_logs"
-}
-
-// BeforeCreate 创建前
-func (t *Log) BeforeCreate(_ *gorm.DB) error {
-	t.CreateTime = str.DateTime(time.Now())
-	return nil
 }

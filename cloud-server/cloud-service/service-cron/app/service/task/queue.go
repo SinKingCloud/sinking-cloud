@@ -6,6 +6,7 @@ import (
 	"service-cron/app/enum/task_concurrent"
 	"service-cron/app/enum/task_type"
 	"service-cron/app/model"
+	"service-cron/app/queue/log"
 	"service-cron/app/queue/reload"
 	"service-cron/app/queue/task"
 	"strconv"
@@ -50,11 +51,22 @@ func (s *service) log(taskId int64, contents ...string) {
 			}
 		}
 	}
-	_ = s.repositoryLog.Create(&model.Log{
-		TaskId:     taskId,
-		Content:    content.String(),
-		CreateTime: str.DateTime(time.Now()),
+	s.logQueue.SendUnicastTask(&log.Message{
+		Log: &model.Log{
+			Id:         str.GetSnowWorkIns().GetId(),
+			TaskId:     taskId,
+			Content:    content.String(),
+			CreateTime: str.DateTime(time.Now()),
+		},
 	})
+}
+
+// LogQueueHandle 记录日志
+func (s *service) LogQueueHandle(message *log.Message) error {
+	if message == nil {
+		return errors.New("消息不能为空")
+	}
+	return s.repositoryLog.Create(message.Log)
 }
 
 // ReloadQueueHandle 执行重载handle

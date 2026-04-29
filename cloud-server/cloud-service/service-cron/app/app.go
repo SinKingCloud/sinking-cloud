@@ -9,8 +9,8 @@ import (
 
 func Run() {
 	service.Init()
-	queue.Init(service.Task.TaskQueueHandle, service.Task.ReloadQueueHandle)
-	service.Task.SetQueue(queue.Task, queue.Reload)
+	queue.Init(service.Task.TaskQueueHandle, service.Task.ReloadQueueHandle, service.Task.LogQueueHandle)
+	service.Task.SetQueue(queue.Task, queue.Reload, queue.Log)
 	service.Task.Start()
 	task.Init()
 	route.Init()
