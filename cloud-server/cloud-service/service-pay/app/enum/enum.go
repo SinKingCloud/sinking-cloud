@@ -2,6 +2,7 @@ package enum
 
 import (
 	"service-pay/app/enum/balance_log_type"
+	"service-pay/app/enum/channel_name"
 	"service-pay/app/enum/channel_plugin"
 	"service-pay/app/enum/channel_status"
 	"service-pay/app/enum/channel_type"
@@ -18,10 +19,13 @@ var Data = map[string]interface{}{
 	"pay": map[string]interface{}{
 		"type": pay_type.Map(), //允许支付类型
 	},
-	"channel": map[string]interface{}{
-		"status": channel_status.Map(), //通道状态
-		"plugin": channel_plugin.Map(), //通道插件
-		"type":   channel_type.Map(),   //通道类型
+	"channel": func() interface{} {
+		return map[string]interface{}{
+			"status": channel_status.Map(), //通道状态
+			"plugin": channel_plugin.Map(), //通道插件
+			"type":   channel_type.Map(),   //通道类型
+			"name":   channel_name.Map(),   //名称映射
+		}
 	},
 	"order": map[string]interface{}{
 		"status":     order_status.Map(),     //订单状态

@@ -12,6 +12,7 @@ type Interface interface {
 	DeleteById(id int64) error                                                                                                              //根据ID删除数据
 	UpdateById(id int64, perm *UpdateChannel) error                                                                                         //根据id更新
 	FindById(id int64) (*model.Channel, error)                                                                                              //根据ID查询
+	SelectIdNameMap() (map[int64]string, error)                                                                                             //查询ID name
 	Select(where *SelectChannel, orderByField string, orderByType string, page int, pageSize int) (list []*Channel, total int64, err error) //查询数据
 }
 

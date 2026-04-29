@@ -43,6 +43,27 @@ func (s *service) Select(where *channel.SelectChannel, orderByField string, orde
 	return s.repositoryChannel.Select(where, orderByField, orderByType, page, pageSize)
 }
 
+// GetIdNameMap 获取id name映射
+func (s *service) GetIdNameMap(refresh bool) (map[int64]string, error) {
+	cacheKey := constant.CacheNameWithChannelNameEnum
+	if !refresh {
+		if data, exists := s.cache.Get(cacheKey); exists && data != "" {
+			var result map[int64]string
+			if err := json.Unmarshal([]byte(data), &result); err == nil {
+				return result, nil
+			}
+		}
+	}
+	maps, err := s.repositoryChannel.SelectIdNameMap()
+	if err != nil {
+		return nil, err
+	}
+	if data, err2 := json.Marshal(maps); err2 == nil {
+		s.cache.SetWithExpire(cacheKey, string(data), constant.CacheTimeWithChannelNameEnum)
+	}
+	return maps, nil
+}
+
 // DeleteById 通过ID删除数据
 func (s *service) DeleteById(id int64) error {
 	if id <= 0 {
@@ -59,7 +80,7 @@ func (s *service) DeleteById(id int64) error {
 	if err != nil {
 		return errors.Join(errors.New("删除失败"), err)
 	}
-	s.cache.Delete(constant.CacheNameWithPayConfig, constant.CacheNameWithChannel+strconv.FormatInt(id, 10))
+	s.cache.Delete(constant.CacheNameWithChannelNameEnum, constant.CacheNameWithPayConfig, constant.CacheNameWithChannel+strconv.FormatInt(id, 10))
 	return nil
 }
 
@@ -98,6 +119,7 @@ func (s *service) Create(name string, Type string, plugin int, status int, confi
 	if err != nil {
 		return errors.Join(errors.New("创建失败"), err)
 	}
+	s.cache.Delete(constant.CacheNameWithChannelNameEnum)
 	return nil
 }
 
@@ -149,7 +171,7 @@ func (s *service) UpdateById(id int64, data *channel.UpdateChannel) error {
 	if err != nil {
 		return errors.Join(errors.New("更新失败"), err)
 	}
-	s.cache.Delete(constant.CacheNameWithPayConfig, constant.CacheNameWithChannel+strconv.FormatInt(id, 10))
+	s.cache.Delete(constant.CacheNameWithChannelNameEnum, constant.CacheNameWithPayConfig, constant.CacheNameWithChannel+strconv.FormatInt(id, 10))
 	return nil
 }
 

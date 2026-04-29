@@ -4,6 +4,9 @@ const (
 	CacheNameWithChannel = "PayChannel_"     //通道缓存
 	CacheTimeWithChannel = int64(600 * 1000) //通道缓存储存时间
 
+	CacheNameWithChannelNameEnum = "PayChannelNameEnum" //枚举缓存
+	CacheTimeWithChannelNameEnum = int64(600 * 1000)    //枚举缓存储存时间
+
 	CacheNameWithPayConfig = "PayConfig"       //支付配置缓存
 	CacheTimeWithPayConfig = int64(600 * 1000) //支付配置缓存储存时间
 

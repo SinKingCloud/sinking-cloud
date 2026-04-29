@@ -2,6 +2,27 @@ package channel
 
 import "service-pay/app/model"
 
+// SelectIdNameMap 查询id name 映射
+func (r *Repository) SelectIdNameMap() (map[int64]string, error) {
+	var data []struct {
+		Id   int64  `gorm:"column:id" json:"id"`
+		Name string `gorm:"column:name" json:"name"`
+	}
+	err := r.Database.Db.
+		Model(&model.Channel{}).
+		Select("id", "name").
+		Order("id ASC").
+		Find(&data).Error
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[int64]string, len(data))
+	for _, c := range data {
+		result[c.Id] = c.Name
+	}
+	return result, nil
+}
+
 // Select 查询数据
 func (r *Repository) Select(where *SelectChannel, orderByField string, orderByType string, page int, pageSize int) (list []*Channel, total int64, err error) {
 	offset := pageSize * (page - 1)

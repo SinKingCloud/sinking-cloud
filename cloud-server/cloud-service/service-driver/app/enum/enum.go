@@ -17,7 +17,6 @@ var Data = map[string]interface{}{
 			"status": channel_status.Map(), //存储通道状态
 			"type":   channel_type.Map(),   //存储通道类型
 			"name":   channel_name.Map(),   //存储通道名称
-
 		}
 	},
 	"file": map[string]interface{}{
