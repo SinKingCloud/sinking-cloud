@@ -20,7 +20,7 @@ type Service interface {
 	OperateMoneyCount(userId int64, money float64) error                                                                                                  //操作累计充值或消费金额
 	SelectLog(where *balance_log.SelectBalanceLog, orderByField string, orderByType string, page int, pageSize int) (list []*Log, total int64, err error) //查询用户余额明细
 	CreateRechargeOrder(userId int64, money int, payType string) (tradeNo string, err error)                                                              //创建充值订单
-	RechargeOrderNotify(order *pay.NotifyInfo) error                                                                                                      //充值订单回调
+	RechargeOrderNotify(order *pay.NotifyParam) error                                                                                                     //充值订单回调
 }
 
 // Session服务

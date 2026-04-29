@@ -2,7 +2,7 @@ package pay
 
 import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 
-type NotifyInfo struct {
+type NotifyParam struct {
 	UserId     int64        `json:"user_id"`      //用户ID
 	TradeNo    string       `json:"trade_no"`     //内部订单号
 	Extra      string       `json:"extra"`        //扩展信息

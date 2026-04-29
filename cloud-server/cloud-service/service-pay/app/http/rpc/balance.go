@@ -12,7 +12,7 @@ type balanceService struct {
 
 // RechargeOrderNotify 充值订单回调
 func (*balanceService) RechargeOrderNotify(params json.RawMessage) (interface{}, error) {
-	var param *pay.NotifyInfo
+	var param *pay.NotifyParam
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return false, err

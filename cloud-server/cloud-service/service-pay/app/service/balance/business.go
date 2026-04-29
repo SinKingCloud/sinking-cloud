@@ -226,7 +226,7 @@ func (s *service) CreateRechargeOrder(userId int64, money int, payType string) (
 }
 
 // RechargeOrderNotify 充值订单回调
-func (s *service) RechargeOrderNotify(order *pay.NotifyInfo) error {
+func (s *service) RechargeOrderNotify(order *pay.NotifyParam) error {
 	if order == nil {
 		return errors.New("订单信息不能为空")
 	}

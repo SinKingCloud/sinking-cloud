@@ -436,7 +436,7 @@ func (s *service) callback(tradeNo string, outTradeNo string, payAmount float64,
 		return errors.New("订单回调RPC配置不能为空")
 	}
 
-	notify := &payService.NotifyInfo{
+	notify := &payService.NotifyParam{
 		UserId:     info.UserId,
 		TradeNo:    info.TradeNo,
 		Extra:      string(extra.Param),
