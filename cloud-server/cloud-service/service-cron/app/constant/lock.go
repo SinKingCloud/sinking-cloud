@@ -4,6 +4,9 @@ const (
 	LockTask     = "LockTask_"    // 任务执行并发锁
 	LockTimeTask = 60 * 60 * 1000 // 任务执行并发锁最大时间
 
+	LockRegisterTask     = "LockRegisterTask_" // 任务执行并发锁
+	LockTimeRegisterTask = 1 * 60 * 1000       // 任务执行并发锁最大时间
+
 	LockTaskDispatch     = "LockTaskDispatch_" // 任务派发并发锁
 	LockTimeTaskDispatch = 10 * 1000           // 任务派发并发锁最大时间
 

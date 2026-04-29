@@ -32,6 +32,7 @@ type Service interface {
 	TaskQueueHandle(message *task2.Message) error
 	ReloadQueueHandle(message *reload.Message) error
 	LogQueueHandle(message *log2.Message) error
+	Register(id int64, Type int, name string, spec string, script string, concurrent int, status int) error
 }
 
 // Session服务

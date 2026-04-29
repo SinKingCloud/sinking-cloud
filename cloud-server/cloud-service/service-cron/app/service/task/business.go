@@ -295,6 +295,54 @@ func (s *service) ReloadAll() error {
 	return nil
 }
 
+// Register 注册任务
+func (s *service) Register(id int64, Type int, name string, spec string, script string, concurrent int, status int) error {
+	if id <= 0 || spec == "" || script == "" {
+		return errors.New("参数错误")
+	}
+	key := constant.LockRegisterTask + strconv.FormatInt(id, 10)
+	if !s.cache.Lock(key, constant.LockTimeRegisterTask) {
+		return errors.New("系统繁忙")
+	}
+	defer s.cache.UnLock(key)
+	info, err := s.repositoryTask.FindById(id)
+	if err != nil {
+		return err
+	}
+	if info == nil || info.Id <= 0 {
+		err = s.Create(&model.Task{
+			Id:         id,
+			Type:       Type,
+			Name:       name,
+			Spec:       spec,
+			Script:     script,
+			Concurrent: concurrent,
+			Status:     status,
+		})
+	} else {
+		update := false
+		if Type != info.Type || name != info.Name || spec != info.Spec || script != info.Script || concurrent != info.Concurrent || status != info.Status {
+			update = true
+		}
+		if update {
+			err = s.UpdateById(id, &repositoryTask.UpdateTask{
+				Type:       Type,
+				Name:       name,
+				Spec:       spec,
+				Script:     script,
+				Concurrent: concurrent,
+				Status:     status,
+			})
+		} else {
+			err = nil
+		}
+	}
+	if err != nil {
+		return errors.Join(errors.New("注册任务失败"), err)
+	}
+	return nil
+}
+
 // remove 删除任务
 func (s *service) remove(id int64) {
 	s.cron.Remove(strconv.FormatInt(id, 10))
