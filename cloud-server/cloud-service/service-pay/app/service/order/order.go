@@ -25,6 +25,7 @@ type Service interface {
 	Callback(tradeNo string, outTradeNo string, payAmount float64, payTime str.DateTime) error                                                                                         //订单回调
 	Deliver(id int64, operatorId int64) error                                                                                                                                          //订单发货
 	Refound(id int64, money float64, operatorId int64) error                                                                                                                           //订单退款
+	CleanExpiredUnPayOrder(day int) (int64, error)                                                                                                                                     //清理过期未支付订单
 }
 
 // Session服务

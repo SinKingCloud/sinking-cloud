@@ -406,6 +406,39 @@ func (s *service) Refound(id int64, money float64, operatorId int64) error {
 	return nil
 }
 
+// CleanExpiredUnPayOrder 清理过期未支付订单
+func (s *service) CleanExpiredUnPayOrder(day int) (int64, error) {
+	if day < 1 {
+		day = 1
+	}
+	if !s.cache.Lock(constant.LockOrderCleanExpiredUnPay, constant.LockTimeOrderCleanExpiredUnPay) {
+		return 0, errors.New("系统繁忙,请稍候重试")
+	}
+	defer s.cache.UnLock(constant.LockOrderCleanExpiredUnPay)
+
+	expiredTime := time.Now().AddDate(0, 0, -day).Format("2006-01-02 15:04:05")
+	ids, err := s.orderRepository.FindExpiredUnPayIds(expiredTime, 1000)
+	if err != nil {
+		return 0, errors.Join(errors.New("查询过期未支付订单失败"), err)
+	}
+	if len(ids) <= 0 {
+		return 0, nil
+	}
+	err = s.database.Transaction(func(tx *gorm.DB) error {
+		if err := s.orderLogRepository.DeleteByOrderIds(ids, tx); err != nil {
+			return errors.Join(errors.New("删除订单日志失败"), err)
+		}
+		if err := s.orderRepository.DeleteByIds(ids, tx); err != nil {
+			return errors.Join(errors.New("删除订单失败"), err)
+		}
+		return nil
+	})
+	if err != nil {
+		return 0, err
+	}
+	return int64(len(ids)), nil
+}
+
 // callback 订单回调
 func (s *service) callback(tradeNo string, outTradeNo string, payAmount float64, payTime str.DateTime, operatorId int64, operatorType int64, content string) error {
 	if tradeNo == "" {

@@ -2,6 +2,7 @@ package order
 
 import (
 	"errors"
+	"service-pay/app/enum/order_pay_status"
 	"service-pay/app/enum/order_status"
 	"service-pay/app/model"
 	"time"
@@ -54,4 +55,27 @@ func (r *Repository) CheckChannelHasUnPayOrder(channelId int64) (bool, error) {
 		return false, err
 	}
 	return data != nil && data.Id > 0, nil
+}
+
+// FindExpiredUnPayIds 查询过期未支付订单ID
+func (r *Repository) FindExpiredUnPayIds(expiredTime string, limit int) ([]int64, error) {
+	if limit <= 0 {
+		return []int64{}, nil
+	}
+	var ids []int64
+	err := r.Database.Db.Model(&model.Order{}).
+		Select("id").
+		Where(
+			"status = ? AND pay_status = ? AND expired_time <= ?",
+			order_status.UnPay,
+			order_pay_status.UnPay,
+			expiredTime,
+		).
+		Order("id asc").
+		Limit(limit).
+		Pluck("id", &ids).Error
+	if err != nil {
+		return nil, err
+	}
+	return ids, nil
 }
