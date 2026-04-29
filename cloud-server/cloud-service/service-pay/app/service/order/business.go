@@ -3,6 +3,7 @@ package order
 import (
 	"encoding/json"
 	"errors"
+	"math/rand/v2"
 	"service-pay/app/constant"
 	"service-pay/app/enum/balance_log_type"
 	"service-pay/app/enum/order_log_operator_type"
@@ -203,7 +204,16 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 	if err != nil {
 		return "", errors.Join(errors.New("生成订单扩展信息失败"), err)
 	}
-	tradeNo := time.Now().Format("20060102150405") + strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10)[13:19]
+	tradeNo := func() string {
+		var seed string
+		formatInt := strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10)
+		if len(formatInt) > 6 {
+			seed = formatInt[len(formatInt)-6:]
+		} else {
+			seed = strconv.Itoa(100000 + rand.IntN(899999))
+		}
+		return time.Now().Format("20060102150405") + seed
+	}()
 	data := &model.Order{
 		Id:           str.GetSnowWorkIns().GetId(),
 		UserId:       userId,
