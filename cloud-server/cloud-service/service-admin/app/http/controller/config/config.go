@@ -36,14 +36,15 @@ func (s Controller) Web(c *context.Context) {
 	})
 }
 
-// Sms 短信配置
-func (s Controller) Sms(c *context.Context) {
+// Aliyun 阿里云配置
+func (s Controller) Aliyun(c *context.Context) {
 	s.config(c, constant.AliGroup, []string{
 		constant.AliKey,
 		constant.AliSecret,
 		constant.AliSmsSign,
 		constant.AliSmsTemplate,
 		constant.AliSmsVar,
+		constant.AliMailAccount,
 	})
 }
 

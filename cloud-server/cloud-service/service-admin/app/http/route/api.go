@@ -61,6 +61,6 @@ func loadApi(s *sinking_web.Engine) {
 
 		ANY("/config/ui", "界面配置", controller.Config.Ui)
 		ANY("/config/web", "网站配置", controller.Config.Web)
-		ANY("/config/sms", "短信配置", controller.Config.Sms)
+		ANY("/config/aliyun", "阿里云配置", controller.Config.Aliyun)
 	})
 }
