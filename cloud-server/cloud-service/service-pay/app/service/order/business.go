@@ -203,7 +203,7 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 	if err != nil {
 		return "", errors.Join(errors.New("生成订单扩展信息失败"), err)
 	}
-	tradeNo := time.Now().Format("20060102150405") + strconv.FormatInt(str.GetSnowWorkIns().GetId()%1000000, 10)
+	tradeNo := time.Now().Format("20060102150405") + strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10)[13:19]
 	data := &model.Order{
 		Id:           str.GetSnowWorkIns().GetId(),
 		UserId:       userId,
