@@ -203,8 +203,9 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 	if err != nil {
 		return "", errors.Join(errors.New("生成订单扩展信息失败"), err)
 	}
-	tradeNo := strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10)
+	tradeNo := time.Now().Format("20060102150405") + strconv.FormatInt(str.GetSnowWorkIns().GetId()%1000000, 10)
 	data := &model.Order{
+		Id:           str.GetSnowWorkIns().GetId(),
 		UserId:       userId,
 		ChannelId:    channelID,
 		TradeNo:      tradeNo,
@@ -223,9 +224,6 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 	err = s.database.Transaction(func(tx *gorm.DB) error {
 		if err2 := s.orderRepository.Create(data, tx); err2 != nil {
 			return errors.Join(errors.New("创建订单失败"), err2)
-		}
-		if data.Id <= 0 {
-			return errors.New("创建订单失败,获取订单号失败")
 		}
 		afterInfo, err2 := json.Marshal(data)
 		if err2 != nil {
