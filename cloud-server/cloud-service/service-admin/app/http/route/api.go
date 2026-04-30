@@ -10,17 +10,18 @@ import (
 
 // loadApi 加载API
 func loadApi(s *sinking_web.Engine) {
-	page := s.Group("/page")
+	g := service.Auth.GetAdminRouteGroup(s)
+	page := g.Group("/page")
 	{
 		page.ANY("/menu", context.HandleFunc(controller.Page.Menu))       //菜单列表
 		page.ANY("/control", context.HandleFunc(controller.Page.Control)) //控件列表
 	}
-	person := s.Group("/person")
+	person := g.Group("/person")
 	{
 		person.ANY("/info", context.HandleFunc(controller.Person.Info))     //个人信息
 		person.ANY("/update", context.HandleFunc(controller.Person.Update)) //修改资料
 	}
-	security := s.Group("/security")
+	security := g.Group("/security")
 	{
 		security.ANY("/session", context.HandleFunc(controller.Security.Session))   //会话列表
 		security.ANY("/logout", context.HandleFunc(controller.Security.Logout))     //注销会话
@@ -31,7 +32,7 @@ func loadApi(s *sinking_web.Engine) {
 		security.ANY("/account", context.HandleFunc(controller.Security.Account))   //修改账号
 	}
 
-	service.Auth.LoadAdminRouteWithRegister(s.Group("/"), func(ANY func(string, string, func(*context.Context))) {
+	service.Auth.LoadAdminRouteWithRegister(g, func(ANY func(string, string, func(*context.Context))) {
 		ANY("/permission/list", "权限列表", controller.Permission.List)
 		ANY("/permission/create", "创建权限", controller.Permission.Create)
 		ANY("/permission/update", "修改权限", controller.Permission.Update)

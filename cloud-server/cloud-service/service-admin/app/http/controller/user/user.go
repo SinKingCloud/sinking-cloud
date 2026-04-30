@@ -175,6 +175,10 @@ func (Controller) Delete(c *context.Context) {
 		c.Error(msg)
 		return
 	}
+	if form.Id == c.GetUserInfo().Id {
+		c.Error("不能删除自身账户")
+		return
+	}
 	err := service.User.DeleteById(form.Id)
 	if err != nil {
 		c.Error(errors.Join(errors.New("删除数据失败"), err))
@@ -189,8 +193,8 @@ func (Controller) Session(c *context.Context) {
 	orderByField, orderByType := c.ValidateOrderBy("create_time", "desc", "create_time,update_time,expire_time")
 	var form struct {
 		Id              int64  `json:"id" default:"" validate:"required,min=1" label:"用户ID"`
-		Device          string `json:"device" default:"" validate:"omitempty,max=100" label:"设备"`
-		Ip              string `json:"ip" default:"" validate:"omitempty,max=50" label:"IP"`
+		Device          string `json:"device" default:"" validate:"omitempty,max=100" label:"登录设备"`
+		Ip              string `json:"ip" default:"" validate:"omitempty,max=50" label:"登录IP"`
 		Location        string `json:"location" default:"" validate:"omitempty,max=100" label:"登录地点"`
 		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"登录起始时间"`
 		CreateTimeEnd   string `json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"登录结束时间"`
