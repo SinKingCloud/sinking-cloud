@@ -8,7 +8,7 @@ import (
 type orderService struct {
 }
 
-// CleanExpiredUnPayOrder 清理过期未支付订单
+// CleanExpiredUnPayOrder 清理30天前过期未支付订单
 func (*orderService) CleanExpiredUnPayOrder(_ json.RawMessage) (interface{}, error) {
 	return service.Order.CleanExpiredUnPayOrder(30)
 }

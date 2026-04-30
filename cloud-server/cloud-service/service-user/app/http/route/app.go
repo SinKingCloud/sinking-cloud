@@ -11,7 +11,7 @@ import (
 func loadApp(s *sinking_web.Engine) {
 	loadMiddleware(s)
 	loadRpc(s)
-	loadApi(s)
+	loadUser(s)
 	loadAdmin(s)
 }
 

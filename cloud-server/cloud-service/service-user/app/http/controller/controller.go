@@ -1,11 +1,11 @@
 package controller
 
 import (
-	"service-user/app/http/controller/person"
-	"service-user/app/http/controller/security"
+	"service-user/app/http/controller/admin"
+	"service-user/app/http/controller/user"
 )
 
 var (
-	Person   = &person.Controller{}
-	Security = &security.Controller{}
+	User  = &user.Controller{}
+	Admin = &admin.Controller{}
 )

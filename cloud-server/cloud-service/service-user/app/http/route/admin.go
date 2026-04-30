@@ -6,7 +6,7 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
-// loadApi 加载API
+// loadUser 加载API
 func loadAdmin(s *sinking_web.Engine) {
 	g := service.Auth.GetAdminRouteGroup(s)
 	service.Auth.LoadAdminRouteWithRegister(g, func(ANY func(string, string, func(*context.Context))) {
