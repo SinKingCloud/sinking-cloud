@@ -244,6 +244,10 @@ func (s *service) DeleteById(id int64) error {
 		if err != nil {
 			return errors.Join(errors.New("删除用户会话失败"), err)
 		}
+		err = s.configService.DeleteUserConfig(id, tx)
+		if err != nil {
+			return errors.Join(errors.New("删除用户配置失败"), err)
+		}
 		err = s.repositoryUser.DeleteById(id, tx)
 		if err != nil {
 			return errors.Join(errors.New("删除用户失败"), err)
@@ -253,7 +257,6 @@ func (s *service) DeleteById(id int64) error {
 	if err != nil {
 		return err
 	}
-	s.configService.ClearUserConfig(id, "*")
 	uidStr := strconv.FormatInt(id, 10)
 	s.cache.Delete(constant.CacheNameWithUserInfo+uidStr, constant.CacheNameWithUserRoles+uidStr, constant.CacheNameWithUserVerify+uidStr)
 	return nil

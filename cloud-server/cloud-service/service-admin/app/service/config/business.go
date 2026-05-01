@@ -6,11 +6,8 @@ import (
 	"service-admin/app/model"
 	"strconv"
 	"strings"
-)
 
-const (
-	systemIdentID = "Sys"
-	userIdentID   = "User_"
+	"gorm.io/gorm"
 )
 
 // getConfig 统一获取配置（用户+系统通用）
@@ -57,7 +54,7 @@ func (s *service) setConfig(identId string, key string, value string) bool {
 func (s *service) GetUserConfigs(userId int64, group string, refresh bool) map[string]string {
 	uidStr := strconv.FormatInt(userId, 10)
 	cacheKey := constant.CacheNameWithUserConfig + uidStr + "_" + group
-	return s.getConfig(cacheKey, userIdentID+uidStr, group, constant.CacheTimeWithUserConfig, refresh)
+	return s.getConfig(cacheKey, constant.UserConfigIdentId+uidStr, group, constant.CacheTimeWithUserConfig, refresh)
 }
 
 // clearUserConfigCache 清理用户配置缓存
@@ -82,7 +79,7 @@ func (s *service) clearUserConfigCache(userId int64, keysOrGroups ...string) boo
 func (s *service) SetUserConfig(userId int64, key string, value string) bool {
 	uidStr := strconv.FormatInt(userId, 10)
 	defer s.clearUserConfigCache(userId, key, "")
-	return s.setConfig(userIdentID+uidStr, key, value)
+	return s.setConfig(constant.UserConfigIdentId+uidStr, key, value)
 }
 
 // SetUserConfigs 批量修改用户配置
@@ -91,7 +88,7 @@ func (s *service) SetUserConfigs(userId int64, data map[string]string) {
 	groups := make(map[string]struct{}, len(data)+1)
 	groups[""] = struct{}{}
 	for k, v := range data {
-		s.setConfig(userIdentID+uidStr, k, v)
+		s.setConfig(constant.UserConfigIdentId+uidStr, k, v)
 		groups[s.getGroupKey(k)] = struct{}{}
 	}
 	groupList := make([]string, 0, len(groups))
@@ -106,8 +103,11 @@ func (s *service) ClearUserConfig(userId int64, group string) bool {
 	if userId <= 0 {
 		return false
 	}
+	if group == "*" {
+		return s.DeleteUserConfig(userId) == nil
+	}
 	uidStr := strconv.FormatInt(userId, 10)
-	identId := userIdentID + uidStr
+	identId := constant.UserConfigIdentId + uidStr
 	configs, err := s.repositoryConfig.FindByIdentIdAndKey(identId, group)
 	if err != nil {
 		return false
@@ -119,10 +119,29 @@ func (s *service) ClearUserConfig(userId int64, group string) bool {
 	return s.clearUserConfigCache(userId, groups...)
 }
 
+// DeleteUserConfig 删除用户全部配置
+func (s *service) DeleteUserConfig(userId int64, tx ...*gorm.DB) error {
+	if userId <= 0 {
+		return nil
+	}
+	uidStr := strconv.FormatInt(userId, 10)
+	identId := constant.UserConfigIdentId + uidStr
+	configs, err := s.repositoryConfig.FindByIdentIdAndKey(identId, "*")
+	if err != nil {
+		return err
+	}
+	if err = s.repositoryConfig.DeleteByIdentId(identId, tx...); err != nil {
+		return err
+	}
+	groups := s.getConfigGroups(configs, "*")
+	s.clearUserConfigCache(userId, groups...)
+	return nil
+}
+
 // GetSysConfigs 获取系统配置
 func (s *service) GetSysConfigs(group string, refresh bool) map[string]string {
 	cacheKey := constant.CacheNameWithSysConfig + group
-	return s.getConfig(cacheKey, systemIdentID, group, constant.CacheTimeWithSysConfig, refresh)
+	return s.getConfig(cacheKey, constant.SystemConfigIdentId, group, constant.CacheTimeWithSysConfig, refresh)
 }
 
 // clearSysConfigCache 清理系统配置缓存
@@ -145,7 +164,7 @@ func (s *service) clearSysConfigCache(keysOrGroups ...string) bool {
 // SetSysConfig 修改系统配置
 func (s *service) SetSysConfig(key string, value string) bool {
 	defer s.clearSysConfigCache(key, "")
-	return s.setConfig(systemIdentID, key, value)
+	return s.setConfig(constant.SystemConfigIdentId, key, value)
 }
 
 // SetSysConfigs 批量修改系统配置
@@ -153,7 +172,7 @@ func (s *service) SetSysConfigs(data map[string]string) {
 	groups := make(map[string]struct{}, len(data)+1)
 	groups[""] = struct{}{}
 	for k, v := range data {
-		s.setConfig(systemIdentID, k, v)
+		s.setConfig(constant.SystemConfigIdentId, k, v)
 		groups[s.getGroupKey(k)] = struct{}{}
 	}
 	groupList := make([]string, 0, len(groups))
@@ -165,11 +184,11 @@ func (s *service) SetSysConfigs(data map[string]string) {
 
 // ClearSysConfig 删除系统配置
 func (s *service) ClearSysConfig(group string) bool {
-	configs, err := s.repositoryConfig.FindByIdentIdAndKey(systemIdentID, group)
+	configs, err := s.repositoryConfig.FindByIdentIdAndKey(constant.SystemConfigIdentId, group)
 	if err != nil {
 		return false
 	}
-	if err = s.repositoryConfig.DeleteByIdentIdAndKey(systemIdentID, group); err != nil {
+	if err = s.repositoryConfig.DeleteByIdentIdAndKey(constant.SystemConfigIdentId, group); err != nil {
 		return false
 	}
 	groups := s.getConfigGroups(configs, group)
