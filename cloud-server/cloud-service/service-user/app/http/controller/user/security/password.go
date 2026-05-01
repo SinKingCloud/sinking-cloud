@@ -1,0 +1,36 @@
+package security
+
+import (
+	"service-user/app/repository/user"
+	"service-user/app/service"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+)
+
+// Password 修改密码
+func (Controller) Password(c *context.Context) {
+	var form struct {
+		Password string `json:"password" default:"" validate:"required,min=6,max=20" label:"新密码"`
+	}
+	if ok, msg := c.ValidatorAll(&form); !ok {
+		c.Error(msg)
+		return
+	}
+	u, err := service.User.GetInfo(c.GetUserInfo().Id, false)
+	if err != nil || u == nil || u.Id <= 0 {
+		c.Error("获取用户信息失败")
+		return
+	}
+	if !service.User.CheckUserVerifyStatus(u.Id, false) {
+		c.Error("请先完成安全验证")
+		return
+	}
+	if err = service.User.UpdateById(c.GetUserInfo().Id, &user.UpdateUser{
+		Password: str.NewStringTool(form.Password).GetPassword(),
+	}); err == nil {
+		c.Success("修改密码成功")
+	} else {
+		c.Error("修改密码失败")
+	}
+}
