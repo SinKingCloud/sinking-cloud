@@ -1,7 +1,13 @@
 package admin
 
+import (
+	"service-driver/app/http/controller/admin/channel"
+	"service-driver/app/http/controller/admin/file"
+	"service-driver/app/http/controller/admin/scene"
+)
+
 type Controller struct {
-	Channel channelController
-	File    fileController
-	Scene   sceneController
+	Channel channel.Controller
+	File    file.Controller
+	Scene   scene.Controller
 }

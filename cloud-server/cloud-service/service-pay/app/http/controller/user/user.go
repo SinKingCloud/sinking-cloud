@@ -1,6 +1,11 @@
 package user
 
+import (
+	"service-pay/app/http/controller/user/balance"
+	"service-pay/app/http/controller/user/order"
+)
+
 type Controller struct {
-	Balance balanceController
-	Order   orderController
+	Balance balance.Controller
+	Order   order.Controller
 }

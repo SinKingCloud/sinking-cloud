@@ -3,49 +3,10 @@ package config
 import (
 	"service-admin/app/service"
 
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
 type Controller struct {
-}
-
-// Ui 界面配置
-func (s Controller) Ui(c *context.Context) {
-	s.config(c, constant.UiGroup, []string{
-		constant.UiLayout,
-		constant.UiWaterMark,
-		constant.UiTheme,
-		constant.UiCompact,
-		constant.UiColor,
-		constant.UiRadius,
-	})
-}
-
-// Web 网站配置
-func (s Controller) Web(c *context.Context) {
-	s.config(c, constant.WebGroup, []string{
-		constant.WebUrl,
-		constant.WebApi,
-		constant.WebName,
-		constant.WebTitle,
-		constant.WebKeyWords,
-		constant.WebDescribe,
-		constant.WebContact,
-		constant.WebLogo,
-	})
-}
-
-// Aliyun 阿里云配置
-func (s Controller) Aliyun(c *context.Context) {
-	s.config(c, constant.AliGroup, []string{
-		constant.AliKey,
-		constant.AliSecret,
-		constant.AliSmsSign,
-		constant.AliSmsTemplate,
-		constant.AliSmsVar,
-		constant.AliMailAccount,
-	})
 }
 
 // config 处理配置获取和更新
