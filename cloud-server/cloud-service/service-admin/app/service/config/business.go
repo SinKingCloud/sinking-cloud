@@ -6,8 +6,6 @@ import (
 	"service-admin/app/model"
 	"strconv"
 	"strings"
-
-	"gorm.io/gorm"
 )
 
 // getConfig 统一获取配置（用户+系统通用）
@@ -98,46 +96,6 @@ func (s *service) SetUserConfigs(userId int64, data map[string]string) {
 	s.clearUserConfigCache(userId, groupList...)
 }
 
-// ClearUserConfig 删除用户配置
-func (s *service) ClearUserConfig(userId int64, group string) bool {
-	if userId <= 0 {
-		return false
-	}
-	if group == "*" {
-		return s.DeleteUserConfig(userId) == nil
-	}
-	uidStr := strconv.FormatInt(userId, 10)
-	identId := constant.UserConfigIdentId + uidStr
-	configs, err := s.repositoryConfig.FindByIdentIdAndKey(identId, group)
-	if err != nil {
-		return false
-	}
-	if err = s.repositoryConfig.DeleteByIdentIdAndKey(identId, group); err != nil {
-		return false
-	}
-	groups := s.getConfigGroups(configs, group)
-	return s.clearUserConfigCache(userId, groups...)
-}
-
-// DeleteUserConfig 删除用户全部配置
-func (s *service) DeleteUserConfig(userId int64, tx ...*gorm.DB) error {
-	if userId <= 0 {
-		return nil
-	}
-	uidStr := strconv.FormatInt(userId, 10)
-	identId := constant.UserConfigIdentId + uidStr
-	configs, err := s.repositoryConfig.FindByIdentIdAndKey(identId, "*")
-	if err != nil {
-		return err
-	}
-	if err = s.repositoryConfig.DeleteByIdentId(identId, tx...); err != nil {
-		return err
-	}
-	groups := s.getConfigGroups(configs, "*")
-	s.clearUserConfigCache(userId, groups...)
-	return nil
-}
-
 // GetSysConfigs 获取系统配置
 func (s *service) GetSysConfigs(group string, refresh bool) map[string]string {
 	cacheKey := constant.CacheNameWithSysConfig + group
@@ -182,19 +140,6 @@ func (s *service) SetSysConfigs(data map[string]string) {
 	s.clearSysConfigCache(groupList...)
 }
 
-// ClearSysConfig 删除系统配置
-func (s *service) ClearSysConfig(group string) bool {
-	configs, err := s.repositoryConfig.FindByIdentIdAndKey(constant.SystemConfigIdentId, group)
-	if err != nil {
-		return false
-	}
-	if err = s.repositoryConfig.DeleteByIdentIdAndKey(constant.SystemConfigIdentId, group); err != nil {
-		return false
-	}
-	groups := s.getConfigGroups(configs, group)
-	return s.clearSysConfigCache(groups...)
-}
-
 // getGroupKey 统一截取分组（theme.color → theme）
 func (s *service) getGroupKey(key string) string {
 	if key == "*" {
@@ -204,24 +149,4 @@ func (s *service) getGroupKey(key string) string {
 		return key[:idx]
 	}
 	return key
-}
-
-// getConfigGroups 获取需要清理的配置分组
-func (s *service) getConfigGroups(configs []*model.Config, group string) []string {
-	groupMap := make(map[string]struct{}, len(configs)+2)
-	groupMap[""] = struct{}{}
-	if group != "" {
-		groupMap[s.getGroupKey(group)] = struct{}{}
-	}
-	for _, item := range configs {
-		if item == nil || item.Key == "" {
-			continue
-		}
-		groupMap[s.getGroupKey(item.Key)] = struct{}{}
-	}
-	groups := make([]string, 0, len(groupMap))
-	for key := range groupMap {
-		groups = append(groups, key)
-	}
-	return groups
 }

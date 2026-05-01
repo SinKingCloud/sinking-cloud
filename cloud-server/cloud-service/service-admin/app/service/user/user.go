@@ -2,10 +2,10 @@ package user
 
 import (
 	"service-admin/app/model"
+	configRepository "service-admin/app/repository/config"
 	sessionRepository "service-admin/app/repository/session"
 	"service-admin/app/repository/user"
 	userRoleRepository "service-admin/app/repository/user_role"
-	configService "service-admin/app/service/config"
 	"service-admin/app/service/rbac"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
@@ -29,19 +29,19 @@ type service struct {
 	repositoryUser     user.Interface
 	repositorySession  sessionRepository.Interface
 	repositoryUserRole userRoleRepository.Interface
-	configService      configService.Service
+	repositoryConfig   configRepository.Interface
 	rbacService        rbac.Service
 	database           *database.Database
 	cache              cache.Interface
 }
 
 // NewService 实例化service
-func NewService(repositoryUser user.Interface, repositorySession sessionRepository.Interface, repositoryUserRole userRoleRepository.Interface, configService configService.Service, rbacService rbac.Service, database *database.Database, cache cache.Interface) *service {
+func NewService(repositoryUser user.Interface, repositorySession sessionRepository.Interface, repositoryUserRole userRoleRepository.Interface, repositoryConfig configRepository.Interface, rbacService rbac.Service, database *database.Database, cache cache.Interface) *service {
 	return &service{
 		repositoryUser:     repositoryUser,
 		repositorySession:  repositorySession,
 		repositoryUserRole: repositoryUserRole,
-		configService:      configService,
+		repositoryConfig:   repositoryConfig,
 		rbacService:        rbacService,
 		database:           database,
 		cache:              cache,

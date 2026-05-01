@@ -22,15 +22,3 @@ func (r *Repository) DeleteByIdentId(identId string, tx ...*gorm.DB) error {
 		return execute(tx)
 	})
 }
-
-// DeleteByIdentIdAndKey 根据identId和key删除配置
-func (r *Repository) DeleteByIdentIdAndKey(identId, key string) error {
-	if identId == "" {
-		return errors.New("配置标识不能为空")
-	}
-	query := r.Database.Db.Where("ident_id = ?", identId)
-	if key != "" && key != "*" {
-		query = query.Where("key like ?", key+"%")
-	}
-	return query.Delete(&model.Config{}).Error
-}

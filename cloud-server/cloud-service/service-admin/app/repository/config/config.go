@@ -12,7 +12,6 @@ type Interface interface {
 	FindByIdentIdAndKey(identId, key string) ([]*model.Config, error)
 	UpdateByIdentIdAndKey(identId, key, value string) (int64, error)
 	DeleteByIdentId(identId string, tx ...*gorm.DB) error
-	DeleteByIdentIdAndKey(identId, key string) error
 	Create(config *model.Config) error
 }
 

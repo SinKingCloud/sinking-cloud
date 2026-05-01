@@ -235,6 +235,8 @@ func (s *service) DeleteById(id int64) error {
 		return errors.New("系统繁忙,请稍候重试")
 	}
 	defer s.cache.UnLock(lockKey)
+	uidStr := strconv.FormatInt(id, 10)
+	configIdentId := constant.UserConfigIdentId + uidStr
 	err := s.database.Transaction(func(tx *gorm.DB) error {
 		err := s.repositoryUserRole.DeleteByUserId(id, tx)
 		if err != nil {
@@ -244,7 +246,7 @@ func (s *service) DeleteById(id int64) error {
 		if err != nil {
 			return errors.Join(errors.New("删除用户会话失败"), err)
 		}
-		err = s.configService.DeleteUserConfig(id, tx)
+		err = s.repositoryConfig.DeleteByIdentId(configIdentId, tx)
 		if err != nil {
 			return errors.Join(errors.New("删除用户配置失败"), err)
 		}
@@ -257,7 +259,6 @@ func (s *service) DeleteById(id int64) error {
 	if err != nil {
 		return err
 	}
-	uidStr := strconv.FormatInt(id, 10)
 	s.cache.Delete(constant.CacheNameWithUserInfo+uidStr, constant.CacheNameWithUserRoles+uidStr, constant.CacheNameWithUserVerify+uidStr)
 	return nil
 }

@@ -4,7 +4,6 @@ import (
 	"service-admin/app/repository/config"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
-	"gorm.io/gorm"
 )
 
 // Service service接口
@@ -12,12 +11,9 @@ type Service interface {
 	GetUserConfigs(userId int64, group string, refresh bool) map[string]string //获取用户配置
 	SetUserConfig(userId int64, key string, value string) bool                 //设置用户配置
 	SetUserConfigs(userId int64, data map[string]string)                       //批量修改用户配置
-	ClearUserConfig(userId int64, group string) bool                           //删除用户配置
-	DeleteUserConfig(userId int64, tx ...*gorm.DB) error                       //删除用户全部配置
 	GetSysConfigs(group string, refresh bool) map[string]string                //获取系统配置
 	SetSysConfig(key string, value string) bool                                //设置系统配置
 	SetSysConfigs(data map[string]string)                                      //批量设置系统配置
-	ClearSysConfig(group string) bool                                          //删除系统配置
 }
 
 // service 注入结构
