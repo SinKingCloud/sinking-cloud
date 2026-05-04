@@ -11,3 +11,8 @@ func (Controller) List(c *context.Context) {
 func (Controller) Update(c *context.Context) {
 
 }
+
+// Session 用户会话
+func (Controller) Session(c *context.Context) {
+
+}
