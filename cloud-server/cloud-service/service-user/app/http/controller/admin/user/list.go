@@ -16,3 +16,8 @@ func (Controller) Update(c *context.Context) {
 func (Controller) Session(c *context.Context) {
 
 }
+
+// Logout 注销会话
+func (Controller) Logout(c *context.Context) {
+
+}
