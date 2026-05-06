@@ -15,6 +15,7 @@ type Interface interface {
 	FindByIdentifier(identifier string) (*model.User, error)
 	Create(user *model.User) error
 	UpdateById(id int64, data *UpdateUser) error
+	Select(where *SelectUser, orderByField string, orderByType string, page int, pageSize int) (list []*User, total int64, err error)
 }
 
 // Repository 用户仓储

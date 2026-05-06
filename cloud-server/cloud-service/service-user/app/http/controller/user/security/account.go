@@ -25,10 +25,6 @@ func (Controller) Account(c *context.Context) {
 		c.Error("您的账户已修改过账号,无需修改")
 		return
 	}
-	if err = service.User.CheckAccountIsUse(form.Account); err != nil {
-		c.Error(err.Error())
-		return
-	}
 	if err = service.User.UpdateById(c.GetUserInfo().Id, &user.UpdateUser{
 		Account: form.Account,
 	}); err == nil {

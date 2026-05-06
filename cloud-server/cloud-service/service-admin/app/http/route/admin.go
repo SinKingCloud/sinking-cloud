@@ -57,8 +57,8 @@ func loadAdmin(s *sinking_web.Engine) {
 		ANY("/master/create", "创建管理员", controller.Master.Create)
 		ANY("/master/update", "修改管理员", controller.Master.Update)
 		ANY("/master/delete", "删除管理员", controller.Master.Delete)
-		ANY("/master/session", "会话列表", controller.Master.Session)
-		ANY("/master/logout", "注销会话", controller.Master.Logout)
+		ANY("/master/session", "管理员会话列表", controller.Master.Session)
+		ANY("/master/logout", "注销管理员会话", controller.Master.Logout)
 
 		ANY("/config/ui", "界面配置", controller.Config.Ui)
 		ANY("/config/web", "网站配置", controller.Config.Web)

@@ -27,10 +27,6 @@ func (Controller) Email(c *context.Context) {
 		c.Error("请先完成安全验证")
 		return
 	}
-	if err = service.User.CheckEmailIsUse(form.Mail); err != nil {
-		c.Error(err.Error())
-		return
-	}
 	if !service2.Auth.CheckMail(form.Mail, form.Code) {
 		c.Error("验证码错误")
 		return
