@@ -6,6 +6,7 @@ require (
 	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260411024335-5cf44dc652e5
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260411024335-5cf44dc652e5
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
+	github.com/alibabacloud-go/cloudauth-20221125 v1.2.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.16
 	github.com/alibabacloud-go/dm-20151123/v2 v2.9.0
 	github.com/alibabacloud-go/dysmsapi-20170525/v5 v5.5.1
