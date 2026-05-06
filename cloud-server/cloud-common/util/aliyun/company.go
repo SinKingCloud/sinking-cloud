@@ -15,31 +15,25 @@ import (
 	"github.com/aliyun/credentials-go/credentials"
 )
 
-var Company company
-
-type company struct {
+type Company struct {
+	Credential credentials.Credential
 }
 
-// Verify 企业四要素核验
-// accessKeyId:     阿里云访问密钥ID
-// accessKeySecret: 阿里云访问密钥密钥
-// companyName:     企业名称
-// companyNo:       统一社会信用代码
-// cardName:        法人姓名
-// cardNo:          法人身份证号
-func (ins company) Verify(accessKeyId, accessKeySecret, companyName, companyNo, cardName, cardNo string) error {
-	accessKeyId = strings.TrimSpace(accessKeyId)
-	accessKeySecret = strings.TrimSpace(accessKeySecret)
+// NewCompany 创建阿里云企业核验客户端实例。
+func NewCompany(credential credentials.Credential) *Company {
+	return &Company{Credential: credential}
+}
+
+// Verify 企业四要素核验。
+// companyName: 企业名称
+// companyNo:   统一社会信用代码
+// cardName:    法人姓名
+// cardNo:      法人身份证号
+func (ins *Company) Verify(companyName, companyNo, cardName, cardNo string) error {
 	companyName = strings.TrimSpace(companyName)
 	companyNo = strings.TrimSpace(companyNo)
 	cardName = strings.TrimSpace(cardName)
 	cardNo = strings.TrimSpace(cardNo)
-	if accessKeyId == "" {
-		return errors.New("AccessKeyId不能为空")
-	}
-	if accessKeySecret == "" {
-		return errors.New("AccessKeySecret不能为空")
-	}
 	if companyName == "" {
 		return errors.New("企业名称不能为空")
 	}
@@ -52,15 +46,11 @@ func (ins company) Verify(accessKeyId, accessKeySecret, companyName, companyNo, 
 	if cardNo == "" {
 		return errors.New("法人身份证号不能为空")
 	}
-	akCredential, err := credentials.NewCredential(new(credentials.Config).
-		SetType("access_key").
-		SetAccessKeyId(accessKeyId).
-		SetAccessKeySecret(accessKeySecret))
-	if err != nil {
-		return fmt.Errorf("创建阿里云凭据失败:%w", err)
+	if ins == nil || ins.Credential == nil {
+		return errors.New("阿里云凭据不能为空")
 	}
 	client, err := cloudauth20221125.NewClient(&openapi.Config{
-		Credential: akCredential,
+		Credential: ins.Credential,
 		Endpoint:   tea.String("cloudauth.aliyuncs.com"),
 	})
 	if err != nil {
@@ -105,7 +95,7 @@ func (ins company) Verify(accessKeyId, accessKeySecret, companyName, companyNo, 
 }
 
 // newMerchantBizId 生成阿里云商户侧唯一业务标识。
-func (company) newMerchantBizId() string {
+func (ins *Company) newMerchantBizId() string {
 	buf := make([]byte, 16)
 	if _, err := rand.Read(buf); err == nil {
 		return hex.EncodeToString(buf)
@@ -114,12 +104,12 @@ func (company) newMerchantBizId() string {
 }
 
 // formatSdkError 将阿里云SDK错误转换成业务可展示的错误信息。
-func (ins company) formatSdkError(err error) error {
+func (ins *Company) formatSdkError(err error) error {
 	if err == nil {
 		return nil
 	}
-	sdkErr, ok := err.(*tea.SDKError)
-	if !ok {
+	var sdkErr *tea.SDKError
+	if !errors.As(err, &sdkErr) {
 		return fmt.Errorf("企业四要素核验失败:%w", err)
 	}
 	message := tea.StringValue(sdkErr.Message)
@@ -134,7 +124,7 @@ func (ins company) formatSdkError(err error) error {
 }
 
 // getErrorRecommend 从阿里云SDK错误扩展数据中提取诊断建议。
-func (company) getErrorRecommend(data string) string {
+func (ins *Company) getErrorRecommend(data string) string {
 	if data == "" {
 		return ""
 	}
@@ -150,7 +140,7 @@ func (company) getErrorRecommend(data string) string {
 }
 
 // joinMessage 拼接阿里云非成功响应的错误信息。
-func (company) joinMessage(code, message, requestId string) string {
+func (ins *Company) joinMessage(code, message, requestId string) string {
 	items := make([]string, 0, 3)
 	if code != "" {
 		items = append(items, "Code:"+code)
@@ -168,7 +158,7 @@ func (company) joinMessage(code, message, requestId string) string {
 }
 
 // reasonText 将阿里云不一致字段标识转换成中文原因。
-func (company) reasonText(reasonDetail string) string {
+func (ins *Company) reasonText(reasonDetail string) string {
 	reasonDetail = strings.TrimSpace(reasonDetail)
 	if reasonDetail == "" {
 		return "信息不一致"

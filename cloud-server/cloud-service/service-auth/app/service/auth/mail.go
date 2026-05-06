@@ -47,9 +47,14 @@ func (s *service) SendMail(mail string) bool {
 	ali := configs[constant2.AliGroup]
 	web := configs[constant2.WebGroup]
 	code := strconv.FormatInt(str.NewStrTool().RandInt64(100000, 999999), 10)
-	if aliyun.Mail.Send(
+	client, err := aliyun.New(
 		ali[constant2.AliKey],
 		ali[constant2.AliSecret],
+	)
+	if err != nil {
+		return false
+	}
+	if client.Mail.Send(
 		ali[constant2.AliMailAccount],
 		web[constant2.WebName], mail, "验证码通知", "您的验证码为："+code+"，请勿泄露于他人！",
 	) {

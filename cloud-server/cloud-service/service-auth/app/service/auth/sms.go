@@ -45,9 +45,14 @@ func (s *service) SendSms(phone string) bool {
 	//发送验证码
 	configs := s.configService.GetSystemConfig(constant2.AliGroup, false)
 	code := strconv.FormatInt(str.NewStrTool().RandInt64(100000, 999999), 10)
-	if aliyun.Sms.Send(
+	ali, err := aliyun.New(
 		configs[constant2.AliKey],
 		configs[constant2.AliSecret],
+	)
+	if err != nil {
+		return false
+	}
+	if ali.Sms.Send(
 		phone,
 		configs[constant2.AliSmsSign],
 		configs[constant2.AliSmsTemplate],
