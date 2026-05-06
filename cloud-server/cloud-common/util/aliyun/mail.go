@@ -7,9 +7,9 @@ import (
 	"github.com/aliyun/credentials-go/credentials"
 )
 
-var Mail mailIns
+var Mail mail
 
-type mailIns struct {
+type mail struct {
 }
 
 // Send 发送邮件
@@ -20,7 +20,7 @@ type mailIns struct {
 // toAddress:       收件人邮箱地址，多个用逗号分隔
 // subject:         邮件主题
 // htmlBody:        邮件正文（HTML格式）
-func (mailIns) Send(accessKeyId, accessKeySecret, accountName, nickName, toAddress, subject, htmlBody string) bool {
+func (mail) Send(accessKeyId, accessKeySecret, accountName, nickName, toAddress, subject, htmlBody string) bool {
 	akCredential, err := credentials.NewCredential(new(credentials.Config).
 		SetType("access_key").
 		SetAccessKeyId(accessKeyId).

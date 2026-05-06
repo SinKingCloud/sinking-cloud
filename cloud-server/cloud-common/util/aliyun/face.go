@@ -12,8 +12,6 @@ import (
 	"github.com/aliyun/credentials-go/credentials"
 )
 
-const faceEndpoint = "cloudauth.aliyuncs.com"
-
 var Face face
 
 type face struct {
@@ -270,7 +268,7 @@ func (face) newClient(accessKeyId, accessKeySecret string) (*cloudauth20190307.C
 	}
 	client, err := cloudauth20190307.NewClient(&openapi.Config{
 		Credential: akCredential,
-		Endpoint:   tea.String(faceEndpoint),
+		Endpoint:   tea.String("cloudauth.aliyuncs.com"),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("创建阿里云实人认证客户端失败:%w", err)
@@ -283,7 +281,8 @@ func (ins face) formatSdkError(prefix string, err error) error {
 	if err == nil {
 		return nil
 	}
-	sdkErr, ok := err.(*tea.SDKError)
+	var sdkErr *tea.SDKError
+	ok := errors.As(err, &sdkErr)
 	if !ok {
 		return fmt.Errorf("%s:%w", prefix, err)
 	}

@@ -7,9 +7,9 @@ import (
 	"github.com/aliyun/credentials-go/credentials"
 )
 
-var Sms smsIns
+var Sms sms
 
-type smsIns struct {
+type sms struct {
 }
 
 // Send 发送短信
@@ -19,7 +19,7 @@ type smsIns struct {
 // signName:        短信签名
 // templateCode:    短信模板CODE
 // templateParam:   短信模板参数，JSON格式，如：{\"code\":\"1234\"}
-func (smsIns) Send(accessKeyId, accessKeySecret, phone, signName, templateCode, templateParam string) bool {
+func (sms) Send(accessKeyId, accessKeySecret, phone, signName, templateCode, templateParam string) bool {
 	akCredential, err := credentials.NewCredential(new(credentials.Config).
 		SetType("access_key").
 		SetAccessKeyId(accessKeyId).
