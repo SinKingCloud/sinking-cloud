@@ -3,12 +3,13 @@ module github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common
 go 1.25.0
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260411024335-5cf44dc652e5
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260411024335-5cf44dc652e5
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260422080419-f09ed8b1f1ce
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260422080419-f09ed8b1f1ce
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
-	github.com/alibabacloud-go/cloudauth-20221125 v1.2.0
+	github.com/alibabacloud-go/cloudauth-20190307/v4 v4.13.2
+	github.com/alibabacloud-go/cloudauth-20221125 v1.3.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.16
-	github.com/alibabacloud-go/dm-20151123/v2 v2.9.0
+	github.com/alibabacloud-go/dm-20151123/v2 v2.9.2
 	github.com/alibabacloud-go/dysmsapi-20170525/v5 v5.5.1
 	github.com/alibabacloud-go/tea v1.4.0
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
@@ -20,8 +21,8 @@ require (
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.30.2
 	github.com/golang-jwt/jwt/v5 v5.3.1
-	github.com/nats-io/nats.go v1.50.0
-	github.com/redis/go-redis/v9 v9.18.0
+	github.com/nats-io/nats.go v1.51.0
+	github.com/redis/go-redis/v9 v9.19.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sevlyar/go-daemon v0.1.6
 	github.com/spf13/viper v1.21.0
@@ -40,41 +41,42 @@ require (
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.5 // indirect
 	github.com/alibabacloud-go/debug v1.0.1 // indirect
-	github.com/alibabacloud-go/openapi-util v0.1.1 // indirect
+	github.com/alibabacloud-go/endpoint-util v1.1.1 // indirect
+	github.com/alibabacloud-go/openapi-util v0.1.2 // indirect
 	github.com/alibabacloud-go/tea-utils/v2 v2.0.9 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clbanning/mxj/v2 v2.7.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/fsnotify/fsnotify v1.9.0 // indirect
+	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/glebarez/go-sqlite v1.22.0 // indirect
 	github.com/go-pay/crypto v0.0.1 // indirect
 	github.com/go-pay/xlog v0.0.3 // indirect
 	github.com/go-pay/xtime v0.0.2 // indirect
-	github.com/go-sql-driver/mysql v1.9.3 // indirect
+	github.com/go-sql-driver/mysql v1.10.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.9.1 // indirect
+	github.com/jackc/pgx/v5 v5.9.2 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
-	github.com/klauspost/compress v1.18.5 // indirect
+	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/magiconair/properties v1.8.10 // indirect
-	github.com/mattn/go-isatty v0.0.21 // indirect
+	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/nats-io/nkeys v0.4.15 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
-	github.com/pelletier/go-toml/v2 v2.3.0 // indirect
+	github.com/pelletier/go-toml/v2 v2.3.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
@@ -91,10 +93,10 @@ require (
 	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	gopkg.in/ini.v1 v1.67.1 // indirect
+	gopkg.in/ini.v1 v1.67.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	modernc.org/libc v1.72.0 // indirect
+	modernc.org/libc v1.72.2 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.48.2 // indirect
+	modernc.org/sqlite v1.50.0 // indirect
 )
