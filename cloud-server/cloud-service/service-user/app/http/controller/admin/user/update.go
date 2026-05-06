@@ -19,6 +19,7 @@ func (Controller) Update(c *context.Context) {
 		Password       string `json:"password" default:"" validate:"omitempty,min=6,max=20" label:"密码"`
 		Avatar         string `json:"avatar" default:"" validate:"omitempty,uri" label:"头像"`
 		NickName       string `json:"nick_name" default:"" validate:"omitempty,min=1,max=15" label:"昵称"`
+		RealAuthType   string `json:"real_auth_type" default:"" validate:"omitempty,numeric" label:"实名类型"`
 		RealAuthStatus string `json:"real_auth_status" default:"" validate:"omitempty,numeric" label:"实名状态"`
 		Status         string `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
 	}
@@ -44,6 +45,9 @@ func (Controller) Update(c *context.Context) {
 	}
 	if form.NickName != "" {
 		data.NickName = form.NickName
+	}
+	if form.RealAuthType != "" {
+		data.RealAuthType, _ = strconv.Atoi(form.RealAuthType)
 	}
 	if form.RealAuthStatus != "" {
 		data.RealAuthStatus, _ = strconv.Atoi(form.RealAuthStatus)

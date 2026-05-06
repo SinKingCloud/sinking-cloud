@@ -19,6 +19,9 @@ func (r *Repository) Select(where *SelectUser, orderByField string, orderByType 
 		if where.NickName != "" {
 			query = query.Where("nick_name LIKE ?", "%"+where.NickName+"%")
 		}
+		if where.RealAuthType != "" {
+			query = query.Where("real_auth_type = ?", where.RealAuthType)
+		}
 		if where.RealAuthStatus != "" {
 			query = query.Where("real_auth_status = ?", where.RealAuthStatus)
 		}

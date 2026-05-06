@@ -31,6 +31,9 @@ func (r *Repository) UpdateById(id int64, data *UpdateUser) error {
 	if data.NickName != nil {
 		updates["nick_name"] = data.NickName
 	}
+	if data.RealAuthType != nil {
+		updates["real_auth_type"] = data.RealAuthType
+	}
 	if data.RealAuthStatus != nil {
 		updates["real_auth_status"] = data.RealAuthStatus
 	}

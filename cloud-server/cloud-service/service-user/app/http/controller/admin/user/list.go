@@ -17,6 +17,7 @@ func (Controller) List(c *context.Context) {
 		Phone           string `json:"phone" default:"" validate:"omitempty,numeric,len=11" label:"手机号"`
 		Email           string `json:"email" default:"" validate:"omitempty,email" label:"邮箱"`
 		NickName        string `json:"nick_name" default:"" validate:"omitempty,max=15" label:"昵称"`
+		RealAuthType    string `json:"real_auth_type" default:"" validate:"omitempty,numeric" label:"实名类型"`
 		RealAuthStatus  string `json:"real_auth_status" default:"" validate:"omitempty,numeric" label:"实名状态"`
 		Status          string `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
 		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
@@ -40,6 +41,9 @@ func (Controller) List(c *context.Context) {
 	}
 	if form.NickName != "" {
 		where.NickName = form.NickName
+	}
+	if form.RealAuthType != "" {
+		where.RealAuthType = form.RealAuthType
 	}
 	if form.RealAuthStatus != "" {
 		where.RealAuthStatus = form.RealAuthStatus

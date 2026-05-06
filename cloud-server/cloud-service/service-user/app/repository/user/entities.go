@@ -8,6 +8,7 @@ type SelectUser struct {
 	Phone           string
 	Email           string
 	NickName        string
+	RealAuthType    string
 	RealAuthStatus  string
 	Status          string
 	CreateTimeStart string
@@ -24,6 +25,7 @@ type UpdateUser struct {
 	Password       interface{}
 	Avatar         interface{}
 	NickName       interface{}
+	RealAuthType   interface{}
 	RealAuthStatus interface{}
 	Status         interface{}
 }
@@ -36,6 +38,7 @@ type User struct {
 	Email          string       `gorm:"column:email" json:"email"`
 	Avatar         string       `gorm:"column:avatar" json:"avatar"`
 	NickName       string       `gorm:"column:nick_name" json:"nick_name"`
+	RealAuthType   int          `gorm:"column:real_auth_type" json:"real_auth_type"`
 	RealAuthStatus int          `gorm:"column:real_auth_status" json:"real_auth_status"`
 	Status         int          `gorm:"column:status" json:"status"`
 	CreateTime     str.DateTime `gorm:"column:create_time" json:"create_time"`

@@ -130,13 +130,27 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 			hasUpdateData = true
 		}
 	}
+	if data.RealAuthType != nil {
+		realAuthType, ok := data.RealAuthType.(int)
+		if !ok {
+			return errors.New("实名类型数据不合法")
+		}
+		if _, ok = real_auth_status.Map()[realAuthType]; !ok {
+			return errors.New("实名类型数据不合法")
+		}
+		if realAuthType == info.RealAuthType {
+			data.RealAuthType = nil
+		} else {
+			hasUpdateData = true
+		}
+	}
 	if data.RealAuthStatus != nil {
 		realAuthStatus, ok := data.RealAuthStatus.(int)
 		if !ok {
-			return errors.New("状态数据不合法")
+			return errors.New("实名状态数据不合法")
 		}
 		if _, ok = real_auth_status.Map()[realAuthStatus]; !ok {
-			return errors.New("状态数据不合法")
+			return errors.New("实名状态数据不合法")
 		}
 		if realAuthStatus == info.RealAuthStatus {
 			data.RealAuthStatus = nil

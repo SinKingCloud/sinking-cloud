@@ -7,6 +7,7 @@ import (
 	"regexp"
 	constant2 "service-user/app/constant"
 	"service-user/app/enum/real_auth_status"
+	"service-user/app/enum/real_auth_type"
 	"service-user/app/enum/user_status"
 	"service-user/app/model"
 	"strings"
@@ -62,6 +63,7 @@ func (s *service) Login(account string, password string, code string, userAgent 
 		}
 		if u == nil || u.Id <= 0 {
 			u = &model.User{
+				RealAuthType:   real_auth_type.UnAuth,
 				RealAuthStatus: real_auth_status.UnAuth,
 				Status:         user_status.Enable,
 			}

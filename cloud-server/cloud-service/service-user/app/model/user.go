@@ -16,6 +16,7 @@ type User struct {
 	Password       string       `gorm:"column:password" json:"password"`
 	Avatar         string       `gorm:"column:avatar" json:"avatar"`
 	NickName       string       `gorm:"column:nick_name" json:"nick_name"`
+	RealAuthType   int          `gorm:"column:real_auth_type" json:"real_auth_type"`
 	RealAuthStatus int          `gorm:"column:real_auth_status" json:"real_auth_status"`
 	Status         int          `gorm:"column:status" json:"status"`
 	CreateTime     str.DateTime `gorm:"column:create_time" json:"create_time"`
