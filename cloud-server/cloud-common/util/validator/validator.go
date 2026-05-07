@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"errors"
 	"reflect"
 	"sync"
 
@@ -35,10 +36,12 @@ func getIns() *validator.Validate {
 func Check(obj interface{}) (bool, string) {
 	err := getIns().Struct(obj)
 	if err != nil {
-		if _, ok := err.(*validator.InvalidValidationError); !ok {
-			if errs, ok := err.(validator.ValidationErrors); ok {
-				for _, err := range errs {
-					return false, err.Translate(trans)
+		var invalidValidationError *validator.InvalidValidationError
+		if !errors.As(err, &invalidValidationError) {
+			var errs validator.ValidationErrors
+			if errors.As(err, &errs) {
+				for _, err2 := range errs {
+					return false, err2.Translate(trans)
 				}
 			}
 		}

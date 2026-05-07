@@ -13,7 +13,7 @@ import (
 // Verify 安全验证
 func (Controller) Verify(c *context.Context) {
 	var form struct {
-		Action string `json:"action" default:"get" validate:"required,oneof=get verify" label:"步骤"`
+		Action string `json:"action" default:"info" validate:"required,oneof=info verify" label:"步骤"`
 		Type   string `json:"type" default:"phone" validate:"required,oneof=mail phone" label:"验证方式"`
 		Code   string `json:"code" default:"" validate:"required,numeric,len=6" label:"验证码"`
 	}
@@ -26,7 +26,7 @@ func (Controller) Verify(c *context.Context) {
 		c.Error("获取用户信息失败")
 		return
 	}
-	if form.Action == "get" {
+	if form.Action == "info" {
 		data := sinking_web.H{
 			"status": service.User.CheckUserVerifyStatus(u.Id, false),
 		}
