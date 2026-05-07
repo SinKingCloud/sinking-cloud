@@ -11,4 +11,10 @@ const (
 
 	CacheNameWithSession = "Session_"        //用户登陆会话
 	CacheTimeWithSession = int64(600 * 1000) //用户登陆会话储存时间
+
+	CacheNameWithRealAuthInfo = "RealAuthInfo_"   //实名认证信息
+	CacheTimeWithRealAuthInfo = int64(600 * 1000) //实名认证信息储存时间
+
+	CacheNameWithRealAuthProcess = "RealAuthProcess_"    //实名认证流程
+	CacheTimeWithRealAuthProcess = int64(30 * 60 * 1000) //实名认证流程储存时间
 )

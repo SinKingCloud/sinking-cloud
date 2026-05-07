@@ -27,4 +27,5 @@ const (
 	AliSmsVar      = AliGroup + ".sms.var"      //阿里云sms变量名称
 	AliMailAccount = AliGroup + ".mail.account" //阿里云mail 发信地址
 	AliFaceScene   = AliGroup + ".face.scene"   //阿里云实名认证场景ID
+	AliFaceDomain  = AliGroup + ".face.domain"  //阿里云实名认证场景资料储存oss域名
 )

@@ -2,6 +2,7 @@ package service
 
 import (
 	config2 "service-user/app/repository/config"
+	realAuth2 "service-user/app/repository/real_auth"
 	"service-user/app/repository/session"
 	user2 "service-user/app/repository/user"
 	"service-user/app/service/auth"
@@ -23,13 +24,15 @@ var (
 func Init() {
 	configRepository := config2.NewRepository(global.App.Database)
 	userRepository := user2.NewRepository(global.App.Database)
+	realAuthRepository := realAuth2.NewRepository(global.App.Database)
 	sessionRepository := session.NewRepository(global.App.Database)
 	cache := global.App.Cache
 	authService := service.Auth
 	socketService := service.Socket
+	systemConfig := service.Config
 
 	Config = config.NewService(configRepository, cache)
 	Auth = auth.NewService(authService, sessionRepository, userRepository, cache)
-	User = user.NewService(userRepository, Config, cache)
+	User = user.NewService(userRepository, realAuthRepository, systemConfig, global.App.Database, cache)
 	Socket = socket.NewService(Auth, sessionRepository, socketService, cache)
 }

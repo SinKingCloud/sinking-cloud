@@ -5,10 +5,11 @@ import (
 	"time"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"gorm.io/gorm"
 )
 
 // UpdateById 根据ID更新
-func (r *Repository) UpdateById(id int64, data *UpdateUser) error {
+func (r *Repository) UpdateById(id int64, data *UpdateUser, tx ...*gorm.DB) error {
 	if data == nil {
 		return nil
 	}
@@ -44,5 +45,9 @@ func (r *Repository) UpdateById(id int64, data *UpdateUser) error {
 		return nil
 	}
 	updates["update_time"] = str.DateTime(time.Now())
-	return r.Database.Db.Model(&model.User{}).Where("id = ?", id).Updates(updates).Error
+	db := r.Database.Db
+	if len(tx) > 0 && tx[0] != nil {
+		db = tx[0]
+	}
+	return db.Model(&model.User{}).Where("id = ?", id).Updates(updates).Error
 }

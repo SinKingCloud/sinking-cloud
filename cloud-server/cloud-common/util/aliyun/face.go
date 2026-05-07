@@ -45,11 +45,12 @@ func NewFace(credential credentials.Credential) *Face {
 // cardName:     姓名
 // returnUrl:    认证完成后跳转地址
 // metaInfo:     设备环境信息
-func (ins *Face) Init(sceneId int64, outerOrderNo, cardNo, cardName, returnUrl, metaInfo string) (*FaceInitResult, error) {
+func (ins *Face) Init(sceneId int64, outerOrderNo, cardNo, cardName, returnUrl, callbackUrl, metaInfo string) (*FaceInitResult, error) {
 	cardNo = strings.TrimSpace(cardNo)
 	outerOrderNo = strings.TrimSpace(outerOrderNo)
 	cardName = strings.TrimSpace(cardName)
 	returnUrl = strings.TrimSpace(returnUrl)
+	callbackUrl = strings.TrimSpace(callbackUrl)
 	metaInfo = strings.TrimSpace(metaInfo)
 	if sceneId <= 0 {
 		return nil, errors.New("认证场景ID不能为空")
@@ -62,9 +63,6 @@ func (ins *Face) Init(sceneId int64, outerOrderNo, cardNo, cardName, returnUrl, 
 	}
 	if cardName == "" {
 		return nil, errors.New("姓名不能为空")
-	}
-	if returnUrl == "" {
-		return nil, errors.New("认证完成跳转地址不能为空")
 	}
 	if metaInfo == "" {
 		return nil, errors.New("设备环境信息不能为空")
@@ -87,6 +85,7 @@ func (ins *Face) Init(sceneId int64, outerOrderNo, cardNo, cardName, returnUrl, 
 		CertType:          tea.String("IDENTITY_CARD"),
 		CertName:          tea.String(cardName),
 		ReturnUrl:         tea.String(returnUrl),
+		CallbackUrl:       tea.String(callbackUrl),
 		MetaInfo:          tea.String(metaInfo),
 		ProcedurePriority: tea.String("url"),
 		VideoEvidence:     tea.String("true"),

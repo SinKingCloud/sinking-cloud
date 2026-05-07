@@ -16,5 +16,6 @@ func loadAdmin(s *sinking_web.Engine) {
 		ANY("/update", "修改用户信息", controller.Admin.User.Update)
 		ANY("/session", "用户会话列表", controller.Admin.User.Session)
 		ANY("/logout", "注销用户会话", controller.Admin.User.Logout)
+		ANY("/certificate", "用户实名信息", controller.Admin.User.Certificate)
 	})
 }

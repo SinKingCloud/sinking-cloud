@@ -4,6 +4,7 @@ import (
 	"service-user/app/model"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"gorm.io/gorm"
 )
 
 // Interface 用户仓储接口
@@ -14,7 +15,7 @@ type Interface interface {
 	FindById(id int64) (*model.User, error)
 	FindByIdentifier(identifier string) (*model.User, error)
 	Create(user *model.User) error
-	UpdateById(id int64, data *UpdateUser) error
+	UpdateById(id int64, data *UpdateUser, tx ...*gorm.DB) error
 	Select(where *SelectUser, orderByField string, orderByType string, page int, pageSize int) (list []*User, total int64, err error)
 }
 
