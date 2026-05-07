@@ -5,6 +5,7 @@ import (
 	"errors"
 	"service-user/app/constant"
 	"service-user/app/enum/real_auth_status"
+	"service-user/app/enum/real_auth_type"
 	"service-user/app/enum/user_status"
 	"service-user/app/model"
 	"service-user/app/repository/user"
@@ -135,7 +136,7 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		if !ok {
 			return errors.New("实名类型数据不合法")
 		}
-		if _, ok = real_auth_status.Map()[realAuthType]; !ok {
+		if _, ok = real_auth_type.Map()[realAuthType]; !ok {
 			return errors.New("实名类型数据不合法")
 		}
 		if realAuthType == info.RealAuthType {

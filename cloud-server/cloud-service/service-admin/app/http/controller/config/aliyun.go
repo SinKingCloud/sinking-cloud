@@ -14,5 +14,6 @@ func (s Controller) Aliyun(c *context.Context) {
 		constant.AliSmsTemplate,
 		constant.AliSmsVar,
 		constant.AliMailAccount,
+		constant.AliFaceScene,
 	})
 }
