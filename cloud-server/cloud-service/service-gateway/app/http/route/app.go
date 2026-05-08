@@ -2,6 +2,7 @@ package route
 
 import (
 	"service-gateway/app/http/controller"
+	"service-gateway/public"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
@@ -21,8 +22,11 @@ func loadMiddleware(s *sinking_web.Engine) {
 
 // loadApi api路由
 func loadApi(s *sinking_web.Engine) {
+	s.ANY("/", context.HandleFunc(func(c *context.Context) {
+		c.SetHeader("content-type", "text/html;charset=utf-8;")
+		c.Data(200, public.ReadDistFile("index.html"))
+	}))
 	s.ANY("/info", context.HandleFunc(controller.Info))
 	s.ANY("/enum", context.HandleFunc(controller.Enum))
 	s.ANY("/*", context.HandleFunc(controller.Gateway))
-	s.ANY("/", context.HandleFunc(controller.Gateway))
 }
