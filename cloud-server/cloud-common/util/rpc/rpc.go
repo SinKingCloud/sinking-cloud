@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
@@ -14,7 +15,7 @@ var rpcRequestPath = strings.ToLower(constant.RpcRequestPath)
 // RegisterHandle 挂载RPC处理器到HTTP引擎
 func RegisterHandle(engine *sinking_web.Engine) {
 	engine.ANY(rpcRequestPath, func(c *sinking_web.Context) {
-		c.StatusCode = 200
+		c.StatusCode = http.StatusOK
 		global.App.Consul.RpcHandle().ServeHTTP(c.Writer, c.Request)
 	})
 }

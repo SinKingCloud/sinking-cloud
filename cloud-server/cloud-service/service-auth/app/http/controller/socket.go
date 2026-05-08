@@ -9,7 +9,7 @@ import (
 func Socket(c *context.Context) {
 	u, err := service.User.GetJwtUserInfo(c)
 	if err != nil {
-		c.Error(err)
+		c.Error(err.Error())
 		return
 	}
 	if u.Id <= 0 || u.Token == "" {

@@ -27,7 +27,7 @@ func Mail(c *context.Context) {
 	if form.Mail == "" {
 		u, err := service2.User.GetJwtUserInfo(c)
 		if err != nil {
-			c.Error(err)
+			c.Error(err.Error())
 			return
 		}
 		if form.IsAdmin {

@@ -27,7 +27,7 @@ func Sms(c *context.Context) {
 	if form.Phone == "" {
 		u, err := service2.User.GetJwtUserInfo(c)
 		if err != nil {
-			c.Error(err)
+			c.Error(err.Error())
 			return
 		}
 		if form.IsAdmin {

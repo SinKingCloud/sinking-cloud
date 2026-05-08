@@ -28,9 +28,6 @@ func Gateway(c *context.Context) {
 		c.Abort()
 		return
 	}
-	if serviceName == constant.ServiceUser {
-		targetPath = constant.ServiceUser + "/" + targetPath
-	}
 	clientIp := c.ClientIP(true)
 	if clientIp == "" {
 		clientIp = c.ClientIP(false)
@@ -49,8 +46,9 @@ func Gateway(c *context.Context) {
 	} else {
 		url = "http://" + address
 	}
+	c.StatusCode = http.StatusOK
 	err = c.Proxy(url, nil, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
-		r.URL.Path, r.URL.RawPath, r.RequestURI = targetPath, targetPath, targetPath
+		r.URL.Path = targetPath
 		r.Header.Set("X-Forwarded-For", clientIp)
 		r.Header.Set("X-Real-Ip", clientIp)
 		r.Header.Set("X-Forwarded-Host", r.Host)

@@ -14,14 +14,16 @@ import (
 
 // Server HTTP服务器
 type Server struct {
-	addr        string
-	debug       bool
-	engine      *sinking_web.Engine
-	server      *http.Server
-	running     bool
-	mutex       sync.RWMutex
-	handlers    []func(engine *sinking_web.Engine)
-	errorHandle *sinking_web.ErrorHandel
+	addr         string
+	debug        bool
+	engine       *sinking_web.Engine
+	server       *http.Server
+	running      bool
+	mutex        sync.RWMutex
+	handlers     []func(engine *sinking_web.Engine)
+	beforeHandle func(w http.ResponseWriter, r *http.Request) bool
+	afterHandle  func(w http.ResponseWriter, r *http.Request)
+	errorHandle  *sinking_web.ErrorHandel
 }
 
 // NewServer 创建新的HTTP服务器实例
@@ -74,6 +76,22 @@ func (s *Server) Handle(handler func(engine *sinking_web.Engine)) *Server {
 	return s
 }
 
+// BeforeHandle 设置HTTP请求前置处理器，返回false时不再进入路由引擎
+func (s *Server) BeforeHandle(handler func(w http.ResponseWriter, r *http.Request) bool) *Server {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	s.beforeHandle = handler
+	return s
+}
+
+// AfterHandle 设置HTTP请求后置处理器，路由引擎处理完成后执行
+func (s *Server) AfterHandle(handler func(w http.ResponseWriter, r *http.Request)) *Server {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	s.afterHandle = handler
+	return s
+}
+
 // ErrorHandle 设置错误处理回调
 func (s *Server) ErrorHandle(handle *sinking_web.ErrorHandel) *Server {
 	s.errorHandle = handle
@@ -92,8 +110,16 @@ func (s *Server) Start() error {
 		s.addr = ":5678"
 	}
 	s.server = &http.Server{
-		Addr:    s.addr,
-		Handler: s.engine,
+		Addr: s.addr,
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if s.beforeHandle != nil && !s.beforeHandle(w, r) {
+				return
+			}
+			s.engine.ServeHTTP(w, r)
+			if s.afterHandle != nil {
+				s.afterHandle(w, r)
+			}
+		}),
 	}
 	s.running = true
 	go func() {
