@@ -21,7 +21,7 @@ func Init() {
 	host, port := global.App.ServerAddr()
 	addr := host + ":" + strconv.Itoa(port)
 	r := http.NewServer(addr, global.App.IsDebug()).
-		BeforeHandle(func(w http2.ResponseWriter, r *http2.Request) bool {
+		BeforeHandle(func(r *http2.Request, w http2.ResponseWriter) bool {
 			originService := r.Header.Get(constant2.RpcOriginService)
 			if originService == constant2.ServiceGateway {
 				r.URL.Path = constant2.ServiceUser + "/" + r.URL.Path

@@ -24,7 +24,7 @@ func Proxy(c *context.Context) {
 	if !c.GetBool(constant2.NeedProxy) {
 		return
 	}
-	parts := strings.SplitN(strings.TrimPrefix(c.Request.URL.Path, "/"), "/", 2)
+	parts := strings.SplitN(strings.TrimPrefix(c.Request.URL.Path, "/"+constant.ServiceUser+"/"), "/", 2)
 	var serviceName, targetPath string
 	switch len(parts) {
 	case 1:

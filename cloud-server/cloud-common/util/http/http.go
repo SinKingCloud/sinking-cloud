@@ -21,8 +21,8 @@ type Server struct {
 	running      bool
 	mutex        sync.RWMutex
 	handlers     []func(engine *sinking_web.Engine)
-	beforeHandle func(w http.ResponseWriter, r *http.Request) bool
-	afterHandle  func(w http.ResponseWriter, r *http.Request)
+	beforeHandle func(r *http.Request, w http.ResponseWriter) bool
+	afterHandle  func(r *http.Request, w http.ResponseWriter)
 	errorHandle  *sinking_web.ErrorHandel
 }
 
@@ -77,7 +77,7 @@ func (s *Server) Handle(handler func(engine *sinking_web.Engine)) *Server {
 }
 
 // BeforeHandle 设置HTTP请求前置处理器，返回false时不再进入路由引擎
-func (s *Server) BeforeHandle(handler func(w http.ResponseWriter, r *http.Request) bool) *Server {
+func (s *Server) BeforeHandle(handler func(r *http.Request, w http.ResponseWriter) bool) *Server {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	s.beforeHandle = handler
@@ -85,7 +85,7 @@ func (s *Server) BeforeHandle(handler func(w http.ResponseWriter, r *http.Reques
 }
 
 // AfterHandle 设置HTTP请求后置处理器，路由引擎处理完成后执行
-func (s *Server) AfterHandle(handler func(w http.ResponseWriter, r *http.Request)) *Server {
+func (s *Server) AfterHandle(handler func(r *http.Request, w http.ResponseWriter)) *Server {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	s.afterHandle = handler
@@ -112,12 +112,12 @@ func (s *Server) Start() error {
 	s.server = &http.Server{
 		Addr: s.addr,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if s.beforeHandle != nil && !s.beforeHandle(w, r) {
+			if s.beforeHandle != nil && !s.beforeHandle(r, w) {
 				return
 			}
 			s.engine.ServeHTTP(w, r)
 			if s.afterHandle != nil {
-				s.afterHandle(w, r)
+				s.afterHandle(r, w)
 			}
 		}),
 	}
