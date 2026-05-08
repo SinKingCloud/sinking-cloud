@@ -2,6 +2,7 @@ package route
 
 import (
 	"service-admin/app/http/controller"
+	"service-admin/app/http/middleware"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
@@ -11,6 +12,8 @@ import (
 // loadAdmin 加载API
 func loadAdmin(s *sinking_web.Engine) {
 	g := service.Auth.GetAdminRouteGroup(s)
+	g.Use(context.HandleFunc(middleware.CheckLogin), context.HandleFunc(middleware.Rbac))
+
 	page := g.Group("/page")
 	{
 		page.ANY("/menu", context.HandleFunc(controller.Page.Menu))       //菜单列表

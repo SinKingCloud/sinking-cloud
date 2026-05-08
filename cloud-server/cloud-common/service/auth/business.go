@@ -153,12 +153,7 @@ func (srv *Service) LoadAdminRouteWithRegister(g *sinking_web.RouterGroup, handl
 
 // GetUserRouteGroup 获取用户路由group
 func (*Service) GetUserRouteGroup(s *sinking_web.Engine) *sinking_web.RouterGroup {
-	var g *sinking_web.RouterGroup
-	if global.App.Consul.GetName() == constant.ServiceUser {
-		g = s.Group("/")
-	} else {
-		g = s.Group("/" + constant.ServiceUser)
-		g.Use(context.HandleFunc(middleware.CheckLogin))
-	}
+	g := s.Group("/" + constant.ServiceUser)
+	g.Use(context.HandleFunc(middleware.CheckLogin))
 	return g
 }

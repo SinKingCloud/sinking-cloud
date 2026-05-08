@@ -2,6 +2,7 @@ package route
 
 import (
 	"service-user/app/http/controller"
+	"service-user/app/http/middleware"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
@@ -11,6 +12,8 @@ import (
 // loadUser 加载user
 func loadUser(s *sinking_web.Engine) {
 	g := service.Auth.GetUserRouteGroup(s)
+	g.Use(context.HandleFunc(middleware.CheckLogin), context.HandleFunc(middleware.Proxy))
+
 	person := g.Group("/person")
 	{
 		person.ANY("/info", context.HandleFunc(controller.User.Person.Info))     //个人信息
