@@ -49,9 +49,9 @@ func Gateway(c *context.Context) {
 	c.StatusCode = http.StatusOK
 	err = c.Proxy(url, nil, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
 		r.URL.Path = targetPath
-		r.Header.Set("X-Forwarded-For", clientIp)
-		r.Header.Set("X-Real-Ip", clientIp)
-		r.Header.Set("X-Forwarded-Host", r.Host)
+		r.Header.Set(constant.XForwardedFor, clientIp)
+		r.Header.Set(constant.XRealIp, clientIp)
+		r.Header.Set(constant.XForwardedHost, r.Host)
 		r.Header.Set(constant.RpcTokenName, global.App.Config.GetString(constant.ConsulToken))
 		r.Header.Set(constant.RpcOriginService, constant.ServiceGateway)
 		r.Header.Set(constant.RpcOriginAddress, global.App.Consul.GetAddress())
