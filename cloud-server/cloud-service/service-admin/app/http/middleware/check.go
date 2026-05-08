@@ -6,6 +6,7 @@ import (
 
 	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/jwt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 )
 
@@ -16,11 +17,16 @@ func CheckLogin(c *context.Context) {
 		c.Next()
 		return
 	}
-	u, err := service2.User.GetJwtUserInfo(c)
-	if err != nil {
-		c.NotLogin("登陆超时,请重新登陆")
-		c.Abort()
-		return
+	var u *jwt.User
+	var err error
+	u = c.GetUserInfo()
+	if u == nil || u.Id <= 0 {
+		u, err = service2.User.GetJwtUserInfo(c)
+		if err != nil {
+			c.NotLogin("登陆超时,请重新登陆")
+			c.Abort()
+			return
+		}
 	}
 	session := service.Auth.GetSessionInfo(u.Token)
 	if session == nil {
