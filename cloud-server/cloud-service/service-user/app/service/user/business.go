@@ -397,15 +397,16 @@ func (s *service) InitRealAuth(userId int64, authType int, cardName, cardNo, com
 	}
 	scene := strings.TrimSpace(aliConfig[commonConstant.AliFaceScene])
 	if scene == "" {
-		return "", "", errors.New("阿里云实名认证场景ID未配置")
+		return "", "", errors.New("实名认证场景ID未配置")
 	}
 	sceneId, err := strconv.ParseInt(scene, 10, 64)
 	if err != nil || sceneId <= 0 {
-		return "", "", errors.New("阿里云实名认证场景ID配置不合法")
+		return "", "", errors.New("实名认证场景ID配置不合法")
 	}
 	webConfig := s.config.GetSystemConfig(commonConstant.WebGroup, false)
 	returnUrl := strings.TrimRight(strings.TrimSpace(webConfig[commonConstant.WebUrl]), "/")
 	callbackUrl := strings.TrimRight(strings.TrimSpace(webConfig[commonConstant.WebApi]), "/")
+	//处理回调:增加一个safe path路由x.com/user/xxxxxxxx/
 	outerOrderNo := strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10)
 	result, err := ali.Face.Init(sceneId, outerOrderNo, cardNo, cardName, returnUrl, callbackUrl, env)
 	if err != nil {
@@ -458,7 +459,7 @@ func (s *service) VerifyRealAuth(userId int64, certifyId string) (*RealAuthInfo,
 	}
 	if authInfo != nil && authInfo.Status == real_auth_status.Authed {
 		if userInfo.RealAuthStatus != real_auth_status.Authed {
-			if err := s.repositoryUser.UpdateById(userId, &user.UpdateUser{
+			if err = s.repositoryUser.UpdateById(userId, &user.UpdateUser{
 				RealAuthType:   authInfo.Type,
 				RealAuthStatus: real_auth_status.Authed,
 			}); err != nil {

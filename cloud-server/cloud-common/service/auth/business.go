@@ -110,13 +110,8 @@ func (*Service) GenWebUserSocketToken(sessionToken string) (token string, err er
 
 // GetAdminRouteGroup 获取后台路由group
 func (*Service) GetAdminRouteGroup(s *sinking_web.Engine) *sinking_web.RouterGroup {
-	var g *sinking_web.RouterGroup
-	if global.App.Consul.GetName() == constant.ServiceAdmin {
-		g = s.Group("/")
-	} else {
-		g = s.Group("/" + constant.ServiceAdmin)
-		g.Use(context.HandleFunc(middleware.CheckLogin))
-	}
+	g := s.Group("/" + constant.ServiceAdmin)
+	g.Use(context.HandleFunc(middleware.CheckLogin))
 	return g
 }
 

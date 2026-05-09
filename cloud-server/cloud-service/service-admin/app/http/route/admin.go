@@ -12,7 +12,7 @@ import (
 // loadAdmin 加载API
 func loadAdmin(s *sinking_web.Engine) {
 	g := service.Auth.GetAdminRouteGroup(s)
-	g.Use(context.HandleFunc(middleware.CheckLogin), context.HandleFunc(middleware.Rbac))
+	g.Use(context.HandleFunc(middleware.CheckLogin), context.HandleFunc(middleware.Rbac), context.HandleFunc(middleware.Proxy))
 
 	page := g.Group("/page")
 	{

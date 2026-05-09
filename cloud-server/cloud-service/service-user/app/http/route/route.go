@@ -1,14 +1,12 @@
 package route
 
 import (
-	http2 "net/http"
 	"os"
 	"os/signal"
 	"service-user/app/constant"
 	"strconv"
 	"syscall"
 
-	constant2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/middleware"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
@@ -21,13 +19,6 @@ func Init() {
 	host, port := global.App.ServerAddr()
 	addr := host + ":" + strconv.Itoa(port)
 	r := http.NewServer(addr, global.App.IsDebug()).
-		BeforeHandle(func(r *http2.Request, w http2.ResponseWriter) bool {
-			originService := r.Header.Get(constant2.RpcOriginService)
-			if originService == constant2.ServiceGateway {
-				r.URL.Path = constant2.ServiceUser + "/" + r.URL.Path
-			}
-			return true
-		}).
 		Handle(func(engine *sinking_web.Engine) {
 			engine.Use(context.HandleFunc(middleware.InterceptIllegalRequest))
 			loadApp(engine)

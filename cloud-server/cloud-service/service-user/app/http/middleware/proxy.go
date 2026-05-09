@@ -15,10 +15,12 @@ import (
 
 // Proxy 转发到子服务
 func Proxy(c *context.Context) {
+	//执行控制器
 	c.Next()
 	if !c.GetBool(constant2.NeedProxy) {
 		return
 	}
+	//执行反向代理
 	parts := strings.SplitN(strings.TrimPrefix(c.Request.URL.Path, "/"+constant.ServiceUser+"/"), "/", 2)
 	var serviceName, targetPath string
 	switch len(parts) {

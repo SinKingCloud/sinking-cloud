@@ -37,13 +37,14 @@ func InterceptIllegalRequest(c *context.Context) {
 	var firstPath string
 	n := len(parts)
 	if n > 0 {
-		if localService == constant.ServiceUser {
+		if localService == constant.ServiceUser || localService == constant.ServiceAdmin {
 			if n >= 2 {
-				firstPath += strings.ToLower(parts[1])
+				firstPath += parts[1]
 			}
 		} else {
-			firstPath += strings.ToLower(parts[0])
+			firstPath += parts[0]
 		}
+		firstPath = strings.Trim(firstPath, "/")
 	}
 	//如果是用户服务和后台服务请求自身或者网关则禁止
 	if (localService == constant.ServiceUser || localService == constant.ServiceAdmin) && (firstPath == localService || firstPath == constant.ServiceGateway) {
