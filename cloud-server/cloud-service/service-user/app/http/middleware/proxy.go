@@ -10,18 +10,24 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/client"
 )
 
 // Proxy 转发到子服务
 func Proxy(c *context.Context) {
+	//RPC放行
+	if rpc.IsRpcPath(c.Request.URL.Path) || strings.HasPrefix(c.Request.URL.Path, "/"+constant.ServiceAdmin) {
+		c.Next()
+		return
+	}
 	//执行控制器
 	c.Next()
 	if !c.GetBool(constant2.NeedProxy) {
 		return
 	}
 	//执行反向代理
-	parts := strings.SplitN(strings.TrimPrefix(c.Request.URL.Path, "/"+constant.ServiceUser+"/"), "/", 2)
+	parts := strings.SplitN(strings.TrimPrefix(c.Request.URL.Path, "/"), "/", 2)
 	var serviceName, targetPath string
 	switch len(parts) {
 	case 1:
@@ -43,7 +49,8 @@ func Proxy(c *context.Context) {
 		c.Abort()
 		return
 	}
-	var url string
+	var url, tempPath string
+	tempPath = c.Request.URL.Path
 	if strings.ToLower(c.Request.Header.Get("Connection")) == "upgrade" && strings.ToLower(c.Request.Header.Get("Upgrade")) == "websocket" {
 		url = "ws://" + node.Address
 	} else {
@@ -55,4 +62,5 @@ func Proxy(c *context.Context) {
 		r.Header.Set(constant.RpcOriginService, constant.ServiceUser)
 		r.Header.Set(constant.RpcOriginAddress, global.App.Consul.GetAddress())
 	}, nil)
+	c.Request.URL.Path = tempPath
 }

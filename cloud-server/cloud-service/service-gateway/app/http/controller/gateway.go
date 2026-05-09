@@ -28,9 +28,6 @@ func Gateway(c *context.Context) {
 		c.Abort()
 		return
 	}
-	if serviceName == constant.ServiceUser || serviceName == constant.ServiceAdmin {
-		targetPath = serviceName + "/" + targetPath
-	}
 	clientIp := c.ClientIP(true)
 	if clientIp == "" {
 		clientIp = c.ClientIP(false)

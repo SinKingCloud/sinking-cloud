@@ -35,16 +35,8 @@ func InterceptIllegalRequest(c *context.Context) {
 	//获取第一个请求路径
 	parts := strings.SplitN(strings.TrimPrefix(c.Request.URL.Path, "/"), "/", 2)
 	var firstPath string
-	n := len(parts)
-	if n > 0 {
-		if localService == constant.ServiceUser || localService == constant.ServiceAdmin {
-			if n >= 2 {
-				firstPath += parts[1]
-			}
-		} else {
-			firstPath += parts[0]
-		}
-		firstPath = strings.Trim(firstPath, "/")
+	if len(parts) > 0 {
+		firstPath = strings.Trim(parts[0], "/")
 	}
 	//如果是用户服务和后台服务请求自身或者网关则禁止
 	if (localService == constant.ServiceUser || localService == constant.ServiceAdmin) && (firstPath == localService || firstPath == constant.ServiceGateway) {
