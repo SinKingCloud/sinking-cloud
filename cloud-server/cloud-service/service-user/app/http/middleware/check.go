@@ -3,22 +3,14 @@ package middleware
 import (
 	"service-user/app/enum/user_status"
 	"service-user/app/service"
-	"strings"
 
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/jwt"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 )
 
 // CheckLogin 判断是否登陆
 func CheckLogin(c *context.Context) {
-	//RPC放行
-	if rpc.IsRpcPath(c.Request.URL.Path) || strings.HasPrefix(c.Request.URL.Path, "/"+constant.ServiceAdmin) {
-		c.Next()
-		return
-	}
 	var u *jwt.User
 	var err error
 	u = c.GetUserInfo()
