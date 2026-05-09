@@ -29,11 +29,8 @@ func loadMiddleware(s *sinking_web.Engine) {
 			return
 		}
 		middleware.CheckLogin(c)
-	}), context.HandleFunc(func(c *context.Context) {
-		if checkWhitePath(c.Request.URL.Path) {
-			c.Next()
-			return
+		if !c.IsAborted() {
+			middleware.Proxy(c)
 		}
-		middleware.Proxy(c)
 	}))
 }
