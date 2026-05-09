@@ -33,5 +33,7 @@ type realAuthProcess struct {
 	CertifyId    string `json:"certify_id"`
 	CertifyUrl   string `json:"certify_url"`
 	SceneId      int64  `json:"scene_id"`
+	AccessKey    string `json:"access_key"`
+	AccessSecret string `json:"access_secret"`
 	OuterOrderNo string `json:"outer_order_no"`
 }

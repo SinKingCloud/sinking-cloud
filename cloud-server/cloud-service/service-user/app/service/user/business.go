@@ -406,7 +406,10 @@ func (s *service) InitRealAuth(userId int64, authType int, cardName, cardNo, com
 	webConfig := s.config.GetSystemConfig(commonConstant.WebGroup, false)
 	returnUrl := strings.TrimRight(strings.TrimSpace(webConfig[commonConstant.WebUrl]), "/")
 	callbackUrl := strings.TrimRight(strings.TrimSpace(webConfig[commonConstant.WebApi]), "/")
-	//处理回调:增加一个safe path路由x.com/user/xxxxxxxx/
+	callbackUrl = strings.TrimPrefix(callbackUrl, "http://")
+	if !strings.HasPrefix(callbackUrl, "https://") {
+		callbackUrl = "https://" + callbackUrl
+	}
 	outerOrderNo := strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10)
 	result, err := ali.Face.Init(sceneId, outerOrderNo, cardNo, cardName, returnUrl, callbackUrl, env)
 	if err != nil {
@@ -422,6 +425,8 @@ func (s *service) InitRealAuth(userId int64, authType int, cardName, cardNo, com
 		CertifyId:    result.CertifyId,
 		CertifyUrl:   result.CertifyUrl,
 		SceneId:      sceneId,
+		AccessKey:    key,
+		AccessSecret: secret,
 		OuterOrderNo: outerOrderNo,
 	}
 	processData, err := json.Marshal(process)
@@ -435,14 +440,26 @@ func (s *service) InitRealAuth(userId int64, authType int, cardName, cardNo, com
 }
 
 // VerifyRealAuth 查询实名认证状态，认证通过后写入实名记录。
-func (s *service) VerifyRealAuth(userId int64, certifyId string) (*RealAuthInfo, error) {
-	if userId <= 0 {
-		return nil, errors.New("用户ID不能为空")
-	}
+func (s *service) VerifyRealAuth(certifyId string) (*RealAuthInfo, error) {
 	certifyId = strings.TrimSpace(certifyId)
 	if certifyId == "" {
 		return nil, errors.New("认证ID不能为空")
 	}
+	cacheKey := constant.CacheNameWithRealAuthProcess + certifyId
+	data, exists := s.cache.Get(cacheKey)
+	if !exists || data == "" {
+		return nil, errors.New("未查询到实名认证流程,请重新发起认证")
+	}
+	var process realAuthProcess
+	if err := json.Unmarshal([]byte(data), &process); err != nil {
+		s.cache.Delete(cacheKey)
+		return nil, errors.New("未查询到实名认证流程,请重新发起认证")
+	}
+	if process.UserId <= 0 || process.SceneId <= 0 || process.AccessKey == "" || process.AccessSecret == "" {
+		s.cache.Delete(cacheKey)
+		return nil, errors.New("未查询到实名认证流程,请重新发起认证")
+	}
+	userId := process.UserId
 	lockKey := constant.LockRealAuth + strconv.FormatInt(userId, 10)
 	if !s.cache.Lock(lockKey, constant.LockTimeRealAuth) {
 		return nil, errors.New("系统繁忙,请稍候重试")
@@ -469,42 +486,16 @@ func (s *service) VerifyRealAuth(userId int64, certifyId string) (*RealAuthInfo,
 		s.cache.Delete(
 			constant.CacheNameWithUserInfo+strconv.FormatInt(userId, 10),
 			constant.CacheNameWithRealAuthInfo+strconv.FormatInt(userId, 10),
-			constant.CacheNameWithRealAuthProcess+certifyId,
+			cacheKey,
 		)
 		return s.GetRealAuthInfo(userId, true)
 	}
-	cacheKey := constant.CacheNameWithRealAuthProcess + certifyId
-	data, exists := s.cache.Get(cacheKey)
-	if !exists || data == "" {
-		return nil, errors.New("未查询到实名认证流程,请重新发起认证")
-	}
-	var process realAuthProcess
-	if err = json.Unmarshal([]byte(data), &process); err != nil {
-		s.cache.Delete(cacheKey)
-		return nil, errors.New("未查询到实名认证流程,请重新发起认证")
-	}
-	if process.CertifyId != certifyId || process.SceneId <= 0 {
-		s.cache.Delete(cacheKey)
-		return nil, errors.New("未查询到实名认证流程,请重新发起认证")
-	}
-	if process.UserId != userId {
-		return nil, errors.New("认证ID不属于当前用户")
-	}
-	aliConfig := s.config.GetSystemConfig(commonConstant.AliGroup, false)
-	key := strings.TrimSpace(aliConfig[commonConstant.AliKey])
-	secret := strings.TrimSpace(aliConfig[commonConstant.AliSecret])
-	if key == "" || secret == "" {
-		return nil, errors.New("阿里云配置不完整")
-	}
-	ali, err := aliyun.New(key, secret)
+	ali, err := aliyun.New(process.AccessKey, process.AccessSecret)
 	if err != nil {
 		return nil, err
 	}
 	result, err := ali.Face.Query(process.CertifyId, process.SceneId)
 	if err != nil {
-		if result != nil && !result.Passed && result.Reason != "" {
-			s.cache.Delete(constant.CacheNameWithRealAuthProcess + certifyId)
-		}
 		return nil, err
 	}
 	if result == nil || !result.Passed {
@@ -519,7 +510,6 @@ func (s *service) VerifyRealAuth(userId int64, certifyId string) (*RealAuthInfo,
 	if err != nil {
 		return nil, errors.Join(errors.New("生成实名资料失败"), err)
 	}
-	now := str.DateTime(time.Now())
 	err = s.database.Transaction(func(tx *gorm.DB) error {
 		authInfo, err = s.repositoryRealAuth.FindOrCreateByUserId(userId, tx)
 		if err != nil {
@@ -539,7 +529,7 @@ func (s *service) VerifyRealAuth(userId int64, certifyId string) (*RealAuthInfo,
 			CardNo:      process.CardNo,
 			Files:       string(filesData),
 			Status:      real_auth_status.Authed,
-			AuthTime:    now,
+			AuthTime:    str.DateTime(time.Now()),
 		}, tx); err != nil {
 			return errors.Join(errors.New("更新实名记录失败"), err)
 		}
@@ -557,7 +547,7 @@ func (s *service) VerifyRealAuth(userId int64, certifyId string) (*RealAuthInfo,
 	s.cache.Delete(
 		constant.CacheNameWithUserInfo+strconv.FormatInt(userId, 10),
 		constant.CacheNameWithRealAuthInfo+strconv.FormatInt(userId, 10),
-		constant.CacheNameWithRealAuthProcess+certifyId,
+		cacheKey,
 	)
 	return s.GetRealAuthInfo(userId, true)
 }

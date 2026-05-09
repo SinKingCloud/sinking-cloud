@@ -68,7 +68,7 @@ func (Controller) Certificate(c *context.Context) {
 			"url": certifyUrl,
 		})
 	case "verify":
-		info, err := service.User.VerifyRealAuth(userId, form.Id)
+		info, err := service.User.VerifyRealAuth(form.Id)
 		if err != nil {
 			c.Error(err.Error())
 			return
