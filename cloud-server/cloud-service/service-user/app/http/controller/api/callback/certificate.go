@@ -9,7 +9,7 @@ import (
 // Certificate 实名回调
 func (Controller) Certificate(c *context.Context) {
 	var form struct {
-		CertifyId string `json:"certifyId" default:"" validate:"omitempty" label:"认证ID"`
+		CertifyId string `json:"certifyId" default:"" validate:"required" label:"认证ID"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
