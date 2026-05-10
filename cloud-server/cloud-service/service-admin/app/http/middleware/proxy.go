@@ -10,11 +10,22 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/client"
 )
 
 // Proxy 转发到子服务
 func Proxy(c *context.Context) {
+	if rpc.IsRpcPath(c.Request.URL.Path) {
+		c.Next()
+		return
+	}
+	originService := c.Request.Header.Get(constant.RpcOriginService)
+	if originService != constant.ServiceGateway {
+		c.Error("请求资源不存在")
+		c.Abort()
+		return
+	}
 	//执行控制器
 	c.Next()
 	if !c.GetBool(constant2.NeedProxy) {

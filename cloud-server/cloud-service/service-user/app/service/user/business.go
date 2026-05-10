@@ -405,11 +405,11 @@ func (s *service) InitRealAuth(userId int64, authType int, cardName, cardNo, com
 	}
 	webConfig := s.config.GetSystemConfig(commonConstant.WebGroup, false)
 	returnUrl := strings.TrimRight(strings.TrimSpace(webConfig[commonConstant.WebUrl]), "/")
-	callbackUrl := strings.TrimRight(strings.TrimSpace(webConfig[commonConstant.WebApi]), "/")
-	callbackUrl = strings.TrimPrefix(callbackUrl, "http://")
+	callbackUrl := strings.TrimPrefix(strings.TrimRight(strings.TrimSpace(webConfig[commonConstant.WebApi]), "/"), "http://")
 	if !strings.HasPrefix(callbackUrl, "https://") {
 		callbackUrl = "https://" + callbackUrl
 	}
+	callbackUrl += "/api/callback/certificate"
 	outerOrderNo := strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10)
 	result, err := ali.Face.Init(sceneId, outerOrderNo, cardNo, cardName, returnUrl, callbackUrl, env)
 	if err != nil {

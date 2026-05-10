@@ -7,10 +7,15 @@ import (
 	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/jwt"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 )
 
 // CheckLogin 判断是否登陆
 func CheckLogin(c *context.Context) {
+	if rpc.IsRpcPath(c.Request.URL.Path) {
+		c.Next()
+		return
+	}
 	var u *jwt.User
 	var err error
 	u = c.GetUserInfo()

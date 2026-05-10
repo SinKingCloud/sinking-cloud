@@ -5,8 +5,6 @@ import (
 	"net/http/httputil"
 	"strings"
 
-	constant2 "service-user/app/constant"
-
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/global"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
@@ -15,9 +13,10 @@ import (
 
 // Proxy 转发到子服务
 func Proxy(c *context.Context) {
-	//执行控制器
-	c.Next()
-	if !c.GetBool(constant2.NeedProxy) {
+	originService := c.Request.Header.Get(constant.RpcOriginService)
+	if originService != constant.ServiceGateway {
+		c.Error("请求资源不存在")
+		c.Abort()
 		return
 	}
 	//执行反向代理
@@ -32,7 +31,7 @@ func Proxy(c *context.Context) {
 	}
 	serviceName = strings.ToLower(serviceName)
 	targetPath = "/" + constant.ServiceUser + targetPath
-	if serviceName == "" || serviceName == constant.ServiceUser {
+	if serviceName == "" || serviceName == constant.ServiceUser || serviceName == constant.ServiceAdmin {
 		c.Error("请求资源不存在")
 		c.Abort()
 		return
