@@ -5,6 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/config"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/cron"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/enum"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/pay"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/socket"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user"
 )
@@ -16,4 +17,5 @@ var (
 	User   = user.GetIns()
 	Socket = socket.GetIns()
 	Cron   = cron.GetIns()
+	Pay    = pay.GetIns()
 )

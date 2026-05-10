@@ -168,7 +168,7 @@ func (s *service) checkEnumValue(value string, data map[int]string, name string)
 }
 
 // Create 创建订单
-func (s *service) Create(userId int64, name string, Type int, payType string, amount float64, param interface{}, callbackRpcService string, callbackRpcFunc string, describe string) (string, error) {
+func (s *service) Create(userId int64, name string, Type int, payType string, amount float64, param string, callbackRpcService string, callbackRpcFunc string, describe string) (string, error) {
 	if userId <= 0 {
 		return "", errors.New("用户ID错误")
 	}
@@ -197,8 +197,8 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 		RpcService: callbackRpcService,
 		RpcFunc:    callbackRpcFunc,
 	}
-	if param != nil {
-		extra.Param, _ = json.Marshal(param)
+	if param != "" {
+		extra.Param = param
 	}
 	extraBytes, err := json.Marshal(extra)
 	if err != nil {
