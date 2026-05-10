@@ -13,6 +13,6 @@ func loadApi(s *sinking_web.Engine) {
 
 	callback := g.Group("/callback")
 	{
-		callback.ANY("/certificate", context.HandleFunc(controller.Api.Callback.Certificate))
+		callback.ANY("/certificate", context.HandleFunc(controller.Api.Callback.Certificate)) //实名认证回调
 	}
 }
