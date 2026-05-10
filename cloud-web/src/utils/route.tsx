@@ -126,6 +126,9 @@ export function getParentList(data: any[], name: string): any[] {
     if (!name) {
         return [];
     }
+    if (!data || data.length <= 0) {
+        return [];
+    }
     if (parentCache?.[name] != undefined) {
         return parentCache[name];
     }
@@ -156,8 +159,11 @@ export function getParentList(data: any[], name: string): any[] {
     }
 
     findParent(data, name);
-    parentCache[name] = parents.reverse()
-    return parentCache[name];
+    parents = parents.reverse()
+    if (parents.length > 0) {
+        parentCache[name] = parents
+    }
+    return parents;
 }
 
 /**
