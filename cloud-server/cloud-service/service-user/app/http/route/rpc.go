@@ -21,4 +21,5 @@ func loadRpc(s *sinking_web.Engine) {
 	rpc.RegisterFunc("GenSocketToken", rpc2.Socket.GenToken)                                  //生成socket连接token
 	rpc.RegisterFunc("Login", rpc2.Auth.Login)                                                //账号登录
 	rpc.RegisterFunc("Logout", rpc2.Auth.Logout)                                              //登陆注销
+	rpc.RegisterFunc("ClearExpireSessions", rpc2.Auth.ClearExpireSessions)                    //清理过期会话
 }

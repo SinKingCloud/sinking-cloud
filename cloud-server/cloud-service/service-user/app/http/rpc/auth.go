@@ -35,3 +35,11 @@ func (*authService) Logout(params json.RawMessage) (interface{}, error) {
 	}
 	return true, nil
 }
+
+// ClearExpireSessions 清理过期会话
+func (*authService) ClearExpireSessions(_ json.RawMessage) (interface{}, error) {
+	if err := service.Auth.ClearExpireSessions(); err != nil {
+		return false, err
+	}
+	return true, nil
+}
