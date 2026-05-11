@@ -8,6 +8,7 @@ import (
 	"service-cron/app/enum/task_status"
 	"service-cron/app/enum/task_type"
 	"service-cron/app/model"
+	"service-cron/app/queue/register"
 	"service-cron/app/queue/reload"
 	"service-cron/app/queue/task"
 	repositoryTask "service-cron/app/repository/task"
@@ -295,8 +296,28 @@ func (s *service) ReloadAll() error {
 	return nil
 }
 
-// Register 注册任务
+// Register 发送注册任务消息
 func (s *service) Register(id int64, Type int, name string, spec string, script string, concurrent int, status int) error {
+	if id <= 0 || spec == "" || script == "" {
+		return errors.New("参数错误")
+	}
+	if s.registerQueue == nil {
+		return errors.New("注册任务队列未初始化")
+	}
+	s.registerQueue.SendUnicastTask(&register.Message{
+		Id:         id,
+		Type:       Type,
+		Name:       name,
+		Spec:       spec,
+		Script:     script,
+		Concurrent: concurrent,
+		Status:     status,
+	})
+	return nil
+}
+
+// register 注册任务
+func (s *service) register(id int64, Type int, name string, spec string, script string, concurrent int, status int) error {
 	if id <= 0 || spec == "" || script == "" {
 		return errors.New("参数错误")
 	}

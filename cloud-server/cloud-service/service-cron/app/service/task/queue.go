@@ -7,6 +7,7 @@ import (
 	"service-cron/app/enum/task_type"
 	"service-cron/app/model"
 	"service-cron/app/queue/log"
+	"service-cron/app/queue/register"
 	"service-cron/app/queue/reload"
 	"service-cron/app/queue/task"
 	"strconv"
@@ -67,6 +68,18 @@ func (s *service) LogQueueHandle(message *log.Message) error {
 		return errors.New("消息不能为空")
 	}
 	return s.repositoryLog.Create(message.Log)
+}
+
+// RegisterQueueHandle 注册任务handle
+func (s *service) RegisterQueueHandle(message *register.Message) error {
+	if message == nil {
+		return errors.New("注册任务消息不能为空")
+	}
+	err := s.register(message.Id, message.Type, message.Name, message.Spec, message.Script, message.Concurrent, message.Status)
+	if err != nil {
+		s.log(message.Id, "注册任务失败", err.Error())
+	}
+	return err
 }
 
 // ReloadQueueHandle 执行重载handle

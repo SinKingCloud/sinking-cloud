@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"encoding/json"
+	"errors"
 	"service-cron/app/enum/task_concurrent"
 	"service-cron/app/enum/task_status"
 	"service-cron/app/enum/task_type"
@@ -19,6 +20,12 @@ func (*taskService) RegisterRpc(params json.RawMessage) (interface{}, error) {
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return false, err
+	}
+	if param == nil {
+		return false, errors.New("参数错误")
+	}
+	if param.Id <= 0 || param.Name == "" || param.Spec == "" || param.Service == "" || param.Function == "" {
+		return false, errors.New("参数错误")
 	}
 	var concurrent, status int
 	if param.Concurrent {
@@ -44,6 +51,12 @@ func (*taskService) RegisterScript(params json.RawMessage) (interface{}, error) 
 	err := json.Unmarshal(params, &param)
 	if err != nil {
 		return false, err
+	}
+	if param == nil {
+		return false, errors.New("参数错误")
+	}
+	if param.Id <= 0 || param.Name == "" || param.Spec == "" || param.Script == "" {
+		return false, errors.New("参数错误")
 	}
 	var concurrent, status int
 	if param.Concurrent {

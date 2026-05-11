@@ -3,6 +3,7 @@ package task
 import (
 	"service-cron/app/model"
 	log2 "service-cron/app/queue/log"
+	register2 "service-cron/app/queue/register"
 	"service-cron/app/queue/reload"
 	task2 "service-cron/app/queue/task"
 	"service-cron/app/repository/log"
@@ -19,7 +20,7 @@ import (
 
 // Service service接口
 type Service interface {
-	SetQueue(taskQueue *queue.UnicastClient[*task2.Message], reloadQueue *queue.BroadcastClient[*reload.Message], logQueue *queue.UnicastClient[*log2.Message])
+	SetQueue(taskQueue *queue.UnicastClient[*task2.Message], reloadQueue *queue.BroadcastClient[*reload.Message], logQueue *queue.UnicastClient[*log2.Message], registerQueue *queue.UnicastClient[*register2.Message])
 	Start()
 	Close()
 	FindById(id int64, refresh bool) (*model.Task, error)
@@ -32,6 +33,7 @@ type Service interface {
 	TaskQueueHandle(message *task2.Message) error
 	ReloadQueueHandle(message *reload.Message) error
 	LogQueueHandle(message *log2.Message) error
+	RegisterQueueHandle(message *register2.Message) error
 	Register(id int64, Type int, name string, spec string, script string, concurrent int, status int) error
 }
 
@@ -44,6 +46,7 @@ type service struct {
 	taskQueue      *queue.UnicastClient[*task2.Message]
 	logQueue       *queue.UnicastClient[*log2.Message]
 	reloadQueue    *queue.BroadcastClient[*reload.Message]
+	registerQueue  *queue.UnicastClient[*register2.Message]
 	cron           *cron.Cron
 	entries        sync.Map
 	localVersion   atomic.Int64
@@ -55,10 +58,11 @@ type service struct {
 }
 
 // SetQueue 设置队列实例
-func (s *service) SetQueue(taskQueue *queue.UnicastClient[*task2.Message], reloadQueue *queue.BroadcastClient[*reload.Message], logQueue *queue.UnicastClient[*log2.Message]) {
+func (s *service) SetQueue(taskQueue *queue.UnicastClient[*task2.Message], reloadQueue *queue.BroadcastClient[*reload.Message], logQueue *queue.UnicastClient[*log2.Message], registerQueue *queue.UnicastClient[*register2.Message]) {
 	s.taskQueue = taskQueue
 	s.reloadQueue = reloadQueue
 	s.logQueue = logQueue
+	s.registerQueue = registerQueue
 }
 
 // NewService 实例化service
