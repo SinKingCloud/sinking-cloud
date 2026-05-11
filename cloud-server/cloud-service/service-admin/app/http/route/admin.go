@@ -42,9 +42,9 @@ func loadAdmin(s *sinking_web.Engine) {
 		ANY("/menu/list", "菜单列表", controller.Menu.List)
 		ANY("/menu/info", "菜单或控件详情", controller.Menu.Info)
 		ANY("/menu/controls", "查看页面控件列表", controller.Menu.Controls)
-		ANY("/menu/create", "创建列表或控件", controller.Menu.Create)
-		ANY("/menu/update", "修改列表或控件", controller.Menu.Update)
-		ANY("/menu/delete", "删除列表或控件", controller.Menu.Delete)
+		ANY("/menu/create", "创建页面或控件", controller.Menu.Create)
+		ANY("/menu/update", "修改页面或控件", controller.Menu.Update)
+		ANY("/menu/delete", "删除页面或控件", controller.Menu.Delete)
 
 		ANY("/role/list", "角色列表", controller.Role.List)
 		ANY("/role/info", "角色详情", controller.Role.Info)

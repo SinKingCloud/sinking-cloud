@@ -11,9 +11,16 @@ import (
 type orderService struct {
 }
 
-// CleanExpiredUnPayOrder 清理30天前过期未支付订单
-func (*orderService) CleanExpiredUnPayOrder(_ json.RawMessage) (interface{}, error) {
-	return service.Order.CleanExpiredUnPayOrder(30)
+// CleanExpiredUnPayOrder 清理n天前过期未支付订单
+func (*orderService) CleanExpiredUnPayOrder(params json.RawMessage) (interface{}, error) {
+	var param int
+	if err := json.Unmarshal(params, &param); err != nil {
+		param = 0
+	}
+	if param <= 0 {
+		param = 30
+	}
+	return service.Order.CleanExpiredUnPayOrder(param)
 }
 
 // CreateOrder 生成订单
