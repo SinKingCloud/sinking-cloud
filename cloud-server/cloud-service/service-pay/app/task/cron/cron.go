@@ -7,5 +7,5 @@ import (
 
 func Init() {
 	//注册清理任务
-	_ = service.Cron.RegisterRpcTask(1, "清理过期订单", "0 0 * * * *", constant.ServicePay, "CleanExpiredUnPayOrder", false, true)
+	_ = service.Cron.RegisterRpcTask(1, "清理系统过期订单", "0 0 * * * *", constant.ServicePay, "CleanExpiredUnPayOrder", false, true)
 }
