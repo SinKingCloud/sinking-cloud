@@ -30,9 +30,10 @@ func Init() {
 	authService := service.Auth
 	socketService := service.Socket
 	systemConfig := service.Config
+	database := global.App.Database
 
 	Config = config.NewService(configRepository, cache)
-	Auth = auth.NewService(authService, sessionRepository, userRepository, cache)
+	Auth = auth.NewService(authService, sessionRepository, userRepository, database, cache)
 	User = user.NewService(userRepository, realAuthRepository, systemConfig, global.App.Database, cache)
 	Socket = socket.NewService(Auth, sessionRepository, socketService, cache)
 }

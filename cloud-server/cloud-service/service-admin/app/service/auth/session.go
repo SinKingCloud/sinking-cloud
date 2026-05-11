@@ -5,6 +5,8 @@ import (
 	constant2 "service-admin/app/constant"
 	"service-admin/app/model"
 	sessionRepository "service-admin/app/repository/session"
+
+	"gorm.io/gorm"
 )
 
 // SelectSessionByUserId 查询用户会话列表
@@ -31,6 +33,35 @@ func (s *service) LogoutByUserIdAndTokens(userId int64, tokens []string) error {
 	return nil
 }
 
+// ClearExpireSessions 清理过期会话
+func (s *service) ClearExpireSessions() error {
+	tokens := make([]string, 0, 100)
+	err := s.database.Transaction(func(tx *gorm.DB) error {
+		expireSessions, err := s.repositorySession.SelectExpireSessions(tx)
+		if err != nil {
+			return errors.Join(errors.New("查询过期会话失败"), err)
+		}
+		if len(expireSessions) == 0 {
+			return nil
+		}
+		ids := make([]int64, 0, len(expireSessions))
+		for id, token := range expireSessions {
+			ids = append(ids, id)
+			tokens = append(tokens, token)
+		}
+		if err = s.repositorySession.DeleteByIds(ids, tx); err != nil {
+			return errors.Join(errors.New("删除过期会话失败"), err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	s.clearSessionCache(tokens...)
+	return nil
+}
+
+// clearSessionCache 清理会话缓存
 func (s *service) clearSessionCache(tokens ...string) {
 	if len(tokens) == 0 {
 		return

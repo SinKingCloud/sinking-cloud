@@ -13,7 +13,9 @@ type Interface interface {
 	DeleteByToken(token string) error
 	DeleteByUserIdAndTokens(userId int64, tokens []string) error
 	DeleteByUserId(userId int64, tx ...*gorm.DB) error
+	DeleteByIds(ids []int64, tx ...*gorm.DB) error
 	FindByToken(token string) (*model.Session, error)
+	SelectExpireSessions(tx ...*gorm.DB) (map[int64]string, error)
 	Select(where *SelectSession, orderByField string, orderByType string, page int, pageSize int) (list []*model.Session, total int64, err error)
 }
 

@@ -3,6 +3,9 @@ package session
 import (
 	"service-user/app/model"
 	"time"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
+	"gorm.io/gorm"
 )
 
 // Select 查询会话列表
@@ -76,4 +79,35 @@ func (r *Repository) SelectUnExpireTokensByUserIds(userIds []int64) (tokens []st
 		return nil, err
 	}
 	return tokens, nil
+}
+
+// SelectExpireSessions 查询过期会话
+func (r *Repository) SelectExpireSessions(tx ...*gorm.DB) (map[int64]string, error) {
+	type expireSession struct {
+		Id    int64  `gorm:"column:id"`
+		Token string `gorm:"column:token"`
+	}
+
+	list := make([]*expireSession, 0)
+	db := r.Database.Db
+	if len(tx) > 0 && tx[0] != nil {
+		db = tx[0]
+	}
+	err := db.
+		Table("cloud_sessions").
+		Select("id, token").
+		Where("expire_time < ?", str.DateTime(time.Now())).
+		Find(&list).Error
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[int64]string, len(list))
+	for _, item := range list {
+		if item == nil || item.Id <= 0 {
+			continue
+		}
+		result[item.Id] = item.Token
+	}
+	return result, nil
 }

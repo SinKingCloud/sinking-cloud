@@ -4,6 +4,7 @@ import (
 	"service-user/app/model"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"gorm.io/gorm"
 )
 
 // Interface Session仓储接口
@@ -11,7 +12,9 @@ type Interface interface {
 	Create(session *model.Session) error
 	DeleteByToken(token string) error
 	DeleteByUserIdAndTokens(userId int64, tokens []string) error
+	DeleteByIds(ids []int64, tx ...*gorm.DB) error
 	FindByToken(token string) (*model.Session, error)
+	SelectExpireSessions(tx ...*gorm.DB) (map[int64]string, error)
 	Select(where *SelectSession, orderByField string, orderByType string, page int, pageSize int) (list []*model.Session, total int64, err error)
 	SelectUnExpireTokensByUserIds(userIds []int64) ([]string, error)
 }

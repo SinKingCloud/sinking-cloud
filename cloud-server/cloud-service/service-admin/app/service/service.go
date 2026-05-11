@@ -41,7 +41,7 @@ func Init() {
 	database := global.App.Database
 
 	Config = config.NewService(configRepository, cache)
-	Auth = auth.NewService(authService, sessionRepository, userRepository, cache)
+	Auth = auth.NewService(authService, sessionRepository, userRepository, database, cache)
 	Rbac = rbac.NewService(roleRepository, permissionRepository, userRoleRepository, roleMenuRepository, menuRepository, menuPermRepository, database, cache)
 	User = user.NewService(userRepository, sessionRepository, userRoleRepository, configRepository, Rbac, database, cache)
 }
