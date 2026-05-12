@@ -50,7 +50,7 @@ export const admin = [
             },
             {
                 path: "menu",
-                component: "@/pages/admin/index",
+                component: "@/pages/admin/menu",
                 title: "菜单管理",
                 name: "admin.system.menu",
                 icon: '•',
