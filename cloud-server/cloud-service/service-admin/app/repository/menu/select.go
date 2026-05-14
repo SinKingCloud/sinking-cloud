@@ -99,15 +99,42 @@ func (r *Repository) SelectWithType(types []int) ([]*model.Menu, error) {
 	return menus, nil
 }
 
-// SelectByParentIdWithType 根据菜单父级ID和类型查询子项
-func (r *Repository) SelectByParentIdWithType(parentId int64, types int) ([]*model.Menu, error) {
-	var menus []*model.Menu
-	err := r.Database.Db.
-		Model(&model.Menu{}).
-		Where("parent_id = ? AND type = ?", parentId, types).
-		Find(&menus).Error
-	if err != nil {
-		return nil, err
+// Select 查询菜单数据
+func (r *Repository) Select(where *SelectMenu, orderByField string, orderByType string, page int, pageSize int) (list []*model.Menu, total int64, err error) {
+	offset := pageSize * (page - 1)
+	query := r.Database.Db.Model(&model.Menu{})
+	if where != nil {
+		if where.ParentId != "" {
+			query = query.Where("parent_id = ?", where.ParentId)
+		}
+		if where.Code != "" {
+			query = query.Where("code LIKE ?", "%"+where.Code+"%")
+		}
+		if where.Name != "" {
+			query = query.Where("name LIKE ?", "%"+where.Name+"%")
+		}
+		if where.Icon != "" {
+			query = query.Where("icon LIKE ?", "%"+where.Icon+"%")
+		}
+		if where.Type != "" {
+			query = query.Where("type = ?", where.Type)
+		}
+		if where.Status != "" {
+			query = query.Where("status = ?", where.Status)
+		}
+		if where.CreateTimeStart != "" {
+			query = query.Where("create_time >= ?", where.CreateTimeStart)
+		}
+		if where.CreateTimeEnd != "" {
+			query = query.Where("create_time <= ?", where.CreateTimeEnd)
+		}
+		if where.UpdateTimeStart != "" {
+			query = query.Where("update_time >= ?", where.UpdateTimeStart)
+		}
+		if where.UpdateTimeEnd != "" {
+			query = query.Where("update_time <= ?", where.UpdateTimeEnd)
+		}
 	}
-	return menus, nil
+	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(orderByField + " " + orderByType).Find(&list).Error
+	return
 }

@@ -16,8 +16,8 @@ type Interface interface {
 	SelectAll() ([]*model.Menu, error)
 	SelectWithStatus(status int) ([]*model.Menu, error)
 	SelectWithType(types []int) ([]*model.Menu, error)
+	Select(where *SelectMenu, orderByField string, orderByType string, page int, pageSize int) ([]*model.Menu, int64, error)
 	SelectByParentIdWithStatusAndType(parentId int64, status int, types int) ([]*model.Menu, error)
-	SelectByParentIdWithType(parentId int64, types int) ([]*model.Menu, error)
 	FindByCode(code string) (*model.Menu, error)
 	FindById(id int64) (*model.Menu, error)
 	DeleteByIds(ids []int64, tx ...*gorm.DB) error

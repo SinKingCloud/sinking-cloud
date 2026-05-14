@@ -616,14 +616,22 @@ func (s *service) GetMenuOrControlInfoById(id int64) (*MenuOrControlInfo, error)
 }
 
 // GetPageControlsByMenuId 获取页面控件
-func (s *service) GetPageControlsByMenuId(id int64) []*Control {
+func (s *service) GetPageControlsByMenuId(id int64, where *menu2.SelectMenu, orderByField string, orderByType string, page int, pageSize int) ([]*Control, int64, error) {
 	var controls []*Control
 	if id <= 0 {
-		return controls
+		return controls, 0, nil
 	}
-	menus, err := s.repositoryMenu.SelectByParentIdWithType(id, int(menu_type.Control))
-	if err != nil || len(menus) == 0 {
-		return controls
+	if where == nil {
+		where = &menu2.SelectMenu{}
+	}
+	where.ParentId = strconv.FormatInt(id, 10)
+	where.Type = strconv.Itoa(int(menu_type.Control))
+	menus, total, err := s.repositoryMenu.Select(where, orderByField, orderByType, page, pageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+	if len(menus) == 0 {
+		return controls, total, nil
 	}
 	n := len(menus)
 	menuIds := make([]int64, 0, n)
@@ -635,7 +643,7 @@ func (s *service) GetPageControlsByMenuId(id int64) []*Control {
 	}
 	menuPermissions, err := s.repositoryMenuPermission.SelectByMenuIds(menuIds)
 	if err != nil {
-		return nil
+		return nil, 0, err
 	}
 	permissionCodeMap := make(map[int64][]string, n)
 	tempMap := make(map[int64]map[string]struct{}, n)
@@ -668,7 +676,7 @@ func (s *service) GetPageControlsByMenuId(id int64) []*Control {
 			UpdateTime:      item.UpdateTime,
 		})
 	}
-	return controls
+	return controls, total, nil
 }
 
 // DeleteMenuOrControlByIds 根据ID列表删除菜单或控件数据
@@ -781,6 +789,9 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 	if parentId == 0 && Type == menu_type.Control {
 		return errors.New(fmt.Sprintf("%s类型必须添加在%s类型下", types[menu_type.Control], types[menu_type.Page]))
 	}
+	if (Type == menu_type.Dir || Type == menu_type.Page) && len(permissionCodes) > 0 {
+		return errors.New(fmt.Sprintf("%s类型不能绑定权限", types[menu_type.Dir]))
+	}
 	info, err := s.repositoryMenu.FindByCode(code)
 	if err != nil {
 		return errors.Join(errors.New("查询信息失败"), err)
@@ -802,9 +813,6 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 		if (Type == menu_type.Page || Type == menu_type.Dir) && info.Type != menu_type.Dir {
 			return errors.New(fmt.Sprintf("%s或%s类型必须添加在%s类型下", types[menu_type.Dir], types[menu_type.Page], types[menu_type.Dir]))
 		}
-	}
-	if Type == menu_type.Dir && len(permissionCodes) > 0 {
-		return errors.New(fmt.Sprintf("%s类型不能绑定权限", types[menu_type.Dir]))
 	}
 	now := str.DateTime(time.Now())
 	menuData := &model.Menu{
@@ -991,6 +999,9 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 	permissionList := make([]*model.MenuPermission, 0)
 	newPermissionCodeMap := make(map[string]struct{})
 	if permissionCodes != nil {
+		if info.Type == menu_type.Dir || info.Type == menu_type.Page {
+			return errors.New(fmt.Sprintf("%s类型不能绑定权限", types[menu_type.Dir]))
+		}
 		permissionCodesChanged = true
 		now := str.DateTime(time.Now())
 		codes := *permissionCodes
