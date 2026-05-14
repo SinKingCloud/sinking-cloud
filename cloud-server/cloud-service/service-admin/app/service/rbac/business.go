@@ -684,6 +684,10 @@ func (s *service) DeleteMenuOrControlByIds(ids []int64) error {
 	if len(ids) == 0 {
 		return nil
 	}
+	if !s.cache.Lock(constant.LockMenuOperate, constant.LockTimeMenuOperate) {
+		return errors.New("系统繁忙,请稍候重试")
+	}
+	defer s.cache.UnLock(constant.LockMenuOperate)
 	menus, err := s.repositoryMenu.SelectAll()
 	if err != nil {
 		return errors.Join(errors.New("查询菜单数据失败"), err)
@@ -792,6 +796,10 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 	if (Type == menu_type.Dir || Type == menu_type.Page) && len(permissionCodes) > 0 {
 		return errors.New(fmt.Sprintf("%s类型不能绑定权限", types[menu_type.Dir]))
 	}
+	if !s.cache.Lock(constant.LockMenuOperate, constant.LockTimeMenuOperate) {
+		return errors.New("系统繁忙,请稍候重试")
+	}
+	defer s.cache.UnLock(constant.LockMenuOperate)
 	info, err := s.repositoryMenu.FindByCode(code)
 	if err != nil {
 		return errors.Join(errors.New("查询信息失败"), err)
@@ -899,6 +907,12 @@ func (s *service) CreateMenuOrControl(parentId int64, code string, name string, 
 func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissionCodes *[]string) error {
 	if id <= 0 || data == nil {
 		return errors.New("参数错误")
+	}
+	if data.ParentId != nil {
+		if !s.cache.Lock(constant.LockMenuOperate, constant.LockTimeMenuOperate) {
+			return errors.New("系统繁忙,请稍候重试")
+		}
+		defer s.cache.UnLock(constant.LockMenuOperate)
 	}
 	if data.Status != nil {
 		if value, ok := data.Status.(int); ok {
