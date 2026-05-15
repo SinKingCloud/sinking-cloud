@@ -1,12 +1,11 @@
 import React, {useEffect, useState} from "react";
-import {useLocation, history} from "umi";
+import {useLocation, useModel, history} from "umi";
 import {ConfigProvider, Spin} from "antd";
 import {getCurrentPath, historyPush} from "@/utils/route";
 import {adminPath, userPath} from "../../config/routes";
 import {Admin, User, Index} from "@/layouts/components";
-import {useModel} from "umi";
 import Title from "./components/title";
-import {deleteHeader, getHeaders} from "@/utils/auth";
+import {getHeaders} from "@/utils/auth";
 import request from "@/utils/request";
 import defaultSettings from "../../config/defaultSettings";
 import {setIconfontUrl, Theme, useTheme} from "sinking-antd";
