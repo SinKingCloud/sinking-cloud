@@ -52,16 +52,28 @@ type UserControl struct {
 	Icon string `json:"icon"`
 }
 
-// MenuOrControlInfo 菜单或控件详情
-type MenuOrControlInfo struct {
+// MenuInfo 菜单详情
+type MenuInfo struct {
+	Id         int64        `json:"id"`
+	Code       string       `json:"code"`
+	Name       string       `json:"name"`
+	Icon       string       `json:"icon"`
+	Type       int          `json:"type"`
+	Sort       int          `json:"sort"`
+	Status     int          `json:"status"`
+	CreateTime str.DateTime `json:"create_time"`
+	UpdateTime str.DateTime `json:"update_time"`
+}
+
+// ControlInfo 控件详情
+type ControlInfo struct {
 	Id              int64        `json:"id"`
 	Code            string       `json:"code"`
 	Name            string       `json:"name"`
 	Icon            string       `json:"icon"`
 	Type            int          `json:"type"`
-	Sort            int          `json:"sort"`
 	Status          int          `json:"status"`
-	PermissionCodes []string     `json:"permission_codes,omitempty"`
+	PermissionCodes []string     `json:"permission_codes"`
 	CreateTime      str.DateTime `json:"create_time"`
 	UpdateTime      str.DateTime `json:"update_time"`
 }

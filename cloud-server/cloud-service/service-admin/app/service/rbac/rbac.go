@@ -25,7 +25,7 @@ type Service interface {
 	CreateRole(name string, status int, menuIds []int64) error                                                                                                //创建角色
 	UpdateRole(id int64, data *role.UpdateRole, menuIds *[]int64) error                                                                                       //修改角色
 	GetRoleInfoById(id int64) (*Role, error)                                                                                                                  //获取角色详情
-	GetMenuOrControlInfoById(id int64) (*MenuOrControlInfo, error)                                                                                            //获取页面或控件信息
+	GetMenuOrControlInfoById(id int64) (interface{}, error)                                                                                                   //获取页面或控件信息
 	GetPageControlsByUserId(userId int64, pageCode string) []*UserControl                                                                                     //根据用户ID获取页面控件
 	GetPageControlsByMenuId(id int64, where *menu.SelectMenu, orderByField string, orderByType string, page int, pageSize int) ([]*Control, int64, error)     //根据菜单ID获取页面控件
 	AssignRoleToUser(userId int64, roleIds []int64) error                                                                                                     //分配用户角色

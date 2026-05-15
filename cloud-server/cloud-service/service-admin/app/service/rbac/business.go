@@ -587,7 +587,7 @@ func (s *service) DeleteRoleByIds(ids []int64) error {
 }
 
 // GetMenuOrControlInfoById 根据ID获取菜单或控件信息
-func (s *service) GetMenuOrControlInfoById(id int64) (*MenuOrControlInfo, error) {
+func (s *service) GetMenuOrControlInfoById(id int64) (interface{}, error) {
 	info, err := s.repositoryMenu.FindById(id)
 	if err != nil {
 		return nil, errors.Join(errors.New("查询数据失败"), err)
@@ -595,24 +595,40 @@ func (s *service) GetMenuOrControlInfoById(id int64) (*MenuOrControlInfo, error)
 	if info == nil || info.Id <= 0 {
 		return nil, errors.New("该数据不存在")
 	}
-	menuOrControlInfo := &MenuOrControlInfo{
-		Id:         info.Id,
-		Code:       info.Code,
-		Name:       info.Name,
-		Icon:       info.Icon,
-		Type:       info.Type,
-		Sort:       info.Sort,
-		Status:     info.Status,
-		CreateTime: info.CreateTime,
-		UpdateTime: info.UpdateTime,
-	}
-	if info.Type != menu_type.Dir {
-		menuOrControlInfo.PermissionCodes, err = s.repositoryMenuPermission.SelectPermissionCodesByMenuId(info.Id)
-		if err != nil {
-			return nil, errors.Join(errors.New("查询权限数据失败"), err)
+	var data interface{}
+	if info.Type == menu_type.Control {
+		control := &ControlInfo{
+			Id:         info.Id,
+			Code:       info.Code,
+			Name:       info.Name,
+			Icon:       info.Icon,
+			Type:       info.Type,
+			Status:     info.Status,
+			CreateTime: info.CreateTime,
+			UpdateTime: info.UpdateTime,
 		}
+		if info.Type == menu_type.Control {
+			control.PermissionCodes, err = s.repositoryMenuPermission.SelectPermissionCodesByMenuId(info.Id)
+			if err != nil {
+				return nil, errors.Join(errors.New("查询权限数据失败"), err)
+			}
+		}
+		data = control
+	} else {
+		menu := &MenuInfo{
+			Id:         info.Id,
+			Code:       info.Code,
+			Name:       info.Name,
+			Icon:       info.Icon,
+			Type:       info.Type,
+			Sort:       info.Sort,
+			Status:     info.Status,
+			CreateTime: info.CreateTime,
+			UpdateTime: info.UpdateTime,
+		}
+		data = menu
 	}
-	return menuOrControlInfo, nil
+	return data, nil
 }
 
 // GetPageControlsByMenuId 获取页面控件
