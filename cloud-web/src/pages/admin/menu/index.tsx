@@ -1,7 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Body, Icon, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
+import {Body, getAllIconNames, Icon, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {
     App,
+    AutoComplete,
     Button,
     Card,
     Col,
@@ -71,17 +72,6 @@ const useStyles: any = createStyles(({css, token}: any) => ({
         .ant-btn-icon {
             font-size: ${token.fontSizeSM}px;
         }
-    `,
-    menuLabel: css`
-        min-width: 0;
-        display: flex;
-        align-items: center;
-    `,
-    menuName: css`
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
     `,
     menu: css`
         border-inline-end: 0 !important;
@@ -160,6 +150,47 @@ export default (): React.ReactNode => {
         "0": {text: menuStatus?.["0"], color: "success"},
         "1": {text: menuStatus?.["1"], color: "error"},
     };
+    /**
+     * 加载图标
+     */
+    const iconLoadedRef = useRef(false);
+    const iconMountedRef = useRef(true);
+    const [iconOptions, setIconOptions] = useState<any[]>([]);
+    const [iconLoading, setIconLoading] = useState(false);
+    useEffect(() => {
+        return () => {
+            iconMountedRef.current = false;
+        };
+    }, []);
+    const loadIconOptions = () => {
+        if (iconLoadedRef.current || iconLoading) {
+            return;
+        }
+        setIconLoading(true);
+        getAllIconNames().then((icons) => {
+            if (!iconMountedRef.current) {
+                return;
+            }
+            setIconOptions((icons || []).map((item) => ({
+                value: item,
+                label: (
+                    <Space size={6}>
+                        <Icon type={item}/>
+                        <span>{item}</span>
+                    </Space>
+                ),
+            })));
+            iconLoadedRef.current = true;
+        }).catch(() => {
+            if (iconMountedRef.current) {
+                setIconOptions([]);
+            }
+        }).finally(() => {
+            if (iconMountedRef.current) {
+                setIconLoading(false);
+            }
+        });
+    };
 
     /**
      * 左侧菜单数据
@@ -186,10 +217,10 @@ export default (): React.ReactNode => {
                     };
                     loop(list);
                     return keys;
-                }
+                };
                 const buildMenuItems = (list: any[] = []): MenuProps["items"] => {
                     return list.map((item) => ({
-                        key: item?.id,
+                        key: String(item?.id),
                         icon: <Icon type={item?.icon || ""}/>,
                         label: item.name,
                         onTitleClick: item.children && item.children.length > 0 ? ({key}: any) => {
@@ -221,11 +252,14 @@ export default (): React.ReactNode => {
      * 右侧菜单信息
      */
     const selectedId = Number(selectedKeys[0] || 0);
+    const menuInfoRequestRef = useRef(0);
     const [menuInfo, setMenuInfo] = useState<any>();
     const [infoLoading, setInfoLoading] = useState(false);
     const loadMenuInfo = (id?: number) => {
+        const requestId = ++menuInfoRequestRef.current;
         if (!id) {
             setMenuInfo(undefined);
+            setInfoLoading(false);
             return;
         }
         setInfoLoading(true);
@@ -234,13 +268,19 @@ export default (): React.ReactNode => {
                 id: id
             },
             onFail: (res) => {
-                message?.error(res?.message || "获取数据失败");
+                if (requestId === menuInfoRequestRef.current) {
+                    message?.error(res?.message || "获取数据失败");
+                }
             },
             onSuccess: (res) => {
-                setMenuInfo(res?.data || {});
+                if (requestId === menuInfoRequestRef.current) {
+                    setMenuInfo(res?.data || {});
+                }
             }
         }).finally(() => {
-            setInfoLoading(false);
+            if (requestId === menuInfoRequestRef.current) {
+                setInfoLoading(false);
+            }
         })
     };
     useEffect(() => {
@@ -386,8 +426,8 @@ export default (): React.ReactNode => {
     const isControlForm = formScene?.target === "control";
     const showTypeField = !isEditMode && formScene?.typeEditable;
     const showCodeField = !isEditMode;
-    const currentTypeOptions = formScene?.typeEditable ? menuTypeOptions : buildOptions({[formScene?.type]: menuTypes?.[formScene?.type] || "-"}, true);
     const openCreateRootMenu = () => {
+        loadIconOptions();
         setFormScene({
             action: "create",
             target: "menu",
@@ -413,6 +453,7 @@ export default (): React.ReactNode => {
             message?.warning("请选择目录后再添加页面");
             return;
         }
+        loadIconOptions();
         setFormScene({
             action: "create",
             target: "menu",
@@ -438,6 +479,7 @@ export default (): React.ReactNode => {
             message?.warning("请选择页面后再添加控件");
             return;
         }
+        loadIconOptions();
         setFormScene({
             action: "create",
             target: "control",
@@ -461,6 +503,7 @@ export default (): React.ReactNode => {
         if (!id) {
             return;
         }
+        loadIconOptions();
         setFormScene({
             action: "edit",
             target,
@@ -555,7 +598,7 @@ export default (): React.ReactNode => {
             onOk: async () => {
                 await deleteMenu({
                     body: {
-                        ids: ids
+                        ids
                     },
                     onSuccess: (res: any) => {
                         message.success(res?.message || "删除成功");
@@ -753,14 +796,23 @@ export default (): React.ReactNode => {
                     <Row gutter={16}>
                         <Col xs={24} sm={12}>
                             <Form.Item name="icon" label="图标">
-                                <Input placeholder="请输入图标" maxLength={30} showCount/>
+                                <AutoComplete placeholder="请选择或输入图标"
+                                              allowClear
+                                              maxLength={30}
+                                              options={iconOptions}
+                                              notFoundContent={iconLoading ? <Spin size="small"/> : null}
+                                              showSearch={{
+                                                  filterOption: (inputValue: string, option: any) =>
+                                                      String(option?.value || "").toLowerCase().includes(inputValue.toLowerCase())
+                                              }
+                                              }/>
                             </Form.Item>
                         </Col>
                         {showTypeField && (
                             <Col xs={24} sm={12}>
                                 <Form.Item name="type" label="类型"
                                            rules={[{required: true, message: "请选择类型"}]}>
-                                    <Select placeholder="请选择类型" options={currentTypeOptions}/>
+                                    <Select placeholder="请选择类型" options={menuTypeOptions}/>
                                 </Form.Item>
                             </Col>
                         )}
