@@ -14,6 +14,7 @@ import {
     InputNumber,
     Menu,
     Popover,
+    Result,
     Row,
     Select,
     Space,
@@ -140,6 +141,11 @@ export default (): React.ReactNode => {
     const {styles} = useStyles();
     const [enumData, enumLoading] = useEnum(["admin.menu", "admin.permission"]) as any;
     const control = useControl();
+    const hasUpdateControl = control.hasControl("admin.system.menu:update");
+    const hasCreateControl = control.hasControl("admin.system.menu:create");
+    const hasDeleteControl = control.hasControl("admin.system.menu:delete");
+    const hasListControl = control.hasControl("admin.system.menu:list");
+    const hasControlsControl = control.hasControl("admin.system.menu:controls");
     const menuTypes = enumData?.["admin.menu"]?.types || {};
     const menuStatus = enumData?.["admin.menu"]?.status || {};
     const permissionCodes = enumData?.["admin.permission"]?.codes || {};
@@ -211,7 +217,20 @@ export default (): React.ReactNode => {
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
     const [openKeys, setOpenKeys] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
+    const selectedId = Number(selectedKeys[0] || 0);
+    const menuInfoRequestRef = useRef(0);
+    const [menuInfo, setMenuInfo] = useState<any>();
+    const [infoLoading, setInfoLoading] = useState(true);
     const loadMenus = (resetSelected?: boolean) => {
+        if (!hasListControl) {
+            setMenus([]);
+            setMenuInfo(undefined);
+            setSelectedKeys([]);
+            setOpenKeys([]);
+            setLoading(false);
+            setInfoLoading(false);
+            return;
+        }
         const shouldResetSelected = resetSelected === true;
         setLoading(true);
         getMenuList({
@@ -250,6 +269,11 @@ export default (): React.ReactNode => {
                 }
             },
             onFail: (res) => {
+                setMenus([]);
+                setMenuInfo(undefined);
+                setSelectedKeys([]);
+                setOpenKeys([]);
+                setInfoLoading(false);
                 message?.error(res?.message || "获取数据失败");
             }
         }).finally(() => {
@@ -261,12 +285,13 @@ export default (): React.ReactNode => {
     /**
      * 右侧菜单信息
      */
-    const selectedId = Number(selectedKeys[0] || 0);
-    const menuInfoRequestRef = useRef(0);
-    const [menuInfo, setMenuInfo] = useState<any>();
-    const [infoLoading, setInfoLoading] = useState(true);
     const loadMenuInfo = (id?: number) => {
         const requestId = ++menuInfoRequestRef.current;
+        if (!hasListControl) {
+            setMenuInfo(undefined);
+            setInfoLoading(false);
+            return;
+        }
         if (!id) {
             setMenuInfo(undefined);
             setInfoLoading(false);
@@ -384,35 +409,39 @@ export default (): React.ReactNode => {
                 </Space>
             ),
         },
-        {
+        ...(hasUpdateControl || hasDeleteControl ? [{
             title: '操作',
             width: 100,
             fixed: 'right',
             hideInSearch: true,
-            render: (_: any, record: any) => (
-                <Dropdown
-                    menu={{
-                        items: [
-                            {
-                                key: 'edit',
-                                label: '编辑',
-                                onClick: () => openEdit(record?.id, "control"),
-                            },
-                            {
-                                key: 'delete',
-                                label: '删除',
-                                danger: true,
-                                onClick: () => deleteMenuOrControls([record?.id]),
-                            }
-                        ]
-                    }}
-                    trigger={['hover']}
-                    arrow
-                    placement="bottom">
-                    <Button size="small">操作</Button>
-                </Dropdown>
-            )
-        },
+            render: (_: any, record: any) => {
+                const items = [
+                    hasUpdateControl ? {
+                        key: 'edit',
+                        label: '编辑',
+                        onClick: () => openEdit(record?.id, "control"),
+                    } : null,
+                    hasDeleteControl ? {
+                        key: 'delete',
+                        label: '删除',
+                        danger: true,
+                        onClick: () => deleteMenuOrControls([record?.id]),
+                    } : null
+                ].filter(Boolean) as any;
+                if (items.length <= 0) {
+                    return "-";
+                }
+                return (
+                    <Dropdown
+                        menu={{items}}
+                        trigger={['hover']}
+                        arrow
+                        placement="bottom">
+                        <Button size="small">操作</Button>
+                    </Dropdown>
+                );
+            }
+        }] : []),
     ] as any;
 
     /**
@@ -435,6 +464,10 @@ export default (): React.ReactNode => {
     const showTypeField = !isEditMode && formScene?.typeEditable;
     const showCodeField = !isEditMode;
     const openCreateRootMenu = () => {
+        if (!hasCreateControl) {
+            message?.warning("暂无创建权限");
+            return;
+        }
         loadIconOptions();
         setFormScene({
             action: "create",
@@ -457,6 +490,10 @@ export default (): React.ReactNode => {
         formModalRef.current?.show();
     };
     const openCreatePage = () => {
+        if (!hasCreateControl) {
+            message?.warning("暂无创建权限");
+            return;
+        }
         if (!menuInfo?.id || menuInfo?.type !== 0) {
             message?.warning("请选择目录后再添加页面");
             return;
@@ -483,6 +520,10 @@ export default (): React.ReactNode => {
         formModalRef.current?.show();
     };
     const openCreateControl = () => {
+        if (!hasCreateControl) {
+            message?.warning("暂无创建权限");
+            return;
+        }
         if (!menuInfo?.id || menuInfo?.type !== 1) {
             message?.warning("请选择页面后再添加控件");
             return;
@@ -508,6 +549,10 @@ export default (): React.ReactNode => {
         formModalRef.current?.show();
     };
     const openEdit = async (id: number, target: "menu" | "control") => {
+        if (!hasUpdateControl) {
+            message?.warning("暂无修改权限");
+            return;
+        }
         if (!id) {
             return;
         }
@@ -549,6 +594,14 @@ export default (): React.ReactNode => {
         });
     };
     const handleSubmit = async (values: any) => {
+        if (isEditMode && !hasUpdateControl) {
+            message?.warning("暂无修改权限");
+            return;
+        }
+        if (!isEditMode && !hasCreateControl) {
+            message?.warning("暂无创建权限");
+            return;
+        }
         const type = isEditMode ? formScene?.type : (formScene?.typeEditable ? values?.type : formScene?.type);
         const target = type === 2 ? "control" : "menu";
         const params: any = {
@@ -585,10 +638,13 @@ export default (): React.ReactNode => {
                 formModalRef.current?.hide();
                 if (target === "control") {
                     actionRef.current?.clearSelectedRows?.();
-                    actionRef.current?.refreshTableData?.();
+                    if (hasControlsControl) {
+                        actionRef.current?.refreshTableData?.();
+                    }
                 } else {
-                    loadMenus();
-                    loadMenuInfo(selectedId);
+                    if (hasListControl) {
+                        loadMenus();
+                    }
                 }
             },
             onFail: (res: any) => {
@@ -598,6 +654,10 @@ export default (): React.ReactNode => {
         });
     };
     const deleteMenuOrControls = (ids: number[], refreshMenu = false) => {
+        if (!hasDeleteControl) {
+            message?.warning("暂无删除权限");
+            return;
+        }
         if (ids.length <= 0) {
             message?.warning("请选择要删除的数据");
             return;
@@ -615,7 +675,9 @@ export default (): React.ReactNode => {
                     onSuccess: (res: any) => {
                         message.success(res?.message || "删除成功");
                         actionRef.current?.clearSelectedRows?.();
-                        actionRef.current?.refreshTableData?.();
+                        if (hasControlsControl) {
+                            actionRef.current?.refreshTableData?.();
+                        }
                         if (refreshMenu) {
                             loadMenus(true);
                         }
@@ -629,263 +691,299 @@ export default (): React.ReactNode => {
     };
 
     useEffect(() => {
-        loadMenus();
         return () => {
             iconMountedRef.current = false;
         };
     }, []);
 
     useEffect(() => {
+        if (control.loading) {
+            return;
+        }
+        loadMenus();
+    }, [control.loading, hasListControl]);
+
+    useEffect(() => {
+        if (control.loading) {
+            return;
+        }
         loadMenuInfo(selectedId);
-        actionRef?.current?.refreshTableData?.();
-    }, [selectedId]);
+    }, [control.loading, hasListControl, selectedId]);
+
+    const showMenuInfoActions = Boolean(menuInfo?.id && (hasCreateControl || hasUpdateControl || hasDeleteControl));
+    const showControlTable = Boolean(hasControlsControl && menuInfo?.id && menuInfo?.type === 1);
 
     return (
         <Body loading={control?.loading}>
-            <Row gutter={[10, 10]}>
-                <Col xs={24} sm={24} md={10} lg={7} xl={5} xxl={4} xxxl={3}>
-                    <Card className={styles.menuCard} title={<Title>系统菜单</Title>} variant={"borderless"}
-                          extra={
-                              <Button className={styles.cardIconBtn}
-                                      type="text"
-                                      size="small"
-                                      title="刷新"
-                                      icon={<Icon type="ReloadOutlined"/>}
-                                      onClick={() => loadMenus()}/>
-                          }>
-                        <Spin spinning={loading}>
-                            {menus.length > 0 ? (
-                                <Menu className={styles.menu}
-                                      mode="inline"
-                                      items={menus}
-                                      selectedKeys={selectedKeys}
-                                      openKeys={openKeys}
-                                      onClick={({key}) => setSelectedKeys([key])}/>
-                            ) : (
-                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
-                            )}
-                            <Button className={styles.addMenu} icon={<Icon type="PlusOutlined"/>}
-                                    onClick={openCreateRootMenu}>
-                                添加菜单
-                            </Button>
-                        </Spin>
-                    </Card>
-                </Col>
-                <Col xs={24} sm={24} md={14} lg={17} xl={19} xxl={20} xxxl={21}>
-                    <Row gutter={[10, 10]}>
-                        <Col span={24}>
-                            <Card className={styles.infoCard} title={<Title>菜单信息</Title>} variant={"borderless"}
-                                  extra={(
-                                      <Space size={4} className={styles.infoExtra}>
-                                          {menuInfo?.id && (
-                                              <Dropdown
-                                                  menu={{
-                                                      items: [
-                                                          menuInfo?.type === 0 ? {
-                                                              key: "create",
-                                                              label: "新建",
-                                                              onClick: openCreatePage,
-                                                          } : null,
-                                                          {
-                                                              key: "edit",
-                                                              label: "编辑",
-                                                              onClick: () => openEdit(menuInfo?.id, "menu"),
-                                                          },
-                                                          {
-                                                              key: "delete",
-                                                              label: "删除",
-                                                              danger: true,
-                                                              onClick: () => deleteMenuOrControls([menuInfo?.id], true),
-                                                          },
-                                                      ].filter(Boolean) as any,
-                                                  }}
-                                                  trigger={["hover"]}
-                                                  arrow
-                                                  placement="bottomRight">
-                                                  <Button className={styles.infoActionBtn} size="small">操作</Button>
-                                              </Dropdown>
-                                          )}
-                                          <Button className={styles.cardIconBtn}
-                                                  type="text"
-                                                  size="small"
-                                                  title="刷新"
-                                                  icon={<Icon type="ReloadOutlined"/>}
-                                                  onClick={() => loadMenuInfo(selectedId)}/>
-                                      </Space>
-                                  )}
-                                  loading={infoLoading || enumLoading}>
-                                {menuInfo?.id ? (
-                                    <Descriptions
-                                        column={{xs: 1, sm: 1, md: 1, lg: 2, xl: 2, xxl: 2}} size={"small"}>
-                                        <Descriptions.Item label="菜单名称">{menuInfo?.name}</Descriptions.Item>
-                                        <Descriptions.Item label="菜单标识">{menuInfo?.code}</Descriptions.Item>
-                                        <Descriptions.Item
-                                            label="菜单类型">{menuTypes?.[menuInfo?.type] || "-"}</Descriptions.Item>
-                                        <Descriptions.Item label="菜单状态">
-                                            {statusColor?.[String(menuInfo?.status)]?.text ? (
-                                                <Tag color={statusColor?.[String(menuInfo?.status)]?.color}>
-                                                    {statusColor?.[String(menuInfo?.status)]?.text}
-                                                </Tag>
-                                            ) : "-"}
-                                        </Descriptions.Item>
-                                        <Descriptions.Item
-                                            label="菜单图标">{menuInfo?.icon && menuInfo?.icon !== "0" ? menuInfo.icon : "-"}</Descriptions.Item>
-                                        <Descriptions.Item label="菜单排序">{menuInfo?.sort}</Descriptions.Item>
-                                        <Descriptions.Item
-                                            label="创建时间">{menuInfo?.create_time || "-"}</Descriptions.Item>
-                                        <Descriptions.Item
-                                            label="更新时间">{menuInfo?.update_time || "-"}</Descriptions.Item>
-                                    </Descriptions>
+            {!hasListControl && <Result
+                status="403"
+                title="403"
+                subTitle="您无权限访问此页面,请联系管理员"
+            />}
+            {hasListControl && <>
+                <Row gutter={[10, 10]}>
+                    <Col xs={24} sm={24} md={10} lg={7} xl={5} xxl={4} xxxl={3}>
+                        <Card className={styles.menuCard} title={<Title>系统菜单</Title>} variant={"borderless"}
+                              extra={
+                                  hasListControl ? (
+                                      <Button className={styles.cardIconBtn}
+                                              type="text"
+                                              size="small"
+                                              title="刷新"
+                                              icon={<Icon type="ReloadOutlined"/>}
+                                              onClick={() => loadMenus()}/>
+                                  ) : null
+                              }>
+                            <Spin spinning={loading}>
+                                {hasListControl && menus.length > 0 ? (
+                                    <Menu className={styles.menu}
+                                          mode="inline"
+                                          items={menus}
+                                          selectedKeys={selectedKeys}
+                                          openKeys={openKeys}
+                                          onClick={({key}) => setSelectedKeys([key])}/>
                                 ) : (
                                     <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
                                 )}
-                            </Card>
-                        </Col>
-                        <Col span={24}
-                             className={(infoLoading || !menuInfo?.id || menuInfo?.type != 1) ? styles.hidden : ""}>
-                            <ProTable
-                                ref={actionRef}
-                                search={false}
-                                extraRefreshBtn={true}
-                                title={<Title>控件管理</Title>}
-                                rowKey={'id'}
-                                columns={controlColumns}
-                                request={(params, sort) => {
-                                    return getData({...params, id: selectedId}, sort, getMenuControls)
-                                }}
-                                defaultPage={1}
-                                defaultPageSize={20}
-                                extra={<Button type="primary" className={styles.infoActionBtn}
-                                               onClick={openCreateControl}>新建</Button>}
-                                rowSelection={{
-                                    fixed: true,
-                                    rightExtra: (
-                                        <Button key="delete" danger ghost
-                                                onClick={() => deleteMenuOrControls(actionRef.current?.getSelectedRows?.().map((row: any) => row.id) || [])}>
-                                            批量删除
-                                        </Button>
-                                    )
-                                }}
-                            />
-                        </Col>
-                    </Row>
-                </Col>
-            </Row>
-            <ProModal
-                ref={formModalRef}
-                title={<Title>{formScene?.title}</Title>}
-                width={460}
-                onOk={form.submit}
-                modalProps={{
-                    confirmLoading: formSubmitting,
-                    forceRender: true,
-                    okText: "提交",
-                    cancelText: "取消",
-                    okButtonProps: {
-                        disabled: formLoading,
-                    },
-                    afterClose: () => {
-                        form.resetFields();
-                        setFormLoading(false);
-                        setFormSubmitting(false);
-                    },
-                } as any}>
-                <div className={formLoading ? styles.formLoading : styles.hidden}>
-                    <Spin/>
-                </div>
-                <Form form={form} onFinish={handleSubmit} layout={"vertical"}
-                      className={formLoading ? styles.hidden : ""}>
-                    <Form.Item name="id" hidden>
-                        <Input/>
-                    </Form.Item>
-                    <Form.Item name="parent_id" hidden>
-                        <Input/>
-                    </Form.Item>
-                    <Row gutter={16}>
-                        <Col xs={24} sm={showCodeField ? 12 : 24}>
-                            <Form.Item name="name" label="名称"
-                                       rules={[{required: true, message: "请输入名称"}]}>
-                                <Input placeholder="请输入名称" maxLength={100} showCount/>
-                            </Form.Item>
-                        </Col>
-                        {showCodeField && (
-                            <Col xs={24} sm={12}>
-                                <Form.Item name="code" label="标识"
-                                           rules={[{required: true, message: "请输入标识"}]}>
-                                    <Input placeholder="请输入标识" maxLength={100} showCount/>
+                                {hasCreateControl && (
+                                    <Button className={styles.addMenu} icon={<Icon type="PlusOutlined"/>}
+                                            onClick={openCreateRootMenu}>
+                                        添加菜单
+                                    </Button>
+                                )}
+                            </Spin>
+                        </Card>
+                    </Col>
+                    <Col xs={24} sm={24} md={14} lg={17} xl={19} xxl={20} xxxl={21}>
+                        <Row gutter={[10, 10]}>
+                            <Col span={24}>
+                                <Card className={styles.infoCard} title={<Title>菜单信息</Title>} variant={"borderless"}
+                                      extra={(
+                                          <Space size={4} className={styles.infoExtra}>
+                                              {showMenuInfoActions && (
+                                                  <Dropdown
+                                                      menu={{
+                                                          items: [
+                                                              hasCreateControl && menuInfo?.type === 0 ? {
+                                                                  key: "create",
+                                                                  label: "新建",
+                                                                  onClick: openCreatePage,
+                                                              } : null,
+                                                              hasUpdateControl ? {
+                                                                  key: "edit",
+                                                                  label: "编辑",
+                                                                  onClick: () => openEdit(menuInfo?.id, "menu"),
+                                                              } : null,
+                                                              hasDeleteControl ? {
+                                                                  key: "delete",
+                                                                  label: "删除",
+                                                                  danger: true,
+                                                                  onClick: () => deleteMenuOrControls([menuInfo?.id], true),
+                                                              } : null,
+                                                          ].filter(Boolean) as any,
+                                                      }}
+                                                      trigger={["hover"]}
+                                                      arrow
+                                                      placement="bottomRight">
+                                                      <Button className={styles.infoActionBtn}
+                                                              size="small">操作</Button>
+                                                  </Dropdown>
+                                              )}
+                                              {hasListControl && (
+                                                  <Button className={styles.cardIconBtn}
+                                                          type="text"
+                                                          size="small"
+                                                          title="刷新"
+                                                          icon={<Icon type="ReloadOutlined"/>}
+                                                          onClick={() => loadMenuInfo(selectedId)}/>
+                                              )}
+                                          </Space>
+                                      )}
+                                      loading={infoLoading || enumLoading}>
+                                    {menuInfo?.id ? (
+                                        <Descriptions
+                                            column={{xs: 1, sm: 1, md: 1, lg: 2, xl: 2, xxl: 2}} size={"small"}>
+                                            <Descriptions.Item label="菜单名称">{menuInfo?.name}</Descriptions.Item>
+                                            <Descriptions.Item label="菜单标识">{menuInfo?.code}</Descriptions.Item>
+                                            <Descriptions.Item
+                                                label="菜单类型">{menuTypes?.[menuInfo?.type] || "-"}</Descriptions.Item>
+                                            <Descriptions.Item label="菜单状态">
+                                                {statusColor?.[String(menuInfo?.status)]?.text ? (
+                                                    <Tag color={statusColor?.[String(menuInfo?.status)]?.color}>
+                                                        {statusColor?.[String(menuInfo?.status)]?.text}
+                                                    </Tag>
+                                                ) : "-"}
+                                            </Descriptions.Item>
+                                            <Descriptions.Item
+                                                label="菜单图标">{menuInfo?.icon && menuInfo?.icon !== "0" ? menuInfo.icon : "-"}</Descriptions.Item>
+                                            <Descriptions.Item label="菜单排序">{menuInfo?.sort}</Descriptions.Item>
+                                            <Descriptions.Item
+                                                label="创建时间">{menuInfo?.create_time || "-"}</Descriptions.Item>
+                                            <Descriptions.Item
+                                                label="更新时间">{menuInfo?.update_time || "-"}</Descriptions.Item>
+                                        </Descriptions>
+                                    ) : (
+                                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
+                                    )}
+                                </Card>
+                            </Col>
+                            {showControlTable && (
+                                <Col span={24}>
+                                    <ProTable
+                                        key={selectedId}
+                                        ref={actionRef}
+                                        search={false}
+                                        extraRefreshBtn={true}
+                                        title={<Title>控件管理</Title>}
+                                        rowKey={'id'}
+                                        columns={controlColumns}
+                                        request={(params, sort) => {
+                                            if (!hasControlsControl || !selectedId) {
+                                                return Promise.resolve({
+                                                    data: [],
+                                                    success: true,
+                                                    total: 0,
+                                                });
+                                            }
+                                            return getData({...params, id: selectedId}, sort, getMenuControls)
+                                        }}
+                                        defaultPage={1}
+                                        defaultPageSize={20}
+                                        extra={hasCreateControl ? (
+                                            <Button type="primary" className={styles.infoActionBtn}
+                                                    onClick={openCreateControl}>新建</Button>
+                                        ) : undefined}
+                                        rowSelection={hasDeleteControl ? {
+                                            fixed: true,
+                                            rightExtra: (
+                                                <Button key="delete" danger ghost
+                                                        onClick={() => deleteMenuOrControls(actionRef.current?.getSelectedRows?.().map((row: any) => row.id) || [])}>
+                                                    批量删除
+                                                </Button>
+                                            )
+                                        } : undefined}
+                                    />
+                                </Col>
+                            )}
+                        </Row>
+                    </Col>
+                </Row>
+                <ProModal
+                    ref={formModalRef}
+                    title={<Title>{formScene?.title}</Title>}
+                    width={460}
+                    onOk={form.submit}
+                    modalProps={{
+                        confirmLoading: formSubmitting,
+                        forceRender: true,
+                        okText: "提交",
+                        cancelText: "取消",
+                        okButtonProps: {
+                            disabled: formLoading,
+                        },
+                        afterClose: () => {
+                            form.resetFields();
+                            setFormLoading(false);
+                            setFormSubmitting(false);
+                        },
+                    } as any}>
+                    <div className={formLoading ? styles.formLoading : styles.hidden}>
+                        <Spin/>
+                    </div>
+                    <Form form={form} onFinish={handleSubmit} layout={"vertical"}
+                          className={formLoading ? styles.hidden : ""}>
+                        <Form.Item name="id" hidden>
+                            <Input/>
+                        </Form.Item>
+                        <Form.Item name="parent_id" hidden>
+                            <Input/>
+                        </Form.Item>
+                        <Row gutter={16}>
+                            <Col xs={24} sm={showCodeField ? 12 : 24}>
+                                <Form.Item name="name" label="名称"
+                                           rules={[{required: true, message: "请输入名称"}]}>
+                                    <Input placeholder="请输入名称" maxLength={100} showCount/>
                                 </Form.Item>
                             </Col>
-                        )}
-                    </Row>
-                    <Row gutter={16}>
-                        <Col xs={24} sm={12}>
-                            <Form.Item name="icon" label="图标">
-                                <AutoComplete placeholder="请选择或输入图标"
-                                              allowClear
-                                              maxLength={30}
-                                              options={iconOptions}
-                                              notFoundContent={iconLoading ? (
-                                                  <div className={styles.iconLoading}>
-                                                      <Spin size="small"/>
-                                                  </div>
-                                              ) : null}
-                                              showSearch={{
-                                                  filterOption: (inputValue: string, option: any) =>
-                                                      String(option?.value || "").toLowerCase().includes(inputValue.toLowerCase())
-                                              }
-                                              }/>
-                            </Form.Item>
-                        </Col>
-                        {showTypeField && (
-                            <Col xs={24} sm={12}>
-                                <Form.Item name="type" label="类型"
-                                           rules={[{required: true, message: "请选择类型"}]}>
-                                    <Select placeholder="请选择类型" options={menuTypeOptions}/>
-                                </Form.Item>
-                            </Col>
-                        )}
-                        {!showTypeField && (
-                            <Col xs={24} sm={12}>
-                                <Form.Item name="status" label="状态"
-                                           rules={[{required: true, message: "请选择状态"}]}>
-                                    <Select placeholder="请选择状态" options={statusOptions}/>
-                                </Form.Item>
-                            </Col>
-                        )}
-                    </Row>
-                    {showTypeField ? (
+                            {showCodeField && (
+                                <Col xs={24} sm={12}>
+                                    <Form.Item name="code" label="标识"
+                                               rules={[{required: true, message: "请输入标识"}]}>
+                                        <Input placeholder="请输入标识" maxLength={100} showCount/>
+                                    </Form.Item>
+                                </Col>
+                            )}
+                        </Row>
                         <Row gutter={16}>
                             <Col xs={24} sm={12}>
-                                <Form.Item name="status" label="状态"
-                                           rules={[{required: true, message: "请选择状态"}]}>
-                                    <Select placeholder="请选择状态" options={statusOptions}/>
+                                <Form.Item name="icon" label="图标">
+                                    <AutoComplete placeholder="请选择或输入图标"
+                                                  allowClear
+                                                  maxLength={30}
+                                                  options={iconOptions}
+                                                  notFoundContent={iconLoading ? (
+                                                      <div className={styles.iconLoading}>
+                                                          <Spin size="small"/>
+                                                      </div>
+                                                  ) : null}
+                                                  showSearch={{
+                                                      filterOption: (inputValue: string, option: any) =>
+                                                          String(option?.value || "").toLowerCase().includes(inputValue.toLowerCase())
+                                                  }
+                                                  }/>
                                 </Form.Item>
                             </Col>
-                            <Col xs={24} sm={12}>
-                                <Form.Item name="sort" label="排序"
-                                           rules={[{required: true, message: "请输入排序"}]}>
-                                    <InputNumber min={0} precision={0} style={{width: "100%"}}/>
-                                </Form.Item>
-                            </Col>
+                            {showTypeField && (
+                                <Col xs={24} sm={12}>
+                                    <Form.Item name="type" label="类型"
+                                               rules={[{required: true, message: "请选择类型"}]}>
+                                        <Select placeholder="请选择类型" options={menuTypeOptions}/>
+                                    </Form.Item>
+                                </Col>
+                            )}
+                            {!showTypeField && (
+                                <Col xs={24} sm={12}>
+                                    <Form.Item name="status" label="状态"
+                                               rules={[{required: true, message: "请选择状态"}]}>
+                                        <Select placeholder="请选择状态" options={statusOptions}/>
+                                    </Form.Item>
+                                </Col>
+                            )}
                         </Row>
-                    ) : !isControlForm && (
-                        <Form.Item name="sort" label="排序"
-                                   rules={[{required: true, message: "请输入排序"}]}>
-                            <InputNumber min={0} precision={0} style={{width: "100%"}}/>
-                        </Form.Item>
-                    )}
-                    {isControlForm && (
-                        <Form.Item name="permission_codes" label="绑定权限"
-                                   rules={[{required: true, message: "请选择绑定权限"}]}>
-                            <Select placeholder="请选择绑定权限"
-                                    mode="multiple"
-                                    allowClear
-                                    showSearch
-                                    options={permissionOptions}/>
-                        </Form.Item>
-                    )}
-                </Form>
-            </ProModal>
+                        {showTypeField ? (
+                            <Row gutter={16}>
+                                <Col xs={24} sm={12}>
+                                    <Form.Item name="status" label="状态"
+                                               rules={[{required: true, message: "请选择状态"}]}>
+                                        <Select placeholder="请选择状态" options={statusOptions}/>
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12}>
+                                    <Form.Item name="sort" label="排序"
+                                               rules={[{required: true, message: "请输入排序"}]}>
+                                        <InputNumber min={0} precision={0} style={{width: "100%"}}/>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        ) : !isControlForm && (
+                            <Form.Item name="sort" label="排序"
+                                       rules={[{required: true, message: "请输入排序"}]}>
+                                <InputNumber min={0} precision={0} style={{width: "100%"}}/>
+                            </Form.Item>
+                        )}
+                        {isControlForm && (
+                            <Form.Item name="permission_codes" label="绑定权限"
+                                       rules={[{required: true, message: "请选择绑定权限"}]}>
+                                <Select placeholder="请选择绑定权限"
+                                        mode="multiple"
+                                        allowClear
+                                        showSearch
+                                        options={permissionOptions}/>
+                            </Form.Item>
+                        )}
+                    </Form>
+                </ProModal>
+            </>}
         </Body>
     );
 };
