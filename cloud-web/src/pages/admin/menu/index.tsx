@@ -489,24 +489,24 @@ export default (): React.ReactNode => {
         setFormLoading(false);
         formModalRef.current?.show();
     };
-    const openCreatePage = () => {
+    const openCreateChildMenu = () => {
         if (!hasCreateControl) {
             message?.warning("暂无创建权限");
             return;
         }
         if (!menuInfo?.id || menuInfo?.type !== 0) {
-            message?.warning("请选择目录后再添加页面");
+            message?.warning("请选择目录后再新建菜单");
             return;
         }
         loadIconOptions();
         setFormScene({
             action: "create",
             target: "menu",
-            title: "添加页面",
+            title: "新建菜单",
             id: undefined,
             parentId: menuInfo.id,
             type: 1,
-            typeEditable: false,
+            typeEditable: true,
         });
         form.resetFields();
         form.setFieldsValue({
@@ -767,7 +767,7 @@ export default (): React.ReactNode => {
                                                               hasCreateControl && menuInfo?.type === 0 ? {
                                                                   key: "create",
                                                                   label: "新建",
-                                                                  onClick: openCreatePage,
+                                                                  onClick: openCreateChildMenu,
                                                               } : null,
                                                               hasUpdateControl ? {
                                                                   key: "edit",
@@ -828,7 +828,7 @@ export default (): React.ReactNode => {
                                 </Card>
                             </Col>
                             {showControlTable && (
-                                <Col span={24}>
+                                <Col span={24} className={infoLoading || enumLoading ? styles?.hidden : ""}>
                                     <ProTable
                                         key={selectedId}
                                         ref={actionRef}
