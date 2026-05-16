@@ -645,6 +645,9 @@ export default (): React.ReactNode => {
                     if (hasListControl) {
                         loadMenus();
                     }
+                    if (isEditMode && selectedId) {
+                        loadMenuInfo(selectedId);
+                    }
                 }
             },
             onFail: (res: any) => {
