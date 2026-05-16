@@ -30,6 +30,20 @@ func (s *service) GetPageControlsByUserId(userId int64, code string) []*UserCont
 	if err != nil || len(menus) == 0 {
 		return controls
 	}
+	if userId == constant.SuperAdminUserId {
+		controls = make([]*UserControl, 0, len(menus))
+		for _, item := range menus {
+			if item == nil || item.Id <= 0 {
+				continue
+			}
+			controls = append(controls, &UserControl{
+				Code: item.Code,
+				Name: item.Name,
+				Icon: item.Icon,
+			})
+		}
+		return controls
+	}
 	tempMap := make(map[int64]struct{}, len(menus))
 	controlMap := make(map[int64]*model.Menu, len(menus))
 	for _, item := range menus {
@@ -72,6 +86,47 @@ func (s *service) GetPageControlsByUserId(userId int64, code string) []*UserCont
 
 // GetUserMenuTree 获取用户菜单
 func (s *service) GetUserMenuTree(userId int64) []*UserMenuTree {
+	formatMenus := func(list []*MenuTree) []*UserMenuTree {
+		if len(list) == 0 {
+			return nil
+		}
+		var format func(list []*MenuTree) []*UserMenuTree
+		format = func(list []*MenuTree) []*UserMenuTree {
+			if len(list) == 0 {
+				return nil
+			}
+			result := make([]*UserMenuTree, 0, len(list))
+			for _, item := range list {
+				if item == nil {
+					continue
+				}
+				result = append(result, &UserMenuTree{
+					Code:     item.Code,
+					Name:     item.Name,
+					Type:     item.Type,
+					Icon:     item.Icon,
+					Sort:     item.Sort,
+					Children: format(item.Children),
+				})
+			}
+			return result
+		}
+		return format(list)
+	}
+	if userId == constant.SuperAdminUserId {
+		menus, err := s.repositoryMenu.SelectWithStatus(menu_status.Enable)
+		if err != nil || len(menus) == 0 {
+			return nil
+		}
+		list := make([]*model.Menu, 0, len(menus))
+		for _, item := range menus {
+			if item == nil || item.Id <= 0 || (item.Type != menu_type.Dir && item.Type != menu_type.Page) {
+				continue
+			}
+			list = append(list, item)
+		}
+		return formatMenus(s.buildMenuTree(list))
+	}
 	//根据用户ID查询用户角色，获取到所有角色ID
 	roleIds, err := s.getRoleIdsByUserId(userId, false)
 	if err != nil || len(roleIds) == 0 {
@@ -98,27 +153,6 @@ func (s *service) GetUserMenuTree(userId int64) []*UserMenuTree {
 	}
 	//返回菜单树
 	tree := s.buildMenuTree(menus)
-	var formatMenus func(list []*MenuTree) []*UserMenuTree
-	formatMenus = func(list []*MenuTree) []*UserMenuTree {
-		if len(list) == 0 {
-			return nil
-		}
-		result := make([]*UserMenuTree, 0, len(list))
-		for _, item := range list {
-			if item == nil {
-				continue
-			}
-			result = append(result, &UserMenuTree{
-				Code:     item.Code,
-				Name:     item.Name,
-				Type:     item.Type,
-				Icon:     item.Icon,
-				Sort:     item.Sort,
-				Children: formatMenus(item.Children),
-			})
-		}
-		return result
-	}
 	return formatMenus(tree)
 }
 
@@ -166,6 +200,9 @@ func (s *service) RegisterPermission(name string, code string, path string) erro
 
 // CheckUserHasPermission 判断用户是否含有权限
 func (s *service) CheckUserHasPermission(userId int64, path string) error {
+	if userId == constant.SuperAdminUserId {
+		return nil
+	}
 	//根据path查询数据库，获取path对应的权限code
 	perm, err := s.getPermissionByPath(path, false)
 	if err != nil {
