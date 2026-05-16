@@ -11,7 +11,7 @@ import (
 // Controls 控件列表
 func (Controller) Controls(c *context.Context) {
 	pageNum, pageSize := c.ValidatePage()
-	orderByField, orderByType := c.ValidateOrderBy("sort", "asc", "id,sort,status,create_time,update_time")
+	orderByField, orderByType := c.ValidateOrderBy("id", "asc", "id,status,create_time,update_time")
 	var form struct {
 		Id              int64  `json:"id" default:"" validate:"numeric,min=1" label:"页面ID"`
 		Code            string `json:"code" default:"" validate:"omitempty" label:"标识"`
