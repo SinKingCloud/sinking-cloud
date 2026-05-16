@@ -43,7 +43,7 @@ export const admin = [
             },
             {
                 path: "permission",
-                component: "@/pages/admin/index",
+                component: "@/pages/admin/permission",
                 title: "权限管理",
                 name: "admin.system.permission",
                 icon: '•',
