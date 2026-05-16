@@ -36,7 +36,7 @@ export const admin = [
             },
             {
                 path: "role",
-                component: "@/pages/admin/index",
+                component: "@/pages/admin/role",
                 title: "角色管理",
                 name: "admin.system.role",
                 icon: '•',

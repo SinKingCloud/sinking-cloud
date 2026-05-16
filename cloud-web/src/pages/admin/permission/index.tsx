@@ -238,7 +238,7 @@ export default (): React.ReactNode => {
                 <ProTable
                     ref={tableRef}
                     extraRefreshBtn={true}
-                    title={<Title>权限管理</Title>}
+                    title={<Title>权限列表</Title>}
                     rowKey="id"
                     columns={columns}
                     defaultPage={1}
