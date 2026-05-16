@@ -27,6 +27,7 @@ import {createStyles} from "antd-style";
 import {createMenu, deleteMenu, getMenuControls, getMenuInfo, getMenuList, updateMenu} from "@/service/admin/menu";
 import useEnum from "@/utils/enum";
 import {getData} from "@/utils/page";
+import useControl from "@/utils/control";
 
 const useStyles: any = createStyles(({css, token}: any) => ({
     menuCard: css`
@@ -126,20 +127,28 @@ const useStyles: any = createStyles(({css, token}: any) => ({
         align-items: center;
         justify-content: center;
     `,
+    iconLoading: css`
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `,
 }));
 
 export default (): React.ReactNode => {
     const {message, modal} = App.useApp();
     const {styles} = useStyles();
     const [enumData, enumLoading] = useEnum(["admin.menu", "admin.permission"]) as any;
+    const control = useControl();
     const menuTypes = enumData?.["admin.menu"]?.types || {};
     const menuStatus = enumData?.["admin.menu"]?.status || {};
     const permissionCodes = enumData?.["admin.permission"]?.codes || {};
-    const buildOptions: any = (data: any, numberValue = false) =>
-        Object.entries(data || {}).map(([key, value]) => ({
+    const buildOptions: any = (data: any, numberValue = false) => {
+        return Object.entries(data || {}).map(([key, value]) => ({
             value: numberValue ? Number(key) : key,
             label: value,
         }));
+    }
     const menuTypeOptions = buildOptions(menuTypes, true).filter((item: any) => item.value !== 2);
     const statusOptions = buildOptions(menuStatus, true);
     const permissionOptions = Object.entries(permissionCodes || {}).map(([key, value]) => ({
@@ -155,13 +164,13 @@ export default (): React.ReactNode => {
      */
     const iconLoadedRef = useRef(false);
     const iconMountedRef = useRef(true);
+    const noIconOption = {
+        value: "无图标",
+        label: "无图标",
+    };
     const [iconOptions, setIconOptions] = useState<any[]>([]);
     const [iconLoading, setIconLoading] = useState(false);
-    useEffect(() => {
-        return () => {
-            iconMountedRef.current = false;
-        };
-    }, []);
+
     const loadIconOptions = () => {
         if (iconLoadedRef.current || iconLoading) {
             return;
@@ -171,19 +180,22 @@ export default (): React.ReactNode => {
             if (!iconMountedRef.current) {
                 return;
             }
-            setIconOptions((icons || []).map((item) => ({
-                value: item,
-                label: (
-                    <Space size={6}>
-                        <Icon type={item}/>
-                        <span>{item}</span>
-                    </Space>
-                ),
-            })));
+            setIconOptions([
+                noIconOption,
+                ...(icons || []).map((item) => ({
+                    value: item,
+                    label: (
+                        <Space size={6}>
+                            <Icon type={item}/>
+                            <span>{item}</span>
+                        </Space>
+                    ),
+                })),
+            ]);
             iconLoadedRef.current = true;
         }).catch(() => {
             if (iconMountedRef.current) {
-                setIconOptions([]);
+                setIconOptions([noIconOption]);
             }
         }).finally(() => {
             if (iconMountedRef.current) {
@@ -198,7 +210,7 @@ export default (): React.ReactNode => {
     const [menus, setMenus] = useState<any>([]);
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
     const [openKeys, setOpenKeys] = useState<string[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const loadMenus = (resetSelected?: boolean) => {
         const shouldResetSelected = resetSelected === true;
         setLoading(true);
@@ -221,7 +233,7 @@ export default (): React.ReactNode => {
                 const buildMenuItems = (list: any[] = []): MenuProps["items"] => {
                     return list.map((item) => ({
                         key: String(item?.id),
-                        icon: <Icon type={item?.icon || ""}/>,
+                        icon: item?.icon && item.icon !== "0" ? <Icon type={item.icon}/> : undefined,
                         label: item.name,
                         onTitleClick: item.children && item.children.length > 0 ? ({key}: any) => {
                             setSelectedKeys([String(key)]);
@@ -244,9 +256,7 @@ export default (): React.ReactNode => {
             setLoading(false);
         })
     };
-    useEffect(() => {
-        loadMenus();
-    }, []);
+
 
     /**
      * 右侧菜单信息
@@ -254,7 +264,7 @@ export default (): React.ReactNode => {
     const selectedId = Number(selectedKeys[0] || 0);
     const menuInfoRequestRef = useRef(0);
     const [menuInfo, setMenuInfo] = useState<any>();
-    const [infoLoading, setInfoLoading] = useState(false);
+    const [infoLoading, setInfoLoading] = useState(true);
     const loadMenuInfo = (id?: number) => {
         const requestId = ++menuInfoRequestRef.current;
         if (!id) {
@@ -283,9 +293,6 @@ export default (): React.ReactNode => {
             }
         })
     };
-    useEffect(() => {
-        loadMenuInfo(selectedId);
-    }, [selectedId]);
 
     /**
      * 表格操作
@@ -319,7 +326,7 @@ export default (): React.ReactNode => {
             tip: '控件图标',
             width: 100,
             hideInSearch: true,
-            render: (text: any) => text ? <Icon type={text}/> : "-",
+            render: (text: any) => text && text !== "0" ? <Icon type={text}/> : "-",
         },
         {
             title: '权限名称',
@@ -354,6 +361,7 @@ export default (): React.ReactNode => {
             dataIndex: 'status',
             tip: '控件状态',
             width: 100,
+            sorter: true,
             valueEnum: statusColor,
         },
         {
@@ -529,6 +537,7 @@ export default (): React.ReactNode => {
                 }));
                 form.setFieldsValue({
                     ...data,
+                    icon: data?.icon === "0" ? "无图标" : data?.icon,
                     permission_codes: data?.permission_codes || [],
                 });
             },
@@ -546,6 +555,9 @@ export default (): React.ReactNode => {
             ...values,
             type,
         };
+        if (params.icon === "无图标") {
+            params.icon = "0";
+        }
         if (!isEditMode) {
             params.parent_id = formScene?.parentId || 0;
             params.sort = target === "control" ? 0 : (values?.sort || 0);
@@ -572,8 +584,8 @@ export default (): React.ReactNode => {
                 message.success(res?.message || "操作成功");
                 formModalRef.current?.hide();
                 if (target === "control") {
-                    actionRef.current?.clearSelectedRows();
-                    actionRef.current?.refreshTableData();
+                    actionRef.current?.clearSelectedRows?.();
+                    actionRef.current?.refreshTableData?.();
                 } else {
                     loadMenus();
                     loadMenuInfo(selectedId);
@@ -602,8 +614,8 @@ export default (): React.ReactNode => {
                     },
                     onSuccess: (res: any) => {
                         message.success(res?.message || "删除成功");
-                        actionRef.current?.clearSelectedRows();
-                        actionRef.current?.refreshTableData();
+                        actionRef.current?.clearSelectedRows?.();
+                        actionRef.current?.refreshTableData?.();
                         if (refreshMenu) {
                             loadMenus(true);
                         }
@@ -616,8 +628,20 @@ export default (): React.ReactNode => {
         } as any);
     };
 
+    useEffect(() => {
+        loadMenus();
+        return () => {
+            iconMountedRef.current = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        loadMenuInfo(selectedId);
+        actionRef?.current?.refreshTableData?.();
+    }, [selectedId]);
+
     return (
-        <Body>
+        <Body loading={control?.loading}>
             <Row gutter={[10, 10]}>
                 <Col xs={24} sm={24} md={10} lg={7} xl={5} xxl={4} xxxl={3}>
                     <Card className={styles.menuCard} title={<Title>系统菜单</Title>} variant={"borderless"}
@@ -704,7 +728,8 @@ export default (): React.ReactNode => {
                                                 </Tag>
                                             ) : "-"}
                                         </Descriptions.Item>
-                                        <Descriptions.Item label="菜单图标">{menuInfo?.icon || "-"}</Descriptions.Item>
+                                        <Descriptions.Item
+                                            label="菜单图标">{menuInfo?.icon && menuInfo?.icon !== "0" ? menuInfo.icon : "-"}</Descriptions.Item>
                                         <Descriptions.Item label="菜单排序">{menuInfo?.sort}</Descriptions.Item>
                                         <Descriptions.Item
                                             label="创建时间">{menuInfo?.create_time || "-"}</Descriptions.Item>
@@ -720,7 +745,6 @@ export default (): React.ReactNode => {
                              className={(infoLoading || !menuInfo?.id || menuInfo?.type != 1) ? styles.hidden : ""}>
                             <ProTable
                                 ref={actionRef}
-                                key={selectedId}
                                 search={false}
                                 extraRefreshBtn={true}
                                 title={<Title>控件管理</Title>}
@@ -737,7 +761,7 @@ export default (): React.ReactNode => {
                                     fixed: true,
                                     rightExtra: (
                                         <Button key="delete" danger ghost
-                                                onClick={() => deleteMenuOrControls(actionRef.current?.getSelectedRows().map((row: any) => row.id) || [])}>
+                                                onClick={() => deleteMenuOrControls(actionRef.current?.getSelectedRows?.().map((row: any) => row.id) || [])}>
                                             批量删除
                                         </Button>
                                     )
@@ -800,7 +824,11 @@ export default (): React.ReactNode => {
                                               allowClear
                                               maxLength={30}
                                               options={iconOptions}
-                                              notFoundContent={iconLoading ? <Spin size="small"/> : null}
+                                              notFoundContent={iconLoading ? (
+                                                  <div className={styles.iconLoading}>
+                                                      <Spin size="small"/>
+                                                  </div>
+                                              ) : null}
                                               showSearch={{
                                                   filterOption: (inputValue: string, option: any) =>
                                                       String(option?.value || "").toLowerCase().includes(inputValue.toLowerCase())
