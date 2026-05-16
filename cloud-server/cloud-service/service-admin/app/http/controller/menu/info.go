@@ -18,7 +18,7 @@ func (Controller) Info(c *context.Context) {
 	}
 	info, err := service.Rbac.GetMenuOrControlInfoById(form.Id)
 	if err != nil {
-		c.Error(errors.Join(errors.New("获取数据失败"), err))
+		c.Error(errors.Join(errors.New("获取数据失败"), err).Error())
 		return
 	}
 	c.SuccessWithData("获取数据成功", info)

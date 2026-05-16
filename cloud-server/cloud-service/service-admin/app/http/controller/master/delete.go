@@ -22,7 +22,7 @@ func (Controller) Delete(c *context.Context) {
 	}
 	err := service.User.DeleteById(form.Id)
 	if err != nil {
-		c.Error(errors.Join(errors.New("删除数据失败"), err))
+		c.Error(errors.Join(errors.New("删除数据失败"), err).Error())
 		return
 	}
 	c.Success("删除数据成功")
