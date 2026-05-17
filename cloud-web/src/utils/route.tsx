@@ -86,7 +86,7 @@ export function getMenuItems(routes: any, parentPath = '/', hideMenu = true) {
         if (route?.icon) {
             if (React.isValidElement(route?.icon)) {
                 menuItem.icon = route.icon;
-            } else if (typeof route?.icon === 'string') {
+            } else if (typeof route?.icon === 'string' && route?.icon != "0") {
                 menuItem.icon = <Icon type={route?.icon}/>;
             } else {
                 menuItem.icon = route?.icon;
