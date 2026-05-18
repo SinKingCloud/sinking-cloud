@@ -9,18 +9,18 @@
     "start": "npm run dev"
   },
   "dependencies": {
-    "@ant-design/icons": "^6.1.0",
-    "@umijs/plugins": "^4.6.31",
-    "antd": "^6.3.1",
+    "@ant-design/icons": "^6.2.3",
+    "@umijs/plugins": "^4.6.55",
+    "antd": "^6.4.2",
     "antd-style": "^4.1.0",
     "go-captcha-react": "^1.0.4",
-    "sinking-antd": "^1.1.2",
-    "umi": "^4.6.31",
+    "sinking-antd": "^1.1.3",
+    "umi": "^4.6.55",
     "umi-request": "^1.4.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "typescript": "^5.0.3"
+    "typescript": "^6.0.3"
   }
 }

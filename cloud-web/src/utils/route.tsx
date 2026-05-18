@@ -86,8 +86,6 @@ export function getMenuItems(routes: any, parentPath = '/', hideMenu = true) {
         if (route?.icon) {
             if (typeof route?.icon === 'string' && route?.icon != "0") {
                 menuItem.icon = <Icon type={route?.icon}/>;
-            } else {
-                menuItem.icon = route?.icon;
             }
         }
         if (parentPath != '/' && !route?.path?.startsWith('/')) {
