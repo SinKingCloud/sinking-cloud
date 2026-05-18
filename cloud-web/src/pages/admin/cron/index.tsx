@@ -331,7 +331,6 @@ export default (): React.ReactNode => {
             dataIndex: "name",
             tip: "任务名称",
             valueType: "text",
-            copyable: true,
         },
         {
             title: "任务类型",
