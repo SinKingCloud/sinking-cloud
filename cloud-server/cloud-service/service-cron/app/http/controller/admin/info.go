@@ -1,4 +1,4 @@
-package task
+package admin
 
 import (
 	"service-cron/app/service"
@@ -6,8 +6,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
-// Run 运行任务
-func (Controller) Run(c *context.Context) {
+// Info 任务详情
+func (Controller) Info(c *context.Context) {
 	var form struct {
 		Id int64 `json:"id" default:"" validate:"numeric,min=1" label:"记录ID"`
 	}
@@ -15,10 +15,10 @@ func (Controller) Run(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	err := service.Task.Run(form.Id)
+	info, err := service.Task.FindById(form.Id, false)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.Success("运行任务成功")
+	c.SuccessWithData("获取数据成功", info)
 }

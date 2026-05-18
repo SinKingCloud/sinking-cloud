@@ -1,4 +1,4 @@
-package task
+package admin
 
 import (
 	"service-cron/app/model"
