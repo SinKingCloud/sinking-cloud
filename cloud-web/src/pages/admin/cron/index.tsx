@@ -159,7 +159,8 @@ export default (): React.ReactNode => {
                 message?.error(res?.message || "读取任务失败");
                 formModalRef.current?.hide();
             },
-            onFinally: () => setFormInfoLoading(false),
+        }).finally(() => {
+            setFormInfoLoading(false)
         });
     };
 
@@ -205,7 +206,8 @@ export default (): React.ReactNode => {
             onFail: (res: any) => {
                 message?.error(res?.message || "操作失败");
             },
-            onFinally: () => setFormSubmitting(false),
+        }).finally(() => {
+            setFormSubmitting(false)
         });
     };
 
@@ -247,7 +249,7 @@ export default (): React.ReactNode => {
      * 执行任务
      * @param id 任务ID
      */
-    const onRun = (id: any) => {
+    const onRun = async (id: any) => {
         if (!hasRunControl) {
             message?.warning("暂无执行权限");
             return;
@@ -256,7 +258,7 @@ export default (): React.ReactNode => {
         if (!taskId) {
             return;
         }
-        runCron({
+        await runCron({
             body: {id: taskId},
             onSuccess: (res: any) => {
                 message?.success(res?.message || "执行成功");

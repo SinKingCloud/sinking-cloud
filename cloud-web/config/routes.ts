@@ -70,6 +70,13 @@ export const admin = [
                 icon: '•',
             },
             {
+                path: "pay",
+                component: "@/pages/admin/pay",
+                title: "支付管理",
+                name: "admin.system.pay",
+                icon: '•',
+            },
+            {
                 path: "config",
                 component: "@/pages/admin/index",
                 title: "系统设置",

@@ -166,7 +166,7 @@ export default (): React.ReactNode => {
         form.setFieldValue("menu_ids" as any, collectMenuIdsWithParents(nextKeys));
     };
 
-    const openCreate = () => {
+    const openCreate = async () => {
         if (!hasCreateControl) {
             message?.warning("暂无创建权限");
             return;
@@ -184,7 +184,7 @@ export default (): React.ReactNode => {
             menu_ids: [],
         });
         modalRef.current?.show();
-        loadRoleMenus();
+        await loadRoleMenus();
     };
 
     const loadEditInfo = (id: number) => {
@@ -209,7 +209,8 @@ export default (): React.ReactNode => {
                 onFail: (res: any) => {
                     message?.error(res?.message || "获取角色详情失败");
                 },
-                onFinally: () => setInfoLoading(false),
+            }).finally(() => {
+                setInfoLoading(false)
             });
         });
     };
