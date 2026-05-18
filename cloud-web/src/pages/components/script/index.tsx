@@ -17,6 +17,7 @@ export interface ScriptConfig {
     integrity?: string;            // 完整性校验
     noModule?: boolean;           // 是否为非模块脚本
     type?: string;                // 脚本类型
+    charset?: string;             // 脚本字符集
     timeout?: number;             // 加载超时时间(ms)
     retryCount?: number;          // 重试次数
     retryDelay?: number;          // 重试延迟(ms)
@@ -53,6 +54,7 @@ const createScriptElement = (config: ScriptConfig): HTMLScriptElement => {
     if (config.integrity) script.integrity = config.integrity;
     if (config.noModule !== undefined) script.noModule = config.noModule;
     if (config.type) script.type = config.type;
+    if (config.charset) script.charset = config.charset;
 
     return script;
 };

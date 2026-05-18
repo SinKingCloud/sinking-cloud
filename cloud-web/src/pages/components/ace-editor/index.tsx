@@ -399,7 +399,7 @@ const AceEditor: React.FC<AceEditorProps> = ({
             }
         };
 
-        initialize();
+        initialize?.();
     }, [aceLoaded, containerMounted]); // 依赖 aceLoaded 和容器挂载状态
 
     // 更新编辑器配置
@@ -409,7 +409,7 @@ const AceEditor: React.FC<AceEditorProps> = ({
         const editor = editorRef.current;
 
         // 更新值（避免无限循环）
-        if (value !== undefined && value !== editor.getValue()) {
+        if (value !== editor.getValue()) {
             const cursorPosition = editor.getCursorPosition();
             editor.setValue(value, -1);
             editor.moveCursorToPosition(cursorPosition);
@@ -535,26 +535,22 @@ const AceEditor: React.FC<AceEditorProps> = ({
     // 处理模式变化
     useEffect(() => {
         if (editorRef.current && mode) {
-            const updateMode = async () => {
-                await loadMode(mode);
+            loadMode(mode).finally(() => {
                 if (editorRef.current) {
                     editorRef.current.session.setMode(`ace/mode/${mode}`);
                 }
-            };
-            updateMode();
+            })
         }
     }, [mode]);
 
     // 处理主题变化
     useEffect(() => {
         if (editorRef.current && theme) {
-            const updateTheme = async () => {
-                await loadTheme(theme);
+            loadTheme(theme).finally(() => {
                 if (editorRef.current) {
                     editorRef.current.setTheme(`ace/theme/${theme}`);
                 }
-            };
-            updateTheme();
+            })
         }
     }, [theme]);
 

@@ -56,10 +56,10 @@ export const admin = [
                 icon: '•',
             },
             {
-                path: "task",
-                component: "@/pages/admin/index",
+                path: "cron",
+                component: "@/pages/admin/cron",
                 title: "任务管理",
-                name: "admin.system.task",
+                name: "admin.system.cron",
                 icon: '•',
             },
             {
