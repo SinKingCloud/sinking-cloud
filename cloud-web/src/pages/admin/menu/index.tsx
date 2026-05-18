@@ -100,7 +100,7 @@ const useStyles: any = createStyles(({css, token}: any) => ({
         }
     `,
     fullWidth: css`
-        max-width: 200px;
+        max-width: 260px;
     `,
     row: css`
         display: flex;
@@ -495,14 +495,14 @@ export default (): React.ReactNode => {
             return;
         }
         if (!menuInfo?.id || menuInfo?.type !== 0) {
-            message?.warning("请选择目录后再新建菜单");
+            message?.warning("请选择目录后再新增菜单");
             return;
         }
         loadIconOptions();
         setFormScene({
             action: "create",
             target: "menu",
-            title: "新建菜单",
+            title: "新增菜单",
             id: undefined,
             parentId: menuInfo.id,
             type: 1,
@@ -769,7 +769,7 @@ export default (): React.ReactNode => {
                                                           items: [
                                                               hasCreateControl && menuInfo?.type === 0 ? {
                                                                   key: "create",
-                                                                  label: "新建",
+                                                                  label: "新增",
                                                                   onClick: openCreateChildMenu,
                                                               } : null,
                                                               hasUpdateControl ? {
@@ -807,7 +807,9 @@ export default (): React.ReactNode => {
                                         <Descriptions
                                             column={{xs: 1, sm: 1, md: 1, lg: 2, xl: 2, xxl: 2}} size={"small"}>
                                             <Descriptions.Item label="菜单名称">{menuInfo?.name}</Descriptions.Item>
-                                            <Descriptions.Item label="菜单标识">{menuInfo?.code}</Descriptions.Item>
+                                            <Descriptions.Item label="菜单标识">
+                                                <Typography.Text copyable>{menuInfo?.code}</Typography.Text>
+                                            </Descriptions.Item>
                                             <Descriptions.Item
                                                 label="菜单类型">{menuTypes?.[menuInfo?.type] || "-"}</Descriptions.Item>
                                             <Descriptions.Item label="菜单状态">
@@ -854,7 +856,7 @@ export default (): React.ReactNode => {
                                         defaultPageSize={20}
                                         extra={hasCreateControl ? (
                                             <Button type="primary" className={styles.infoActionBtn}
-                                                    onClick={openCreateControl}>新建</Button>
+                                                    onClick={openCreateControl}>新增</Button>
                                         ) : undefined}
                                         rowSelection={hasDeleteControl ? {
                                             fixed: true,
