@@ -386,7 +386,7 @@ const SKLayout: React.FC = () => {
     useEffect(() => {
         setLoading(true);
         clearRouteCache();
-        user?.refreshSystemUser(async (data) => {
+        user?.refreshSystemUser(async (data: any) => {
             if (!data) {
                 historyPush("admin.login");
                 return;
@@ -417,6 +417,13 @@ const SKLayout: React.FC = () => {
                 menuTheme={web?.info?.ui?.theme == "dark" ? "dark" : "light"}
                 footer={<>©{new Date().getFullYear()} All Right
                     Revered {web?.info?.name || Settings?.title}</>}
+                menuBottomBtnIcon={<Icon type={"icon-web"}/>}
+                menuBottomBtnText={<>&nbsp;&nbsp;系统前台</>}
+                onMenuBottomBtnClick={() => {
+                    if (web?.info?.url) {
+                        window.open(web.info.url, "_blank", "noopener,noreferrer");
+                    }
+                }}
                 headerHidden={false}
                 headerFixed={false}
                 headerRight={<RightTop/>}

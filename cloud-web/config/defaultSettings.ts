@@ -11,5 +11,5 @@ export default ({
     favicons: '/favicon.ico', // 网站图标
     color: "rgb(0, 83, 251)", // 主题颜色
     radius: 0, // 圆角大小
-    iconfontUrl: '//at.alicdn.com/t/c/font_5149762_vl0xmmk2cf.js', // iconfont 字体图标地址（支持单个或多个地址数组）
+    iconfontUrl: '//at.alicdn.com/t/c/font_5149762_lgrcdfpgjph.js', // iconfont 字体图标地址（支持单个或多个地址数组）
 });
