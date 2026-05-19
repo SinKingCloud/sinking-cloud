@@ -65,16 +65,17 @@ export default (): React.ReactNode => {
             message?.warning("暂无创建权限");
             return;
         }
-        const defaultPlugin = Number(pluginOptions?.[0]?.value || 0);
         setChannelScene({
             action: "create",
             id: undefined,
             title: "新增通道",
         });
         channelForm.resetFields();
+        console.log(typeOptions?.[0]?.value)
         channelForm.setFieldsValue({
-            plugin: defaultPlugin,
-            status: 0,
+            type: typeOptions?.[0]?.value || "alipay",
+            plugin: Number(pluginOptions?.[0]?.value || 0),
+            status: Number(statusOptions?.[0]?.value || 0),
         });
         setConfigFields([]);
         setChannelInfoLoading(false);

@@ -305,7 +305,6 @@ export default (): React.ReactNode => {
         {
             title: "日志内容",
             dataIndex: "content",
-            copyable: true,
         },
         {
             title: "创建时间",
