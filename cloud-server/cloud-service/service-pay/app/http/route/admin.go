@@ -12,8 +12,7 @@ import (
 func loadAdmin(s *sinking_web.Engine) {
 	g := service.Auth.GetAdminRouteGroup(s)
 	service.Auth.LoadAdminRouteWithRegister(g, func(ANY func(string, string, func(*context.Context))) {
-		ANY("/config/get", "获取支付配置", controller.Admin.Config.Get)
-		ANY("/config/set", "更新支付配置", controller.Admin.Config.Set)
+		ANY("/config", "支付配置", controller.Admin.Config.Pay)
 
 		ANY("/channel/list", "支付通道列表", controller.Admin.Channel.List)
 		ANY("/channel/update", "更新支付通道", controller.Admin.Channel.Update)
