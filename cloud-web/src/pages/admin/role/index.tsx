@@ -114,6 +114,27 @@ export default (): React.ReactNode => {
         return Array.from(result);
     };
 
+    const filterDetachedPageMenuIds = (ids: any[] = [], tree: any[] = roleMenus) => {
+        const selected = new Set(toNumberIds(ids));
+        const loop = (list: any[] = []) => {
+            (list || []).forEach((item) => {
+                const id = Number(item?.id);
+                const type = Number(item?.type);
+                const children = item?.children || [];
+                if (id > 0 && type === 1 && children.length > 0 && selected.has(id)) {
+                    const descendantIds = getDescendantIds(item);
+                    const hasSelectedDescendant = descendantIds.some((itemId) => selected.has(itemId));
+                    if (!hasSelectedDescendant) {
+                        selected.delete(id);
+                    }
+                }
+                loop(children);
+            });
+        };
+        loop(tree);
+        return Array.from(selected);
+    };
+
     const collectMenuIdsWithParents = (ids: any[] = []) => {
         const selected = new Set(toNumberIds(ids));
         const parentMap = new Map<number, number>();
@@ -197,7 +218,7 @@ export default (): React.ReactNode => {
                 body: {id},
                 onSuccess: (res: any) => {
                     const info = res?.data || {};
-                    const menuIds = toNumberIds(info?.menu_ids || []);
+                    const menuIds = filterDetachedPageMenuIds(info?.menu_ids || [], menus);
                     form.setFieldsValue({
                         name: info?.name,
                         status: Number(info?.status),
