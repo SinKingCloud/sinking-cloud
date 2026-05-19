@@ -78,7 +78,7 @@ export const admin = [
             },
             {
                 path: "config",
-                component: "@/pages/admin/index",
+                component: "@/pages/admin/config",
                 title: "系统设置",
                 name: "admin.system.config",
                 icon: '•',
