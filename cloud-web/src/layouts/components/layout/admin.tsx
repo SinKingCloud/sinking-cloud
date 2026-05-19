@@ -258,6 +258,9 @@ const RightTop: React.FC = () => {
  */
 const useSKLayoutStyles = createStyles(({token}): any => {
     return {
+        color: {
+            color: token?.colorPrimary
+        },
         menuColor: {
             ">.ant-menu-item>.ant-menu-item-icon,>.ant-menu-submenu>.ant-menu-submenu-title>.ant-menu-item-icon": {
                 color: token?.colorPrimaryHover + " !important",
@@ -304,7 +307,7 @@ const SKLayout: React.FC = () => {
     const location = useLocation();
     const match = useSelectedRoutes();
     const [loading, setLoading] = useState(true);
-    const {styles: {menuColor, collapsedImg, unCollapsed, collapsedLogo}} = useSKLayoutStyles();
+    const {styles: {color, menuColor, collapsedImg, unCollapsed, collapsedLogo}} = useSKLayoutStyles();
 
     /**
      * 菜单数据
@@ -417,7 +420,7 @@ const SKLayout: React.FC = () => {
                 menuTheme={web?.info?.ui?.theme == "dark" ? "dark" : "light"}
                 footer={<>©{new Date().getFullYear()} All Right
                     Revered {web?.info?.name || Settings?.title}</>}
-                menuBottomBtnIcon={<Icon type={"icon-web"}/>}
+                menuBottomBtnIcon={<Icon type={"icon-computer"} className={color}/>}
                 menuBottomBtnText={<>&nbsp;&nbsp;系统前台</>}
                 onMenuBottomBtnClick={() => {
                     if (web?.info?.url) {
