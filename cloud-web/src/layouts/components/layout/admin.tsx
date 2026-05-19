@@ -421,7 +421,7 @@ const SKLayout: React.FC = () => {
                 menuBottomBtnText={<>&nbsp;&nbsp;系统前台</>}
                 onMenuBottomBtnClick={() => {
                     if (web?.info?.url) {
-                        window.open(web.info.url, "_blank", "noopener,noreferrer");
+                        window.open(web.info.url);
                     }
                 }}
                 headerHidden={false}
