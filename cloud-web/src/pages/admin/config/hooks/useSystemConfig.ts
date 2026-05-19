@@ -11,6 +11,22 @@ type UseSystemConfigOptions = {
     getBody?: any;
 };
 
+const normalizeEmptyValue = (value: any): any => {
+    if (value === "") {
+        return undefined;
+    }
+    if (Array.isArray(value)) {
+        return value.map((item) => normalizeEmptyValue(item));
+    }
+    if (value && typeof value === "object") {
+        return Object.fromEntries(Object.entries(value).map(([key, item]) => [
+            key,
+            normalizeEmptyValue(item),
+        ]));
+    }
+    return value;
+};
+
 export const useSystemConfig = ({
                                     request,
                                     saveRequest,
@@ -33,7 +49,7 @@ export const useSystemConfig = ({
         request({
             body: getBody === undefined ? {action: "get"} : getBody,
             onSuccess: (res: any) => {
-                const data = normalize ? normalize(res?.data || {}) : res?.data || {};
+                const data = normalizeEmptyValue(normalize ? normalize(res?.data || {}) : res?.data || {});
                 form.setFieldsValue(data);
             },
             onFail: (res: any) => {

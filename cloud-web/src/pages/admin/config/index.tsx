@@ -8,7 +8,12 @@ import UiView from "./components/ui";
 import AliView from "./components/ali";
 import PayView from "./components/pay";
 
-type ConfigKey = "web" | "ui" | "aliyun" | "pay";
+type ConfigItem = {
+    key: string;
+    title: React.ReactNode;
+    control: string;
+    component: React.ReactNode;
+};
 
 const useStyles: any = createStyles(({css, responsive, isDarkMode, token}: any) => ({
     main: css`
@@ -66,35 +71,42 @@ const useStyles: any = createStyles(({css, responsive, isDarkMode, token}: any) 
     `,
 }));
 
-const menuMap: Record<ConfigKey, React.ReactNode> = {
-    web: "网站设置",
-    ui: "界面设置",
-    aliyun: "阿里云设置",
-    pay: "支付设置",
-};
-
-const controlMap: Record<ConfigKey, string> = {
-    web: "admin.system.config:web",
-    ui: "admin.system.config:ui",
-    aliyun: "admin.system.config:aliyun",
-    pay: "admin.system.config:pay",
-};
-
-const componentMap: Record<ConfigKey, React.ReactNode> = {
-    web: <WebView/>,
-    ui: <UiView/>,
-    aliyun: <AliView/>,
-    pay: <PayView/>,
-};
+const configItems: ConfigItem[] = [
+    {
+        key: "web",
+        title: "网站设置",
+        control: "admin.system.config:web",
+        component: <WebView/>,
+    },
+    {
+        key: "ui",
+        title: "界面设置",
+        control: "admin.system.config:ui",
+        component: <UiView/>,
+    },
+    {
+        key: "aliyun",
+        title: "阿里云设置",
+        control: "admin.system.config:aliyun",
+        component: <AliView/>,
+    },
+    {
+        key: "pay",
+        title: "支付设置",
+        control: "admin.system.config:pay",
+        component: <PayView/>,
+    },
+];
 
 export default (): React.ReactNode => {
     const {styles} = useStyles();
     const control = useControl("admin.system.config");
-    const menuKeys = useMemo(() => {
-        return (Object.keys(menuMap) as ConfigKey[]).filter((key) => control.hasControl(controlMap[key]));
+    const visibleItems = useMemo(() => {
+        return configItems.filter((item) => control.hasControl(item.control));
     }, [control.controls]);
-    const [selectKey, setSelectKey] = useState<ConfigKey>("web");
-    const activeKey = menuKeys.includes(selectKey) ? selectKey : menuKeys[0];
+    const [selectKey, setSelectKey] = useState<string>("web");
+    const activeItem = visibleItems.find((item) => item.key === selectKey) || visibleItems[0];
+    const activeKey = activeItem?.key;
 
     useEffect(() => {
         if (!control.loading && activeKey && activeKey !== selectKey) {
@@ -104,10 +116,10 @@ export default (): React.ReactNode => {
 
     return (
         <Body loading={control.loading}>
-            {!control.loading && menuKeys.length <= 0 && (
+            {!control.loading && visibleItems.length <= 0 && (
                 <Result status="403" title="403" subTitle="您无权限访问此页面,请联系管理员"/>
             )}
-            {!control.loading && menuKeys.length > 0 && (
+            {!control.loading && activeItem && (
                 <Card title={<Title>系统设置</Title>} variant="borderless">
                     <div className={styles.main}>
                         <div className={styles.leftMenu}>
@@ -115,16 +127,16 @@ export default (): React.ReactNode => {
                                 className={styles.menu}
                                 mode="inline"
                                 selectedKeys={[activeKey]}
-                                onClick={({key}) => setSelectKey(key as ConfigKey)}
-                                items={menuKeys.map((key) => ({
-                                    key,
-                                    label: menuMap[key],
+                                onClick={({key}) => setSelectKey(key)}
+                                items={visibleItems.map((item) => ({
+                                    key: item.key,
+                                    label: item.title,
                                 }))}
                             />
                         </div>
                         <div className={styles.right}>
-                            <div className={styles.title}>{menuMap[activeKey]}</div>
-                            {componentMap[activeKey]}
+                            <div className={styles.title}>{activeItem.title}</div>
+                            {activeItem.component}
                         </div>
                     </div>
                 </Card>

@@ -1,5 +1,5 @@
 import React from "react";
-import {Button, ColorPicker, Form, Input, InputNumber, Select, Spin} from "antd";
+import {Button, ColorPicker, Flex, Form, Input, InputNumber, Select, Spin} from "antd";
 import {createStyles} from "antd-style";
 
 const useStyles: any = createStyles(({css, token}: any) => ({
@@ -123,9 +123,20 @@ export const FormField = ({
     }
     if (type === "color") {
         return (
-            <Form.Item name={name} label={label} tooltip={tooltip} rules={itemRules}
-                       style={itemStyle} getValueFromEvent={(_: any, value: string) => value}>
-                <ColorPicker showText format={format} defaultFormat={format}/>
+            <Form.Item label={label} tooltip={tooltip} style={itemStyle}>
+                <Flex gap={8} align="center">
+                    <Form.Item name={name} rules={itemRules} noStyle
+                               getValueFromEvent={(_: any, value: string) => value}>
+                        <ColorPicker showText format={format} defaultFormat={format}/>
+                    </Form.Item>
+                    <Form.Item shouldUpdate noStyle>
+                        {({setFieldValue}: any) => (
+                            <Button onClick={() => setFieldValue(name as any, "")}>
+                                清空
+                            </Button>
+                        )}
+                    </Form.Item>
+                </Flex>
             </Form.Item>
         );
     }
