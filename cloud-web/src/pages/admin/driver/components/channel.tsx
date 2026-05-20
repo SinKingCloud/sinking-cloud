@@ -107,7 +107,7 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
                 message?.error(res?.message || "获取通道详情失败");
                 modalRef.current?.hide();
             },
-        }).finally(()=>{
+        }).finally(() => {
             setInfoLoading(false);
         });
     };
@@ -244,6 +244,7 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
             valueType: "option",
             key: "option",
             width: 100,
+            fixed: "right",
             hideInSearch: true,
             render: (_: any, record: any) => {
                 const items = [

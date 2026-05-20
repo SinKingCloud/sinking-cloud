@@ -197,7 +197,12 @@ const SceneManage: React.FC<SceneManageProps> = ({control}) => {
             dataIndex: "max_size",
             tip: "场景允许上传的最大文件大小,单位KB",
             hideInSearch: true,
-            render: (text: any) => formatSizeFromKb(text),
+            render: (text: any) => {
+                if (text > 0) {
+                    return formatSizeFromKb(text);
+                }
+                return "无限制";
+            },
         },
         {
             title: "登录限制",
@@ -261,6 +266,7 @@ const SceneManage: React.FC<SceneManageProps> = ({control}) => {
             valueType: "option",
             key: "option",
             width: 100,
+            fixed: "right",
             hideInSearch: true,
             render: (_: any, record: any) => {
                 const items = [
