@@ -853,7 +853,7 @@ export default (): React.ReactNode => {
                                             return getData({...params, id: selectedId}, sort, getMenuControls)
                                         }}
                                         defaultPage={1}
-                                        defaultPageSize={20}
+                                        defaultPageSize={10}
                                         extra={hasCreateControl ? (
                                             <Button type="primary" className={styles.infoActionBtn}
                                                     onClick={openCreateControl}>新增</Button>

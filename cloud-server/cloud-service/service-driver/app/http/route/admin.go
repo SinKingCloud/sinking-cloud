@@ -14,7 +14,7 @@ func loadAdmin(s *sinking_web.Engine) {
 	service.Auth.LoadAdminRouteWithRegister(g, func(ANY func(string, string, func(*context.Context))) {
 		ANY("/channel/list", "存储列表", controller.Admin.Channel.List)
 		ANY("/channel/info", "存储详情", controller.Admin.Channel.Info)
-		ANY("/channel/create", "修改存储", controller.Admin.Channel.Create)
+		ANY("/channel/create", "创建存储", controller.Admin.Channel.Create)
 		ANY("/channel/delete", "删除存储", controller.Admin.Channel.Delete)
 		ANY("/channel/update", "更新存储", controller.Admin.Channel.Update)
 
