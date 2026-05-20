@@ -13,7 +13,7 @@ func (r *Repository) SelectAll() (list []*model.Task, err error) {
 // Select 查询数据
 func (r *Repository) Select(where *SelectTask, orderByField string, orderByType string, page int, pageSize int) (list []*Task, total int64, err error) {
 	offset := pageSize * (page - 1)
-	query := r.Database.Db.Debug().Model(&model.Task{})
+	query := r.Database.Db.Model(&model.Task{})
 	if where != nil {
 		if where.Type != "" {
 			query = query.Where("type = ?", where.Type)

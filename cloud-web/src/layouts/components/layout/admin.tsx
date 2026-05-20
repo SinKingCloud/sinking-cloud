@@ -412,7 +412,7 @@ const SKLayout: React.FC = () => {
                 onNavigate={(path) => history.push(path)}
                 breadCrumbItems={breadCrumbItems}
                 hideBreadCrumb={match?.at(-1)?.route?.hideBreadCrumb}
-                waterMark={web?.info?.ui?.water_mark ? [user?.system?.nick_name, user?.system?.email] : ""}
+                waterMark={web?.info?.ui?.watermark ? [user?.system?.nick_name, user?.system?.email] : ""}
                 menus={currentMenus}
                 menuClassNames={menuColor}
                 layout={web?.info?.ui?.layout != "left" ? "horizontal" : "inline"}

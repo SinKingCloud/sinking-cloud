@@ -87,7 +87,7 @@ declare namespace API {
      * 界面信息
      */
     type Ui = {
-        water_mark?: string;
+        watermark?: string;
         layout?: string;
         theme?: string;
         color?: string;
