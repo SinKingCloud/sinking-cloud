@@ -1,5 +1,6 @@
 import React, {useRef, useState} from "react";
 import {App, Button, Checkbox, Dropdown, Form, Select, Space} from "antd";
+import {UploadOutlined} from "@ant-design/icons";
 import {ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {getData} from "@/utils/page";
 import useEnum, {clearEnumCache} from "@/utils/enum";
@@ -9,6 +10,7 @@ import {
     updateFile,
 } from "@/service/admin/driver";
 import {buildOptions, buildValueEnum, dateRangeTransform, formatSize} from "./common";
+import FileUploadModal, {type FileUploadModalRef} from "./upload";
 
 type FileManageProps = {
     control: any;
@@ -19,6 +21,7 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
     const [enumData] = useEnum(["driver.channel", "driver.scene", "driver.file"]) as any;
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
+    const fileUploadRef = useRef<FileUploadModalRef>({} as FileUploadModalRef);
     const [form] = Form.useForm();
     const [submitLoading, setSubmitLoading] = useState(false);
     const [editIds, setEditIds] = useState<any[]>([]);
@@ -32,6 +35,14 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
     const statusValueEnum = buildValueEnum(fileEnums?.status, {"0": "green", "1": "red"});
     const sceneValueEnum = buildValueEnum(sceneEnums?.name);
     const channelValueEnum = buildValueEnum(channelEnums?.name);
+    const sceneOptions = buildOptions(sceneEnums?.name, true);
+
+    const openUpload = () => fileUploadRef.current?.open();
+
+    const onUploaded = () => {
+        clearEnumCache("driver.file");
+        tableRef.current?.refreshTableData?.();
+    };
 
     const openEdit = (ids: any[] = [], status?: any) => {
         if (!hasUpdateControl) {
@@ -77,7 +88,9 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
             okText: "确 定",
             okType: "danger",
             cancelText: "取 消",
-            maskClosable: true,
+            mask: {
+                closable: true,
+            },
             onOk: async () => {
                 await deleteFile({
                     body: {
@@ -233,6 +246,7 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
             valueType: "option",
             key: "option",
             width: 100,
+            fixed: "right",
             hideInSearch: true,
             render: (_: any, record: any) => {
                 const items = [
@@ -274,7 +288,13 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
                 columns={columns}
                 defaultPage={1}
                 defaultPageSize={10}
+                extra={(
+                    <Button type="primary" onClick={openUpload}>
+                        上传
+                    </Button>
+                )}
                 rowSelection={(hasUpdateControl || hasDeleteControl) ? {
+                    fixed: true,
                     rightExtra: [
                         hasDeleteControl ? (
                             <Button key="delete" type="primary" danger ghost
@@ -299,7 +319,7 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
                 ref={modalRef}
                 title={<Title>编辑文件</Title>}
                 onOk={form.submit}
-                width={380}
+                width={320}
                 modalProps={{
                     confirmLoading: submitLoading,
                     okText: "提交",
@@ -309,14 +329,19 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
                         setEditIds([]);
                         setSubmitLoading(false);
                     },
-                } as any}
-            >
+                } as any}>
                 <Form form={form} layout="vertical" onFinish={onSubmit}>
                     <Form.Item name="status" label="文件状态" rules={[{required: true, message: "请选择文件状态"}]}>
                         <Select placeholder="请选择文件状态" options={statusOptions as any}/>
                     </Form.Item>
                 </Form>
             </ProModal>
+
+            <FileUploadModal
+                ref={fileUploadRef}
+                sceneOptions={sceneOptions}
+                onUploaded={onUploaded}
+            />
         </>
     );
 };

@@ -123,7 +123,9 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
             okText: "确 定",
             okType: "danger",
             cancelText: "取 消",
-            maskClosable: true,
+            mask: {
+                closable: true,
+            },
             onOk: async () => {
                 await deleteChannel({
                     body: {id: Number(id)},

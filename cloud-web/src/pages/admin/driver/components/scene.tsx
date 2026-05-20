@@ -108,7 +108,9 @@ const SceneManage: React.FC<SceneManageProps> = ({control}) => {
             okText: "确 定",
             okType: "danger",
             cancelText: "取 消",
-            maskClosable: true,
+            mask: {
+                closable: true,
+            },
             onOk: async () => {
                 await deleteScene({
                     body: {id: Number(id)},
