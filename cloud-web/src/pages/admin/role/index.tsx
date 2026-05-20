@@ -3,7 +3,7 @@ import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking
 import {App, Button, Dropdown, Empty, Form, Input, Result, Select, Space, Spin, Tag, Tree, Typography} from "antd";
 import {getData} from "@/utils/page";
 import useControl from "@/utils/control";
-import useEnum from "@/utils/enum";
+import useEnum, {clearEnumCache} from "@/utils/enum";
 import {
     createRole,
     deleteRole,
@@ -285,6 +285,7 @@ export default (): React.ReactNode => {
         await (isCreateMode ? createRole : updateRole)({
             body,
             onSuccess: (res: any) => {
+                clearEnumCache("admin.role");
                 modalRef.current?.hide();
                 tableRef.current?.refreshTableData?.();
                 tableRef.current?.clearSelectedRows?.();
@@ -322,6 +323,7 @@ export default (): React.ReactNode => {
                         ids: nextIds,
                     },
                     onSuccess: (res: any) => {
+                        clearEnumCache("admin.role");
                         tableRef.current?.refreshTableData?.();
                         tableRef.current?.clearSelectedRows?.();
                         message?.success(res?.message || "删除成功");

@@ -56,10 +56,10 @@ export const admin = [
                 name: "admin.system.cron",
             },
             {
-                path: "storage",
-                component: "@/pages/admin/index",
+                path: "driver",
+                component: "@/pages/admin/driver",
                 title: "存储管理",
-                name: "admin.system.storage",
+                name: "admin.system.driver",
             },
             {
                 path: "pay",

@@ -1,9 +1,10 @@
 import React, {useRef, useState} from 'react';
 import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {App, Button, Col, Dropdown, Form, Input, Result, Row, Select, Spin} from "antd";
+import {createStyles} from "antd-style";
 import {getData} from "@/utils/page";
 import useControl from "@/utils/control";
-import useEnum from "@/utils/enum";
+import useEnum, {clearEnumCache} from "@/utils/enum";
 import {
     createPayChannel,
     deletePayChannel,
@@ -12,7 +13,17 @@ import {
     updatePayChannel
 } from "@/service/admin/pay";
 
+const useStyles: any = createStyles(({css}: any) => ({
+    infoLoading: css`
+        height: 240px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `,
+}));
+
 export default (): React.ReactNode => {
+    const {styles} = useStyles();
     const {message, modal} = App.useApp();
     const [enumData, enumLoading] = useEnum(["pay.channel"]) as any;
     const control = useControl();
@@ -71,7 +82,6 @@ export default (): React.ReactNode => {
             title: "新增通道",
         });
         channelForm.resetFields();
-        console.log(typeOptions?.[0]?.value)
         channelForm.setFieldsValue({
             type: typeOptions?.[0]?.value || "alipay",
             plugin: Number(pluginOptions?.[0]?.value || 0),
@@ -162,6 +172,7 @@ export default (): React.ReactNode => {
         (isEditMode ? updatePayChannel : createPayChannel)({
             body,
             onSuccess: (res: any) => {
+                clearEnumCache("pay.channel");
                 channelModalRef.current?.hide();
                 tableRef.current?.refreshTableData?.();
                 tableRef.current?.clearSelectedRows?.();
@@ -195,6 +206,7 @@ export default (): React.ReactNode => {
                         id: id
                     },
                     onSuccess: (res) => {
+                        clearEnumCache("pay.channel");
                         tableRef.current?.refreshTableData?.();
                         message?.success(res?.message || "删除成功");
                     },
@@ -351,7 +363,7 @@ export default (): React.ReactNode => {
                         },
                     } as any}>
                     {channelInfoLoading ? (
-                        <div style={{height: 240, display: "flex", alignItems: "center", justifyContent: "center"}}>
+                        <div className={styles.infoLoading}>
                             <Spin/>
                         </div>
                     ) : (

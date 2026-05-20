@@ -94,21 +94,21 @@ export const FormField = ({
                               precision,
                               options,
                               rules,
-                              maxWidth = "400px",
+                              maxWidth = "350px",
                               format = "rgb",
                           }: FormFieldProps): React.ReactNode => {
     const itemRules = rules || (required ? [{required: true, message: `${type === "select" ? "请选择" : "请输入"}${label}`}] : undefined);
     const itemStyle = {maxWidth, width: "100%"};
     if (type === "textarea") {
         return (
-            <Form.Item name={name} label={label} tooltip={tooltip} rules={itemRules} style={itemStyle}>
+            <Form.Item name={name as any} label={label} tooltip={tooltip} rules={itemRules} style={itemStyle}>
                 <Input.TextArea placeholder={placeholder || `请输入${label}`} rows={rows}/>
             </Form.Item>
         );
     }
     if (type === "number") {
         return (
-            <Form.Item name={name} label={label} tooltip={tooltip} rules={itemRules} style={itemStyle}>
+            <Form.Item name={name as any} label={label} tooltip={tooltip} rules={itemRules} style={itemStyle}>
                 <InputNumber min={min} precision={precision} style={{width: "100%"}}
                              placeholder={placeholder || `请输入${label}`}/>
             </Form.Item>
@@ -116,7 +116,7 @@ export const FormField = ({
     }
     if (type === "select") {
         return (
-            <Form.Item name={name} label={label} tooltip={tooltip} rules={itemRules} style={itemStyle}>
+            <Form.Item name={name as any} label={label} tooltip={tooltip} rules={itemRules} style={itemStyle}>
                 <Select placeholder={placeholder || `请选择${label}`} options={options || []}/>
             </Form.Item>
         );
@@ -125,7 +125,7 @@ export const FormField = ({
         return (
             <Form.Item label={label} tooltip={tooltip} style={itemStyle}>
                 <Flex gap={8} align="center">
-                    <Form.Item name={name} rules={itemRules} noStyle
+                    <Form.Item name={name as any} rules={itemRules} noStyle
                                getValueFromEvent={(_: any, value: string) => value}>
                         <ColorPicker showText format={format} defaultFormat={format}/>
                     </Form.Item>
@@ -141,7 +141,7 @@ export const FormField = ({
         );
     }
     return (
-        <Form.Item name={name} label={label} tooltip={tooltip} rules={itemRules} style={itemStyle}>
+        <Form.Item name={name as any} label={label} tooltip={tooltip} rules={itemRules} style={itemStyle}>
             <Input placeholder={placeholder || `请输入${label}`}/>
         </Form.Item>
     );
