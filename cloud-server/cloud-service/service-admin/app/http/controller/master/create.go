@@ -17,7 +17,7 @@ func (Controller) Create(c *context.Context) {
 		Password string `json:"password" default:"" validate:"required,min=6,max=20" label:"密码"`
 		Avatar   string `json:"avatar" default:"" validate:"omitempty,uri" label:"头像"`
 		NickName string `json:"nick_name" default:"" validate:"omitempty,min=1,max=15" label:"昵称"`
-		Status   int    `json:"status" default:"0" validate:"required,numeric" label:"状态"`
+		Status   int    `json:"status" default:"0" validate:"numeric" label:"状态"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)

@@ -14,7 +14,7 @@ func (Controller) Log(c *context.Context) {
 	pageNum, pageSize := c.ValidatePage()
 	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,type,create_time")
 	var form struct {
-		OrderId         int64  `json:"order_id" default:"0" validate:"required,numeric,min=1" label:"订单ID"`
+		OrderId         int64  `json:"order_id" default:"0" validate:"numeric,min=1" label:"订单ID"`
 		Type            string `json:"type" default:"" validate:"omitempty,numeric" label:"日志类型"`
 		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
 		CreateTimeEnd   string `json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`

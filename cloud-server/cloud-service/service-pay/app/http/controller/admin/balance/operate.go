@@ -11,8 +11,8 @@ import (
 // Operate 操作用户余额
 func (Controller) Operate(c *context.Context) {
 	var form struct {
-		UserId          int64   `json:"user_id" default:"0" validate:"required,numeric,min=1" label:"用户ID"`
-		Money           float64 `json:"money" default:"0" validate:"required" label:"金额"`
+		UserId          int64   `json:"user_id" default:"0" validate:"numeric,min=1" label:"用户ID"`
+		Money           float64 `json:"money" default:"0" validate:"numeric" label:"金额"`
 		IsOperateFrozen bool    `json:"is_operate_frozen" default:"false" label:"是否操作冻结余额"`
 		Describe        string  `json:"describe" default:"" validate:"required" label:"描述"`
 	}

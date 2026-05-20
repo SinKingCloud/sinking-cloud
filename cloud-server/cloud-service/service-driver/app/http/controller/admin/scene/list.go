@@ -15,6 +15,7 @@ func (Controller) List(c *context.Context) {
 	var form struct {
 		Name            string `json:"name" default:"" validate:"omitempty" label:"名称"`
 		ChannelId       string `json:"channel_id" default:"" validate:"omitempty,numeric" label:"通道ID"`
+		Login           string `json:"login" default:"" validate:"omitempty,numeric" label:"登录限制"`
 		Status          string `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
 		Remark          string `json:"remark" default:"" validate:"omitempty" label:"名称"`
 		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
@@ -32,6 +33,9 @@ func (Controller) List(c *context.Context) {
 	}
 	if form.ChannelId != "" {
 		where.ChannelId = form.ChannelId
+	}
+	if form.Login != "" {
+		where.Login = form.Login
 	}
 	if form.Status != "" {
 		where.Status = form.Status

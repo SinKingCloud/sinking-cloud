@@ -31,7 +31,8 @@ func (s *service) SimpleUpload(ctx context.Context, isLogin bool, sceneId int64,
 	if err != nil {
 		return "", err
 	}
-	if sceneInfo.MaxSize > 0 && size > 0 && size > sceneInfo.MaxSize {
+	maxSizeBytes := s.sceneMaxSizeBytes(sceneInfo)
+	if maxSizeBytes > 0 && size > 0 && size > maxSizeBytes {
 		return "", errors.New("上传文件大小超过场景限制")
 	}
 	filename, ext, err := s.prepareUploadFilename(sceneInfo, filename)
@@ -43,7 +44,7 @@ func (s *service) SimpleUpload(ctx context.Context, isLogin bool, sceneId int64,
 		return "", errors.Join(errors.New("读取上传文件失败"), err)
 	}
 	fileSize := int64(len(content))
-	if sceneInfo.MaxSize > 0 && fileSize > sceneInfo.MaxSize {
+	if maxSizeBytes > 0 && fileSize > maxSizeBytes {
 		return "", errors.New("上传文件大小超过场景限制")
 	}
 	hash, err := str.NewByteTool(bytes.NewReader(content)).Md5()
@@ -127,6 +128,14 @@ func (s *service) buildPreviewUrl(sceneId int64, hash string) string {
 	return "/preview/" + strconv.FormatInt(sceneId, 10) + "/" + hash
 }
 
+// sceneMaxSizeBytes 获取场景限制大小，场景配置单位为 KB。
+func (s *service) sceneMaxSizeBytes(sceneInfo *model.Scene) int64 {
+	if sceneInfo == nil || sceneInfo.MaxSize <= 0 {
+		return 0
+	}
+	return sceneInfo.MaxSize * 1024
+}
+
 // ChunkUpload 分片上传文件。
 func (s *service) ChunkUpload(ctx context.Context, isLogin bool, step string, sceneId int64, uploadId string, hash string, filename string, totalSize int64, chunkSize int64, partNumber int, body io.Reader, size int64) (*ChunkUploadResult, error) {
 	step = strings.TrimSpace(strings.ToLower(step))
@@ -167,7 +176,8 @@ func (s *service) chunkUploadInit(ctx context.Context, client storage.Storage, s
 	if totalSize <= 0 {
 		return nil, errors.New("文件总大小不合法")
 	}
-	if sceneInfo.MaxSize > 0 && totalSize > sceneInfo.MaxSize {
+	maxSizeBytes := s.sceneMaxSizeBytes(sceneInfo)
+	if maxSizeBytes > 0 && totalSize > maxSizeBytes {
 		return nil, errors.New("上传文件大小超过场景限制")
 	}
 	exists, err := s.findByHashWithSceneId(hash, sceneInfo.Id, false)

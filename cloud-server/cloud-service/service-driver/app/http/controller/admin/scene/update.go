@@ -13,9 +13,10 @@ func (Controller) Update(c *context.Context) {
 	var form struct {
 		Id       int64  `json:"id" default:"" validate:"required,min=1" label:"记录ID"`
 		Name     string `json:"name" default:"" validate:"omitempty" label:"名称"`
-		MaxSize  string `json:"max_size" default:"" validate:"omitempty,numeric" label:"最大限制"`
+		MaxSize  string `json:"max_size" default:"" validate:"omitempty,numeric" label:"最大限制(KB)"`
 		AllowExt string `json:"allow_ext" default:"" validate:"omitempty" label:"允许类型"`
 		Remark   string `json:"remark" default:"" validate:"omitempty" label:"备注"`
+		Login    string `json:"login" default:"" validate:"omitempty,numeric" label:"登录限制"`
 		Status   string `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {
@@ -34,6 +35,9 @@ func (Controller) Update(c *context.Context) {
 	}
 	if form.Remark != "" {
 		data.Remark = form.Remark
+	}
+	if form.Login != "" {
+		data.Login, _ = strconv.Atoi(form.Login)
 	}
 	if form.Status != "" {
 		data.Status, _ = strconv.Atoi(form.Status)

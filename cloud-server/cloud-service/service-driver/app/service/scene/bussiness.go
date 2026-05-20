@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"service-driver/app/constant"
+	"service-driver/app/enum/scene_login"
 	"service-driver/app/enum/scene_status"
 	"service-driver/app/model"
 	"service-driver/app/repository/scene"
@@ -20,6 +21,15 @@ func (s *service) Select(where *scene.SelectScene, orderByField string, orderByT
 		}
 		if _, ok := scene_status.Map()[status]; !ok {
 			return nil, 0, errors.New("状态参数不合法")
+		}
+	}
+	if where.Login != "" {
+		login, err := strconv.Atoi(where.Login)
+		if err != nil {
+			return nil, 0, errors.New("登录限制参数错误")
+		}
+		if _, ok := scene_login.Map()[login]; !ok {
+			return nil, 0, errors.New("登录限制参数不合法")
 		}
 	}
 	if where.ChannelId != "" {
@@ -99,6 +109,16 @@ func (s *service) UpdateById(id int64, data *scene.UpdateScene) error {
 		}
 		update.MaxSize = data.MaxSize
 	}
+	if data.Login != nil {
+		if value, ok := data.Login.(int); ok {
+			if _, ok = scene_login.Map()[value]; !ok {
+				return errors.New("登录限制不合法")
+			}
+		} else {
+			return errors.New("登录限制不合法")
+		}
+		update.Login = data.Login
+	}
 	if data.Status != nil {
 		if value, ok := data.Status.(int); ok {
 			if _, ok = scene_status.Map()[value]; !ok {
@@ -124,6 +144,9 @@ func (s *service) Create(data *model.Scene) error {
 	}
 	if _, ok := scene_status.Map()[data.Status]; !ok {
 		return errors.New("场景状态字段不合法")
+	}
+	if _, ok := scene_login.Map()[data.Login]; !ok {
+		return errors.New("登录限制字段不合法")
 	}
 	if data.ChannelId <= 0 {
 		return errors.New("存储通道字段不合法")
