@@ -61,7 +61,7 @@ const UiView: React.FC = () => {
                                {value: "15", label: "15px"},
                            ]} required/>
                 <FormField type="color" name="ui.color" label="主题颜色" tooltip="选择网站的主题颜色，影响整体视觉风格"
-                           format="rgb" defaultColor="rgb(0, 83, 251)" required/>
+                           format="rgb" defaultColor="rgb(0, 83, 251)"/>
             </BaseForm>
         </Form>
     );
