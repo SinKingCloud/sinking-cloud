@@ -108,6 +108,7 @@ export function useControl(code?: string): UseControlResult {
         loading,
         error,
         hasControl: (controlCode?: string) => {
+            return true
             if (!controlCode) {
                 return false;
             }

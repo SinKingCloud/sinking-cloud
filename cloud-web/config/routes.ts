@@ -26,10 +26,10 @@ export const admin = [
         name: "admin.system",
         routes: [
             {
-                path: "user",
-                component: "@/pages/admin/index",
-                title: "用户管理",
-                name: "admin.system.user",
+                path: "master",
+                component: "@/pages/admin/master",
+                title: "员工管理",
+                name: "admin.system.master",
             },
             {
                 path: "role",
