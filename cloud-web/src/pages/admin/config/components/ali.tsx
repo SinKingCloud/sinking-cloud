@@ -17,13 +17,20 @@ const AliView: React.FC = () => {
         <Form form={form} layout="vertical">
             <BaseForm form={form} submitLoading={submitLoading} onFinish={saveConfig} onReset={() => resetForm()}>
                 <FormField type="input" name="ali.key" label="阿里云key" placeholder="请输入阿里云key" required/>
-                <FormField type="input" name="ali.secret" label="阿里云secret" placeholder="请输入阿里云secret" required/>
-                <FormField type="input" name="ali.sms.sign" label="阿里云sms sign" placeholder="请输入阿里云sms sign" required/>
-                <FormField type="input" name="ali.sms.template" label="阿里云sms template" placeholder="请输入阿里云sms template" required/>
-                <FormField type="input" name="ali.sms.var" label="阿里云sms变量名称" placeholder="请输入阿里云sms变量名称" required/>
-                <FormField type="input" name="ali.mail.account" label="阿里云mail 发信地址" placeholder="请输入阿里云mail 发信地址" required/>
-                <FormField type="input" name="ali.face.scene" label="阿里云实名认证场景ID" placeholder="请输入阿里云实名认证场景ID" required/>
-                <FormField type="input" name="ali.face.domain" label="阿里云实名认证场景资料储存oss域名" placeholder="请输入阿里云实名认证场景资料储存oss域名" required/>
+                <FormField type="input" name="ali.secret" label="阿里云secret" placeholder="请输入阿里云secret"
+                           required/>
+                <FormField type="input" name="ali.sms.sign" label="阿里云sms sign" placeholder="请输入阿里云sms sign"
+                           required/>
+                <FormField type="input" name="ali.sms.template" label="阿里云sms template"
+                           placeholder="请输入阿里云sms template" required/>
+                <FormField type="input" name="ali.sms.var" label="阿里云sms变量名称"
+                           placeholder="请输入阿里云sms变量名称" required/>
+                <FormField type="input" name="ali.mail.account" label="阿里云mail 发信地址"
+                           placeholder="请输入阿里云mail 发信地址" required/>
+                <FormField type="input" name="ali.face.scene" label="阿里云实名认证场景ID"
+                           placeholder="请输入阿里云实名认证场景ID" required/>
+                <FormField type="input" name="ali.face.domain" label="阿里云实名认证场景资料储存oss域名"
+                           placeholder="请输入阿里云实名认证场景资料储存oss域名" required/>
             </BaseForm>
         </Form>
     );
