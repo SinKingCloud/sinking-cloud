@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"path"
 	"path/filepath"
 	"service-driver/app/enum/channel_status"
 	"service-driver/app/enum/file_status"
@@ -58,8 +59,8 @@ func (s *service) SimpleUpload(ctx context.Context, isLogin bool, sceneId int64,
 	if exists != nil {
 		return s.buildPreviewUrl(sceneInfo.Id, hash), nil
 	}
-	path := s.buildUploadPath(hash, ext)
-	_, err = client.Put(ctx, path, bytes.NewReader(content))
+	objectPath := s.buildUploadPath(sceneInfo.Id, hash, ext)
+	_, err = client.Put(ctx, objectPath, bytes.NewReader(content))
 	if err != nil {
 		return "", errors.Join(errors.New("上传文件失败"), err)
 	}
@@ -70,12 +71,12 @@ func (s *service) SimpleUpload(ctx context.Context, isLogin bool, sceneId int64,
 		Ext:       ext,
 		Hash:      hash,
 		Size:      fileSize,
-		Path:      path,
+		Path:      objectPath,
 		Status:    file_status.Enable,
 	}
 	err = s.repositoryFile.Create(data)
 	if err != nil {
-		if err2 := client.Delete(ctx, path); err2 != nil {
+		if err2 := client.Delete(ctx, objectPath); err2 != nil {
 			return "", errors.Join(errors.New("创建文件记录失败"), err, errors.New("清理已上传文件失败"), err2)
 		}
 		return "", errors.Join(errors.New("创建文件记录失败"), err)
@@ -112,15 +113,17 @@ func (s *service) allowUploadExt(allowExt string, ext string) bool {
 }
 
 // buildUploadPath 生成文件上传路径。
-func (s *service) buildUploadPath(hash string, ext string) string {
-	name := hash
+func (s *service) buildUploadPath(sceneId int64, hash string, ext string) string {
+	name := strings.Trim(strings.ReplaceAll(hash, "\\", "/"), "/")
+	ext = strings.Trim(strings.TrimSpace(ext), ".")
 	if ext != "" {
 		name += "." + ext
 	}
-	return strings.Join([]string{
+	return path.Join(
+		strconv.FormatInt(sceneId, 10),
 		time.Now().Format("20060102"),
 		name,
-	}, "/")
+	)
 }
 
 // buildPreviewUrl 生成文件预览地址。
@@ -191,7 +194,7 @@ func (s *service) chunkUploadInit(ctx context.Context, client storage.Storage, s
 			CommittedBytes: exists.Size,
 		}, nil
 	}
-	uploadId, err := client.StartUpload(ctx, s.buildUploadPath(hash, ext), totalSize, chunkSize)
+	uploadId, err := client.StartUpload(ctx, s.buildUploadPath(sceneInfo.Id, hash, ext), totalSize, chunkSize)
 	if err != nil {
 		return nil, errors.Join(errors.New("创建上传任务失败"), err)
 	}
