@@ -81,16 +81,10 @@ export const admin = [
         name: "admin.person",
         routes: [
             {
-                path: "setting",
+                path: "info",
                 component: "@/pages/admin/index",
                 title: "账户管理",
-                name: "admin.person.setting",
-            },
-            {
-                path: "log",
-                component: "@/pages/admin/index",
-                title: "操作日志",
-                name: "admin.person.log",
+                name: "admin.person.info",
             },
         ]
     },
