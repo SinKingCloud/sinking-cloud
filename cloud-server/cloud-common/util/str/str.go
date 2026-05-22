@@ -195,8 +195,8 @@ func (stringTool *StringTool) Show(left int, right int, str string) string {
 	}
 	temp := ""
 	n := lens - len(leftStr) - len(rightStr)
-	if n >= 3 {
-		n = 3
+	if n >= 4 {
+		n = 4
 	}
 	for i := 0; i < n; i++ {
 		temp += str
