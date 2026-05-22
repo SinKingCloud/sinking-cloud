@@ -563,6 +563,7 @@ export default () => {
                     token: res?.token,
                     captcha_x: res?.x,
                     captcha_y: res?.y,
+                    is_admin: true,
                     ...targetValue
                 },
                 onSuccess: (r) => {

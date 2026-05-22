@@ -30,7 +30,7 @@ func Sms(c *context.Context) {
 			c.Error(err.Error())
 			return
 		}
-		if form.IsAdmin {
+		if !form.IsAdmin {
 			if user, err := service2.User.GetWebUserInfo(u.Id, false); err == nil && user != nil {
 				form.Phone = user.Phone
 			}

@@ -14,8 +14,8 @@ import (
 func (Controller) Verify(c *context.Context) {
 	var form struct {
 		Action string `json:"action" default:"get" validate:"required,oneof=get verify" label:"步骤"`
-		Type   string `json:"type" default:"phone" validate:"required,oneof=mail phone" label:"验证方式"`
-		Code   string `json:"code" default:"" validate:"required,numeric,len=6" label:"验证码"`
+		Type   string `json:"type" default:"phone" validate:"omitempty,oneof=mail phone" label:"验证方式"`
+		Code   string `json:"code" default:"" validate:"omitempty,numeric,len=6" label:"验证码"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
@@ -39,11 +39,19 @@ func (Controller) Verify(c *context.Context) {
 		c.SuccessWithData("获取验证方式成功", data)
 		return
 	}
+	if form.Code == "" {
+		c.Error("请输入验证码")
+		return
+	}
 	account := u.Email
 	check := service2.Auth.CheckMail
 	if form.Type == "phone" {
 		check = service2.Auth.CheckSms
 		account = u.Phone
+	}
+	if account == "" {
+		c.Error("当前验证方式未绑定")
+		return
 	}
 	if !check(account, form.Code) {
 		c.Error("验证码校验失败")
