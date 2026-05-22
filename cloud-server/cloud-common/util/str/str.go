@@ -194,7 +194,11 @@ func (stringTool *StringTool) Show(left int, right int, str string) string {
 		return string(leftStr) + string(rightStr)
 	}
 	temp := ""
-	for i := 0; i < lens-len(leftStr)-len(rightStr); i++ {
+	n := lens - len(leftStr) - len(rightStr)
+	if n >= 3 {
+		n = 3
+	}
+	for i := 0; i < n; i++ {
 		temp += str
 	}
 	return string(leftStr) + temp + string(rightStr)
