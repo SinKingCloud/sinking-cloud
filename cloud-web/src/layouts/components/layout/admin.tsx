@@ -324,6 +324,7 @@ const SKLayout: React.FC = () => {
     }, []);
     const currentMenus = useMemo(() => getMenuItems(adminMenus, '/' + adminPath, true), [adminMenus]);
     const currentMenusWithHidden = useMemo(() => getMenuItems(adminMenus, '/' + adminPath, false), [adminMenus]);
+    const localMenusWithHidden = useMemo(() => getMenuItems(adminRoutes, '/' + adminPath, false), []);
     const transformAdminMenus = (menus: any[]): any[] => {
         if (!Array.isArray(menus) || menus.length <= 0) {
             return [];
@@ -354,7 +355,9 @@ const SKLayout: React.FC = () => {
      */
     const breadCrumbItems = useMemo(() => {
         if (!location?.pathname) return [];
-        const items = getParentList(currentMenusWithHidden, match?.at(-1)?.route?.name);
+        const routeName = match?.at(-1)?.route?.name;
+        const menuItems = getParentList(currentMenusWithHidden, routeName, "admin-remote");
+        const items = menuItems.length > 0 ? menuItems : getParentList(localMenusWithHidden, routeName, "admin-local");
         const temp = [{
             title: "首页",
             onClick: () => {
@@ -375,7 +378,7 @@ const SKLayout: React.FC = () => {
             });
         });
         return temp;
-    }, [currentMenus, currentMenusWithHidden, location?.pathname, match]);
+    }, [currentMenus, currentMenusWithHidden, localMenusWithHidden, location?.pathname, match]);
 
     /**
      * 初始化数据

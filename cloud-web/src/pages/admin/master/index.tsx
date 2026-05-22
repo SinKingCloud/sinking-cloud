@@ -3,6 +3,7 @@ import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking
 import {App, Avatar, Button, Col, Dropdown, Form, Input, Result, Row, Select, Space, Typography} from "antd";
 import {UserOutlined} from "@ant-design/icons";
 import {getData} from "@/utils/page";
+import {AVATAR_SCENE_ID, getUploadUrl} from "@/utils/upload";
 import useControl from "@/utils/control";
 import useEnum from "@/utils/enum";
 import {Upload, type UploadRef} from "@/pages/components/upload";
@@ -15,12 +16,10 @@ import {
 import MasterSession, {type MasterSessionRef} from "./components/session";
 import MasterRole, {type MasterRoleRef} from "./components/role";
 import {
-    AVATAR_SCENE_ID,
     buildOptions,
     buildValueEnum,
     dateRangeTransform,
     emptyTableData,
-    getUploadUrl,
     normalizeIds,
 } from "./components/common";
 import {createStyles} from "antd-style";

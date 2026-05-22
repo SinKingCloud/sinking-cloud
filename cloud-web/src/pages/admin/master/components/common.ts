@@ -1,5 +1,3 @@
-export const AVATAR_SCENE_ID = 1;
-
 export const emptyTableData = {
     data: [],
     success: true,
@@ -29,13 +27,3 @@ export const buildValueEnum = (data: any, colors: Record<string, string> = {}) =
         return [key, item];
     })
 );
-
-export const getUploadUrl = (result: any) => {
-    if (result?.url) {
-        return result.url;
-    }
-    if (typeof result?.data === "string") {
-        return result.data;
-    }
-    return result?.data?.url || result?.data?.path || result?.data?.src;
-};

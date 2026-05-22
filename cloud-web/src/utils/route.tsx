@@ -117,16 +117,18 @@ const parentCache: any = {}
  * 根据name查找父级菜单
  * @param data 菜单
  * @param name 标识
+ * @param cacheKey 缓存来源标识
  */
-export function getParentList(data: any[], name: string): any[] {
+export function getParentList(data: any[], name: string, cacheKey = "default"): any[] {
     if (!name) {
         return [];
     }
     if (!data || data.length <= 0) {
         return [];
     }
-    if (parentCache?.[name] != undefined) {
-        return parentCache[name];
+    const cacheName = `${cacheKey}:${name}`;
+    if (parentCache?.[cacheName] != undefined) {
+        return parentCache[cacheName];
     }
     let parents: any[] = [];
 
@@ -157,7 +159,7 @@ export function getParentList(data: any[], name: string): any[] {
     findParent(data, name);
     parents = parents.reverse()
     if (parents.length > 0) {
-        parentCache[name] = parents
+        parentCache[cacheName] = parents
     }
     return parents;
 }

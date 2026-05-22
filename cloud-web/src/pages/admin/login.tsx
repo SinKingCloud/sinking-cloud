@@ -556,26 +556,30 @@ export default () => {
         const sendFn = result.type === 'email' ? sendMail : sendSms;
         const targetValue = result.type === 'email' ? {mail: account} : {phone: account};
 
-        captcha?.current?.Show?.(async (res) => {
-            setIsCodeSendLoading(true);
-            await sendFn({
-                body: {
-                    token: res?.token,
-                    captcha_x: res?.x,
-                    captcha_y: res?.y,
-                    is_admin: true,
-                    ...targetValue
-                },
-                onSuccess: (r) => {
-                    message?.success(r?.message);
-                    startCountdown();
-                },
-                onFail: (r) => message?.error(r?.message),
-                onFinally: () => setIsCodeSendLoading(false)
-            });
-        }, () => {
-            setIsCodeSendLoading(false);
-        });
+        if (!captcha?.current?.Show) {
+            return;
+        }
+        setIsCodeSendLoading(true);
+        captcha.current.Show(
+            async (res) => {
+                await sendFn({
+                    body: {
+                        token: res?.token,
+                        captcha_x: res?.x,
+                        captcha_y: res?.y,
+                        is_admin: true,
+                        ...targetValue
+                    },
+                    onSuccess: (r) => {
+                        message?.success(r?.message);
+                        startCountdown();
+                    },
+                    onFail: (r) => message?.error(r?.message),
+                    onFinally: () => setIsCodeSendLoading(false)
+                });
+            },
+            () => setIsCodeSendLoading(false)
+        );
     };
 
     /**
@@ -606,10 +610,16 @@ export default () => {
         }
 
         // 显示验证码并执行登录
-        captcha?.current?.Show?.(async (res) => {
-            setIsLoading(true);
-            await handleLogin(values, res, type);
-        });
+        if (!captcha?.current?.Show) {
+            return;
+        }
+        setIsLoading(true);
+        captcha.current.Show(
+            async (res) => {
+                await handleLogin(values, res, type);
+            },
+            () => setIsLoading(false)
+        );
     };
 
     /**

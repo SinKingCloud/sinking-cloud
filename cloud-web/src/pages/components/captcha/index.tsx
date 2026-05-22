@@ -96,11 +96,11 @@ const Captcha = forwardRef<CaptchaRef>((_, ref): any => {
     /**
      * 关闭验证码
      */
-    const close = () => {
+    const close = (notifyClose = true) => {
         setVisible(false);
         setData(null);
         setLoading(true);
-        if (closeCallback.current) {
+        if (notifyClose && closeCallback.current) {
             closeCallback.current();
         }
         successCallback.current = null;
@@ -172,7 +172,7 @@ const Captcha = forwardRef<CaptchaRef>((_, ref): any => {
         <Modal
             open={visible}
             destroyOnHidden={true}
-            onCancel={close}
+            onCancel={() => close()}
             footer={null}
             closable={false}
             mask={{
@@ -207,7 +207,7 @@ const Captcha = forwardRef<CaptchaRef>((_, ref): any => {
                             if (successCallback.current) {
                                 successCallback.current(result);
                             }
-                            close();
+                            close(false);
                         },
                         refresh: refresh,
                         close: close,
