@@ -1,7 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {useModel} from 'umi';
-import {Body, Icon} from 'sinking-antd';
-import {ago} from '@/utils/time';
+import {Body, Icon, useTheme} from 'sinking-antd';
 import {
     Avatar,
     Button,
@@ -10,6 +9,7 @@ import {
     Row,
 } from 'antd';
 import {createStyles} from 'antd-style';
+import {ago} from '@/utils/time';
 import Info, {InfoRef} from '@/pages/admin/person/components/info';
 import Account, {AccountRef} from '@/pages/admin/person/components/account';
 import Password, {PasswordRef} from '@/pages/admin/person/components/password';
@@ -19,130 +19,325 @@ import EmailComponent, {EmailRef} from '@/pages/admin/person/components/email';
 import Verify, {VerifyRef} from '@/pages/admin/person/components/verify';
 import {getPersonInfo} from '@/service/admin/person';
 
-const useStyles = createStyles(({css, token, responsive}) => {
-    return {
-        userCard: css`
-            background: ${token.colorBgContainer};
-            border-radius: ${token.borderRadius * 2}px;
-            box-shadow: 0 4px 20px ${token.boxShadowSecondary};
+const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props: any = {}) => {
+    const isCompactMode = props?.isCompactMode || false;
+    const pagePadding = isCompactMode ? 12 : 16;
+    const profilePadding = isCompactMode ? 24 : 30;
+    const sessionPadding = isCompactMode ? "14px 18px 16px" : "16px 24px 18px";
+    const avatarSize = isCompactMode ? 80 : 92;
+    const mobileAvatarSize = isCompactMode ? 64 : 68;
 
-            .user-header {
-                background: linear-gradient(135deg, ${token.colorPrimary}, ${token.colorPrimaryActive});
-                border-radius: ${token.borderRadius}px ${token.borderRadius}px 0 0;
-                padding: 20px;
-                color: white;
+    return {
+        pageShell: css`
+            padding-bottom: ${pagePadding}px;
+        `,
+        userCard: css`
+            border: 1px solid ${token.colorBorderSecondary};
+            border-radius: ${token.borderRadius}px;
+            overflow: hidden;
+            background: ${token.colorBgContainer};
+
+            .profile-shell {
                 position: relative;
                 overflow: hidden;
+                background:
+                    linear-gradient(142deg, ${token.colorPrimary} 0%, ${token.colorPrimaryHover} 46%, ${token.colorPrimaryActive} 100%);
+                isolation: isolate;
 
                 &::before {
                     content: '';
                     position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><defs><pattern id="texture" width="60" height="60" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="45" cy="15" r="1.5" fill="rgba(255,255,255,0.08)"/><circle cx="30" cy="30" r="1.8" fill="rgba(255,255,255,0.12)"/><circle cx="15" cy="45" r="1.2" fill="rgba(255,255,255,0.06)"/><circle cx="45" cy="45" r="2.2" fill="rgba(255,255,255,0.09)"/><rect x="0" y="0" width="1" height="1" fill="rgba(255,255,255,0.03)"/><rect x="20" y="10" width="1" height="1" fill="rgba(255,255,255,0.04)"/><rect x="40" y="25" width="1" height="1" fill="rgba(255,255,255,0.03)"/><rect x="10" y="35" width="1" height="1" fill="rgba(255,255,255,0.05)"/><rect x="50" y="50" width="1" height="1" fill="rgba(255,255,255,0.04)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23texture)"/></svg>');
-                    opacity: 0.6;
-                    z-index: 1;
+                    inset: -32px;
+                    z-index: -2;
+                    background:
+                        linear-gradient(118deg, transparent 0%, rgba(255, 255, 255, ${isDarkMode ? 0.04 : 0.08}) 38%, transparent 72%),
+                        repeating-linear-gradient(135deg, rgba(255, 255, 255, ${isDarkMode ? 0.025 : 0.05}) 0 1px, transparent 1px 22px);
+                    opacity: ${isDarkMode ? 0.46 : 0.58};
+                    animation: profileTextureFlow 18s ease-in-out infinite;
+                    pointer-events: none;
                 }
 
                 &::after {
                     content: '';
                     position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: linear-gradient(135deg,
-                    rgba(255, 255, 255, 0.15) 0%,
-                    transparent 40%,
-                    transparent 60%,
-                    rgba(255, 255, 255, 0.08) 100%
-                    );
+                    inset: 0;
+                    z-index: -1;
+                    background:
+                        linear-gradient(90deg, rgba(0, 0, 0, ${isDarkMode ? 0.16 : 0.08}), transparent 38%, rgba(0, 0, 0, ${isDarkMode ? 0.18 : 0.10})),
+                        linear-gradient(180deg, rgba(0, 0, 0, ${isDarkMode ? 0.05 : 0.00}), rgba(0, 0, 0, ${isDarkMode ? 0.22 : 0.14}));
                     pointer-events: none;
-                    z-index: 2;
                 }
+            }
 
-                .user-content {
-                    position: relative;
-                    z-index: 3;
-                    padding-right: 120px;
-
-                    ${responsive.mobile} {
-                        padding-right: 92px;
-                    }
+            @keyframes profileTextureFlow {
+                0%, 100% {
+                    transform: translate3d(-10px, 0, 0);
+                    background-position: 0 0, 0 0;
                 }
-
-                .user-name {
-                    font-size: 22px;
-                    font-weight: 700;
-                    margin: 0 0 6px 0;
-                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
+                50% {
+                    transform: translate3d(10px, 0, 0);
+                    background-position: 42px 0, 24px 24px;
                 }
+            }
 
-                .user-id {
-                    font-size: 13px;
-                    opacity: 0.9;
-                    margin: 0 0 12px 0;
+            .profile-grid {
+                position: relative;
+                z-index: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .profile-main {
+                position: relative;
+                min-width: 0;
+                padding: ${profilePadding}px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: ${isCompactMode ? 14 : 18}px;
+                color: #fff;
+
+                ${responsive.mobile} {
+                    padding: ${isCompactMode ? "16px 14px 14px" : "20px 16px 18px"};
+                    gap: ${isCompactMode ? 12 : 15}px;
                 }
+            }
 
-                .user-stats {
-                    display: flex;
-                    gap: 20px;
+            .profile-main::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(135deg, rgba(255, 255, 255, ${isDarkMode ? 0.03 : 0.06}), transparent 54%);
+                pointer-events: none;
+            }
 
-                    ${responsive.mobile} {
-                        gap: 12px;
-                    }
+            .profile-main-top {
+                position: relative;
+                z-index: 1;
+                display: flex;
+                align-items: center;
+                gap: ${isCompactMode ? 16 : 20}px;
+                min-width: 0;
 
-                    .stat-item {
-                        min-width: 0;
-
-                        .stat-label {
-                            font-size: 11px;
-                            opacity: 0.8;
-                            margin-bottom: 3px;
-                        }
-
-                        .stat-value {
-                            font-size: 14px;
-                            font-weight: 600;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            max-width: 180px;
-
-                            ${responsive.mobile} {
-                                max-width: 105px;
-                            }
-                        }
-                    }
+                ${responsive.mobile} {
+                    align-items: flex-start;
                 }
             }
 
             .avatar-section {
-                position: absolute;
-                top: 50%;
-                right: 20px;
-                transform: translateY(-50%);
-                z-index: 3;
+                min-width: 0;
 
-                .avatar-wrapper {
-                    position: relative;
+                .user-avatar {
+                    width: ${avatarSize}px !important;
+                    height: ${avatarSize}px !important;
+                    border: 3px solid rgba(255, 255, 255, 0.92);
+                    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+                    cursor: pointer;
 
-                    .user-avatar {
-                        border: 4px solid ${token.colorBgContainer};
-                        box-shadow: 0 4px 16px ${token.boxShadowSecondary};
-                        transition: all 0.3s ease;
-
-                        &:hover {
-                            transform: scale(1.05);
-                            box-shadow: 0 6px 20px ${token.boxShadow};
-                        }
+                    ${responsive.mobile} {
+                        width: ${mobileAvatarSize}px !important;
+                        height: ${mobileAvatarSize}px !important;
                     }
                 }
+            }
+
+            .user-content {
+                min-width: 0;
+            }
+
+            .user-title-line {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                min-width: 0;
+                margin-bottom: ${isCompactMode ? 10 : 12}px;
+                flex-wrap: wrap;
+            }
+
+            .user-name {
+                margin: 0;
+                min-width: 0;
+                color: #fff;
+                font-size: ${isCompactMode ? 26 : 30}px;
+                font-weight: 800;
+                line-height: ${isCompactMode ? 34 : 38}px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+
+                ${responsive.mobile} {
+                    font-size: ${isCompactMode ? 22 : 24}px;
+                    line-height: ${isCompactMode ? 30 : 32}px;
+                }
+            }
+
+            .user-id {
+                flex: none;
+                display: inline-flex;
+                align-items: center;
+                height: 22px;
+                padding: 0 8px;
+                border-radius: ${token.borderRadius}px;
+                color: rgba(255, 255, 255, 0.82);
+                background: rgba(255, 255, 255, 0.14);
+                font-size: 12px;
+                line-height: 22px;
+                backdrop-filter: blur(8px);
+            }
+
+            .user-contact {
+                display: flex;
+                flex-wrap: wrap;
+                gap: ${isCompactMode ? 6 : 8}px;
+                min-width: 0;
+            }
+
+            .contact-item {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                min-width: 0;
+                max-width: 100%;
+                height: ${isCompactMode ? 28 : 30}px;
+                padding: 0 11px;
+                border-radius: ${token.borderRadius}px;
+                color: rgba(255, 255, 255, 0.88);
+                background: rgba(255, 255, 255, 0.13);
+                font-size: 12px;
+                backdrop-filter: blur(8px);
+
+                .anticon {
+                    flex: none;
+                    color: rgba(255, 255, 255, 0.68);
+                    font-size: 12px;
+                }
+            }
+
+            .contact-value {
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .profile-session {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: ${isCompactMode ? 10 : 12}px;
+                padding: ${sessionPadding};
+                color: #fff;
+                background: rgba(255, 255, 255, ${isDarkMode ? 0.06 : 0.08});
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+                backdrop-filter: blur(12px);
+
+                ${responsive.mobile} {
+                    padding: ${isCompactMode ? "12px 14px 14px" : "14px 16px 16px"};
+                }
+            }
+
+            .session-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                min-width: 0;
+            }
+
+            .session-title-wrap {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                min-width: 0;
+            }
+
+            .session-dot {
+                width: 8px;
+                height: 8px;
+                flex: none;
+                border-radius: 50%;
+                background: #79f2c0;
+                box-shadow: 0 0 0 4px rgba(121, 242, 192, 0.16);
+            }
+
+            .session-title {
+                min-width: 0;
+                color: rgba(255, 255, 255, 0.94);
+                font-size: 13px;
+                font-weight: 600;
+                line-height: 20px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .session-state {
+                flex: none;
+                height: 22px;
+                padding: 0 8px;
+                border-radius: ${token.borderRadius}px;
+                color: rgba(255, 255, 255, 0.86);
+                background: rgba(255, 255, 255, 0.12);
+                font-size: 12px;
+                line-height: 22px;
+            }
+
+            .session-meta {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: ${isCompactMode ? 10 : 12}px ${isCompactMode ? 14 : 18}px;
+                min-width: 0;
+
+                ${responsive.mobile} {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .session-meta-item {
+                min-width: 0;
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+                padding: ${isCompactMode ? 6 : 8}px;
+                border-radius: ${token.borderRadius}px;
+                background: rgba(255, 255, 255, ${isDarkMode ? 0.05 : 0.07});
+            }
+
+            .session-meta-icon {
+                width: ${isCompactMode ? 26 : 28}px;
+                height: ${isCompactMode ? 26 : 28}px;
+                flex: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.12);
+                color: rgba(255, 255, 255, 0.8);
+                font-size: 13px;
+            }
+
+            .session-meta-body {
+                min-width: 0;
+            }
+
+            .session-meta-label {
+                display: block;
+                margin-bottom: 2px;
+                color: rgba(255, 255, 255, 0.66);
+                font-size: 12px;
+                line-height: 18px;
+            }
+
+            .session-meta-value {
+                display: block;
+                min-width: 0;
+                color: rgba(255, 255, 255, 0.94);
+                font-size: 13px;
+                font-weight: 500;
+                line-height: 20px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
         `,
 
@@ -249,19 +444,18 @@ const useStyles = createStyles(({css, token, responsive}) => {
             border-radius: ${token.borderRadius}px ${token.borderRadius}px 0 0;
             border-bottom: none;
             margin-bottom: 0;
-
-            .user-header {
-                background: linear-gradient(135deg, ${token.colorPrimary}, ${token.colorPrimaryActive}) !important;
-            }
         `,
 
         bottomCard: css`
+            border: 1px solid ${token.colorBorderSecondary};
             border-radius: 0 0 ${token.borderRadius}px ${token.borderRadius}px;
             border-top: none;
             margin-top: 0;
+            background: ${token.colorBgContainer};
+            box-shadow: ${isDarkMode ? "none" : "0 12px 28px rgba(15, 23, 42, 0.05)"};
 
             .ant-card-body {
-                padding: 16px;
+                padding: ${isCompactMode ? 12 : 16}px;
             }
         `,
 
@@ -269,117 +463,22 @@ const useStyles = createStyles(({css, token, responsive}) => {
             padding: 0;
         `,
 
-        avatarWrapper: css`
-            position: relative;
-            display: inline-block;
-        `,
-
         avatarStyle: css`
             cursor: pointer;
         `,
 
-        sessionCard: css`
-            margin-top: 15px;
-            border-radius: ${token.borderRadius}px;
-
-            .ant-card-body {
-                padding: 14px 16px;
-            }
-
-            .session-wrap {
-                display: flex;
-                align-items: center;
-                gap: 18px;
-
-                ${responsive.mobile} {
-                    display: block;
-                }
-            }
-
-            .session-head {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                flex: none;
-                width: 150px;
-
-                ${responsive.mobile} {
-                    width: auto;
-                    margin-bottom: 12px;
-                }
-            }
-
-            .session-icon {
-                width: 36px;
-                height: 36px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 17px;
-                color: ${token.colorPrimary};
-                background: ${token.colorPrimaryBg};
-            }
-
-            .session-title {
-                font-size: 14px;
-                font-weight: 600;
-                color: ${token.colorText};
-                line-height: 20px;
-            }
-
-            .session-desc {
-                font-size: 11px;
-                color: ${token.colorTextTertiary};
-                line-height: 16px;
-            }
-
-            .session-grid {
-                flex: 1;
-                min-width: 0;
-                display: grid;
-                grid-template-columns: repeat(5, minmax(0, 1fr));
-                gap: 10px;
-
-                ${responsive.mobile} {
-                    grid-template-columns: 1fr;
-                }
-            }
-
-            .session-item {
-                min-width: 0;
-                padding: 9px 10px;
-                border-radius: ${token.borderRadius}px;
-                border: 1px solid ${token.colorBorderSecondary};
-                background: ${token.colorFillQuaternary};
-            }
-
-            .session-label {
-                display: block;
-                margin-bottom: 3px;
-                font-size: 12px;
-                color: ${token.colorTextTertiary};
-            }
-
-            .session-value {
-                display: block;
-                font-size: 13px;
-                color: ${token.colorTextSecondary};
-                overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-            }
-        `,
     };
 });
 
 export default () => {
+    const theme = useTheme();
+    const isCompactMode = theme?.isCompactTheme?.() || false;
     const {
         styles: {
-            userCard, settingItem, topCard, bottomCard, settingSection,
-            avatarWrapper, avatarStyle, sessionCard,
+            pageShell, userCard, settingItem, topCard, bottomCard, settingSection,
+            avatarStyle,
         },
-    } = useStyles();
+    } = useStyles({isCompactMode});
     const user = useModel('user');
     const infoRef = useRef<InfoRef>({} as InfoRef);
     const accountRef = useRef<AccountRef>({} as AccountRef);
@@ -419,6 +518,30 @@ export default () => {
     const ensureVerify = () => verifyRef.current?.ensure?.() || Promise.resolve(false);
     const currentPerson: any = person || user?.system || {};
     const currentSession = currentPerson?.session || {};
+    const profileContacts = [
+        {
+            icon: <Icon type="IdcardOutlined"/>,
+            value: currentPerson?.account || '-',
+        },
+        {
+            icon: <Icon type="PhoneOutlined"/>,
+            value: currentPerson?.phone || '-',
+        },
+        {
+            icon: <Icon type="MailOutlined"/>,
+            value: currentPerson?.email || '-',
+        },
+    ];
+    const sessionSummary = [
+        {label: '登录设备', value: currentSession?.device || '-', icon: <Icon type="LaptopOutlined"/>},
+        {label: '登录IP', value: currentSession?.ip || '-', icon: <Icon type="GlobalOutlined"/>},
+        {label: '登录地点', value: currentSession?.location || '-', icon: <Icon type="EnvironmentOutlined"/>},
+        {
+            label: '登录时间',
+            value: currentSession?.login_time ? ago(currentSession.login_time) : '-',
+            icon: <Icon type="ClockCircleOutlined"/>,
+        },
+    ];
 
     /**
      * 子组件保存成功后刷新页面资料。
@@ -521,96 +644,83 @@ export default () => {
 
     return (
         <Body loading={loading}>
-            <Row justify="center">
-                <Col xs={24} sm={24} md={22} lg={20} xl={18} xxl={16} xxxl={14}>
-                    <Row gutter={[15, 0]}>
-                        <Col span={24}>
-                            <div className={`${userCard} ${topCard}`}>
-                                <div className="user-header">
-                                    <div className="user-content">
-                                        <h2 className="user-name">{currentPerson?.nick_name || ''}</h2>
-                                        <p className="user-id">UID: {currentPerson?.id || ''}</p>
-                                        <div className="user-stats">
-                                            <div className="stat-item">
-                                                <div className="stat-label">最近登录IP</div>
-                                                <div className="stat-value">{currentSession?.ip || '-'}</div>
+            <div className={pageShell}>
+                <Row justify="center">
+                    <Col xs={24} sm={24} md={22} lg={20} xl={18} xxl={16} xxxl={14}>
+                        <Row gutter={[15, 0]}>
+                            <Col span={24}>
+                                <div className={`${userCard} ${topCard}`}>
+                                    <div className="profile-shell">
+                                        <div className="profile-grid">
+                                            <div className="profile-main">
+                                                <div className="profile-main-top">
+                                                    <div className="avatar-section">
+                                                        <Avatar
+                                                            size={85}
+                                                            src={currentPerson?.avatar}
+                                                            icon={<Icon type="UserOutlined"/>}
+                                                            className={`user-avatar ${avatarStyle}`}
+                                                            onClick={() => avatarRef.current?.triggerUpload()}
+                                                        />
+                                                    </div>
+                                                    <div className="user-content">
+                                                        <div className="user-title-line">
+                                                            <h2 className="user-name">{currentPerson?.nick_name || '未设置'}</h2>
+                                                            <span className="user-id">UID {currentPerson?.id || '-'}</span>
+                                                        </div>
+                                                        <div className="user-contact">
+                                                            {profileContacts.map((item, index) => (
+                                                                <span className="contact-item" key={index}>
+                                                                    {item.icon}
+                                                                    <span className="contact-value">{item.value}</span>
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="stat-item">
-                                                <div className="stat-label">最近登录时间</div>
-                                                <div className="stat-value">
-                                                    {currentSession?.login_time ? ago(currentSession.login_time) : '-'}
+                                            <div className="profile-session">
+                                                <div className="session-head">
+                                                    <div className="session-title-wrap">
+                                                        <span className="session-dot"/>
+                                                        <span className="session-title">当前会话</span>
+                                                    </div>
+                                                    <span className="session-state">在线</span>
+                                                </div>
+                                                <div className="session-meta">
+                                                    {sessionSummary.map((item) => (
+                                                        <div className="session-meta-item" key={item.label}>
+                                                            <span className="session-meta-icon">{item.icon}</span>
+                                                            <span className="session-meta-body">
+                                                                <span className="session-meta-label">{item.label}</span>
+                                                                <span className="session-meta-value">{item.value}</span>
+                                                            </span>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="avatar-section">
-                                        <div className="avatar-wrapper">
-                                            <div className={avatarWrapper}>
-                                                <Avatar
-                                                    size={85}
-                                                    src={currentPerson?.avatar}
-                                                    icon={<Icon type="UserOutlined"/>}
-                                                    className={`user-avatar ${avatarStyle}`}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
-                            </div>
-                        </Col>
-                        <Col span={24}>
-                            <Card className={bottomCard} variant="borderless">
-                                <div className={settingSection}>
-                                    <Row gutter={[16, 16]}>
-                                        {settingItems.map((item, index) => (
-                                            <Col xs={24} sm={24} md={24} lg={12} xl={12} xxl={12} xxxl={12} key={index}>
-                                                {renderSettingItem(item.icon, item.title, item.desc, item.value, item.onEdit)}
-                                            </Col>
-                                        ))}
-                                    </Row>
-                                </div>
-                            </Card>
-                        </Col>
-                        <Col span={24}>
-                            <Card className={sessionCard} variant="borderless">
-                                <div className="session-wrap">
-                                    <div className="session-head">
-                                        <div className="session-icon">
-                                            <Icon type="CloudServerOutlined"/>
-                                        </div>
-                                        <div>
-                                            <div className="session-title">当前会话</div>
-                                            <div className="session-desc">本次后台登录信息</div>
-                                        </div>
+                            </Col>
+                            <Col span={24}>
+                                <Card className={bottomCard} variant="borderless">
+                                    <div className={settingSection}>
+                                        <Row gutter={[16, 16]}>
+                                            {settingItems.map((item, index) => (
+                                                <Col xs={24} sm={24} md={24} lg={12} xl={12} xxl={12} xxxl={12}
+                                                     key={index}>
+                                                    {renderSettingItem(item.icon, item.title, item.desc, item.value, item.onEdit)}
+                                                </Col>
+                                            ))}
+                                        </Row>
                                     </div>
-                                    <div className="session-grid">
-                                        <div className="session-item">
-                                            <span className="session-label">登录设备</span>
-                                            <span className="session-value">{currentSession?.device || '-'}</span>
-                                        </div>
-                                        <div className="session-item">
-                                            <span className="session-label">登录IP</span>
-                                            <span className="session-value">{currentSession?.ip || '-'}</span>
-                                        </div>
-                                        <div className="session-item">
-                                            <span className="session-label">登录地点</span>
-                                            <span className="session-value">{currentSession?.location || '-'}</span>
-                                        </div>
-                                        <div className="session-item">
-                                            <span className="session-label">登录时间</span>
-                                            <span className="session-value">{currentSession?.login_time || '-'}</span>
-                                        </div>
-                                        <div className="session-item">
-                                            <span className="session-label">过期时间</span>
-                                            <span className="session-value">{currentSession?.expire_time || '-'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Card>
-                        </Col>
-                    </Row>
-                </Col>
-            </Row>
+                                </Card>
+                            </Col>
+                        </Row>
+                    </Col>
+                </Row>
+            </div>
             <Info ref={infoRef} nickName={currentPerson?.nick_name} onSuccess={handleSuccess}/>
             <Account ref={accountRef} account={currentPerson?.account} onSuccess={handleSuccess}/>
             <Password ref={passwordRef} ensureVerify={ensureVerify} onSuccess={handleSuccess}/>
