@@ -271,7 +271,7 @@ export default (): React.ReactNode => {
                     ref={modalRef}
                     title={<Title>{formScene?.title}</Title>}
                     onOk={form.submit}
-                    width={430}
+                    width={350}
                     modalProps={{
                         confirmLoading: formSubmitting,
                         forceRender: true,
