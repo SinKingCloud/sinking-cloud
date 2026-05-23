@@ -82,9 +82,15 @@ export const admin = [
         routes: [
             {
                 path: "info",
-                component: "@/pages/admin/person",
+                component: "@/pages/admin/person/info",
                 title: "账户信息",
                 name: "admin.person.info",
+            },
+            {
+                path: "session",
+                component: "@/pages/admin/person/session",
+                title: "会话管理",
+                name: "admin.person.session",
             },
         ]
     },

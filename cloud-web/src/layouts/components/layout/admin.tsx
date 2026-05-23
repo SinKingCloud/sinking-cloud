@@ -224,7 +224,12 @@ const RightTop: React.FC = () => {
                      </Row>
                      <ul className={menu}>
                          <li className={menuItem} onClick={() => historyPush("admin.person.info")}>
-                             <div className={menuItemLabel}><Icon type="SettingOutlined" className={menuItemLeadIcon}/>账号管理
+                             <div className={menuItemLabel}><Icon type="SettingOutlined" className={menuItemLeadIcon}/>账户管理
+                             </div>
+                             <Icon type="RightOutlined"></Icon>
+                         </li>
+                         <li className={menuItem} onClick={() => historyPush("admin.person.session")}>
+                             <div className={menuItemLabel}><Icon type="DeploymentUnitOutlined" className={menuItemLeadIcon}/>会话管理
                              </div>
                              <Icon type="RightOutlined"></Icon>
                          </li>
