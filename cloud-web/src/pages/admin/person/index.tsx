@@ -118,10 +118,6 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
                 align-items: center;
                 gap: ${isCompactMode ? 16 : 20}px;
                 min-width: 0;
-
-                ${responsive.mobile} {
-                    align-items: flex-start;
-                }
             }
 
             .avatar-section {
@@ -143,6 +139,7 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
 
             .user-content {
                 min-width: 0;
+                flex: 1;
             }
 
             .user-title-line {
@@ -190,12 +187,17 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
                 flex-wrap: wrap;
                 gap: ${isCompactMode ? 6 : 8}px;
                 min-width: 0;
+
+                ${responsive.mobile} {
+                    gap: 5px;
+                }
             }
 
             .contact-item {
                 display: inline-flex;
                 align-items: center;
                 gap: 6px;
+                flex: 0 1 auto;
                 min-width: 0;
                 max-width: 100%;
                 height: ${isCompactMode ? 28 : 30}px;
@@ -206,15 +208,27 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
                 font-size: 12px;
                 backdrop-filter: blur(8px);
 
+                ${responsive.mobile} {
+                    gap: 4px;
+                    height: 24px;
+                    padding: 0 8px;
+                    font-size: 11px;
+                }
+
                 .anticon {
                     flex: none;
                     color: rgba(255, 255, 255, 0.68);
                     font-size: 12px;
+
+                    ${responsive.mobile} {
+                        font-size: 11px;
+                    }
                 }
             }
 
             .contact-value {
                 min-width: 0;
+                max-width: 100%;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
