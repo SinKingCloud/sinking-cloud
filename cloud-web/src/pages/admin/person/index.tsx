@@ -522,7 +522,7 @@ export default () => {
     return (
         <Body loading={loading}>
             <Row justify="center">
-                <Col xs={24} sm={24} md={24} lg={20} xl={18} xxl={16}>
+                <Col xs={24} sm={24} md={22} lg={20} xl={18} xxl={16} xxxl={14}>
                     <Row gutter={[15, 0]}>
                         <Col span={24}>
                             <div className={`${userCard} ${topCard}`}>
@@ -563,7 +563,7 @@ export default () => {
                                 <div className={settingSection}>
                                     <Row gutter={[16, 16]}>
                                         {settingItems.map((item, index) => (
-                                            <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12} key={index}>
+                                            <Col xs={24} sm={24} md={24} lg={12} xl={12} xxl={12} xxxl={12} key={index}>
                                                 {renderSettingItem(item.icon, item.title, item.desc, item.value, item.onEdit)}
                                             </Col>
                                         ))}
