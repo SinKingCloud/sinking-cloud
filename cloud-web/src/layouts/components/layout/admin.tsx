@@ -160,7 +160,7 @@ const RightTop: React.FC = () => {
     const user = useModel("user");//用户信息
     const web = useModel("web");//站点信息
     const theme = useTheme();//主题信息
-    const {message} = App.useApp();
+    const {message, modal} = App.useApp();
     const {
         styles: {
             img,
@@ -202,6 +202,23 @@ const RightTop: React.FC = () => {
         })
     }
 
+    /**
+     * 退出登录确认
+     */
+    const confirmOutLogin = () => {
+        modal.confirm({
+            title: "退出登录",
+            content: "确定退出当前账号吗？",
+            okText: "确 定",
+            okType: "danger",
+            cancelText: "取 消",
+            mask: {
+                closable: true,
+            },
+            onOk: outLogin,
+        } as any);
+    }
+
     return <>
         <Tooltip title={theme?.getModeName(theme?.mode as any)}>
             <Icon type={theme?.isDarkMode() ? 'icon-dark' : (theme?.isAutoMode() ? 'icon-auto' : 'icon-light')}
@@ -233,7 +250,7 @@ const RightTop: React.FC = () => {
                              </div>
                              <Icon type="RightOutlined"></Icon>
                          </li>
-                         <li className={menuItem} onClick={outLogin}>
+                         <li className={menuItem} onClick={confirmOutLogin}>
                              <div className={menuItemLabel}><Icon type="LogoutOutlined" className={menuItemLeadIcon}/>退出登录
                              </div>
                              <Icon type="RightOutlined"></Icon>

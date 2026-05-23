@@ -3,14 +3,13 @@ package auth
 import (
 	"errors"
 	constant2 "service-admin/app/constant"
-	"service-admin/app/model"
 	sessionRepository "service-admin/app/repository/session"
 
 	"gorm.io/gorm"
 )
 
 // SelectSessionByUserId 查询用户会话列表
-func (s *service) SelectSessionByUserId(userId int64, where *sessionRepository.SelectSession, orderByField string, orderByType string, page int, pageSize int) ([]*model.Session, int64, error) {
+func (s *service) SelectSessionByUserId(userId int64, where *sessionRepository.SelectSession, orderByField string, orderByType string, page int, pageSize int) ([]*Session, int64, error) {
 	if userId <= 0 {
 		return nil, 0, errors.New("用户ID错误")
 	}
@@ -18,7 +17,23 @@ func (s *service) SelectSessionByUserId(userId int64, where *sessionRepository.S
 		where = &sessionRepository.SelectSession{}
 	}
 	where.UserId = userId
-	return s.repositorySession.Select(where, orderByField, orderByType, page, pageSize)
+	sessions, total, err := s.repositorySession.Select(where, orderByField, orderByType, page, pageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+	data := make([]*Session, 0, len(sessions))
+	for _, item := range sessions {
+		data = append(data, &Session{
+			Token:      item.Token,
+			Device:     item.Device,
+			Ip:         item.Ip,
+			Location:   item.Location,
+			ExpireTime: item.ExpireTime,
+			CreateTime: item.CreateTime,
+			UpdateTime: item.UpdateTime,
+		})
+	}
+	return data, total, nil
 }
 
 // LogoutByUserIdAndTokens 根据用户ID和token集合注销会话
