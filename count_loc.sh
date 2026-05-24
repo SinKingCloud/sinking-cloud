@@ -8,7 +8,7 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "项目目录：$PROJECT_DIR"
 echo "------------------------------------"
 
-# 统计文件数 & 总行数
+# 统计
 RESULT=$(find "$PROJECT_DIR" \
   -type f \
   -not -path '*/node_modules/*' \
