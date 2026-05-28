@@ -21,6 +21,25 @@ export const admin = [
         name: "admin.index",
     },
     {
+        path: "web",
+        title: "网站管理",
+        name: "admin.web",
+        routes: [
+            {
+                path: "user",
+                component: "@/pages/admin/user",
+                title: "用户管理",
+                name: "admin.web.user",
+            },
+            {
+                path: "order",
+                component: "@/pages/admin/order",
+                title: "订单管理",
+                name: "admin.web.order",
+            },
+        ]
+    },
+    {
         path: "system",
         title: "系统管理",
         name: "admin.system",
