@@ -542,8 +542,8 @@ export default (): React.ReactNode => {
                             <Col span={12}>
                                 <Form.Item name="password" label="密码"
                                            rules={[{required: isCreateMode, message: "请输入登录密码"}]}>
-                                    <Input.Password placeholder={isCreateMode ? "请输入登录密码" : "留空则不修改密码"}
-                                                    maxLength={64}/>
+                                    <Input placeholder={isCreateMode ? "请输入登录密码" : "留空则不修改密码"}
+                                           maxLength={64}/>
                                 </Form.Item>
                             </Col>
                         </Row>
