@@ -173,7 +173,7 @@ const MasterSession = forwardRef<MasterSessionRef, MasterSessionProps>(({control
         <ProModal
             ref={modalRef}
             title={<Title>登录会话</Title>}
-            width={900}
+            width={910}
             modalProps={{
                 footer: null,
                 destroyOnHidden: false,
@@ -207,5 +207,7 @@ const MasterSession = forwardRef<MasterSessionRef, MasterSessionProps>(({control
         </ProModal>
     );
 });
+
+MasterSession.displayName = "MasterSession";
 
 export default MasterSession;

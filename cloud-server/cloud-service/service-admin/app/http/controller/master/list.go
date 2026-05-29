@@ -14,8 +14,8 @@ func (Controller) List(c *context.Context) {
 	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,create_time,update_time")
 	var form struct {
 		Account         string `json:"account" default:"" validate:"omitempty,alphanum" label:"账号"`
-		Phone           string `json:"phone" default:"" validate:"omitempty,numeric,len=11" label:"手机号"`
-		Email           string `json:"email" default:"" validate:"omitempty,email" label:"邮箱"`
+		Phone           string `json:"phone" default:"" validate:"omitempty,numeric" label:"手机号"`
+		Email           string `json:"email" default:"" validate:"omitempty" label:"邮箱"`
 		NickName        string `json:"nick_name" default:"" validate:"omitempty,max=15" label:"昵称"`
 		Status          string `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
 		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`

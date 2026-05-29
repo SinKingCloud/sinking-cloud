@@ -5,16 +5,16 @@ import useEnum from "@/utils/enum";
 import {updateMasterRole} from "@/service/admin/master";
 import {buildOptions, normalizeIds} from "./common";
 
-export type MasterRoleRef = {
+export type RoleRef = {
     open: (record: any) => void;
 };
 
-type MasterRoleProps = {
+type RoleProps = {
     control: any;
     onSuccess?: () => void;
 };
 
-const MasterRole = forwardRef<MasterRoleRef, MasterRoleProps>(({control, onSuccess}, ref) => {
+const Role = forwardRef<RoleRef, RoleProps>(({control, onSuccess}, ref) => {
     const {message} = App.useApp();
     const [enumData] = useEnum(["admin.role"]) as any;
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
@@ -89,4 +89,6 @@ const MasterRole = forwardRef<MasterRoleRef, MasterRoleProps>(({control, onSucce
     );
 });
 
-export default MasterRole;
+Role.displayName = "Role";
+
+export default Role;

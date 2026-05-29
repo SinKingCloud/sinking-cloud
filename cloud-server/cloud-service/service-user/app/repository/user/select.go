@@ -8,13 +8,13 @@ func (r *Repository) Select(where *SelectUser, orderByField string, orderByType 
 	query := r.Database.Db.Model(&model.User{})
 	if where != nil {
 		if where.Account != "" {
-			query = query.Where("account LIKE ?", "%"+where.Account+"%")
+			query = query.Where("account LIKE ?", where.Account+"%")
 		}
 		if where.Phone != "" {
-			query = query.Where("phone LIKE ?", "%"+where.Phone+"%")
+			query = query.Where("phone LIKE ?", where.Phone+"%")
 		}
 		if where.Email != "" {
-			query = query.Where("email LIKE ?", "%"+where.Email+"%")
+			query = query.Where("email LIKE ?", where.Email+"%")
 		}
 		if where.NickName != "" {
 			query = query.Where("nick_name LIKE ?", "%"+where.NickName+"%")

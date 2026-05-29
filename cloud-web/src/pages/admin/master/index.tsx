@@ -1,20 +1,17 @@
-import React, {useRef, useState} from "react";
-import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
-import {App, Avatar, Button, Col, Dropdown, Form, Input, Result, Row, Select, Space, Typography} from "antd";
+import React, {useRef} from "react";
+import {Body, ProTable, ProTableRef, Title} from "sinking-antd";
+import {App, Avatar, Button, Dropdown, Result, Space, Typography} from "antd";
 import {UserOutlined} from "@ant-design/icons";
 import {getData} from "@/utils/page";
-import {AVATAR_SCENE_ID, getUploadUrl} from "@/utils/upload";
 import useControl from "@/utils/control";
 import useEnum from "@/utils/enum";
-import {Upload, type UploadRef} from "@/pages/components/upload";
 import {
-    createMaster,
     deleteMaster,
     getMasterList,
-    updateMaster,
 } from "@/service/admin/master";
+import Info, {type InfoRef} from "./components/info";
 import MasterSession, {type MasterSessionRef} from "./components/session";
-import MasterRole, {type MasterRoleRef} from "./components/role";
+import Role, {type RoleRef} from "./components/role";
 import {
     buildOptions,
     buildValueEnum,
@@ -24,58 +21,7 @@ import {
 } from "./components/common";
 import {createStyles} from "antd-style";
 
-const useStyles: any = createStyles(({token}: any): any => ({
-    avatarContainer: {
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: 12,
-        marginBottom: 16,
-        borderRadius: token.borderRadius,
-        background: token.colorFillAlter,
-        border: `1px solid ${token.colorBorderSecondary}`,
-    },
-    avatarInfo: {
-        minWidth: 0,
-    },
-    avatarUpload: {
-        position: "relative",
-        cursor: "pointer",
-        borderRadius: "50%",
-        overflow: "hidden",
-        flex: "none",
-        "&:hover .upload-hint": {
-            opacity: 1,
-        },
-    },
-    uploadHint: {
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        padding: "4px 0",
-        color: "#fff",
-        fontSize: 12,
-        lineHeight: "16px",
-        textAlign: "center",
-        background: "rgba(0, 0, 0, 0.6)",
-        opacity: 0,
-        transition: "opacity 0.2s",
-    },
-    avatarTitle: {
-        fontSize: 14,
-        fontWeight: 500,
-    },
-    avatarDesc: {
-        marginTop: 4,
-        fontSize: 12,
-        color: token.colorTextTertiary,
-    },
-    form: {
-        ".ant-form-item": {
-            marginBottom: 16,
-        },
-    },
+const useStyles: any = createStyles((): any => ({
     infoColumn: {
         width: "100%",
         minWidth: 180,
@@ -111,158 +57,13 @@ export default (): React.ReactNode => {
     const hasRoleControl = control.hasControl("admin.system.master:role");
     const hasSessionControl = control.hasControl("admin.system.master:session");
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
-    const formModalRef = useRef<ProModalRef>({} as ProModalRef);
-    const roleRef = useRef<MasterRoleRef>({} as MasterRoleRef);
+    const infoRef = useRef<InfoRef>({} as InfoRef);
+    const roleRef = useRef<RoleRef>({} as RoleRef);
     const sessionRef = useRef<MasterSessionRef>({} as MasterSessionRef);
-    const avatarUploadRef = useRef<UploadRef>({} as UploadRef);
-    const [form] = Form.useForm();
-    const avatarValue = Form.useWatch("avatar" as any, form);
-    const [formSubmitting, setFormSubmitting] = useState(false);
-    const [avatarUploading, setAvatarUploading] = useState(false);
-    const [formScene, setFormScene] = useState<any>({
-        action: "create",
-        id: undefined,
-        title: "新增账户",
-    });
-    const isCreateMode = formScene?.action === "create";
     const userStatus = enumData?.["admin.user"]?.status || {};
     const roleNames = enumData?.["admin.role"]?.names || {};
     const statusOptions = buildOptions(userStatus);
     const statusValueEnum = buildValueEnum(userStatus, {"0": "green", "1": "red"});
-
-    const uploadAvatar = () => {
-        if (avatarUploading) {
-            return;
-        }
-        setAvatarUploading(true);
-        const task = avatarUploadRef.current?.upload?.({
-            sceneId: AVATAR_SCENE_ID,
-            accept: "image/*",
-            onComplete: async (result: any) => {
-                const url = getUploadUrl(result);
-                if (!url) {
-                    setAvatarUploading(false);
-                    message?.warning("头像上传成功，但未返回地址");
-                    return;
-                }
-                form.setFieldValue("avatar" as any, url);
-                if (isCreateMode || !formScene?.id) {
-                    message?.success("头像上传成功");
-                    return;
-                }
-                try {
-                    await updateMaster({
-                        body: {
-                            id: Number(formScene.id),
-                            avatar: url,
-                        },
-                        onSuccess: (res: any) => {
-                            tableRef.current?.refreshTableData?.();
-                            message?.success(res?.message || "头像保存成功");
-                        },
-                        onFail: (res: any) => {
-                            message?.error(res?.message || "头像保存失败");
-                        },
-                        onFinally: () => setAvatarUploading(false),
-                    });
-                } catch (_) {
-                    setAvatarUploading(false);
-                }
-            },
-            onError: (error: Error) => {
-                message?.error(error?.message || "头像上传失败");
-            },
-        } as any);
-        if (!task) {
-            setAvatarUploading(false);
-            return;
-        }
-        task.promise.then((result) => {
-            if (!result || isCreateMode || !formScene?.id) {
-                setAvatarUploading(false);
-            }
-        }).catch(() => setAvatarUploading(false));
-    };
-
-    const openCreate = () => {
-        if (!hasCreateControl) {
-            message?.warning("暂无创建权限");
-            return;
-        }
-        setFormScene({
-            action: "create",
-            id: undefined,
-            title: "新增账户",
-        });
-        form.resetFields();
-        form.setFieldsValue({status: 0});
-        formModalRef.current?.show();
-    };
-
-    const openEdit = (record: any) => {
-        if (!hasUpdateControl) {
-            message?.warning("暂无修改权限");
-            return;
-        }
-        const id = Number(record?.id);
-        if (!id) {
-            return;
-        }
-        setFormScene({
-            action: "edit",
-            id,
-            title: "编辑账户",
-        });
-        form.resetFields();
-        form.setFieldsValue({
-            account: record?.account,
-            phone: record?.phone,
-            email: record?.email,
-            avatar: record?.avatar,
-            nick_name: record?.nick_name,
-            status: Number(record?.status),
-        });
-        formModalRef.current?.show();
-    };
-
-    const handleSubmit = async (values: any) => {
-        if (isCreateMode && !hasCreateControl) {
-            message?.warning("暂无创建权限");
-            return;
-        }
-        if (!isCreateMode && !hasUpdateControl) {
-            message?.warning("暂无修改权限");
-            return;
-        }
-        setFormSubmitting(true);
-        const body: any = {
-            account: values?.account,
-            phone: values?.phone,
-            email: values?.email,
-            password: values?.password,
-            avatar: values?.avatar,
-            nick_name: values?.nick_name,
-        };
-        if (isCreateMode) {
-            body.status = Number(values?.status);
-        } else {
-            body.id = Number(formScene?.id);
-            body.status = values?.status?.toString();
-        }
-        await (isCreateMode ? createMaster : updateMaster)({
-            body,
-            onSuccess: (res: any) => {
-                formModalRef.current?.hide();
-                tableRef.current?.refreshTableData?.();
-                tableRef.current?.clearSelectedRows?.();
-                message?.success(res?.message || "操作成功");
-            },
-            onFail: (res: any) => {
-                message?.error(res?.message || "操作失败");
-            },
-            onFinally: () => setFormSubmitting(false),
-        });
-    };
 
     const onDelete = (id: any) => {
         if (!hasDeleteControl) {
@@ -354,16 +155,16 @@ export default (): React.ReactNode => {
             ]),
         },
         {
-            title: "账号",
+            title: "员工账号",
             dataIndex: "account",
-            tip: "账号",
+            tip: "员工账号",
             valueType: "text",
             hideInTable: true,
         },
         {
-            title: "昵称",
+            title: "员工昵称",
             dataIndex: "nick_name",
-            tip: "昵称",
+            tip: "员工昵称",
             valueType: "text",
             hideInTable: true,
         },
@@ -378,16 +179,16 @@ export default (): React.ReactNode => {
             ]),
         },
         {
-            title: "手机号",
+            title: "手机号码",
             dataIndex: "phone",
-            tip: "手机号",
+            tip: "手机号码",
             valueType: "text",
             hideInTable: true,
         },
         {
-            title: "邮箱",
+            title: "邮箱地址",
             dataIndex: "email",
-            tip: "邮箱",
+            tip: "邮箱地址",
             valueType: "text",
             hideInTable: true,
         },
@@ -399,7 +200,7 @@ export default (): React.ReactNode => {
             render: (_: any, record: any) => roleRender(record?.role_ids || []),
         },
         {
-            title: "状态",
+            title: "员工状态",
             dataIndex: "status",
             tip: "员工状态",
             valueEnum: statusValueEnum,
@@ -443,7 +244,7 @@ export default (): React.ReactNode => {
                     hasUpdateControl ? {
                         key: "edit",
                         label: "编辑",
-                        onClick: () => openEdit(record),
+                        onClick: () => infoRef.current?.openEdit(record),
                     } : null,
                     hasRoleControl ? {
                         key: "role",
@@ -487,7 +288,7 @@ export default (): React.ReactNode => {
                     defaultPage={1}
                     defaultPageSize={20}
                     extra={hasCreateControl ? (
-                        <Button type="primary" onClick={openCreate}>
+                        <Button type="primary" onClick={() => infoRef.current?.openCreate()}>
                             新增
                         </Button>
                     ) : null}
@@ -501,84 +302,16 @@ export default (): React.ReactNode => {
                     selectionAffix={true}
                 />
 
-                <ProModal
-                    ref={formModalRef}
-                    title={<Title>{formScene?.title}</Title>}
-                    onOk={form.submit}
-                    width={460}
-                    modalProps={{
-                        confirmLoading: formSubmitting,
-                        okText: "提交",
-                        cancelText: "取消",
-                        forceRender: true,
-                        afterClose: () => {
-                            form.resetFields();
-                            setFormSubmitting(false);
-                        },
-                    } as any}
-                >
-                    <Form form={form} layout="vertical" onFinish={handleSubmit} className={styles.form}>
-                        <div className={styles.avatarContainer}>
-                            <Upload ref={avatarUploadRef}/>
-                            <div className={styles.avatarUpload} onClick={uploadAvatar}>
-                                <Avatar size={72} src={(avatarValue || undefined) as any} icon={<UserOutlined/>}/>
-                                <div className={`${styles.uploadHint} upload-hint`}>上传</div>
-                            </div>
-                            <div className={styles.avatarInfo}>
-                                <div className={styles.avatarTitle}>头像</div>
-                                <div className={styles.avatarDesc}>点击头像上传图片</div>
-                            </div>
-                        </div>
-                        <Form.Item name="avatar" hidden>
-                            <Input/>
-                        </Form.Item>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item name="account" label="账号"
-                                           rules={[{required: isCreateMode, message: "请输入账号"}]}>
-                                    <Input placeholder="请输入账号" maxLength={32}/>
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="password" label="密码"
-                                           rules={[{required: isCreateMode, message: "请输入登录密码"}]}>
-                                    <Input placeholder={isCreateMode ? "请输入登录密码" : "留空则不修改密码"}
-                                           maxLength={64}/>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item name="status" label="状态"
-                                           rules={[{required: isCreateMode, message: "请选择状态"}]}>
-                                    <Select placeholder="请选择状态" options={statusOptions as any}/>
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="nick_name" label="昵称"
-                                           rules={[{max: 20, message: "昵称不能超过20个字符"}]}>
-                                    <Input placeholder="请输入昵称" maxLength={20} showCount/>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item name="phone" label="手机"
-                                           rules={[{pattern: /^1[3-9]\d{9}$/, message: "请输入正确的手机号"}]}>
-                                    <Input placeholder="请输入手机号码" maxLength={11}/>
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="email" label="邮箱"
-                                           rules={[{type: "email", message: "请输入正确的邮箱地址"}]}>
-                                    <Input placeholder="请输入邮箱地址" maxLength={80}/>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Form>
-                </ProModal>
-
-                <MasterRole ref={roleRef} control={control} onSuccess={() => tableRef.current?.refreshTableData?.()}/>
+                <Info
+                    ref={infoRef}
+                    control={control}
+                    statusOptions={statusOptions}
+                    onSuccess={() => {
+                        tableRef.current?.refreshTableData?.();
+                        tableRef.current?.clearSelectedRows?.();
+                    }}
+                />
+                <Role ref={roleRef} control={control} onSuccess={() => tableRef.current?.refreshTableData?.()}/>
                 <MasterSession ref={sessionRef} control={control}/>
             </>}
         </Body>
