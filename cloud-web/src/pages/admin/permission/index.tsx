@@ -3,6 +3,7 @@ import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking
 import {App, Button, Dropdown, Form, Input, Result} from "antd";
 import {dateRangeTransform, emptyTableData, getData, normalizeIds} from "@/utils/page";
 import useControl from "@/utils/control";
+import {AdminControlCode} from "@/utils/permission";
 import {
     createPermission,
     deletePermission,
@@ -13,10 +14,10 @@ import {
 export default (): React.ReactNode => {
     const {message, modal} = App.useApp();
     const control = useControl();
-    const hasListControl = control.hasControl("admin.system.permission:list");
-    const hasCreateControl = control.hasControl("admin.system.permission:create");
-    const hasUpdateControl = control.hasControl("admin.system.permission:update");
-    const hasDeleteControl = control.hasControl("admin.system.permission:delete");
+    const hasListControl = control.hasControl(AdminControlCode.SYSTEM_PERMISSION_LIST);
+    const hasCreateControl = control.hasControl(AdminControlCode.SYSTEM_PERMISSION_CREATE);
+    const hasUpdateControl = control.hasControl(AdminControlCode.SYSTEM_PERMISSION_UPDATE);
+    const hasDeleteControl = control.hasControl(AdminControlCode.SYSTEM_PERMISSION_DELETE);
 
     /**
      * 新增/编辑表单

@@ -3,6 +3,7 @@ import {Body, Title} from "sinking-antd";
 import {Card, Menu, Result} from "antd";
 import {createStyles} from "antd-style";
 import useControl from "@/utils/control";
+import {AdminControlCode, AdminPageCode} from "@/utils/permission";
 import WebView from "./components/web";
 import UiView from "./components/ui";
 import AliView from "./components/ali";
@@ -75,32 +76,32 @@ const configItems: ConfigItem[] = [
     {
         key: "web",
         title: "网站设置",
-        control: "admin.system.config:web",
+        control: AdminControlCode.SYSTEM_CONFIG_WEB,
         component: <WebView/>,
     },
     {
         key: "ui",
         title: "界面设置",
-        control: "admin.system.config:ui",
+        control: AdminControlCode.SYSTEM_CONFIG_UI,
         component: <UiView/>,
     },
     {
         key: "aliyun",
         title: "阿里云设置",
-        control: "admin.system.config:aliyun",
+        control: AdminControlCode.SYSTEM_CONFIG_ALIYUN,
         component: <AliView/>,
     },
     {
         key: "pay",
         title: "支付设置",
-        control: "admin.system.config:pay",
+        control: AdminControlCode.SYSTEM_CONFIG_PAY,
         component: <PayView/>,
     },
 ];
 
 export default (): React.ReactNode => {
     const {styles} = useStyles();
-    const control = useControl("admin.system.config");
+    const control = useControl(AdminPageCode.SYSTEM_CONFIG);
     const visibleItems = useMemo(() => {
         return configItems.filter((item) => control.hasControl(item.control));
     }, [control.controls]);

@@ -3,6 +3,7 @@ import {Body} from "sinking-antd";
 import {Card, Result, Tabs} from "antd";
 import {createStyles} from "antd-style";
 import useControl from "@/utils/control";
+import {AdminControlCode} from "@/utils/permission";
 import FileManage from "./components/file";
 import SceneManage from "./components/scene";
 import ChannelManage from "./components/channel";
@@ -16,19 +17,19 @@ const driverTabs: Array<{
     {
         key: "file",
         label: "文件管理",
-        listControl: "admin.system.driver.file:list",
+        listControl: AdminControlCode.SYSTEM_DRIVER_FILE_LIST,
         component: (props) => <FileManage {...props}/>,
     },
     {
         key: "scene",
         label: "场景管理",
-        listControl: "admin.system.driver.scene:list",
+        listControl: AdminControlCode.SYSTEM_DRIVER_SCENE_LIST,
         component: (props) => <SceneManage {...props}/>,
     },
     {
         key: "channel",
         label: "通道管理",
-        listControl: "admin.system.driver.channel:list",
+        listControl: AdminControlCode.SYSTEM_DRIVER_CHANNEL_LIST,
         component: (props) => <ChannelManage {...props}/>,
     },
 ];

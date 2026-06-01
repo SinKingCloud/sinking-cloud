@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Body, getAllIconNames, Icon, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {
     App,
@@ -29,6 +29,7 @@ import {createMenu, deleteMenu, getMenuControls, getMenuInfo, getMenuList, updat
 import useEnum from "@/utils/enum";
 import {buildOptions, emptyTableData, getData} from "@/utils/page";
 import useControl from "@/utils/control";
+import {AdminControlCode, AdminPageCode} from "@/utils/permission";
 
 const useStyles: any = createStyles(({css, token}: any) => ({
     menuCard: css`
@@ -141,11 +142,11 @@ export default (): React.ReactNode => {
     const {styles} = useStyles();
     const [enumData, enumLoading] = useEnum(["admin.menu", "admin.permission"]) as any;
     const control = useControl();
-    const hasUpdateControl = control.hasControl("admin.system.menu:update");
-    const hasCreateControl = control.hasControl("admin.system.menu:create");
-    const hasDeleteControl = control.hasControl("admin.system.menu:delete");
-    const hasListControl = control.hasControl("admin.system.menu:list");
-    const hasControlsControl = control.hasControl("admin.system.menu:controls");
+    const hasUpdateControl = control.hasControl(AdminControlCode.SYSTEM_MENU_UPDATE);
+    const hasCreateControl = control.hasControl(AdminControlCode.SYSTEM_MENU_CREATE);
+    const hasDeleteControl = control.hasControl(AdminControlCode.SYSTEM_MENU_DELETE);
+    const hasListControl = control.hasControl(AdminControlCode.SYSTEM_MENU_LIST);
+    const hasControlsControl = control.hasControl(AdminControlCode.SYSTEM_MENU_CONTROLS);
     const menuTypes = enumData?.["admin.menu"]?.types || {};
     const menuStatus = enumData?.["admin.menu"]?.status || {};
     const permissionCodes = enumData?.["admin.permission"]?.codes || {};
@@ -454,6 +455,13 @@ export default (): React.ReactNode => {
     const isControlForm = formScene?.target === "control";
     const showTypeField = !isEditMode && formScene?.typeEditable;
     const showCodeField = !isEditMode;
+    const codeOptions = useMemo(() => {
+        const codes = Object.values(isControlForm ? AdminControlCode : AdminPageCode);
+        return codes.map((code) => ({
+            value: code,
+            label: code,
+        }));
+    }, [isControlForm]);
     const openCreateRootMenu = () => {
         if (!hasCreateControl) {
             message?.warning("暂无创建权限");
@@ -901,7 +909,14 @@ export default (): React.ReactNode => {
                                 <Col xs={24} sm={12}>
                                     <Form.Item name="code" label="标识"
                                                rules={[{required: true, message: "请输入标识"}]}>
-                                        <Input placeholder="请输入标识" maxLength={100} showCount/>
+                                        <AutoComplete placeholder="请选择或输入标识"
+                                                      allowClear
+                                                      maxLength={100}
+                                                      options={codeOptions}
+                                                      showSearch={{
+                                                          filterOption: (inputValue: string, option: any) =>
+                                                              String(option?.value || "").toLowerCase().includes(inputValue.toLowerCase())
+                                                      }}/>
                                     </Form.Item>
                                 </Col>
                             )}

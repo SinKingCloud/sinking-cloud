@@ -6,6 +6,7 @@ import defaultSettings from "@/../config/defaultSettings";
 import {buildOptions, buildValueEnum, dateRangeTransform, emptyTableData, getData, normalizeIds} from "@/utils/page";
 import useEnum from "@/utils/enum";
 import useControl from "@/utils/control";
+import {AdminControlCode} from "@/utils/permission";
 import AceEditor from "@/pages/components/ace-editor";
 import {
     createCron,
@@ -39,12 +40,12 @@ export default (): React.ReactNode => {
     const {styles} = useStyles();
     const [enumData, enumLoading] = useEnum(["cron.task"]) as any;
     const control = useControl();
-    const hasListControl = control.hasControl("admin.system.cron:list");
-    const hasCreateControl = control.hasControl("admin.system.cron:create");
-    const hasUpdateControl = control.hasControl("admin.system.cron:update");
-    const hasDeleteControl = control.hasControl("admin.system.cron:delete");
-    const hasRunControl = control.hasControl("admin.system.cron:run");
-    const hasLogControl = control.hasControl("admin.system.cron:log");
+    const hasListControl = control.hasControl(AdminControlCode.SYSTEM_CRON_LIST);
+    const hasCreateControl = control.hasControl(AdminControlCode.SYSTEM_CRON_CREATE);
+    const hasUpdateControl = control.hasControl(AdminControlCode.SYSTEM_CRON_UPDATE);
+    const hasDeleteControl = control.hasControl(AdminControlCode.SYSTEM_CRON_DELETE);
+    const hasRunControl = control.hasControl(AdminControlCode.SYSTEM_CRON_RUN);
+    const hasLogControl = control.hasControl(AdminControlCode.SYSTEM_CRON_LOG);
     const taskEnums = enumData?.["cron.task"] || {};
     const taskTypes = taskEnums?.types || {};
     const taskStatus = taskEnums?.status || {};

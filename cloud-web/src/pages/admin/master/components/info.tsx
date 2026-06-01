@@ -6,6 +6,7 @@ import {createStyles} from "antd-style";
 import {AVATAR_SCENE_ID, getUploadUrl} from "@/utils/upload";
 import {Upload, type UploadRef} from "@/pages/components/upload";
 import {createMaster, updateMaster} from "@/service/admin/master";
+import {AdminControlCode} from "@/utils/permission";
 
 export type InfoRef = {
     openCreate: () => void;
@@ -86,8 +87,8 @@ const Info = forwardRef<InfoRef, InfoProps>(({control, statusOptions, onSuccess}
         id: undefined,
         title: "新增账户",
     });
-    const hasCreateControl = control.hasControl("admin.system.master:create");
-    const hasUpdateControl = control.hasControl("admin.system.master:update");
+    const hasCreateControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_CREATE);
+    const hasUpdateControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_UPDATE);
     const isCreateMode = formScene?.action === "create";
 
     const openCreate = () => {

@@ -18,6 +18,7 @@ import {App, Avatar, Col, Popover, Row, Tooltip} from "antd";
 import {logout} from "@/service/common/login";
 import {deleteHeader} from "@/utils/auth";
 import {getMenus} from "@/service/admin/page";
+import {AdminPageCode} from "@/utils/permission";
 
 
 /**
@@ -383,14 +384,14 @@ const SKLayout: React.FC = () => {
         const temp = [{
             title: "首页",
             onClick: () => {
-                historyPush(getFirstMenuWithoutChildren(currentMenus)?.name || "admin.index");
+                historyPush(getFirstMenuWithoutChildren(currentMenus)?.name || AdminPageCode.INDEX);
             },
         }];
         const handleItemClick = (x: any) => {
             if (x?.children && x?.children?.length > 0) {
-                historyPush(getFirstMenuWithoutChildren(x?.children)?.name || "admin.index");
+                historyPush(getFirstMenuWithoutChildren(x?.children)?.name || AdminPageCode.INDEX);
             } else {
-                historyPush(x?.name || "admin.index");
+                historyPush(x?.name || AdminPageCode.INDEX);
             }
         };
         items.forEach((x) => {

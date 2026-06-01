@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# ====================== 内置账号配置（可自行增删改） ======================
-# 格式：序号:BaseURL:API_KEY
+# ====================== 内置账号配置（已修复：用 | 分隔） ======================
+# 格式：序号|BaseURL|API_KEY   【重要：不要用 : 分隔】
 ACCOUNTS=(
-  "1:https://api.freemodel.dev:fe_oa_69a59f2bb01180b785c085a9cf289e74ba8b1eb0657c51bd"
-  "2:https://api.freemodel.dev:fe_oa_ed26000741b1ff0fc76dfcd31433a010fc11cb8d7e206e99"
-  "3:https://api.freemodel.dev:fe_oa_3763f9d7646dde4bac1f4f8e741fd8b7b68d0a1720d66123"
-  "4:https://new.sharedchat.cc/codex:sk-2038bac55b3211f18dcf00163e012d40"
+  "1|https://api.freemodel.dev|fe_oa_69a59f2bb01180b785c085a9cf289e74ba8b1eb0657c51bd"
+  "2|https://api.freemodel.dev|fe_oa_ed26000741b1ff0fc76dfcd31433a010fc11cb8d7e206e99"
+  "3|https://api.freemodel.dev|fe_oa_3763f9d7646dde4bac1f4f8e741fd8b7b68d0a1720d66123"
+  "4|https://new.sharedchat.cc/codex|sk-2038bac55b3211f18dcf00163e012d40"
 )
 # ======================================================================
 
@@ -62,7 +62,7 @@ cmd_show() {
   echo -e "\n📇 内置账号列表"
   echo "──────────────────────────"
   for acc in "${ACCOUNTS[@]}"; do
-    IFS=':' read -r num url key <<< "$acc"
+    IFS='|' read -r num url key <<< "$acc"
     echo "$num: $url"
   done
 }
@@ -74,7 +74,7 @@ cmd_set() {
     local SELECTED_NUM="$1"
     local FOUND=0
     for acc in "${ACCOUNTS[@]}"; do
-      IFS=':' read -r num url key <<< "$acc"
+      IFS='|' read -r num url key <<< "$acc"
       if [ "$num" = "$SELECTED_NUM" ]; then
         update_config "$url" "$key"
         FOUND=1

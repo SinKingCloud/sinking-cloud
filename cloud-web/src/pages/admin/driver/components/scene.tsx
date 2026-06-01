@@ -12,6 +12,7 @@ import {
 } from "@/service/admin/driver";
 import {buildOptions, buildValueEnum, dateRangeTransform} from "@/utils/page";
 import {formatSizeFromKb} from "@/utils/string";
+import {AdminControlCode} from "@/utils/permission";
 
 type SceneManageProps = {
     control: any;
@@ -37,10 +38,10 @@ const SceneManage: React.FC<SceneManageProps> = ({control}) => {
         title: "新增场景",
     });
     const isEditMode = scene?.action === "edit";
-    const hasListControl = control.hasControl("admin.system.driver.scene:list");
-    const hasCreateControl = control.hasControl("admin.system.driver.scene:create");
-    const hasUpdateControl = control.hasControl("admin.system.driver.scene:update");
-    const hasDeleteControl = control.hasControl("admin.system.driver.scene:delete");
+    const hasListControl = control.hasControl(AdminControlCode.SYSTEM_DRIVER_SCENE_LIST);
+    const hasCreateControl = control.hasControl(AdminControlCode.SYSTEM_DRIVER_SCENE_CREATE);
+    const hasUpdateControl = control.hasControl(AdminControlCode.SYSTEM_DRIVER_SCENE_UPDATE);
+    const hasDeleteControl = control.hasControl(AdminControlCode.SYSTEM_DRIVER_SCENE_DELETE);
     const sceneEnums = enumData?.["driver.scene"] || {};
     const channelEnums = enumData?.["driver.channel"] || {};
     const statusOptions = buildOptions(sceneEnums?.status, true);

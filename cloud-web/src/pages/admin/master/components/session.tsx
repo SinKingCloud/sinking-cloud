@@ -5,6 +5,7 @@ import {createStyles} from "antd-style";
 import {getData} from "@/utils/page";
 import {getMasterSessionList, logoutMasterSession} from "@/service/admin/master";
 import {dateRangeTransform, emptyTableData} from "@/utils/page";
+import {AdminControlCode} from "@/utils/permission";
 
 export type MasterSessionRef = {
     open: (record: any) => void;
@@ -42,8 +43,8 @@ const MasterSession = forwardRef<MasterSessionRef, MasterSessionProps>(({control
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const [userInfo, setUserInfo] = useState<any>();
-    const hasSessionControl = control.hasControl("admin.system.master:session");
-    const hasLogoutControl = control.hasControl("admin.system.master:logout");
+    const hasSessionControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_SESSION);
+    const hasLogoutControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_LOGOUT);
 
     useImperativeHandle(ref, () => ({
         open: (record: any) => {

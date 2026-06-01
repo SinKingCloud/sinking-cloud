@@ -1,6 +1,6 @@
 import {useEffect, useMemo, useState} from "react";
 import {useSelectedRoutes} from "umi";
-import {getControl as fetchControl} from "@/service/admin/page";
+import {getControl} from "@/service/admin/page";
 
 export type ControlItem = {
     code?: string;
@@ -20,6 +20,9 @@ type UseControlResult = {
 
 const controlCache: Record<string, ControlItem[]> = {};
 
+/**
+ * 清理页面控件缓存；传入页面标识时只清理该页面，不传则清空全部缓存。
+ */
 export function clearControlCache(code?: string) {
     if (code) {
         delete controlCache[code];
@@ -30,6 +33,9 @@ export function clearControlCache(code?: string) {
     });
 }
 
+/**
+ * 获取当前页面可用控件，并提供控件存在性判断、控件详情读取和刷新能力。
+ */
 export function useControl(code?: string): UseControlResult {
     const match = useSelectedRoutes();
     const currentCode = useMemo(() => {
@@ -61,7 +67,7 @@ export function useControl(code?: string): UseControlResult {
         setLoading(true);
         setError(null);
 
-        fetchControl({
+        getControl({
             body: {
                 code: currentCode,
             },
@@ -79,11 +85,10 @@ export function useControl(code?: string): UseControlResult {
                 }
                 setControls([]);
                 setError(new Error(res?.message || "获取页面控件失败"));
-            },
-            onFinally: () => {
-                if (mounted) {
-                    setLoading(false);
-                }
+            }
+        }).finally(() => {
+            if (mounted) {
+                setLoading(false);
             }
         });
 

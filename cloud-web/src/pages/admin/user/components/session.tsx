@@ -5,6 +5,7 @@ import {createStyles} from "antd-style";
 import {getData} from "@/utils/page";
 import {getUserSessionList, logoutUserSession} from "@/service/admin/user";
 import {dateRangeTransform, emptyTableData} from "@/utils/page";
+import {AdminControlCode} from "@/utils/permission";
 
 export type SessionRef = {
     open: (record: any) => void;
@@ -42,8 +43,8 @@ const Session = forwardRef<SessionRef, SessionProps>(({control}, ref) => {
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const [userInfo, setUserInfo] = useState<any>();
-    const hasSessionControl = control.hasControl("admin.web.user:session");
-    const hasLogoutControl = control.hasControl("admin.web.user:logout");
+    const hasSessionControl = control.hasControl(AdminControlCode.WEB_USER_SESSION);
+    const hasLogoutControl = control.hasControl(AdminControlCode.WEB_USER_LOGOUT);
 
     useImperativeHandle(ref, () => ({
         open: (record: any) => {

@@ -1,6 +1,8 @@
 /**
  * 用户系统路由
  */
+import {AdminPageCode} from "../src/utils/permission";
+
 export const userPath = "user";
 export const user = [
     {
@@ -18,79 +20,79 @@ export const admin = [
         path: "index",
         component: "@/pages/admin/index",
         title: "网站概览",
-        name: "admin.index",
+        name: AdminPageCode.INDEX,
     },
     {
         path: "web",
         title: "网站管理",
-        name: "admin.web",
+        name: AdminPageCode.WEB,
         routes: [
             {
                 path: "user",
                 component: "@/pages/admin/user",
                 title: "用户管理",
-                name: "admin.web.user",
+                name: AdminPageCode.WEB_USER,
             },
             {
                 path: "order",
                 component: "@/pages/admin/order",
                 title: "订单管理",
-                name: "admin.web.order",
+                name: AdminPageCode.WEB_ORDER,
             },
         ]
     },
     {
         path: "system",
         title: "系统管理",
-        name: "admin.system",
+        name: AdminPageCode.SYSTEM,
         routes: [
             {
                 path: "master",
                 component: "@/pages/admin/master",
                 title: "员工管理",
-                name: "admin.system.master",
+                name: AdminPageCode.SYSTEM_MASTER,
             },
             {
                 path: "role",
                 component: "@/pages/admin/role",
                 title: "角色管理",
-                name: "admin.system.role",
+                name: AdminPageCode.SYSTEM_ROLE,
             },
             {
                 path: "permission",
                 component: "@/pages/admin/permission",
                 title: "权限管理",
-                name: "admin.system.permission",
+                name: AdminPageCode.SYSTEM_PERMISSION,
             },
             {
                 path: "menu",
                 component: "@/pages/admin/menu",
                 title: "菜单管理",
-                name: "admin.system.menu",
+                name: AdminPageCode.SYSTEM_MENU,
             },
             {
                 path: "cron",
                 component: "@/pages/admin/cron",
                 title: "任务管理",
-                name: "admin.system.cron",
+                name: AdminPageCode.SYSTEM_CRON,
             },
             {
                 path: "driver",
                 component: "@/pages/admin/driver",
                 title: "存储管理",
-                name: "admin.system.driver",
+                name: AdminPageCode.SYSTEM_DRIVER,
             },
             {
                 path: "pay",
                 component: "@/pages/admin/pay",
                 title: "支付管理",
-                name: "admin.system.pay",
+                name: AdminPageCode.SYSTEM_PAY,
             },
             {
                 path: "config",
                 component: "@/pages/admin/config",
                 title: "系统设置",
-                name: "admin.system.config",
+                name: AdminPageCode.SYSTEM_CONFIG,
             },
         ]
     },

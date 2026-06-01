@@ -13,6 +13,7 @@ import {
 } from "@/service/admin/driver";
 import {buildOptions, buildValueEnum, dateRangeTransform} from "@/utils/page";
 import {normalizeConfig} from "@/utils/string";
+import {AdminControlCode} from "@/utils/permission";
 
 type ChannelManageProps = {
     control: any;
@@ -43,10 +44,10 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
     const [infoLoading, setInfoLoading] = useState(false);
     const [configFields, setConfigFields] = useState<string[]>([]);
     const isEditMode = scene?.action === "edit";
-    const hasListControl = control.hasControl("admin.system.driver.channel:list");
-    const hasCreateControl = control.hasControl("admin.system.driver.channel:create");
-    const hasUpdateControl = control.hasControl("admin.system.driver.channel:update");
-    const hasDeleteControl = control.hasControl("admin.system.driver.channel:delete");
+    const hasListControl = control.hasControl(AdminControlCode.SYSTEM_DRIVER_CHANNEL_LIST);
+    const hasCreateControl = control.hasControl(AdminControlCode.SYSTEM_DRIVER_CHANNEL_CREATE);
+    const hasUpdateControl = control.hasControl(AdminControlCode.SYSTEM_DRIVER_CHANNEL_UPDATE);
+    const hasDeleteControl = control.hasControl(AdminControlCode.SYSTEM_DRIVER_CHANNEL_DELETE);
     const channelEnums = enumData?.["driver.channel"] || {};
     const typeOptions = buildOptions(channelEnums?.type, true);
     const statusOptions = buildOptions(channelEnums?.status, true);

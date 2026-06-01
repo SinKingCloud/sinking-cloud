@@ -5,6 +5,7 @@ import {UserOutlined} from "@ant-design/icons";
 import {createStyles} from "antd-style";
 import {getData} from "@/utils/page";
 import useControl from "@/utils/control";
+import {AdminControlCode} from "@/utils/permission";
 import useEnum from "@/utils/enum";
 import {getUserList} from "@/service/admin/user";
 import {
@@ -43,8 +44,8 @@ export default (): React.ReactNode => {
     const {styles} = useStyles();
     const [enumData, enumLoading] = useEnum(["user.user", "user.real_auth"]) as any;
     const control = useControl();
-    const hasListControl = control.hasControl("admin.web.user:list");
-    const hasSessionControl = control.hasControl("admin.web.user:session");
+    const hasListControl = control.hasControl(AdminControlCode.WEB_USER_LIST);
+    const hasSessionControl = control.hasControl(AdminControlCode.WEB_USER_SESSION);
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const sessionRef = useRef<SessionRef>({} as SessionRef);
     const userStatus = enumData?.["user.user"]?.status || {};

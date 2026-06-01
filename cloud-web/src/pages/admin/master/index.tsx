@@ -4,6 +4,7 @@ import {App, Avatar, Button, Dropdown, Result, Space, Typography} from "antd";
 import {UserOutlined} from "@ant-design/icons";
 import {getData} from "@/utils/page";
 import useControl from "@/utils/control";
+import {AdminControlCode} from "@/utils/permission";
 import useEnum from "@/utils/enum";
 import {
     deleteMaster,
@@ -50,12 +51,12 @@ export default (): React.ReactNode => {
     const {styles} = useStyles();
     const [enumData, enumLoading] = useEnum(["admin.user", "admin.role"]) as any;
     const control = useControl();
-    const hasListControl = control.hasControl("admin.system.master:list");
-    const hasCreateControl = control.hasControl("admin.system.master:create");
-    const hasUpdateControl = control.hasControl("admin.system.master:update");
-    const hasDeleteControl = control.hasControl("admin.system.master:delete");
-    const hasRoleControl = control.hasControl("admin.system.master:role");
-    const hasSessionControl = control.hasControl("admin.system.master:session");
+    const hasListControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_LIST);
+    const hasCreateControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_CREATE);
+    const hasUpdateControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_UPDATE);
+    const hasDeleteControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_DELETE);
+    const hasRoleControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_ROLE);
+    const hasSessionControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_SESSION);
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const infoRef = useRef<InfoRef>({} as InfoRef);
     const roleRef = useRef<RoleRef>({} as RoleRef);

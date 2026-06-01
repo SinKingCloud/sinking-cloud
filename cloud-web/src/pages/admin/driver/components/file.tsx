@@ -12,6 +12,7 @@ import {
 import {buildOptions, buildValueEnum, dateRangeTransform, normalizeIds} from "@/utils/page";
 import {formatSize} from "@/utils/string";
 import FileUploadModal, {type FileUploadModalRef} from "./upload";
+import {AdminControlCode} from "@/utils/permission";
 
 type FileManageProps = {
     control: any;
@@ -26,9 +27,9 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
     const [form] = Form.useForm();
     const [submitLoading, setSubmitLoading] = useState(false);
     const [editIds, setEditIds] = useState<any[]>([]);
-    const hasListControl = control.hasControl("admin.system.driver.file:list");
-    const hasUpdateControl = control.hasControl("admin.system.driver.file:update");
-    const hasDeleteControl = control.hasControl("admin.system.driver.file:delete");
+    const hasListControl = control.hasControl(AdminControlCode.SYSTEM_DRIVER_FILE_LIST);
+    const hasUpdateControl = control.hasControl(AdminControlCode.SYSTEM_DRIVER_FILE_UPDATE);
+    const hasDeleteControl = control.hasControl(AdminControlCode.SYSTEM_DRIVER_FILE_DELETE);
     const fileEnums = enumData?.["driver.file"] || {};
     const sceneEnums = enumData?.["driver.scene"] || {};
     const channelEnums = enumData?.["driver.channel"] || {};

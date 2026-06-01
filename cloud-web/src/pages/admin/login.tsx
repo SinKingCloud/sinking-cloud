@@ -16,6 +16,7 @@ import Settings from "@/../config/defaultSettings";
 import {historyPush} from "@/utils/route";
 import {createStyles} from 'antd-style';
 import {getPath} from "@/utils/assets";
+import {AdminPageCode} from "@/utils/permission";
 
 export default () => {
     const {message, modal} = App.useApp();
@@ -522,7 +523,7 @@ export default () => {
                 setLoginToken(r?.data);
                 user?.refreshSystemUser?.(() => {
                     message?.success(r?.message);
-                    historyPush("admin.index");
+                    historyPush(AdminPageCode.INDEX);
                     setIsLoading(false);
                 });
             },
@@ -693,7 +694,7 @@ export default () => {
                                 </div>
                                 <div className={styles.quickActions}>
                                     <Button type="primary" icon={<LoginOutlined/>}
-                                            onClick={() => historyPush("admin.index")} block>
+                                            onClick={() => historyPush(AdminPageCode.INDEX)} block>
                                         快捷登录
                                     </Button>
                                     <Button icon={<SwapOutlined/>} onClick={() => setShowRelogin(true)} block>

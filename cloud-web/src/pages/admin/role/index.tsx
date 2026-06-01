@@ -3,6 +3,7 @@ import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking
 import {App, Button, Dropdown, Empty, Form, Input, Result, Select, Space, Spin, Tag, Tree, Typography} from "antd";
 import {buildOptions, buildValueEnum, dateRangeTransform, emptyTableData, getData, normalizeIds} from "@/utils/page";
 import useControl from "@/utils/control";
+import {AdminControlCode} from "@/utils/permission";
 import useEnum, {clearEnumCache} from "@/utils/enum";
 import {
     createRole,
@@ -17,10 +18,10 @@ export default (): React.ReactNode => {
     const {message, modal} = App.useApp();
     const [enumData, enumLoading] = useEnum(["admin.role", "admin.menu"]) as any;
     const control = useControl();
-    const hasListControl = control.hasControl("admin.system.role:list");
-    const hasCreateControl = control.hasControl("admin.system.role:create");
-    const hasUpdateControl = control.hasControl("admin.system.role:update");
-    const hasDeleteControl = control.hasControl("admin.system.role:delete");
+    const hasListControl = control.hasControl(AdminControlCode.SYSTEM_ROLE_LIST);
+    const hasCreateControl = control.hasControl(AdminControlCode.SYSTEM_ROLE_CREATE);
+    const hasUpdateControl = control.hasControl(AdminControlCode.SYSTEM_ROLE_UPDATE);
+    const hasDeleteControl = control.hasControl(AdminControlCode.SYSTEM_ROLE_DELETE);
     const roleStatus = enumData?.["admin.role"]?.status || {};
     const menuTypes = enumData?.["admin.menu"]?.types || {};
     const statusOptions = buildOptions(roleStatus, true);

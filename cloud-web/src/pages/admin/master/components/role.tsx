@@ -4,6 +4,7 @@ import {ProModal, ProModalRef, Title} from "sinking-antd";
 import useEnum from "@/utils/enum";
 import {updateMasterRole} from "@/service/admin/master";
 import {buildOptions, normalizeIds} from "@/utils/page";
+import {AdminControlCode} from "@/utils/permission";
 
 export type RoleRef = {
     open: (record: any) => void;
@@ -21,7 +22,7 @@ const Role = forwardRef<RoleRef, RoleProps>(({control, onSuccess}, ref) => {
     const [form] = Form.useForm();
     const [roleUser, setRoleUser] = useState<any>();
     const [submitting, setSubmitting] = useState(false);
-    const hasRoleControl = control.hasControl("admin.system.master:role");
+    const hasRoleControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_ROLE);
     const roleNames = enumData?.["admin.role"]?.names || {};
     const roleOptions = buildOptions(roleNames, true);
 
