@@ -4,7 +4,7 @@ import {ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd"
 import {createStyles} from "antd-style";
 import {getData} from "@/utils/page";
 import {getMasterSessionList, logoutMasterSession} from "@/service/admin/master";
-import {dateRangeTransform, emptyTableData} from "./common";
+import {dateRangeTransform, emptyTableData} from "@/utils/page";
 
 export type MasterSessionRef = {
     open: (record: any) => void;

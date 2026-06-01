@@ -18,7 +18,7 @@ import {
     type UploadStartInfo,
     type UploadTaskHandle,
 } from "@/pages/components/upload";
-import {formatSize} from "./common";
+import {formatSize} from "@/utils/string";
 
 type ProgressStatus = "normal" | "active" | "exception" | "success";
 

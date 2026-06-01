@@ -4,6 +4,7 @@ import {BaseForm, FormField, Loading} from "./common";
 import {useSystemConfig} from "../hooks";
 import {payConfig} from "@/service/admin/config";
 import {getEnum} from "@/utils/enum";
+import {buildOptions} from "@/utils/page";
 
 const PayView: React.FC = () => {
     const {message} = App.useApp();
@@ -36,10 +37,7 @@ const PayView: React.FC = () => {
         getEnum("pay.channel").then((data: any) => {
             setChannelOptions([
                 {label: "关闭", value: 0},
-                ...Object.entries(data?.name || {}).map(([key, value]) => ({
-                    label: value,
-                    value: Number(key),
-                })),
+                ...buildOptions(data?.name, true),
             ]);
             setChannelLoaded(true);
         }).catch((err: any) => {

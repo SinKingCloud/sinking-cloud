@@ -1,7 +1,7 @@
 import React, {useRef, useState} from 'react';
 import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {App, Button, Dropdown, Form, Input, Result} from "antd";
-import {getData} from "@/utils/page";
+import {dateRangeTransform, emptyTableData, getData, normalizeIds} from "@/utils/page";
 import useControl from "@/utils/control";
 import {
     createPermission,
@@ -110,7 +110,7 @@ export default (): React.ReactNode => {
             message?.warning("暂无删除权限");
             return;
         }
-        const nextIds = (ids || []).filter(Boolean);
+        const nextIds = normalizeIds(ids);
         if (nextIds.length <= 0) {
             message?.warning("请选择要删除的数据");
             return;
@@ -178,10 +178,7 @@ export default (): React.ReactNode => {
             dataIndex: "create_time",
             tip: "创建时间",
             sorter: true,
-            transform: (value: any) => ({
-                create_time_start: value?.[0]?.format ? value[0].format("YYYY-MM-DD HH:mm:ss") : value?.[0],
-                create_time_end: value?.[1]?.format ? value[1].format("YYYY-MM-DD HH:mm:ss") : value?.[1],
-            }),
+            transform: dateRangeTransform("create_time"),
         },
         {
             title: "更新时间",
@@ -189,10 +186,7 @@ export default (): React.ReactNode => {
             dataIndex: "update_time",
             tip: "更新时间",
             sorter: true,
-            transform: (value: any) => ({
-                update_time_start: value?.[0]?.format ? value[0].format("YYYY-MM-DD HH:mm:ss") : value?.[0],
-                update_time_end: value?.[1]?.format ? value[1].format("YYYY-MM-DD HH:mm:ss") : value?.[1],
-            }),
+            transform: dateRangeTransform("update_time"),
         },
         ...(hasUpdateControl || hasDeleteControl ? [{
             title: "操作",
@@ -255,11 +249,7 @@ export default (): React.ReactNode => {
                     } : false}
                     request={(params, sort) => {
                         if (!hasListControl) {
-                            return Promise.resolve({
-                                data: [],
-                                success: true,
-                                total: 0,
-                            });
+                            return Promise.resolve(emptyTableData);
                         }
                         return getData(params, sort, getPermissionList);
                     }}

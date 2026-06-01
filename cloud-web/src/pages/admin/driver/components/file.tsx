@@ -9,7 +9,8 @@ import {
     getFileList,
     updateFile,
 } from "@/service/admin/driver";
-import {buildOptions, buildValueEnum, dateRangeTransform, formatSize} from "./common";
+import {buildOptions, buildValueEnum, dateRangeTransform, normalizeIds} from "@/utils/page";
+import {formatSize} from "@/utils/string";
 import FileUploadModal, {type FileUploadModalRef} from "./upload";
 
 type FileManageProps = {
@@ -49,7 +50,7 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
             message?.warning("暂无修改权限");
             return;
         }
-        const nextIds = Array.from(new Set((ids || []).map((item) => Number(item)).filter((item) => item > 0)));
+        const nextIds = normalizeIds(ids);
         if (nextIds.length <= 0) {
             message?.warning("请选择要修改的文件");
             return;
@@ -67,7 +68,7 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
             message?.warning("暂无删除权限");
             return;
         }
-        const nextIds = Array.from(new Set((ids || []).map((item) => Number(item)).filter((item) => item > 0)));
+        const nextIds = normalizeIds(ids);
         if (nextIds.length <= 0) {
             message?.warning("请选择要删除的文件");
             return;

@@ -27,7 +27,7 @@ import {ExclamationCircleOutlined} from "@ant-design/icons";
 import {createStyles} from "antd-style";
 import {createMenu, deleteMenu, getMenuControls, getMenuInfo, getMenuList, updateMenu} from "@/service/admin/menu";
 import useEnum from "@/utils/enum";
-import {getData} from "@/utils/page";
+import {buildOptions, emptyTableData, getData} from "@/utils/page";
 import useControl from "@/utils/control";
 
 const useStyles: any = createStyles(({css, token}: any) => ({
@@ -149,18 +149,9 @@ export default (): React.ReactNode => {
     const menuTypes = enumData?.["admin.menu"]?.types || {};
     const menuStatus = enumData?.["admin.menu"]?.status || {};
     const permissionCodes = enumData?.["admin.permission"]?.codes || {};
-    const buildOptions: any = (data: any, numberValue = false) => {
-        return Object.entries(data || {}).map(([key, value]) => ({
-            value: numberValue ? Number(key) : key,
-            label: value,
-        }));
-    }
     const menuTypeOptions = buildOptions(menuTypes, true).filter((item: any) => item.value !== 2);
     const statusOptions = buildOptions(menuStatus, true);
-    const permissionOptions = Object.entries(permissionCodes || {}).map(([key, value]) => ({
-        value: key,
-        label: `${value}（${key}）`,
-    }));
+    const permissionOptions = buildOptions(permissionCodes, false, (value, key) => `${value}（${key}）`);
     const statusColor: any = {
         "0": {text: menuStatus?.["0"], color: "success"},
         "1": {text: menuStatus?.["1"], color: "error"},
@@ -844,11 +835,7 @@ export default (): React.ReactNode => {
                                         columns={controlColumns}
                                         request={(params, sort) => {
                                             if (!hasControlsControl || !selectedId) {
-                                                return Promise.resolve({
-                                                    data: [],
-                                                    success: true,
-                                                    total: 0,
-                                                });
+                                                return Promise.resolve(emptyTableData);
                                             }
                                             return getData({...params, id: selectedId}, sort, getMenuControls)
                                         }}

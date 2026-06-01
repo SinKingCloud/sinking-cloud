@@ -2,7 +2,7 @@ import React, {useRef, useState} from 'react';
 import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {App, Button, Col, Dropdown, Form, Input, Result, Row, Select, Spin} from "antd";
 import {createStyles} from "antd-style";
-import {getData} from "@/utils/page";
+import {buildOptions, buildValueEnum, dateRangeTransform, emptyTableData, getData} from "@/utils/page";
 import useControl from "@/utils/control";
 import useEnum, {clearEnumCache} from "@/utils/enum";
 import {
@@ -12,6 +12,7 @@ import {
     getPayChannelList,
     updatePayChannel
 } from "@/service/admin/pay";
+import {normalizeConfig} from "@/utils/string";
 
 const useStyles: any = createStyles(({css}: any) => ({
     infoLoading: css`
@@ -35,18 +36,6 @@ export default (): React.ReactNode => {
     const channelTypes = channelEnums?.type || {};
     const channelPlugins = channelEnums?.plugin || {};
     const channelStatus = channelEnums?.status || {};
-
-    const buildOptions = (data: any, numberValue = false) => Object.entries(data || {}).map(([key, value]) => ({
-        label: value,
-        value: numberValue ? Number(key) : key,
-    }));
-    const buildValueEnum = (data: any, colorMap?: any) => Object.fromEntries(Object.entries(data || {}).map(([key, value]) => {
-        const item: any = {text: value};
-        if (colorMap?.[key]) {
-            item.color = colorMap[key];
-        }
-        return [key, item];
-    }));
 
     const typeOptions = buildOptions(channelTypes);
     const pluginOptions = buildOptions(channelPlugins, true);
@@ -119,16 +108,6 @@ export default (): React.ReactNode => {
                     name: info?.name,
                     status: Number(info?.status),
                 });
-                const normalizeConfig = (config: any) => {
-                    if (typeof config === "string") {
-                        try {
-                            return JSON.parse(config || "{}");
-                        } catch (_) {
-                            return {};
-                        }
-                    }
-                    return config || {};
-                };
                 const nextConfig = normalizeConfig(info?.config);
                 channelForm.resetFields(["config"] as any);
                 setConfigFields(Object.keys(nextConfig));
@@ -263,10 +242,7 @@ export default (): React.ReactNode => {
             dataIndex: "create_time",
             tip: "创建时间",
             sorter: true,
-            transform: (value: any) => ({
-                create_time_start: value?.[0]?.format ? value[0].format("YYYY-MM-DD HH:mm:ss") : value?.[0],
-                create_time_end: value?.[1]?.format ? value[1].format("YYYY-MM-DD HH:mm:ss") : value?.[1],
-            }),
+            transform: dateRangeTransform("create_time"),
         },
         {
             title: "更新时间",
@@ -274,10 +250,7 @@ export default (): React.ReactNode => {
             dataIndex: "update_time",
             tip: "更新时间",
             sorter: true,
-            transform: (value: any) => ({
-                update_time_start: value?.[0]?.format ? value[0].format("YYYY-MM-DD HH:mm:ss") : value?.[0],
-                update_time_end: value?.[1]?.format ? value[1].format("YYYY-MM-DD HH:mm:ss") : value?.[1],
-            }),
+            transform: dateRangeTransform("update_time"),
         },
         ...(hasUpdateControl || hasDeleteControl ? [{
             title: "操作",
@@ -332,11 +305,7 @@ export default (): React.ReactNode => {
                     ) : undefined}
                     request={(params, sort) => {
                         if (!hasListControl) {
-                            return Promise.resolve({
-                                data: [],
-                                success: true,
-                                total: 0,
-                            });
+                            return Promise.resolve(emptyTableData);
                         }
                         return getData(params, sort, getPayChannelList);
                     }}

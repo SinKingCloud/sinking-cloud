@@ -10,7 +10,8 @@ import {
     getSceneList,
     updateScene,
 } from "@/service/admin/driver";
-import {buildOptions, buildValueEnum, dateRangeTransform, formatSizeFromKb} from "./common";
+import {buildOptions, buildValueEnum, dateRangeTransform} from "@/utils/page";
+import {formatSizeFromKb} from "@/utils/string";
 
 type SceneManageProps = {
     control: any;

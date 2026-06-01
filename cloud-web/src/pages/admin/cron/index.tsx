@@ -3,7 +3,7 @@ import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking
 import {App, Button, Col, Dropdown, Form, Input, Result, Row, Select, Spin} from "antd";
 import {createStyles} from "antd-style";
 import defaultSettings from "@/../config/defaultSettings";
-import {getData} from "@/utils/page";
+import {buildOptions, buildValueEnum, dateRangeTransform, emptyTableData, getData, normalizeIds} from "@/utils/page";
 import useEnum from "@/utils/enum";
 import useControl from "@/utils/control";
 import AceEditor from "@/pages/components/ace-editor";
@@ -50,21 +50,9 @@ export default (): React.ReactNode => {
     const taskStatus = taskEnums?.status || {};
     const taskConcurrents = taskEnums?.concurrents || {};
 
-    const buildOptions = (data: any) => Object.entries(data || {}).map(([key, value]) => ({
-        label: value,
-        value: Number(key),
-    }));
-    const buildValueEnum = (data: any, colorMap: any = {}) => Object.fromEntries(Object.entries(data || {}).map(([key, value]) => ([
-        key,
-        {
-            text: value,
-            color: colorMap?.[key],
-        },
-    ])));
-
-    const typeOptions = buildOptions(taskTypes);
-    const statusOptions = buildOptions(taskStatus);
-    const concurrentOptions = buildOptions(taskConcurrents);
+    const typeOptions = buildOptions(taskTypes, true);
+    const statusOptions = buildOptions(taskStatus, true);
+    const concurrentOptions = buildOptions(taskConcurrents, true);
     const typeValueEnum = buildValueEnum(taskTypes, {"0": "blue", "1": "purple"});
     const statusValueEnum = buildValueEnum(taskStatus, {"0": "green", "1": "red"});
     const concurrentValueEnum = buildValueEnum(taskConcurrents, {"0": "green", "1": "orange"});
@@ -86,10 +74,6 @@ export default (): React.ReactNode => {
     const [taskType, setTaskType] = useState<number>(0);
     const isEditMode = formScene?.action === "edit";
     const isScriptTask = Number(taskType) === 0;
-
-    const normalizeIds = (ids: any[] = []) => {
-        return Array.from(new Set((ids || []).map((item) => Number(item)).filter((item) => item > 0)));
-    };
 
     const openCreate = () => {
         if (!hasCreateControl) {
@@ -363,10 +347,7 @@ export default (): React.ReactNode => {
             dataIndex: "create_time",
             tip: "创建时间",
             sorter: true,
-            transform: (value: any) => ({
-                create_time_start: value?.[0]?.format ? value[0].format("YYYY-MM-DD HH:mm:ss") : value?.[0],
-                create_time_end: value?.[1]?.format ? value[1].format("YYYY-MM-DD HH:mm:ss") : value?.[1],
-            }),
+            transform: dateRangeTransform("create_time"),
         },
         {
             title: "更新时间",
@@ -374,10 +355,7 @@ export default (): React.ReactNode => {
             dataIndex: "update_time",
             tip: "更新时间",
             sorter: true,
-            transform: (value: any) => ({
-                update_time_start: value?.[0]?.format ? value[0].format("YYYY-MM-DD HH:mm:ss") : value?.[0],
-                update_time_end: value?.[1]?.format ? value[1].format("YYYY-MM-DD HH:mm:ss") : value?.[1],
-            }),
+            transform: dateRangeTransform("update_time"),
         },
         ...(hasRunControl || hasLogControl || hasUpdateControl || hasDeleteControl ? [{
             title: "操作",
@@ -450,11 +428,7 @@ export default (): React.ReactNode => {
                     } : false}
                     request={(params, sort) => {
                         if (!hasListControl) {
-                            return Promise.resolve({
-                                data: [],
-                                success: true,
-                                total: 0,
-                            });
+                            return Promise.resolve(emptyTableData);
                         }
                         return getData(params, sort, getCronList);
                     }}
@@ -582,11 +556,7 @@ export default (): React.ReactNode => {
                         defaultPageSize={10}
                         request={(params, sort) => {
                             if (!hasLogControl || !logScene?.id) {
-                                return Promise.resolve({
-                                    data: [],
-                                    success: true,
-                                    total: 0,
-                                });
+                                return Promise.resolve(emptyTableData);
                             }
                             return getData({...params, id: logScene.id}, sort, getCronLog);
                         }}

@@ -18,7 +18,7 @@ import {
     dateRangeTransform,
     emptyTableData,
     normalizeIds,
-} from "./components/common";
+} from "@/utils/page";
 import {createStyles} from "antd-style";
 
 const useStyles: any = createStyles((): any => ({
@@ -62,7 +62,7 @@ export default (): React.ReactNode => {
     const sessionRef = useRef<MasterSessionRef>({} as MasterSessionRef);
     const userStatus = enumData?.["admin.user"]?.status || {};
     const roleNames = enumData?.["admin.role"]?.names || {};
-    const statusOptions = buildOptions(userStatus);
+    const statusOptions = buildOptions(userStatus, true);
     const statusValueEnum = buildValueEnum(userStatus, {"0": "green", "1": "red"});
 
     const onDelete = (id: any) => {

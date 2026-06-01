@@ -2,7 +2,7 @@ import React, {useRef, useState} from "react";
 import {App, Button, Space, Typography} from "antd";
 import {createStyles} from "antd-style";
 import {Body, ProTable, ProTableRef, Title} from "sinking-antd";
-import {getData} from "@/utils/page";
+import {dateRangeTransform, getData} from "@/utils/page";
 import {getSessionList, logoutSession} from "@/service/admin/person";
 
 const useStyles: any = createStyles(({css}: any) => ({
@@ -33,11 +33,6 @@ export default (): React.ReactNode => {
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const [selectedTokens, setSelectedTokens] = useState<string[]>([]);
     const [logoutLoading, setLogoutLoading] = useState(false);
-
-    const dateRangeTransform = (prefix: string) => (value: any) => ({
-        [`${prefix}_start`]: value?.[0]?.format ? value[0].format("YYYY-MM-DD HH:mm:ss") : value?.[0],
-        [`${prefix}_end`]: value?.[1]?.format ? value[1].format("YYYY-MM-DD HH:mm:ss") : value?.[1],
-    });
 
     const handleLogout = (tokens: any[] = []) => {
         const nextTokens = Array.from(new Set((tokens || []).map((item) => String(item || "")).filter(Boolean)));

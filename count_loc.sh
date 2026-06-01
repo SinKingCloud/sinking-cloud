@@ -11,6 +11,7 @@ echo "------------------------------------"
 # 统计
 RESULT=$(find "$PROJECT_DIR" \
   -type f \
+  -not -path '*/.idea/*' \
   -not -path '*/node_modules/*' \
   -not -path '*/.umi/*' \
   -not -path '*/.git/*' \

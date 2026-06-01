@@ -1,7 +1,7 @@
 import React, {useRef, useState} from 'react';
 import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {App, Button, Dropdown, Empty, Form, Input, Result, Select, Space, Spin, Tag, Tree, Typography} from "antd";
-import {getData} from "@/utils/page";
+import {buildOptions, buildValueEnum, dateRangeTransform, emptyTableData, getData, normalizeIds} from "@/utils/page";
 import useControl from "@/utils/control";
 import useEnum, {clearEnumCache} from "@/utils/enum";
 import {
@@ -23,14 +23,8 @@ export default (): React.ReactNode => {
     const hasDeleteControl = control.hasControl("admin.system.role:delete");
     const roleStatus = enumData?.["admin.role"]?.status || {};
     const menuTypes = enumData?.["admin.menu"]?.types || {};
-    const statusOptions = Object.entries(roleStatus || {}).map(([key, value]) => ({
-        label: value,
-        value: Number(key),
-    }));
-    const statusValueEnum = Object.fromEntries(Object.entries(roleStatus || {}).map(([key, value]) => ([
-        key,
-        {text: value, color: key === "0" ? "green" : "red"},
-    ])));
+    const statusOptions = buildOptions(roleStatus, true);
+    const statusValueEnum = buildValueEnum(roleStatus, {"0": "green", "1": "red"});
 
     /**
      * 新增/编辑表单
@@ -56,10 +50,6 @@ export default (): React.ReactNode => {
     const [menuLoaded, setMenuLoaded] = useState(false);
     const [menuLoading, setMenuLoading] = useState(false);
     const [checkedMenuIds, setCheckedMenuIds] = useState<any[]>([]);
-
-    const toNumberIds = (ids: any[] = []) => {
-        return Array.from(new Set((ids || []).map((item) => Number(item)).filter((item) => item > 0)));
-    };
 
     const buildTreeData = (list: any[] = []): any[] => {
         return (list || []).map((item) => ({
@@ -93,7 +83,7 @@ export default (): React.ReactNode => {
     };
 
     const getTreeCheckedKeys = (ids: any[] = [], tree: any[] = roleMenus) => {
-        const selected = new Set(toNumberIds(ids));
+        const selected = new Set(normalizeIds(ids));
         const result = new Set(selected);
         const loop = (list: any[] = []) => {
             (list || []).forEach((item) => {
@@ -115,7 +105,7 @@ export default (): React.ReactNode => {
     };
 
     const filterDetachedPageMenuIds = (ids: any[] = [], tree: any[] = roleMenus) => {
-        const selected = new Set(toNumberIds(ids));
+        const selected = new Set(normalizeIds(ids));
         const loop = (list: any[] = []) => {
             (list || []).forEach((item) => {
                 const id = Number(item?.id);
@@ -136,7 +126,7 @@ export default (): React.ReactNode => {
     };
 
     const collectMenuIdsWithParents = (ids: any[] = []) => {
-        const selected = new Set(toNumberIds(ids));
+        const selected = new Set(normalizeIds(ids));
         const parentMap = new Map<number, number>();
         const loop = (list: any[] = [], parentId = 0) => {
             (list || []).forEach((item) => {
@@ -182,7 +172,7 @@ export default (): React.ReactNode => {
     };
 
     const onMenuCheck = (keys: any) => {
-        const nextKeys = toNumberIds(Array.isArray(keys) ? keys : keys?.checked || []);
+        const nextKeys = normalizeIds(Array.isArray(keys) ? keys : keys?.checked || []);
         setCheckedMenuIds(nextKeys);
         form.setFieldValue("menu_ids" as any, collectMenuIdsWithParents(nextKeys));
     };
@@ -306,7 +296,7 @@ export default (): React.ReactNode => {
             message?.warning("暂无删除权限");
             return;
         }
-        const nextIds = toNumberIds(ids);
+        const nextIds = normalizeIds(ids);
         if (nextIds.length <= 0) {
             message?.warning("请选择要删除的数据");
             return;
@@ -367,10 +357,7 @@ export default (): React.ReactNode => {
             dataIndex: "create_time",
             tip: "创建时间",
             sorter: true,
-            transform: (value: any) => ({
-                create_time_start: value?.[0]?.format ? value[0].format("YYYY-MM-DD HH:mm:ss") : value?.[0],
-                create_time_end: value?.[1]?.format ? value[1].format("YYYY-MM-DD HH:mm:ss") : value?.[1],
-            }),
+            transform: dateRangeTransform("create_time"),
         },
         {
             title: "更新时间",
@@ -378,10 +365,7 @@ export default (): React.ReactNode => {
             dataIndex: "update_time",
             tip: "更新时间",
             sorter: true,
-            transform: (value: any) => ({
-                update_time_start: value?.[0]?.format ? value[0].format("YYYY-MM-DD HH:mm:ss") : value?.[0],
-                update_time_end: value?.[1]?.format ? value[1].format("YYYY-MM-DD HH:mm:ss") : value?.[1],
-            }),
+            transform: dateRangeTransform("update_time"),
         },
         ...(hasUpdateControl || hasDeleteControl ? [{
             title: "操作",
@@ -444,11 +428,7 @@ export default (): React.ReactNode => {
                     } : false}
                     request={(params, sort) => {
                         if (!hasListControl) {
-                            return Promise.resolve({
-                                data: [],
-                                success: true,
-                                total: 0,
-                            });
+                            return Promise.resolve(emptyTableData);
                         }
                         return getData(params, sort, getRoleList);
                     }}

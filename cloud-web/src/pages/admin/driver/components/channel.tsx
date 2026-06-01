@@ -11,7 +11,8 @@ import {
     getChannelList,
     updateChannel,
 } from "@/service/admin/driver";
-import {buildOptions, buildValueEnum, dateRangeTransform, normalizeConfig} from "./common";
+import {buildOptions, buildValueEnum, dateRangeTransform} from "@/utils/page";
+import {normalizeConfig} from "@/utils/string";
 
 type ChannelManageProps = {
     control: any;
