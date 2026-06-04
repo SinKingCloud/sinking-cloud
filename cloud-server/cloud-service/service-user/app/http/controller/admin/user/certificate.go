@@ -31,12 +31,14 @@ func (Controller) Certificate(c *context.Context) {
 		"status": info.Status == real_auth_status.Authed,
 	}
 	if info.Status == real_auth_status.Authed {
-		data["auth_time"] = info.AuthTime
+		data["auth_time"] = info.AuthTime.String()
 		data["card_name"] = info.CardName
 		data["card_no"] = info.CardNo
-		data["bucket"] = info.Files.Bucket
-		data["pics"] = info.Files.PicPaths
-		data["video"] = info.Files.VideoPath
+		if info.Files != nil {
+			data["bucket"] = info.Files.Bucket
+			data["pics"] = info.Files.PicPaths
+			data["video"] = info.Files.VideoPath
+		}
 		if info.Type == real_auth_type.Company {
 			data["company_name"] = info.CompanyName
 			data["company_no"] = info.CompanyNo

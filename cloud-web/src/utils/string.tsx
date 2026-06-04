@@ -56,3 +56,29 @@ export const formatSizeFromKb = (size: any) => {
     }
     return `${value} KB`;
 };
+
+/**
+ * 复制文本。
+ */
+export const copyText = async (text?: string) => {
+    if (!text) {
+        return false;
+    }
+    try {
+        if (navigator?.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+            return true;
+        }
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        const successful = document.execCommand("copy");
+        document.body.removeChild(textarea);
+        return successful;
+    } catch {
+        return false;
+    }
+};

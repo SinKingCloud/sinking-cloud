@@ -177,6 +177,9 @@ const Session = forwardRef<SessionRef, SessionProps>(({control}, ref) => {
             width={910}
             modalProps={{
                 footer: null,
+                mask: {
+                    closable: true,
+                },
                 destroyOnHidden: false,
                 afterClose: () => {
                     setUserInfo(undefined);

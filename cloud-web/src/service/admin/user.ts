@@ -11,6 +11,11 @@ export async function updateUser(params: API.RequestParams = {}) {
     return post("/admin/user/update", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
 }
 
+/** 用户实名信息 */
+export async function getUserCertificate(params: API.RequestParams = {}) {
+    return get("/admin/user/certificate", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
+}
+
 /** 用户会话列表 */
 export async function getUserSessionList(params: API.RequestParams = {}) {
     return get("/admin/user/session", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);

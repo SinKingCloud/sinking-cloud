@@ -16,8 +16,10 @@ export const AdminPageCode = {
 
 export const AdminControlCode = {
     WEB_USER_LIST: `${AdminPageCode.WEB_USER}:list`,
+    WEB_USER_UPDATE: `${AdminPageCode.WEB_USER}:update`,
     WEB_USER_SESSION: `${AdminPageCode.WEB_USER}:session`,
     WEB_USER_LOGOUT: `${AdminPageCode.WEB_USER}:logout`,
+    WEB_USER_CERTIFICATE: `${AdminPageCode.WEB_USER}:certificate`,
     SYSTEM_MASTER_LIST: `${AdminPageCode.SYSTEM_MASTER}:list`,
     SYSTEM_MASTER_CREATE: `${AdminPageCode.SYSTEM_MASTER}:create`,
     SYSTEM_MASTER_UPDATE: `${AdminPageCode.SYSTEM_MASTER}:update`,

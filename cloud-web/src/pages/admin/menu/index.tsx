@@ -28,7 +28,7 @@ import {createStyles} from "antd-style";
 import {createMenu, deleteMenu, getMenuControls, getMenuInfo, getMenuList, updateMenu} from "@/service/admin/menu";
 import useEnum from "@/utils/enum";
 import {buildOptions, emptyTableData, getData} from "@/utils/page";
-import useControl from "@/utils/control";
+import useControl, {clearControlCache} from "@/utils/control";
 import {AdminControlCode, AdminPageCode} from "@/utils/permission";
 
 const useStyles: any = createStyles(({css, token}: any) => ({
@@ -636,6 +636,9 @@ export default (): React.ReactNode => {
                 message.success(res?.message || "操作成功");
                 formModalRef.current?.hide();
                 if (target === "control") {
+                    if (menuInfo?.code) {
+                        clearControlCache(menuInfo.code);
+                    }
                     actionRef.current?.clearSelectedRows?.();
                     if (hasControlsControl) {
                         actionRef.current?.refreshTableData?.();
@@ -676,6 +679,9 @@ export default (): React.ReactNode => {
                     },
                     onSuccess: (res: any) => {
                         message.success(res?.message || "删除成功");
+                        if (!refreshMenu && menuInfo?.code) {
+                            clearControlCache(menuInfo.code);
+                        }
                         actionRef.current?.clearSelectedRows?.();
                         if (hasControlsControl) {
                             actionRef.current?.refreshTableData?.();

@@ -9,11 +9,14 @@ import {AdminControlCode} from "@/utils/permission";
 import useEnum from "@/utils/enum";
 import {getUserList} from "@/service/admin/user";
 import {
+    buildOptions,
     buildValueEnum,
     dateRangeTransform,
     emptyTableData,
 } from "@/utils/page";
 import Session, {type SessionRef} from "./components/session";
+import Info, {type InfoRef} from "./components/info";
+import Certificate, {type CertificateRef} from "./components/certificate";
 
 const useStyles: any = createStyles((): any => ({
     infoColumn: {
@@ -45,12 +48,19 @@ export default (): React.ReactNode => {
     const [enumData, enumLoading] = useEnum(["user.user", "user.real_auth"]) as any;
     const control = useControl();
     const hasListControl = control.hasControl(AdminControlCode.WEB_USER_LIST);
+    const hasUpdateControl = control.hasControl(AdminControlCode.WEB_USER_UPDATE);
     const hasSessionControl = control.hasControl(AdminControlCode.WEB_USER_SESSION);
+    const hasCertificateControl = control.hasControl(AdminControlCode.WEB_USER_CERTIFICATE);
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
+    const infoRef = useRef<InfoRef>({} as InfoRef);
     const sessionRef = useRef<SessionRef>({} as SessionRef);
+    const certificateRef = useRef<CertificateRef>({} as CertificateRef);
     const userStatus = enumData?.["user.user"]?.status || {};
     const realAuthStatus = enumData?.["user.real_auth"]?.status || {};
     const realAuthType = enumData?.["user.real_auth"]?.type || {};
+    const statusOptions = buildOptions(userStatus, true);
+    const realAuthStatusOptions = buildOptions(realAuthStatus, true);
+    const realAuthTypeOptions = buildOptions(realAuthType, true);
     const statusValueEnum = buildValueEnum(userStatus, {"0": "green", "1": "red"});
     const realAuthInfoValueEnum = Object.entries(realAuthType || {}).reduce((data: any, [key, value]) => {
         data[key] = {
@@ -81,6 +91,26 @@ export default (): React.ReactNode => {
             return;
         }
         sessionRef.current?.open(record);
+    };
+
+    const openEdit = (record: any) => {
+        if (!hasUpdateControl) {
+            message?.warning("暂无修改权限");
+            return;
+        }
+        infoRef.current?.openEdit(record);
+    };
+
+    const openCertificate = (record: any) => {
+        if (!hasCertificateControl) {
+            message?.warning("暂无实名查看权限");
+            return;
+        }
+        certificateRef.current?.open(record);
+    };
+
+    const refreshTable = () => {
+        tableRef.current?.refreshTableData?.();
     };
 
     const renderRealAuthInfo = (record: any) => {
@@ -210,7 +240,7 @@ export default (): React.ReactNode => {
                 {label: "更新于:", value: record?.update_time},
             ], false),
         },
-        ...(hasSessionControl ? [{
+        ...(hasUpdateControl || hasCertificateControl || hasSessionControl ? [{
             title: "操作",
             valueType: "option",
             key: "option",
@@ -218,12 +248,25 @@ export default (): React.ReactNode => {
             hideInSearch: true,
             render: (_: any, record: any) => {
                 const items = [
-                    {
+                    hasUpdateControl ? {
+                        key: "edit",
+                        label: "编辑",
+                        onClick: () => openEdit(record),
+                    } : null,
+                    hasCertificateControl ? {
+                        key: "certificate",
+                        label: "实名",
+                        onClick: () => openCertificate(record),
+                    } : null,
+                    hasSessionControl ? {
                         key: "session",
                         label: "会话",
                         onClick: () => openSession(record),
-                    },
-                ];
+                    } : null,
+                ].filter(Boolean) as any;
+                if (items.length <= 0) {
+                    return "-";
+                }
                 return (
                     <Dropdown menu={{items}} trigger={["click"]} placement="bottom" arrow>
                         <Button size="small">操作</Button>
@@ -254,7 +297,16 @@ export default (): React.ReactNode => {
                     paginationAffix={true}
                     selectionAffix={true}
                 />
+                <Info
+                    ref={infoRef}
+                    control={control}
+                    statusOptions={statusOptions}
+                    realAuthStatusOptions={realAuthStatusOptions}
+                    realAuthTypeOptions={realAuthTypeOptions}
+                    onSuccess={refreshTable}
+                />
                 <Session ref={sessionRef} control={control}/>
+                <Certificate ref={certificateRef} control={control}/>
             </>}
         </Body>
     );

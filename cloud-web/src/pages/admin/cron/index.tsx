@@ -537,6 +537,9 @@ export default (): React.ReactNode => {
                     modalProps={{
                         forceRender: true,
                         footer: null,
+                        mask: {
+                            closable: true,
+                        },
                         afterClose: () => {
                             logTableRef.current?.clearSelectedRows?.();
                             setLogScene({
