@@ -338,14 +338,6 @@ export default (): React.ReactNode => {
             ),
         },
         {
-            title: '图标',
-            dataIndex: 'icon',
-            tip: '控件图标',
-            width: 100,
-            hideInSearch: true,
-            render: (text: any) => text && text !== "0" ? <Icon type={text}/> : "-",
-        },
-        {
             title: '权限名称',
             dataIndex: 'permission_codes',
             tip: '绑定权限',
@@ -527,7 +519,6 @@ export default (): React.ReactNode => {
             message?.warning("请选择页面后再添加控件");
             return;
         }
-        loadIconOptions();
         setFormScene({
             action: "create",
             target: "control",
@@ -555,7 +546,9 @@ export default (): React.ReactNode => {
         if (!id) {
             return;
         }
-        loadIconOptions();
+        if (target !== "control") {
+            loadIconOptions();
+        }
         setFormScene({
             action: "edit",
             target,
@@ -579,11 +572,16 @@ export default (): React.ReactNode => {
                     id: data?.id || id,
                     type: data?.type,
                 }));
-                form.setFieldsValue({
+                const formValues: any = {
                     ...data,
-                    icon: data?.icon === "0" ? "无图标" : data?.icon,
                     permission_codes: data?.permission_codes || [],
-                });
+                };
+                if (nextTarget === "control") {
+                    delete formValues.icon;
+                } else {
+                    formValues.icon = data?.icon === "0" ? "无图标" : data?.icon;
+                }
+                form.setFieldsValue(formValues);
             },
             onFail: (res: any) => {
                 message.error(res?.message || "获取数据失败");
@@ -609,6 +607,9 @@ export default (): React.ReactNode => {
         };
         if (params.icon === "无图标") {
             params.icon = "0";
+        }
+        if (target === "control") {
+            delete params.icon;
         }
         if (!isEditMode) {
             params.parent_id = formScene?.parentId || 0;
@@ -877,7 +878,7 @@ export default (): React.ReactNode => {
                 <ProModal
                     ref={formModalRef}
                     title={<Title>{formScene?.title}</Title>}
-                    width={460}
+                    width={420}
                     onOk={form.submit}
                     modalProps={{
                         confirmLoading: formSubmitting,
@@ -904,95 +905,139 @@ export default (): React.ReactNode => {
                         <Form.Item name="parent_id" hidden>
                             <Input/>
                         </Form.Item>
-                        <Row gutter={16}>
-                            <Col xs={24} sm={showCodeField ? 12 : 24}>
-                                <Form.Item name="name" label="名称"
-                                           rules={[{required: true, message: "请输入名称"}]}>
-                                    <Input placeholder="请输入名称" maxLength={100} showCount/>
+                        {isControlForm ? (
+                            <>
+                                <Row gutter={16}>
+                                    <Col xs={24} sm={isEditMode ? 12 : 24}>
+                                        <Form.Item name="name" label="名称"
+                                                   rules={[{required: true, message: "请输入名称"}]}>
+                                            <Input placeholder="请输入名称" maxLength={100} showCount/>
+                                        </Form.Item>
+                                    </Col>
+                                    {isEditMode && (
+                                        <Col xs={24} sm={12}>
+                                            <Form.Item name="status" label="状态"
+                                                       rules={[{required: true, message: "请选择状态"}]}>
+                                                <Select placeholder="请选择状态" options={statusOptions}/>
+                                            </Form.Item>
+                                        </Col>
+                                    )}
+                                </Row>
+                                {!isEditMode && (
+                                    <Row gutter={16}>
+                                        <Col xs={24} sm={12}>
+                                            <Form.Item name="code" label="标识"
+                                                       rules={[{required: true, message: "请输入标识"}]}>
+                                                <AutoComplete placeholder="请选择或输入标识"
+                                                              allowClear
+                                                              maxLength={100}
+                                                              options={codeOptions}
+                                                              showSearch={{
+                                                                  filterOption: (inputValue: string, option: any) =>
+                                                                      String(option?.value || "").toLowerCase().includes(inputValue.toLowerCase())
+                                                              }}/>
+                                            </Form.Item>
+                                        </Col>
+                                        <Col xs={24} sm={12}>
+                                            <Form.Item name="status" label="状态"
+                                                       rules={[{required: true, message: "请选择状态"}]}>
+                                                <Select placeholder="请选择状态" options={statusOptions}/>
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
+                                )}
+                                <Form.Item name="permission_codes" label="绑定权限"
+                                           rules={[{required: true, message: "请选择绑定权限"}]}>
+                                    <Select placeholder="请选择绑定权限"
+                                            mode="multiple"
+                                            allowClear
+                                            showSearch
+                                            options={permissionOptions}/>
                                 </Form.Item>
-                            </Col>
-                            {showCodeField && (
-                                <Col xs={24} sm={12}>
-                                    <Form.Item name="code" label="标识"
-                                               rules={[{required: true, message: "请输入标识"}]}>
-                                        <AutoComplete placeholder="请选择或输入标识"
-                                                      allowClear
-                                                      maxLength={100}
-                                                      options={codeOptions}
-                                                      showSearch={{
-                                                          filterOption: (inputValue: string, option: any) =>
-                                                              String(option?.value || "").toLowerCase().includes(inputValue.toLowerCase())
-                                                      }}/>
-                                    </Form.Item>
-                                </Col>
-                            )}
-                        </Row>
-                        <Row gutter={16}>
-                            <Col xs={24} sm={12}>
-                                <Form.Item name="icon" label="图标">
-                                    <AutoComplete placeholder="请选择或输入图标"
-                                                  allowClear
-                                                  maxLength={30}
-                                                  options={iconOptions}
-                                                  notFoundContent={iconLoading ? (
-                                                      <div className={styles.iconLoading}>
-                                                          <Spin size="small"/>
-                                                      </div>
-                                                  ) : null}
-                                                  showSearch={{
-                                                      filterOption: (inputValue: string, option: any) =>
-                                                          String(option?.value || "").toLowerCase().includes(inputValue.toLowerCase())
-                                                  }
-                                                  }/>
-                                </Form.Item>
-                            </Col>
-                            {showTypeField && (
-                                <Col xs={24} sm={12}>
-                                    <Form.Item name="type" label="类型"
-                                               rules={[{required: true, message: "请选择类型"}]}>
-                                        <Select placeholder="请选择类型" options={menuTypeOptions}/>
-                                    </Form.Item>
-                                </Col>
-                            )}
-                            {!showTypeField && (
-                                <Col xs={24} sm={12}>
-                                    <Form.Item name="status" label="状态"
-                                               rules={[{required: true, message: "请选择状态"}]}>
-                                        <Select placeholder="请选择状态" options={statusOptions}/>
-                                    </Form.Item>
-                                </Col>
-                            )}
-                        </Row>
-                        {showTypeField ? (
-                            <Row gutter={16}>
-                                <Col xs={24} sm={12}>
-                                    <Form.Item name="status" label="状态"
-                                               rules={[{required: true, message: "请选择状态"}]}>
-                                        <Select placeholder="请选择状态" options={statusOptions}/>
-                                    </Form.Item>
-                                </Col>
-                                <Col xs={24} sm={12}>
+                            </>
+                        ) : (
+                            <>
+                                <Row gutter={16}>
+                                    <Col xs={24} sm={showCodeField ? 12 : 24}>
+                                        <Form.Item name="name" label="名称"
+                                                   rules={[{required: true, message: "请输入名称"}]}>
+                                            <Input placeholder="请输入名称" maxLength={100} showCount/>
+                                        </Form.Item>
+                                    </Col>
+                                    {showCodeField && (
+                                        <Col xs={24} sm={12}>
+                                            <Form.Item name="code" label="标识"
+                                                       rules={[{required: true, message: "请输入标识"}]}>
+                                                <AutoComplete placeholder="请选择或输入标识"
+                                                              allowClear
+                                                              maxLength={100}
+                                                              options={codeOptions}
+                                                              showSearch={{
+                                                                  filterOption: (inputValue: string, option: any) =>
+                                                                      String(option?.value || "").toLowerCase().includes(inputValue.toLowerCase())
+                                                              }}/>
+                                            </Form.Item>
+                                        </Col>
+                                    )}
+                                </Row>
+                                <Row gutter={16}>
+                                    <Col xs={24} sm={12}>
+                                        <Form.Item name="icon" label="图标">
+                                            <AutoComplete placeholder="请选择或输入图标"
+                                                          allowClear
+                                                          maxLength={30}
+                                                          options={iconOptions}
+                                                          notFoundContent={iconLoading ? (
+                                                              <div className={styles.iconLoading}>
+                                                                  <Spin size="small"/>
+                                                              </div>
+                                                          ) : null}
+                                                          showSearch={{
+                                                              filterOption: (inputValue: string, option: any) =>
+                                                                  String(option?.value || "").toLowerCase().includes(inputValue.toLowerCase())
+                                                          }
+                                                          }/>
+                                        </Form.Item>
+                                    </Col>
+                                    {showTypeField && (
+                                        <Col xs={24} sm={12}>
+                                            <Form.Item name="type" label="类型"
+                                                       rules={[{required: true, message: "请选择类型"}]}>
+                                                <Select placeholder="请选择类型" options={menuTypeOptions}/>
+                                            </Form.Item>
+                                        </Col>
+                                    )}
+                                    {!showTypeField && (
+                                        <Col xs={24} sm={12}>
+                                            <Form.Item name="status" label="状态"
+                                                       rules={[{required: true, message: "请选择状态"}]}>
+                                                <Select placeholder="请选择状态" options={statusOptions}/>
+                                            </Form.Item>
+                                        </Col>
+                                    )}
+                                </Row>
+                                {showTypeField ? (
+                                    <Row gutter={16}>
+                                        <Col xs={24} sm={12}>
+                                            <Form.Item name="status" label="状态"
+                                                       rules={[{required: true, message: "请选择状态"}]}>
+                                                <Select placeholder="请选择状态" options={statusOptions}/>
+                                            </Form.Item>
+                                        </Col>
+                                        <Col xs={24} sm={12}>
+                                            <Form.Item name="sort" label="排序"
+                                                       rules={[{required: true, message: "请输入排序"}]}>
+                                                <InputNumber min={0} precision={0} style={{width: "100%"}}/>
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
+                                ) : (
                                     <Form.Item name="sort" label="排序"
                                                rules={[{required: true, message: "请输入排序"}]}>
                                         <InputNumber min={0} precision={0} style={{width: "100%"}}/>
                                     </Form.Item>
-                                </Col>
-                            </Row>
-                        ) : !isControlForm && (
-                            <Form.Item name="sort" label="排序"
-                                       rules={[{required: true, message: "请输入排序"}]}>
-                                <InputNumber min={0} precision={0} style={{width: "100%"}}/>
-                            </Form.Item>
-                        )}
-                        {isControlForm && (
-                            <Form.Item name="permission_codes" label="绑定权限"
-                                       rules={[{required: true, message: "请选择绑定权限"}]}>
-                                <Select placeholder="请选择绑定权限"
-                                        mode="multiple"
-                                        allowClear
-                                        showSearch
-                                        options={permissionOptions}/>
-                            </Form.Item>
+                                )}
+                            </>
                         )}
                     </Form>
                 </ProModal>
