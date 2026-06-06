@@ -1,7 +1,7 @@
 import React, {useRef, useState} from "react";
 import {App, Button, Checkbox, Dropdown, Form, Select, Space} from "antd";
-import {UploadOutlined} from "@ant-design/icons";
 import {ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
+import defaultSettings from "@/../config/defaultSettings";
 import {getData} from "@/utils/page";
 import useEnum, {clearEnumCache} from "@/utils/enum";
 import {
@@ -10,7 +10,7 @@ import {
     updateFile,
 } from "@/service/admin/driver";
 import {buildOptions, buildValueEnum, dateRangeTransform, normalizeIds} from "@/utils/page";
-import {formatSize} from "@/utils/string";
+import {copyText, formatSize} from "@/utils/string";
 import FileUploadModal, {type FileUploadModalRef} from "./upload";
 import {AdminControlCode} from "@/utils/permission";
 
@@ -40,6 +40,53 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
     const sceneOptions = buildOptions(sceneEnums?.name, true);
 
     const openUpload = () => fileUploadRef.current?.open();
+
+    const getFileUrl = (record: any) => {
+        if (record?.url) {
+            return record.url;
+        }
+        if (record?.scene_id && record?.hash) {
+            return `/preview/${record.scene_id}/${record.hash}`;
+        }
+        if (record?.path && /^https?:\/\//i.test(record.path)) {
+            return record.path;
+        }
+        return "";
+    };
+
+    const normalizeFileUrl = (url?: string) => {
+        if (!url || /^https?:\/\//i.test(url)) {
+            return url || "";
+        }
+        const nextUrl = url.startsWith("/preview/") ? `/driver${url}` : url;
+        const prefix = defaultSettings?.gateway || "";
+        if (!prefix) {
+            return nextUrl;
+        }
+        return `${prefix.replace(/\/$/, "")}/${nextUrl.replace(/^\//, "")}`;
+    };
+
+    const openFile = (record: any) => {
+        const url = getFileUrl(record);
+        if (!url) {
+            message?.warning("文件链接不存在");
+            return;
+        }
+        window.open(normalizeFileUrl(url), "_blank", "noopener,noreferrer");
+    };
+
+    const copyFileUrl = async (record: any) => {
+        const url = normalizeFileUrl(getFileUrl(record));
+        if (!url) {
+            message?.warning("文件链接不存在");
+            return;
+        }
+        if (await copyText(url)) {
+            message?.success("复制成功");
+            return;
+        }
+        message?.error("复制失败");
+    };
 
     const onUploaded = () => {
         clearEnumCache("driver.file");
@@ -242,7 +289,7 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
             sorter: true,
             transform: dateRangeTransform("update_time"),
         },
-        ...(hasUpdateControl || hasDeleteControl ? [{
+        {
             title: "操作",
             tip: "文件操作",
             valueType: "option",
@@ -252,6 +299,16 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
             hideInSearch: true,
             render: (_: any, record: any) => {
                 const items = [
+                    {
+                        key: "view",
+                        label: "查看",
+                        onClick: () => openFile(record),
+                    },
+                    {
+                        key: "copy",
+                        label: "复制",
+                        onClick: () => copyFileUrl(record),
+                    },
                     hasUpdateControl ? {
                         key: "edit",
                         label: "编辑",
@@ -273,7 +330,7 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
                     </Dropdown>
                 );
             },
-        }] : []),
+        },
     ];
 
     if (!hasListControl) {
@@ -326,6 +383,9 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
                     confirmLoading: submitLoading,
                     okText: "提交",
                     cancelText: "取消",
+                    mask: {
+                        closable: true,
+                    },
                     afterClose: () => {
                         form.resetFields();
                         setEditIds([]);
