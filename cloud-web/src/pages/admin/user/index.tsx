@@ -1,18 +1,19 @@
-import React, {useRef} from "react";
-import {Body, ProTable, ProTableRef, Title} from "sinking-antd";
-import {App, Avatar, Button, Dropdown, Result, Space, Typography} from "antd";
+import React, {useRef, useState} from "react";
+import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
+import {App, Avatar, Button, Dropdown, Form, Result, Select, Space, Typography} from "antd";
 import {UserOutlined} from "@ant-design/icons";
 import {createStyles} from "antd-style";
 import {getData} from "@/utils/page";
 import useControl from "@/utils/control";
 import {AdminControlCode} from "@/utils/permission";
 import useEnum from "@/utils/enum";
-import {getUserList} from "@/service/admin/user";
+import {getUserList, updateUser} from "@/service/admin/user";
 import {
     buildOptions,
     buildValueEnum,
     dateRangeTransform,
     emptyTableData,
+    normalizeIds,
 } from "@/utils/page";
 import Session, {type SessionRef} from "./components/session";
 import Info, {type InfoRef} from "./components/info";
@@ -55,6 +56,10 @@ export default (): React.ReactNode => {
     const infoRef = useRef<InfoRef>({} as InfoRef);
     const sessionRef = useRef<SessionRef>({} as SessionRef);
     const certificateRef = useRef<CertificateRef>({} as CertificateRef);
+    const batchModalRef = useRef<ProModalRef>({} as ProModalRef);
+    const [batchForm] = Form.useForm();
+    const [batchIds, setBatchIds] = useState<number[]>([]);
+    const [batchSubmitting, setBatchSubmitting] = useState(false);
     const userStatus = enumData?.["user.user"]?.status || {};
     const realAuthStatus = enumData?.["user.real_auth"]?.status || {};
     const realAuthType = enumData?.["user.real_auth"]?.type || {};
@@ -101,6 +106,21 @@ export default (): React.ReactNode => {
         infoRef.current?.openEdit(record);
     };
 
+    const openBatchEdit = (ids: any[] = []) => {
+        if (!hasUpdateControl) {
+            message?.warning("暂无修改权限");
+            return;
+        }
+        const nextIds = normalizeIds(ids);
+        if (nextIds.length <= 0) {
+            message?.warning("请选择要修改的用户");
+            return;
+        }
+        setBatchIds(nextIds);
+        batchForm.resetFields();
+        batchModalRef.current?.show();
+    };
+
     const openCertificate = (record: any) => {
         if (!hasCertificateControl) {
             message?.warning("暂无实名查看权限");
@@ -111,6 +131,34 @@ export default (): React.ReactNode => {
 
     const refreshTable = () => {
         tableRef.current?.refreshTableData?.();
+    };
+
+    const handleBatchSubmit = async (values: any) => {
+        if (!hasUpdateControl) {
+            message?.warning("暂无修改权限");
+            return;
+        }
+        if (batchIds.length <= 0) {
+            message?.warning("请选择要修改的用户");
+            return;
+        }
+        setBatchSubmitting(true);
+        await updateUser({
+            body: {
+                ids: batchIds,
+                status: values?.status?.toString(),
+            },
+            onSuccess: (res: any) => {
+                batchModalRef.current?.hide();
+                tableRef.current?.clearSelectedRows?.();
+                refreshTable();
+                message?.success(res?.message || "操作成功");
+            },
+            onFail: (res: any) => {
+                message?.error(res?.message || "操作失败");
+            },
+            onFinally: () => setBatchSubmitting(false),
+        });
     };
 
     const renderRealAuthInfo = (record: any) => {
@@ -294,6 +342,15 @@ export default (): React.ReactNode => {
                         }
                         return getData(params, sort, getUserList);
                     }}
+                    rowSelection={hasUpdateControl ? {
+                        fixed: true,
+                        rightExtra: (
+                            <Button key="edit" type="primary" ghost
+                                    onClick={() => openBatchEdit(tableRef.current?.getSelectedRowKeys?.() as any)}>
+                                批量编辑
+                            </Button>
+                        ),
+                    } : false}
                     paginationAffix={true}
                     selectionAffix={true}
                 />
@@ -307,6 +364,31 @@ export default (): React.ReactNode => {
                 />
                 <Session ref={sessionRef} control={control}/>
                 <Certificate ref={certificateRef} control={control}/>
+                <ProModal
+                    ref={batchModalRef}
+                    title={<Title>批量编辑</Title>}
+                    onOk={batchForm.submit}
+                    width={320}
+                    modalProps={{
+                        confirmLoading: batchSubmitting,
+                        okText: "提交",
+                        cancelText: "取消",
+                        forceRender: true,
+                        mask: {
+                            closable: true,
+                        },
+                        afterClose: () => {
+                            batchForm.resetFields();
+                            setBatchIds([]);
+                            setBatchSubmitting(false);
+                        },
+                    } as any}>
+                    <Form form={batchForm} layout="vertical" onFinish={handleBatchSubmit}>
+                        <Form.Item name="status" label="用户状态" rules={[{required: true, message: "请选择用户状态"}]}>
+                            <Select placeholder="请选择用户状态" options={statusOptions as any}/>
+                        </Form.Item>
+                    </Form>
+                </ProModal>
             </>}
         </Body>
     );

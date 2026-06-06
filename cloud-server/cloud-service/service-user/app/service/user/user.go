@@ -14,6 +14,7 @@ import (
 type Service interface {
 	GetInfo(userId int64, refresh bool) (user *model.User, err error)                                                            //获取用户信息
 	UpdateById(id int64, data *user.UpdateUser) error                                                                            //更新用户信息
+	UpdateByIds(ids []int64, data *user.UpdateUser) error                                                                        //批量更新用户信息
 	GetRealAuthInfo(userId int64, refresh bool) (*RealAuthInfo, error)                                                           //获取实名信息
 	InitRealAuth(userId int64, authType int, cardName, cardNo, companyName, companyNo, env string) (string, string, error)       //发起实名
 	VerifyRealAuth(certifyId string) (*RealAuthInfo, error)                                                                      //查询实名状态

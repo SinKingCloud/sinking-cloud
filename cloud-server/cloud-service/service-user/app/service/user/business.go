@@ -195,6 +195,37 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 	return err
 }
 
+// UpdateByIds 批量更新用户信息
+func (s *service) UpdateByIds(ids []int64, data *user.UpdateUser) error {
+	if len(ids) == 0 || data == nil {
+		return errors.New("参数错误")
+	}
+	err := s.repositoryUser.UpdateByIds(ids, data)
+	if err != nil {
+		return err
+	}
+	keys := make([]string, 0, len(ids))
+	userMap := make(map[int64]struct{}, len(ids))
+	for _, id := range ids {
+		if id <= 0 {
+			continue
+		}
+		if _, ok := userMap[id]; ok {
+			continue
+		}
+		userMap[id] = struct{}{}
+		keyId := strconv.FormatInt(id, 10)
+		keys = append(keys, constant.CacheNameWithUserInfo+keyId)
+		if data.RealAuthType != nil || data.RealAuthStatus != nil {
+			keys = append(keys, constant.CacheNameWithRealAuthInfo+keyId)
+		}
+	}
+	if len(keys) > 0 {
+		s.cache.Delete(keys...)
+	}
+	return nil
+}
+
 // Select 查询用户列表
 func (s *service) Select(where *user.SelectUser, orderByField string, orderByType string, page int, pageSize int) ([]*user.User, int64, error) {
 	if where.RealAuthStatus != "" {

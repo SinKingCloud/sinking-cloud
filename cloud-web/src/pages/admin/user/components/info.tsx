@@ -143,7 +143,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                 try {
                     await updateUser({
                         body: {
-                            id: Number(userInfo.id),
+                            ids: [Number(userInfo.id)],
                             avatar: url,
                         },
                         onSuccess: (res: any) => {
@@ -182,7 +182,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
         setFormSubmitting(true);
         await updateUser({
             body: {
-                id: Number(userInfo?.id),
+                ids: [Number(userInfo?.id)],
                 account: values?.account,
                 phone: values?.phone,
                 email: values?.email,
