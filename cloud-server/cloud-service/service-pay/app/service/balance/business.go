@@ -16,8 +16,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// FindByUserId 通过用户ID查询余额
-func (s *service) FindByUserId(userId int64, refresh bool) (*Balance, error) {
+// GetByUserId 通过用户ID查询余额
+func (s *service) GetByUserId(userId int64, refresh bool) (*Balance, error) {
 	if userId <= 0 {
 		return nil, errors.New("用户ID错误")
 	}
@@ -47,6 +47,32 @@ func (s *service) FindByUserId(userId int64, refresh bool) (*Balance, error) {
 	}
 	if bytes, err2 := json.Marshal(data); err2 == nil {
 		s.cache.SetWithExpire(cacheKey, string(bytes), constant.CacheTimeWithBalance)
+	}
+	return data, nil
+}
+
+// GetByUserIds 通过用户ID批量查询余额
+func (s *service) GetByUserIds(userIds []int64) (map[int64]*Balance, error) {
+	if len(userIds) == 0 {
+		return nil, nil
+	}
+	list, err := s.balanceRepository.SelectByUserIds(userIds)
+	if err != nil {
+		return nil, err
+	}
+	data := make(map[int64]*Balance, len(list))
+	for _, item := range list {
+		if item == nil || item.UserId <= 0 {
+			continue
+		}
+		data[item.UserId] = &Balance{
+			Money:         item.Money,
+			Frozen:        item.Frozen,
+			TotalRecharge: item.TotalRecharge,
+			TotalConsume:  item.TotalConsume,
+			CreateTime:    item.CreateTime,
+			UpdateTime:    item.UpdateTime,
+		}
 	}
 	return data, nil
 }

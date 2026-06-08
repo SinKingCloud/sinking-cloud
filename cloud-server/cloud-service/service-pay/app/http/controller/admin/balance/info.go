@@ -17,7 +17,7 @@ func (Controller) Info(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	info, err := service.Balance.FindByUserId(form.UserId, false)
+	info, err := service.Balance.GetByUserId(form.UserId, false)
 	if err != nil {
 		c.Error(err.Error())
 		return

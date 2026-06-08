@@ -33,3 +33,13 @@ func (*Service) CleanExpiredUnPayOrder(day int) (successNum int64, err error) {
 	}
 	return successNum, nil
 }
+
+// GetBalanceByUserIds 批量查询用户余额
+func (*Service) GetBalanceByUserIds(userIds []int64) (map[int64]*Balance, error) {
+	result := make(map[int64]*Balance)
+	err := rpc.InvokeFunc(constant.ServicePay, "GetBalanceByUserIds", userIds, &result)
+	if err != nil {
+		return nil, errors.Join(errors.New("批量查询用户余额失败"), err)
+	}
+	return result, nil
+}

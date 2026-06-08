@@ -11,7 +11,7 @@ import (
 // Info 余额详情
 func (Controller) Info(c *context.Context) {
 	u := c.GetUserInfo()
-	info, err := service.Balance.FindByUserId(u.Id, false)
+	info, err := service.Balance.GetByUserId(u.Id, false)
 	if err != nil {
 		c.Error(err.Error())
 		return
