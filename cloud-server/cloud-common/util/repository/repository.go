@@ -20,14 +20,14 @@ func NewRepository(db *database.Database, model interface{}) *Repository {
 }
 
 // GetOrderBy 获取排序条件
-func (r *Repository) GetOrderBy(field string, orderType string) *clause.OrderByColumn {
+func (r *Repository) GetOrderBy(field string, orderType string) clause.OrderByColumn {
 	orderType = strings.ToLower(orderType)
 	if orderType != "asc" && orderType != "desc" {
 		orderType = "desc"
 	}
 	stmt := &gorm.Statement{DB: r.Database.Db}
 	if err := stmt.Parse(r.Model); err != nil {
-		return nil
+		return clause.OrderByColumn{}
 	}
 	if modelField := stmt.Schema.LookUpField(field); modelField != nil {
 		field = modelField.DBName
@@ -35,10 +35,10 @@ func (r *Repository) GetOrderBy(field string, orderType string) *clause.OrderByC
 		if stmt.Schema.PrioritizedPrimaryField != nil {
 			field = stmt.Schema.PrioritizedPrimaryField.DBName
 		} else {
-			return nil
+			return clause.OrderByColumn{}
 		}
 	}
-	return &clause.OrderByColumn{
+	return clause.OrderByColumn{
 		Column: clause.Column{Name: field},
 		Desc:   orderType == "desc",
 	}
