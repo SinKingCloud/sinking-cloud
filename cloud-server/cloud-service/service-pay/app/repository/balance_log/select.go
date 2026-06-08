@@ -20,6 +20,6 @@ func (r *Repository) Select(where *SelectBalanceLog, orderByField string, orderB
 			query = query.Where("create_time <= ?", where.CreateTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(orderByField + " " + orderByType).Find(&list).Error
+	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(r.GetOrderBy(orderByField, orderByType)).Find(&list).Error
 	return
 }

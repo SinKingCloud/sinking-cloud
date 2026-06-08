@@ -4,6 +4,7 @@ import (
 	"service-admin/app/model"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/repository"
 	"gorm.io/gorm"
 )
 
@@ -25,10 +26,10 @@ type Interface interface {
 
 // Repository 用户仓储
 type Repository struct {
-	Database *database.Database
+	*repository.Repository
 }
 
 // NewRepository 创建User仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Database: db}
+	return &Repository{Repository: repository.NewRepository(db, &model.Menu{})}
 }

@@ -4,6 +4,7 @@ import (
 	"service-driver/app/model"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/repository"
 )
 
 // Interface 仓储接口
@@ -20,10 +21,10 @@ type Interface interface {
 
 // Repository 仓储
 type Repository struct {
-	Database *database.Database
+	*repository.Repository
 }
 
 // NewRepository 创建仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Database: db}
+	return &Repository{Repository: repository.NewRepository(db, &model.File{})}
 }
