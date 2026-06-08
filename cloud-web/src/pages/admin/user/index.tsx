@@ -1,23 +1,23 @@
-import React, {useRef, useState} from "react";
-import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
-import {App, Avatar, Button, Dropdown, Form, Result, Select, Space, Typography} from "antd";
+import React, {useRef} from "react";
+import {Body, ProTable, ProTableRef, Title} from "sinking-antd";
+import {App, Avatar, Button, Dropdown, Result, Space, Tag, Typography} from "antd";
 import {UserOutlined} from "@ant-design/icons";
 import {createStyles} from "antd-style";
 import {getData} from "@/utils/page";
 import useControl from "@/utils/control";
 import {AdminControlCode} from "@/utils/permission";
 import useEnum from "@/utils/enum";
-import {getUserList, updateUser} from "@/service/admin/user";
+import {getUserList} from "@/service/admin/user";
 import {
     buildOptions,
     buildValueEnum,
     dateRangeTransform,
     emptyTableData,
-    normalizeIds,
 } from "@/utils/page";
 import Session, {type SessionRef} from "./components/session";
 import Info, {type InfoRef} from "./components/info";
 import Certificate, {type CertificateRef} from "./components/certificate";
+import Batch, {type BatchRef} from "./components/batch";
 
 const useStyles: any = createStyles((): any => ({
     infoColumn: {
@@ -41,6 +41,88 @@ const useStyles: any = createStyles((): any => ({
         fontSize: 12,
         whiteSpace: "nowrap",
     },
+    userCell: {
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 10,
+        minWidth: 0,
+    },
+    userAvatar: {
+        flex: "none",
+    },
+    userMeta: {
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        gap: 2,
+        height: 40,
+        minWidth: 0,
+    },
+    userLine: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        minWidth: 0,
+        lineHeight: "19px",
+        whiteSpace: "nowrap",
+    },
+    userLineMuted: {
+        color: "#8c8c8c",
+    },
+    userText: {
+        display: "flex",
+        alignItems: "center",
+        gap: 4,
+        minWidth: 0,
+        maxWidth: "100%",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+    },
+    userLabel: {
+        flex: "none",
+        color: "#8c8c8c",
+        fontSize: 12,
+    },
+    userValue: {
+        minWidth: 0,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+    },
+    userIdValue: {
+        color: "#8c8c8c",
+        fontSize: 12,
+        fontVariantNumeric: "tabular-nums",
+    },
+    userNameValue: {
+        fontSize: 13,
+    },
+    balanceTags: {
+        display: "grid",
+        gridTemplateColumns: "repeat(2, max-content)",
+        gap: "4px 6px",
+    },
+    balanceTag: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        gap: 4,
+        marginInlineEnd: 0,
+        paddingInline: 6,
+        fontSize: 12,
+        lineHeight: "18px",
+        fontVariantNumeric: "tabular-nums",
+        whiteSpace: "nowrap",
+    },
+    balanceLabel: {
+        flex: "none",
+    },
+    balanceValue: {
+        flex: "none",
+        minWidth: 0,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+    },
 }));
 
 export default (): React.ReactNode => {
@@ -56,10 +138,7 @@ export default (): React.ReactNode => {
     const infoRef = useRef<InfoRef>({} as InfoRef);
     const sessionRef = useRef<SessionRef>({} as SessionRef);
     const certificateRef = useRef<CertificateRef>({} as CertificateRef);
-    const batchModalRef = useRef<ProModalRef>({} as ProModalRef);
-    const [batchForm] = Form.useForm();
-    const [batchIds, setBatchIds] = useState<number[]>([]);
-    const [batchSubmitting, setBatchSubmitting] = useState(false);
+    const batchRef = useRef<BatchRef>({} as BatchRef);
     const userStatus = enumData?.["user.user"]?.status || {};
     const realAuthStatus = enumData?.["user.real_auth"]?.status || {};
     const realAuthType = enumData?.["user.real_auth"]?.type || {};
@@ -90,6 +169,56 @@ export default (): React.ReactNode => {
         </Space>
     );
 
+    const renderUserLine = (label: string, value: any, muted = false) => {
+        const text = value ? String(value) : "-";
+        return (
+            <div className={`${styles.userLine} ${muted ? styles.userLineMuted : ""}`}>
+                <Typography.Text
+                    className={`${styles.userText} ${muted ? styles.userIdValue : styles.userNameValue}`}
+                    copyable={value ? {text: String(value)} : false}>
+                    <span className={styles.userLabel}>{label}:</span>
+                    <span className={styles.userValue}>{text}</span>
+                </Typography.Text>
+            </div>
+        );
+    };
+
+    const renderUserInfo = (record: any) => (
+        <div className={styles.userCell}>
+            <Avatar
+                size={40}
+                src={record?.avatar || undefined}
+                icon={<UserOutlined/>}
+                className={styles.userAvatar}
+            />
+            <div className={styles.userMeta}>
+                {renderUserLine("昵称", record?.nick_name)}
+                {renderUserLine("编号", record?.id, true)}
+            </div>
+        </div>
+    );
+
+    const renderMoney = (value: any) => {
+        const money = Number(value || 0);
+        return Number.isFinite(money) ? money.toFixed(2) : "0.00";
+    };
+
+    const renderBalanceInfo = (record: any) => (
+        <div className={styles.balanceTags}>
+            {[
+                {label: "可用余额", value: record?.money, color: "cyan"},
+                {label: "冻结金额", value: record?.frozen, color: "gold"},
+                {label: "累计充值", value: record?.total_recharge, color: "geekblue"},
+                {label: "累计消费", value: record?.total_consume, color: "magenta"},
+            ].map((item) => (
+                <Tag key={item.label} color={item.color} className={styles.balanceTag}>
+                    <span className={styles.balanceLabel}>{item.label}</span>
+                    <span className={styles.balanceValue}>{renderMoney(item.value)}</span>
+                </Tag>
+            ))}
+        </div>
+    );
+
     const openSession = (record: any) => {
         if (!hasSessionControl) {
             message?.warning("暂无会话查看权限");
@@ -111,14 +240,7 @@ export default (): React.ReactNode => {
             message?.warning("暂无修改权限");
             return;
         }
-        const nextIds = normalizeIds(ids);
-        if (nextIds.length <= 0) {
-            message?.warning("请选择要修改的用户");
-            return;
-        }
-        setBatchIds(nextIds);
-        batchForm.resetFields();
-        batchModalRef.current?.show();
+        batchRef.current?.open(ids);
     };
 
     const openCertificate = (record: any) => {
@@ -133,34 +255,6 @@ export default (): React.ReactNode => {
         tableRef.current?.refreshTableData?.();
     };
 
-    const handleBatchSubmit = async (values: any) => {
-        if (!hasUpdateControl) {
-            message?.warning("暂无修改权限");
-            return;
-        }
-        if (batchIds.length <= 0) {
-            message?.warning("请选择要修改的用户");
-            return;
-        }
-        setBatchSubmitting(true);
-        await updateUser({
-            body: {
-                ids: batchIds,
-                status: values?.status?.toString(),
-            },
-            onSuccess: (res: any) => {
-                batchModalRef.current?.hide();
-                tableRef.current?.clearSelectedRows?.();
-                refreshTable();
-                message?.success(res?.message || "操作成功");
-            },
-            onFail: (res: any) => {
-                message?.error(res?.message || "操作失败");
-            },
-            onFinally: () => setBatchSubmitting(false),
-        });
-    };
-
     const renderRealAuthInfo = (record: any) => {
         const realAuthStatusValue = Number(record?.real_auth_status);
         if (realAuthStatusValue <= 0) {
@@ -171,27 +265,22 @@ export default (): React.ReactNode => {
 
     const columns: any[] = [
         {
-            title: "ID",
+            title: "用户信息",
             dataIndex: "id",
-            tip: "用户ID",
+            tip: "头像/ID/昵称",
             sorter: true,
             hideInSearch: true,
-        },
-        {
-            title: "头像",
-            dataIndex: "avatar",
-            tip: "用户头像",
-            hideInSearch: true,
-            render: (text: any) => <Avatar src={text || undefined} icon={<UserOutlined/>}/>,
+            render: (_: any, record: any) => renderUserInfo(record),
         },
         {
             title: "账号信息",
             dataIndex: "account_info",
-            tip: "账号/昵称",
+            tip: "账号/手机/邮箱",
             hideInSearch: true,
             render: (_: any, record: any) => renderRows([
                 {label: "账号:", value: record?.account},
-                {label: "昵称:", value: record?.nick_name},
+                {label: "手机:", value: record?.phone},
+                {label: "邮箱:", value: record?.email},
             ]),
         },
         {
@@ -207,16 +296,6 @@ export default (): React.ReactNode => {
             tip: "用户昵称",
             valueType: "text",
             hideInTable: true,
-        },
-        {
-            title: "联系方式",
-            dataIndex: "contact_info",
-            tip: "手机号/邮箱",
-            hideInSearch: true,
-            render: (_: any, record: any) => renderRows([
-                {label: "手机:", value: record?.phone},
-                {label: "邮箱:", value: record?.email},
-            ]),
         },
         {
             title: "手机号码",
@@ -259,6 +338,13 @@ export default (): React.ReactNode => {
             dataIndex: "status",
             tip: "用户状态",
             valueEnum: statusValueEnum,
+        },
+        {
+            title: "财务信息",
+            dataIndex: "balance_info",
+            tip: "余额/冻结/充值/消费",
+            hideInSearch: true,
+            render: (_: any, record: any) => renderBalanceInfo(record),
         },
         {
             title: "创建时间",
@@ -364,31 +450,13 @@ export default (): React.ReactNode => {
                 />
                 <Session ref={sessionRef} control={control}/>
                 <Certificate ref={certificateRef} control={control}/>
-                <ProModal
-                    ref={batchModalRef}
-                    title={<Title>批量编辑</Title>}
-                    onOk={batchForm.submit}
-                    width={320}
-                    modalProps={{
-                        confirmLoading: batchSubmitting,
-                        okText: "提交",
-                        cancelText: "取消",
-                        forceRender: true,
-                        mask: {
-                            closable: true,
-                        },
-                        afterClose: () => {
-                            batchForm.resetFields();
-                            setBatchIds([]);
-                            setBatchSubmitting(false);
-                        },
-                    } as any}>
-                    <Form form={batchForm} layout="vertical" onFinish={handleBatchSubmit}>
-                        <Form.Item name="status" label="用户状态" rules={[{required: true, message: "请选择用户状态"}]}>
-                            <Select placeholder="请选择用户状态" options={statusOptions as any}/>
-                        </Form.Item>
-                    </Form>
-                </ProModal>
+                <Batch
+                    ref={batchRef}
+                    control={control}
+                    statusOptions={statusOptions}
+                    onSuccess={refreshTable}
+                    onClearSelected={() => tableRef.current?.clearSelectedRows?.()}
+                />
             </>}
         </Body>
     );
