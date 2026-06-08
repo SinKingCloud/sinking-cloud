@@ -58,6 +58,14 @@ export const formatSizeFromKb = (size: any) => {
 };
 
 /**
+ * 格式化金额。
+ */
+export const formatMoney = (value: any) => {
+    const money = Number(value || 0);
+    return Number.isFinite(money) ? money.toFixed(2) : "0.00";
+};
+
+/**
  * 复制文本。
  */
 export const copyText = async (text?: string) => {

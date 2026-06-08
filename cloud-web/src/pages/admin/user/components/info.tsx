@@ -153,7 +153,8 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                         onFail: (res: any) => {
                             message?.error(res?.message || "头像保存失败");
                         },
-                        onFinally: () => setAvatarUploading(false),
+                    }).finally(() => {
+                        setAvatarUploading(false);
                     });
                 } catch (_) {
                     setAvatarUploading(false);
@@ -201,7 +202,8 @@ const Info = forwardRef<InfoRef, InfoProps>(({
             onFail: (res: any) => {
                 message?.error(res?.message || "操作失败");
             },
-            onFinally: () => setFormSubmitting(false),
+        }).finally(() => {
+            setFormSubmitting(false);
         });
     };
 

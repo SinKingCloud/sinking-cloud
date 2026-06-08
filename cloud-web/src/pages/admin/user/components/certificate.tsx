@@ -289,7 +289,8 @@ const Certificate = forwardRef<CertificateRef, CertificateProps>(({control}, ref
                 onFail: (res: any) => {
                     message?.error(res?.message || "获取实名信息失败");
                 },
-                onFinally: () => setLoading(false),
+            }).finally(() => {
+                setLoading(false);
             });
         },
     }));

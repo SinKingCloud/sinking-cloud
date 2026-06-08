@@ -2,8 +2,9 @@ import React, {forwardRef, useImperativeHandle, useRef, useState} from "react";
 import {App, Form, Select} from "antd";
 import {ProModal, ProModalRef, Title} from "sinking-antd";
 import {updateUser} from "@/service/admin/user";
-import {normalizeIds} from "@/utils/page";
+import {buildOptions, normalizeIds} from "@/utils/page";
 import {AdminControlCode} from "@/utils/permission";
+import useEnum from "@/utils/enum";
 
 export type BatchRef = {
     open: (ids?: any[]) => void;
@@ -11,23 +12,23 @@ export type BatchRef = {
 
 type BatchProps = {
     control: any;
-    statusOptions: any[];
     onSuccess?: () => void;
     onClearSelected?: () => void;
 };
 
 const Batch = forwardRef<BatchRef, BatchProps>(({
     control,
-    statusOptions,
     onSuccess,
     onClearSelected,
 }, ref) => {
     const {message} = App.useApp();
+    const [enumData, enumLoading] = useEnum(["user.user"]) as any;
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const [form] = Form.useForm();
     const [ids, setIds] = useState<number[]>([]);
     const [submitting, setSubmitting] = useState(false);
     const hasUpdateControl = control.hasControl(AdminControlCode.WEB_USER_UPDATE);
+    const statusOptions = buildOptions(enumData?.["user.user"]?.status || {}, true);
 
     const open = (nextIds: any[] = []) => {
         if (!hasUpdateControl) {
@@ -72,7 +73,8 @@ const Batch = forwardRef<BatchRef, BatchProps>(({
             onFail: (res: any) => {
                 message?.error(res?.message || "操作失败");
             },
-            onFinally: () => setSubmitting(false),
+        }).finally(() => {
+            setSubmitting(false);
         });
     };
 
@@ -98,7 +100,7 @@ const Batch = forwardRef<BatchRef, BatchProps>(({
             } as any}>
             <Form form={form} layout="vertical" onFinish={handleSubmit}>
                 <Form.Item name="status" label="用户状态" rules={[{required: true, message: "请选择用户状态"}]}>
-                    <Select placeholder="请选择用户状态" options={statusOptions as any}/>
+                    <Select loading={enumLoading} placeholder="请选择用户状态" options={statusOptions as any}/>
                 </Form.Item>
             </Form>
         </ProModal>

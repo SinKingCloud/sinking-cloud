@@ -107,9 +107,8 @@ func (s *service) OperateMoney(userId int64, money float64, isOperateFrozen bool
 		frozenAfter := info.Frozen
 		logMoney := money
 		if isOperateFrozen {
-			moneyAfter = info.Money - money
+			moneyAfter = info.Money
 			frozenAfter = info.Frozen + money
-			logMoney = -money
 		}
 		if moneyAfter < 0 {
 			return errors.New("余额不足")
@@ -118,9 +117,6 @@ func (s *service) OperateMoney(userId int64, money float64, isOperateFrozen bool
 			return errors.New("冻结余额不足")
 		}
 		if isOperateFrozen {
-			if err = s.balanceRepository.Money(userId, -money, tx); err != nil {
-				return errors.Join(errors.New("更新余额失败"), err)
-			}
 			if err = s.balanceRepository.Frozen(userId, money, tx); err != nil {
 				return errors.Join(errors.New("更新冻结余额失败"), err)
 			}

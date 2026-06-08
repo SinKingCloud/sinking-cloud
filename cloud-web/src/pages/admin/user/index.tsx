@@ -8,6 +8,7 @@ import useControl from "@/utils/control";
 import {AdminControlCode} from "@/utils/permission";
 import useEnum from "@/utils/enum";
 import {getUserList} from "@/service/admin/user";
+import {formatMoney} from "@/utils/string";
 import {
     buildOptions,
     buildValueEnum,
@@ -18,6 +19,8 @@ import Session, {type SessionRef} from "./components/session";
 import Info, {type InfoRef} from "./components/info";
 import Certificate, {type CertificateRef} from "./components/certificate";
 import Batch, {type BatchRef} from "./components/batch";
+import BalanceOperate, {type BalanceOperateRef} from "./components/balanceOperate";
+import BalanceLog, {type BalanceLogRef} from "./components/balanceLog";
 
 const useStyles: any = createStyles((): any => ({
     infoColumn: {
@@ -134,11 +137,15 @@ export default (): React.ReactNode => {
     const hasUpdateControl = control.hasControl(AdminControlCode.WEB_USER_UPDATE);
     const hasSessionControl = control.hasControl(AdminControlCode.WEB_USER_SESSION);
     const hasCertificateControl = control.hasControl(AdminControlCode.WEB_USER_CERTIFICATE);
+    const hasBalanceOperateControl = control.hasControl(AdminControlCode.WEB_USER_BALANCE_OPERATE);
+    const hasBalanceLogControl = control.hasControl(AdminControlCode.WEB_USER_BALANCE_LOG);
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const infoRef = useRef<InfoRef>({} as InfoRef);
     const sessionRef = useRef<SessionRef>({} as SessionRef);
     const certificateRef = useRef<CertificateRef>({} as CertificateRef);
     const batchRef = useRef<BatchRef>({} as BatchRef);
+    const balanceOperateRef = useRef<BalanceOperateRef>({} as BalanceOperateRef);
+    const balanceLogRef = useRef<BalanceLogRef>({} as BalanceLogRef);
     const userStatus = enumData?.["user.user"]?.status || {};
     const realAuthStatus = enumData?.["user.real_auth"]?.status || {};
     const realAuthType = enumData?.["user.real_auth"]?.type || {};
@@ -198,11 +205,6 @@ export default (): React.ReactNode => {
         </div>
     );
 
-    const renderMoney = (value: any) => {
-        const money = Number(value || 0);
-        return Number.isFinite(money) ? money.toFixed(2) : "0.00";
-    };
-
     const renderBalanceInfo = (record: any) => (
         <div className={styles.balanceTags}>
             {[
@@ -213,7 +215,7 @@ export default (): React.ReactNode => {
             ].map((item) => (
                 <Tag key={item.label} color={item.color} className={styles.balanceTag}>
                     <span className={styles.balanceLabel}>{item.label}</span>
-                    <span className={styles.balanceValue}>{renderMoney(item.value)}</span>
+                    <span className={styles.balanceValue}>{formatMoney(item.value)}</span>
                 </Tag>
             ))}
         </div>
@@ -249,6 +251,22 @@ export default (): React.ReactNode => {
             return;
         }
         certificateRef.current?.open(record);
+    };
+
+    const openBalanceOperate = (record: any) => {
+        if (!hasBalanceOperateControl) {
+            message?.warning("暂无余额操作权限");
+            return;
+        }
+        balanceOperateRef.current?.open(record);
+    };
+
+    const openBalanceLog = (record: any) => {
+        if (!hasBalanceLogControl) {
+            message?.warning("暂无余额明细权限");
+            return;
+        }
+        balanceLogRef.current?.open(record);
     };
 
     const refreshTable = () => {
@@ -374,7 +392,7 @@ export default (): React.ReactNode => {
                 {label: "更新于:", value: record?.update_time},
             ], false),
         },
-        ...(hasUpdateControl || hasCertificateControl || hasSessionControl ? [{
+        ...(hasUpdateControl || hasCertificateControl || hasSessionControl || hasBalanceOperateControl || hasBalanceLogControl ? [{
             title: "操作",
             valueType: "option",
             key: "option",
@@ -396,6 +414,16 @@ export default (): React.ReactNode => {
                         key: "session",
                         label: "会话",
                         onClick: () => openSession(record),
+                    } : null,
+                    hasBalanceOperateControl ? {
+                        key: "balance_operate",
+                        label: "财务",
+                        onClick: () => openBalanceOperate(record),
+                    } : null,
+                    hasBalanceLogControl ? {
+                        key: "balance_log",
+                        label: "明细",
+                        onClick: () => openBalanceLog(record),
                     } : null,
                 ].filter(Boolean) as any;
                 if (items.length <= 0) {
@@ -450,10 +478,11 @@ export default (): React.ReactNode => {
                 />
                 <Session ref={sessionRef} control={control}/>
                 <Certificate ref={certificateRef} control={control}/>
+                <BalanceOperate ref={balanceOperateRef} control={control} onSuccess={refreshTable}/>
+                <BalanceLog ref={balanceLogRef} control={control}/>
                 <Batch
                     ref={batchRef}
                     control={control}
-                    statusOptions={statusOptions}
                     onSuccess={refreshTable}
                     onClearSelected={() => tableRef.current?.clearSelectedRows?.()}
                 />
