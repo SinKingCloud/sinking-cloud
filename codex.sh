@@ -7,6 +7,7 @@ ACCOUNTS=(
   "2|https://api.freemodel.dev|fe_oa_ed26000741b1ff0fc76dfcd31433a010fc11cb8d7e206e99"
   "3|https://api.freemodel.dev|fe_oa_3763f9d7646dde4bac1f4f8e741fd8b7b68d0a1720d66123"
   "4|https://new.sharedchat.cc/codex|sk-2038bac55b3211f18dcf00163e012d40"
+  "5|https://www.mlyapi.com|sk-c0ebb12417a0947adf449a4f6d6bb6d3f942246cb9ad030cf307526b234882e9"
 )
 # ======================================================================
 
