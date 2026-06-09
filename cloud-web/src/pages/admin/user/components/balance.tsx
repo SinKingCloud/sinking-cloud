@@ -93,7 +93,7 @@ type BalanceLogProps = {
 // ==================== 常量配置 ====================
 
 const ALL_VALUE = "all";
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 10;
 const DEFAULT_OPERATION_TYPE: OperationType = "add";
 
 const ACCOUNT_OPTIONS: SelectOption<OperateAccount>[] = [
@@ -127,6 +127,9 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
     return {
         // 基础弹窗
         modalBody: {
+            display: "flex",
+            flexDirection: "column",
+            minHeight: 0,
             padding: 0,
         },
         panelHeader: {
@@ -249,7 +252,16 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
 
             @media (max-width: 575px) {
                 .balance-grid {
-                    grid-template-columns: 1fr;
+                    gap: ${isCompactMode ? 8 : 9}px;
+                }
+
+                .balance-card {
+                    padding: ${isCompactMode ? 8 : 9}px;
+                }
+
+                .balance-card .value {
+                    font-size: ${isCompactMode ? 16 : 17}px;
+                    line-height: 24px;
                 }
             }
         `,
@@ -354,19 +366,41 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
             }
 
             @media (max-width: 575px) {
-                .account-switch,
                 .form-grid {
                     grid-template-columns: 1fr;
+                }
+
+                .account-switch {
+                    gap: ${isCompactMode ? 7 : 8}px;
+                }
+
+                .account-option {
+                    padding: ${isCompactMode ? "8px 9px" : "9px 10px"};
+                }
+
+                .account-value {
+                    font-size: ${isCompactMode ? 15 : 16}px;
+                    line-height: 22px;
                 }
             }
         `,
 
         // 明细模块
         logFilter: {
+            flex: "none",
             display: "flex",
             flexDirection: "column",
             gap: 6,
             marginBottom: 10,
+        },
+        logPanel: {
+            display: "flex",
+            flexDirection: "column",
+            height: isCompactMode ? "min(520px, calc(100dvh - 210px))" : "min(560px, calc(100dvh - 226px))",
+            minHeight: 0,
+            "&.empty": {
+                height: "auto",
+            },
         },
         customRangeTrigger: {
             position: "relative",
@@ -384,6 +418,7 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
         },
         filterRow: {
             position: "relative",
+            overflow: "visible",
             "&:hover .scrollButton": {
                 opacity: 1,
             },
@@ -411,10 +446,10 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
                 background: "transparent !important",
             },
             "&.left": {
-                left: -18,
+                left: -12,
             },
             "&.right": {
-                right: -18,
+                right: -12,
             },
             "@media (max-width: 575px)": {
                 display: "none",
@@ -449,32 +484,55 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
             },
         },
         logListWrap: {
-            minHeight: 214,
+            display: "flex",
+            flexDirection: "column",
+            flex: "1 1 214px",
+            minHeight: 0,
+            overflowY: "auto",
+            overflowX: "hidden",
+            overscrollBehavior: "contain",
+            paddingRight: 1,
         },
         logList: {
             display: "flex",
             flexDirection: "column",
-            gap: isCompactMode ? 10 : 8,
+            gap: 0,
+            overflow: "hidden",
+            background: token.colorBgContainer,
+            borderTop: `1px solid ${token.colorBorderSecondary}`,
+            borderBottom: `1px solid ${token.colorBorderSecondary}`,
+        },
+        logEmpty: {
+            height: 260,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
         },
         logCard: {
             position: "relative",
             minWidth: 0,
-            padding: isCompactMode ? "11px 13px" : "10px 12px",
-            border: `1px solid ${token.colorBorderSecondary}`,
-            borderRadius: token.borderRadius,
-            background: token.colorBgContainer,
-            boxShadow: "0 1px 2px rgba(0, 0, 0, 0.02)",
+            padding: isCompactMode ? "8px 2px 8px 12px" : "9px 2px 9px 14px",
+            borderBottom: `1px solid ${token.colorBorderSecondary}`,
+            background: "transparent",
+            transition: "background-color 0.15s",
             "&:before": {
                 content: "''",
                 position: "absolute",
-                top: 0,
-                bottom: 0,
+                top: 10,
+                bottom: 10,
                 left: 0,
                 width: 3,
+                borderRadius: 3,
                 background: token.colorSuccess,
             },
             "&.outcome:before": {
                 background: token.colorError,
+            },
+            "&:last-child": {
+                borderBottom: "none",
+            },
+            "&:hover": {
+                background: token.colorFillQuaternary,
             },
             "& .head": {
                 display: "flex",
@@ -490,21 +548,14 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
                 minWidth: 0,
             },
             "& .marker": {
-                flex: "none",
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                background: token.colorSuccess,
-            },
-            "&.outcome .marker": {
-                background: token.colorError,
+                display: "none",
             },
             "& .type": {
                 minWidth: 0,
                 color: token.colorText,
                 fontSize: 13,
                 fontWeight: 500,
-                lineHeight: "20px",
+                lineHeight: "19px",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -514,7 +565,7 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
                 color: token.colorSuccess,
                 fontSize: 15,
                 fontWeight: 600,
-                lineHeight: "22px",
+                lineHeight: "20px",
                 fontVariantNumeric: "tabular-nums",
                 whiteSpace: "nowrap",
             },
@@ -524,16 +575,17 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
             "& .meta": {
                 display: "flex",
                 alignItems: "center",
+                justifyContent: "space-between",
                 gap: 8,
                 minWidth: 0,
-                marginTop: isCompactMode ? 4 : 3,
+                marginTop: 1,
             },
             "& .desc": {
                 flex: 1,
                 minWidth: 0,
                 color: token.colorTextSecondary,
                 fontSize: 12,
-                lineHeight: "18px",
+                lineHeight: "17px",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -542,29 +594,33 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
                 flex: "none",
                 color: token.colorTextTertiary,
                 fontSize: 12,
-                lineHeight: "18px",
+                lineHeight: "17px",
                 fontVariantNumeric: "tabular-nums",
                 whiteSpace: "nowrap",
             },
             "& .change": {
-                display: "grid",
-                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                display: "flex",
                 alignItems: "center",
-                gap: 10,
+                justifyContent: "space-between",
+                gap: 5,
                 minWidth: 0,
-                marginTop: isCompactMode ? 9 : 8,
-                paddingTop: isCompactMode ? 9 : 8,
-                borderTop: `1px dashed ${token.colorBorderSecondary}`,
+                marginTop: 5,
                 color: token.colorTextTertiary,
                 fontSize: 12,
                 lineHeight: "17px",
                 fontVariantNumeric: "tabular-nums",
             },
+            "& .change-values": {
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 5,
+                minWidth: 0,
+            },
             "& .change-label": {
                 flex: "none",
             },
             "& .change-value": {
-                flex: 1,
                 minWidth: 0,
                 color: token.colorTextSecondary,
                 overflow: "hidden",
@@ -574,29 +630,41 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
             "& .change-part": {
                 display: "flex",
                 alignItems: "center",
-                gap: 5,
+                gap: 4,
                 minWidth: 0,
+                maxWidth: "100%",
+                padding: "1px 6px",
+                borderRadius: 4,
+                background: token.colorFillQuaternary,
             },
             "@media (max-width: 575px)": {
-                padding: isCompactMode ? "10px 11px" : "9px 10px",
+                padding: "8px 0 8px 12px",
                 "& .amount": {
-                    fontSize: 14,
+                    fontSize: 13,
+                    lineHeight: "18px",
                 },
                 "& .meta": {
-                    alignItems: "flex-start",
-                    flexDirection: "column",
-                    gap: 0,
+                    gap: 6,
                 },
                 "& .change": {
-                    gridTemplateColumns: "1fr",
-                    gap: 3,
+                    gap: 4,
+                },
+                "& .change-values": {
+                    gap: 4,
+                },
+                "& .change-part": {
+                    padding: "1px 5px",
                 },
                 "& .time": {
-                    whiteSpace: "normal",
+                    maxWidth: "42%",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                 },
             },
         },
         pagination: {
+            flex: "none",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -605,9 +673,24 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
             color: token.colorTextTertiary,
             fontSize: 12,
             lineHeight: "20px",
+            whiteSpace: "nowrap",
             "@media (max-width: 575px)": {
-                alignItems: "stretch",
-                flexDirection: "column",
+                alignItems: "center",
+                flexDirection: "row",
+                gap: 6,
+                marginTop: isCompactMode ? 10 : 10,
+                "& > span": {
+                    flex: "none",
+                },
+                "& .ant-pagination": {
+                    flex: "none",
+                    display: "flex",
+                    flexWrap: "nowrap",
+                    alignItems: "center",
+                },
+                "& .ant-pagination-prev, & .ant-pagination-next, & .ant-pagination-item": {
+                    marginInlineEnd: 2,
+                },
             },
         },
     };
@@ -858,6 +941,8 @@ const Balance = forwardRef<BalanceRef, BalanceProps>(({control, onSuccess}, ref)
                 },
                 styles: {
                     body: {
+                        maxHeight: isCompactMode ? "calc(100dvh - 150px)" : "calc(100dvh - 166px)",
+                        overflow: "hidden",
                         padding: isCompactMode ? "4px 8px 10px" : "2px 4px 8px",
                     },
                 },
@@ -1127,7 +1212,7 @@ const BalanceLog = ({userId, hasControl, typeEnum, styles, message}: BalanceLogP
     }, [filters, hasControl, message, page, userId]);
 
     return (
-        <>
+        <div className={`${styles.logPanel} ${list.length > 0 ? "" : "empty"}`}>
             <div className={styles.logFilter}>
                 <FilterScroller options={typeOptions} value={type} styles={styles} onChange={changeType}/>
                 <FilterScroller
@@ -1152,9 +1237,9 @@ const BalanceLog = ({userId, hasControl, typeEnum, styles, message}: BalanceLogP
                     ) : node}
                 />
             </div>
-            <div className={styles.logListWrap}>
-                <Spin spinning={loading}>
-                    {list.length > 0 ? (
+            {list.length > 0 ? (
+                <div className={styles.logListWrap}>
+                    <Spin spinning={loading}>
                         <div className={styles.logList}>
                             {list.map((item: any) => {
                                 const money = Number(item?.money || 0);
@@ -1175,33 +1260,37 @@ const BalanceLog = ({userId, hasControl, typeEnum, styles, message}: BalanceLogP
                                         </div>
                                         <div className="meta">
                                             <span className="desc">{item?.describe || "暂无描述"}</span>
-                                            <span className="time">{item?.create_time || "-"}</span>
                                         </div>
                                         <div className="change">
-                                            <span className="change-part">
-                                                <span className="change-label">余额</span>
-                                                <span className="change-value">
-                                                    {formatMoney(item?.money_before)} -&gt; {formatMoney(item?.money_after)}
+                                            <span className="change-values">
+                                                <span className="change-part">
+                                                    <span className="change-label">余额</span>
+                                                    <span className="change-value">
+                                                        {formatMoney(item?.money_before)} -&gt; {formatMoney(item?.money_after)}
+                                                    </span>
+                                                </span>
+                                                <span className="change-part">
+                                                    <span className="change-label">冻结</span>
+                                                    <span className="change-value">
+                                                        {formatMoney(item?.frozen_before)} -&gt; {formatMoney(item?.frozen_after)}
+                                                    </span>
                                                 </span>
                                             </span>
-                                            <span className="change-part">
-                                                <span className="change-label">冻结</span>
-                                                <span className="change-value">
-                                                    {formatMoney(item?.frozen_before)} -&gt; {formatMoney(item?.frozen_after)}
-                                                </span>
-                                            </span>
+                                            <span className="time">{item?.create_time || "-"}</span>
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
-                    ) : (
-                        <div className={styles.loading}>
-                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
-                        </div>
-                    )}
+                    </Spin>
+                </div>
+            ) : (
+                <Spin spinning={loading}>
+                    <div className={styles.logEmpty}>
+                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
+                    </div>
                 </Spin>
-            </div>
+            )}
             {total > 0 && (
                 <div className={styles.pagination}>
                     <span>共 {total} 条</span>
@@ -1215,7 +1304,7 @@ const BalanceLog = ({userId, hasControl, typeEnum, styles, message}: BalanceLogP
                     />
                 </div>
             )}
-        </>
+        </div>
     );
 };
 
