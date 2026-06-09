@@ -420,6 +420,7 @@ export default (): React.ReactNode => {
                         <Button type="primary" onClick={openCreate}>新增</Button>
                     ) : undefined}
                     rowSelection={hasDeleteControl ? {
+                        fixed: true,
                         rightExtra: (
                             <Button key="delete" type="primary" danger ghost
                                     onClick={() => onDelete(tableRef.current?.getSelectedRowKeys?.() as any)}>
