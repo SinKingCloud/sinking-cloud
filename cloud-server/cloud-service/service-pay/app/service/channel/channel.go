@@ -23,7 +23,7 @@ type Service interface {
 	GetPayResultPageUrl(code int) string                                                                                                                                               //获取支付结果页地址
 	GetPayUrl(channelId int64, tradeNo string, name string, money float64) (string, error)                                                                                             //获取支付跳转链接
 	ValidateCallback(channelId int64, req *http.Request, successFun func(data *pay.CallbackData) error) (code int, header http.Header, body string, data *pay.CallbackData, err error) //验证支付回调
-	GetChannelId(payType string) (int64, error)                                                                                                                                        //获取支付通道ID
+	GetPayChannel(payType string) (*Channel, error)                                                                                                                                    //获取支付通道ID
 	GetIdNameMap(refresh bool) (map[int64]string, error)                                                                                                                               //获取id name映射
 }
 

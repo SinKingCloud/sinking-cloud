@@ -16,6 +16,7 @@ type Order struct {
 	PayAmount    float64      `gorm:"column:pay_amount" json:"pay_amount"`
 	RefundAmount float64      `gorm:"column:refund_amount" json:"refund_amount"`
 	PayStatus    int          `gorm:"column:pay_status" json:"pay_status"`
+	PayType      string       `gorm:"column:pay_type" json:"pay_type"`
 	PayTime      str.DateTime `gorm:"column:pay_time" json:"pay_time"`
 	ExpiredTime  str.DateTime `gorm:"column:expired_time" json:"expired_time"`
 	CompleteTime str.DateTime `gorm:"column:complete_time" json:"complete_time"`

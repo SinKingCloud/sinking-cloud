@@ -381,8 +381,8 @@ func (s *service) ValidateCallback(channelId int64, req *http.Request, successFu
 	return code, header, body, data, err
 }
 
-// GetChannelId 获取支付通道ID
-func (s *service) GetChannelId(payType string) (int64, error) {
+// GetPayChannel 获取支付通道
+func (s *service) GetPayChannel(payType string) (channel *Channel, err error) {
 	payConfig := s.GetConfig(false)
 	var channelID int64
 	if payType == pay_type.Alipay {
@@ -393,12 +393,24 @@ func (s *service) GetChannelId(payType string) (int64, error) {
 		channelID = 0
 	}
 	if payType != pay_type.Balance && channelID <= 0 {
-		return 0, errors.New("未开启该支付方式")
+		return nil, errors.New("未开启该支付方式")
 	}
 	if payType == pay_type.Balance && payConfig.Balance <= 0 {
-		return 0, errors.New("未开启该支付方式")
+		return nil, errors.New("未开启该支付方式")
 	}
-	return channelID, nil
+	channel, err = &Channel{
+		Id:     0,
+		Type:   pay_type.Balance,
+		Name:   "余额支付",
+		Status: channel_status.Enable,
+	}, nil
+	if channelID > 0 {
+		channel, err = s.FindById(channelID, false)
+		if err != nil || channel == nil || channel.Id <= 0 {
+			return nil, errors.Join(errors.New("支付通道不存在"), err)
+		}
+	}
+	return channel, nil
 }
 
 // getPay 获取支付对象

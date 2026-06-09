@@ -114,6 +114,7 @@ func (s *service) SelectByUserId(userId int64, where *orderRepository.SelectOrde
 			RefundAmount: item.RefundAmount,
 			PayStatus:    item.PayStatus,
 			PayTime:      item.PayTime,
+			PayType:      item.PayType,
 			ExpiredTime:  item.ExpiredTime,
 			CompleteTime: item.CompleteTime,
 			CreateTime:   item.CreateTime,
@@ -181,7 +182,7 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 	if _, ok := pay_type.Map()[payType]; !ok {
 		return "", errors.New("支付类型不合法")
 	}
-	channelID, err := s.channelService.GetChannelId(payType)
+	channel, err := s.channelService.GetPayChannel(payType)
 	if err != nil {
 		return "", err
 	}
@@ -217,7 +218,7 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 	data := &model.Order{
 		Id:           str.GetSnowWorkIns().GetId(),
 		UserId:       userId,
-		ChannelId:    channelID,
+		ChannelId:    channel.Id,
 		TradeNo:      tradeNo,
 		Name:         name,
 		Type:         Type,
@@ -225,6 +226,7 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 		Amount:       amount,
 		Status:       order_status.UnPay,
 		PayStatus:    order_pay_status.UnPay,
+		PayType:      channel.Type,
 		ExpiredTime:  expireTime,
 		PayAmount:    0,
 		RefundAmount: 0,
