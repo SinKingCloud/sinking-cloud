@@ -146,13 +146,21 @@ export default (): React.ReactNode => {
             render: (text: any) => <Avatar src={text || undefined} icon={<UserOutlined/>}/>,
         },
         {
+            title: "昵称",
+            dataIndex: "nick_name_info",
+            tip: "昵称",
+            hideInSearch: true,
+            render: (_: any, record: any) => record?.nick_name || "-",
+        },
+        {
             title: "账号信息",
             dataIndex: "account_info",
-            tip: "账号/昵称",
+            tip: "账号/手机/邮箱",
             hideInSearch: true,
             render: (_: any, record: any) => renderRows([
                 {label: "账号:", value: record?.account},
-                {label: "昵称:", value: record?.nick_name},
+                {label: "手机:", value: record?.phone},
+                {label: "邮箱:", value: record?.email},
             ]),
         },
         {
@@ -163,21 +171,11 @@ export default (): React.ReactNode => {
             hideInTable: true,
         },
         {
-            title: "员工昵称",
+            title: "昵称",
             dataIndex: "nick_name",
-            tip: "员工昵称",
+            tip: "昵称",
             valueType: "text",
             hideInTable: true,
-        },
-        {
-            title: "联系方式",
-            dataIndex: "contact_info",
-            tip: "手机号/邮箱",
-            hideInSearch: true,
-            render: (_: any, record: any) => renderRows([
-                {label: "手机:", value: record?.phone},
-                {label: "邮箱:", value: record?.email},
-            ]),
         },
         {
             title: "手机号码",
@@ -201,9 +199,9 @@ export default (): React.ReactNode => {
             render: (_: any, record: any) => roleRender(record?.role_ids || []),
         },
         {
-            title: "员工状态",
+            title: "账号状态",
             dataIndex: "status",
-            tip: "员工状态",
+            tip: "账号状态",
             valueEnum: statusValueEnum,
         },
         {

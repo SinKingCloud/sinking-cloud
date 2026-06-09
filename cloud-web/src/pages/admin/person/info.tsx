@@ -535,17 +535,17 @@ export default () => {
     const profileContacts = [
         {
             icon: <Icon type="IdcardOutlined"/>,
-            value: currentPerson?.account || '-',
+            value: currentPerson?.account,
         },
         {
             icon: <Icon type="PhoneOutlined"/>,
-            value: currentPerson?.phone || '-',
+            value: currentPerson?.phone,
         },
         {
             icon: <Icon type="MailOutlined"/>,
-            value: currentPerson?.email || '-',
+            value: currentPerson?.email,
         },
-    ];
+    ].filter((item) => item.value !== undefined && item.value !== null && item.value !== "");
     const sessionSummary = [
         {label: '登录设备', value: currentSession?.device || '-', icon: <Icon type="LaptopOutlined"/>},
         {label: '登录IP', value: currentSession?.ip || '-', icon: <Icon type="GlobalOutlined"/>},
@@ -679,17 +679,21 @@ export default () => {
                                                     </div>
                                                     <div className="user-content">
                                                         <div className="user-title-line">
-                                                            <h2 className="user-name">{currentPerson?.nick_name || '未设置'}</h2>
+                                                            {currentPerson?.nick_name && (
+                                                                <h2 className="user-name">{currentPerson.nick_name}</h2>
+                                                            )}
                                                             <span className="user-id">UID {currentPerson?.id || '-'}</span>
                                                         </div>
-                                                        <div className="user-contact">
-                                                            {profileContacts.map((item, index) => (
-                                                                <span className="contact-item" key={index}>
-                                                                    {item.icon}
-                                                                    <span className="contact-value">{item.value}</span>
-                                                                </span>
-                                                            ))}
-                                                        </div>
+                                                        {profileContacts.length > 0 && (
+                                                            <div className="user-contact">
+                                                                {profileContacts.map((item, index) => (
+                                                                    <span className="contact-item" key={index}>
+                                                                        {item.icon}
+                                                                        <span className="contact-value">{item.value}</span>
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
