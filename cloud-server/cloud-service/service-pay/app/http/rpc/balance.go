@@ -23,12 +23,3 @@ func (*balanceService) RechargeOrderNotify(params json.RawMessage) (interface{},
 	}
 	return true, nil
 }
-
-// GetBalanceByUserIds 批量查询用户余额
-func (*balanceService) GetBalanceByUserIds(params json.RawMessage) (interface{}, error) {
-	var userIds []int64
-	if err := json.Unmarshal(params, &userIds); err != nil {
-		return nil, err
-	}
-	return service.Balance.GetByUserIds(userIds)
-}

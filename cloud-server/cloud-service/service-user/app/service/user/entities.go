@@ -9,10 +9,6 @@ import (
 // User 用户信息
 type User struct {
 	*repositoryUser.User
-	Money         float64 `json:"money"`          //余额
-	Frozen        float64 `json:"frozen"`         //冻结余额
-	TotalRecharge float64 `json:"total_recharge"` //累计充值
-	TotalConsume  float64 `json:"total_consume"`  //累计消费
 }
 
 // RealAuthFiles 实名认证资料信息

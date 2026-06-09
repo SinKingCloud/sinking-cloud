@@ -51,32 +51,6 @@ func (s *service) GetByUserId(userId int64, refresh bool) (*Balance, error) {
 	return data, nil
 }
 
-// GetByUserIds 通过用户ID批量查询余额
-func (s *service) GetByUserIds(userIds []int64) (map[int64]*Balance, error) {
-	if len(userIds) == 0 {
-		return nil, nil
-	}
-	list, err := s.balanceRepository.SelectByUserIds(userIds)
-	if err != nil {
-		return nil, err
-	}
-	data := make(map[int64]*Balance, len(list))
-	for _, item := range list {
-		if item == nil || item.UserId <= 0 {
-			continue
-		}
-		data[item.UserId] = &Balance{
-			Money:         item.Money,
-			Frozen:        item.Frozen,
-			TotalRecharge: item.TotalRecharge,
-			TotalConsume:  item.TotalConsume,
-			CreateTime:    item.CreateTime,
-			UpdateTime:    item.UpdateTime,
-		}
-	}
-	return data, nil
-}
-
 // OperateMoney 操作用户余额并写入明细
 func (s *service) OperateMoney(userId int64, money float64, isOperateFrozen bool, logType int, describe string) error {
 	if userId <= 0 {
@@ -102,13 +76,16 @@ func (s *service) OperateMoney(userId int64, money float64, isOperateFrozen bool
 			return errors.New("获取余额信息失败")
 		}
 		moneyBefore := info.Money
-		moneyAfter := info.Money + money
+		moneyAfter := info.Money
 		frozenBefore := info.Frozen
 		frozenAfter := info.Frozen
 		logMoney := money
 		if isOperateFrozen {
-			moneyAfter = info.Money
-			frozenAfter = info.Frozen + money
+			moneyAfter -= money
+			frozenAfter += money
+			logMoney = -money
+		} else {
+			moneyAfter += money
 		}
 		if moneyAfter < 0 {
 			return errors.New("余额不足")
@@ -117,6 +94,9 @@ func (s *service) OperateMoney(userId int64, money float64, isOperateFrozen bool
 			return errors.New("冻结余额不足")
 		}
 		if isOperateFrozen {
+			if err = s.balanceRepository.Money(userId, -money, tx); err != nil {
+				return errors.Join(errors.New("更新余额失败"), err)
+			}
 			if err = s.balanceRepository.Frozen(userId, money, tx); err != nil {
 				return errors.Join(errors.New("更新冻结余额失败"), err)
 			}

@@ -250,37 +250,14 @@ func (s *service) Select(where *user.SelectUser, orderByField string, orderByTyp
 	if err != nil {
 		return nil, 0, err
 	}
-	userIds := make([]int64, 0, len(list))
 	data := make([]*User, 0, len(list))
 	for _, item := range list {
 		if item == nil {
 			continue
 		}
-		userIds = append(userIds, item.Id)
 		data = append(data, &User{
 			User: item,
 		})
-	}
-	if len(userIds) == 0 {
-		return data, total, nil
-	}
-	if s.pay == nil {
-		return nil, 0, errors.New("获取用户余额信息失败")
-	}
-	balances, err := s.pay.GetBalanceByUserIds(userIds)
-	if err != nil {
-		return nil, 0, err
-	}
-	for _, item := range data {
-		if item == nil || item.User == nil {
-			continue
-		}
-		if balance := balances[item.Id]; balance != nil {
-			item.Money = balance.Money
-			item.Frozen = balance.Frozen
-			item.TotalRecharge = balance.TotalRecharge
-			item.TotalConsume = balance.TotalConsume
-		}
 	}
 	return data, total, nil
 }

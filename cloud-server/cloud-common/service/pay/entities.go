@@ -23,12 +23,3 @@ type CreateOrderParam struct {
 	CallbackRpcService string  `json:"callback_rpc_service"` //支付回调rpc服务
 	CallbackRpcFunc    string  `json:"callback_rpc_func"`    //支付类型rpc方法
 }
-
-type Balance struct {
-	Money         float64      `json:"money"`          //余额
-	Frozen        float64      `json:"frozen"`         //冻结余额
-	TotalRecharge float64      `json:"total_recharge"` //累计充值
-	TotalConsume  float64      `json:"total_consume"`  //累计消费
-	CreateTime    str.DateTime `json:"create_time"`    //创建时间
-	UpdateTime    str.DateTime `json:"update_time"`    //更新时间
-}

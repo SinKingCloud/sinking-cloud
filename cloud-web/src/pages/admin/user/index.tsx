@@ -1,6 +1,6 @@
 import React, {useRef} from "react";
 import {Body, ProTable, ProTableRef, Title} from "sinking-antd";
-import {App, Avatar, Button, Dropdown, Result, Space, Tag, Typography} from "antd";
+import {App, Avatar, Button, Dropdown, Result, Space, Typography} from "antd";
 import {UserOutlined} from "@ant-design/icons";
 import {createStyles} from "antd-style";
 import {getData} from "@/utils/page";
@@ -8,7 +8,6 @@ import useControl from "@/utils/control";
 import {AdminControlCode} from "@/utils/permission";
 import useEnum from "@/utils/enum";
 import {getUserList} from "@/service/admin/user";
-import {formatMoney} from "@/utils/string";
 import {
     buildOptions,
     buildValueEnum,
@@ -19,8 +18,7 @@ import Session, {type SessionRef} from "./components/session";
 import Info, {type InfoRef} from "./components/info";
 import Certificate, {type CertificateRef} from "./components/certificate";
 import Batch, {type BatchRef} from "./components/batch";
-import BalanceOperate, {type BalanceOperateRef} from "./components/balanceOperate";
-import BalanceLog, {type BalanceLogRef} from "./components/balanceLog";
+import Balance, {type BalanceRef} from "./components/balance";
 
 const useStyles: any = createStyles((): any => ({
     infoColumn: {
@@ -100,32 +98,6 @@ const useStyles: any = createStyles((): any => ({
     userNameValue: {
         fontSize: 13,
     },
-    balanceTags: {
-        display: "grid",
-        gridTemplateColumns: "repeat(2, max-content)",
-        gap: "4px 6px",
-    },
-    balanceTag: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "flex-start",
-        gap: 4,
-        marginInlineEnd: 0,
-        paddingInline: 6,
-        fontSize: 12,
-        lineHeight: "18px",
-        fontVariantNumeric: "tabular-nums",
-        whiteSpace: "nowrap",
-    },
-    balanceLabel: {
-        flex: "none",
-    },
-    balanceValue: {
-        flex: "none",
-        minWidth: 0,
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-    },
 }));
 
 export default (): React.ReactNode => {
@@ -137,15 +109,16 @@ export default (): React.ReactNode => {
     const hasUpdateControl = control.hasControl(AdminControlCode.WEB_USER_UPDATE);
     const hasSessionControl = control.hasControl(AdminControlCode.WEB_USER_SESSION);
     const hasCertificateControl = control.hasControl(AdminControlCode.WEB_USER_CERTIFICATE);
+    const hasBalanceInfoControl = control.hasControl(AdminControlCode.WEB_USER_BALANCE_INFO);
     const hasBalanceOperateControl = control.hasControl(AdminControlCode.WEB_USER_BALANCE_OPERATE);
     const hasBalanceLogControl = control.hasControl(AdminControlCode.WEB_USER_BALANCE_LOG);
+    const hasBalanceControl = hasBalanceInfoControl || hasBalanceOperateControl || hasBalanceLogControl;
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const infoRef = useRef<InfoRef>({} as InfoRef);
     const sessionRef = useRef<SessionRef>({} as SessionRef);
     const certificateRef = useRef<CertificateRef>({} as CertificateRef);
     const batchRef = useRef<BatchRef>({} as BatchRef);
-    const balanceOperateRef = useRef<BalanceOperateRef>({} as BalanceOperateRef);
-    const balanceLogRef = useRef<BalanceLogRef>({} as BalanceLogRef);
+    const balanceRef = useRef<BalanceRef>({} as BalanceRef);
     const userStatus = enumData?.["user.user"]?.status || {};
     const realAuthStatus = enumData?.["user.real_auth"]?.status || {};
     const realAuthType = enumData?.["user.real_auth"]?.type || {};
@@ -205,22 +178,6 @@ export default (): React.ReactNode => {
         </div>
     );
 
-    const renderBalanceInfo = (record: any) => (
-        <div className={styles.balanceTags}>
-            {[
-                {label: "可用余额", value: record?.money, color: "cyan"},
-                {label: "冻结金额", value: record?.frozen, color: "gold"},
-                {label: "累计充值", value: record?.total_recharge, color: "geekblue"},
-                {label: "累计消费", value: record?.total_consume, color: "magenta"},
-            ].map((item) => (
-                <Tag key={item.label} color={item.color} className={styles.balanceTag}>
-                    <span className={styles.balanceLabel}>{item.label}</span>
-                    <span className={styles.balanceValue}>{formatMoney(item.value)}</span>
-                </Tag>
-            ))}
-        </div>
-    );
-
     const openSession = (record: any) => {
         if (!hasSessionControl) {
             message?.warning("暂无会话查看权限");
@@ -253,20 +210,12 @@ export default (): React.ReactNode => {
         certificateRef.current?.open(record);
     };
 
-    const openBalanceOperate = (record: any) => {
-        if (!hasBalanceOperateControl) {
-            message?.warning("暂无余额操作权限");
+    const openBalance = (record: any) => {
+        if (!hasBalanceControl) {
+            message?.warning("暂无财务权限");
             return;
         }
-        balanceOperateRef.current?.open(record);
-    };
-
-    const openBalanceLog = (record: any) => {
-        if (!hasBalanceLogControl) {
-            message?.warning("暂无余额明细权限");
-            return;
-        }
-        balanceLogRef.current?.open(record);
+        balanceRef.current?.open(record);
     };
 
     const refreshTable = () => {
@@ -358,13 +307,6 @@ export default (): React.ReactNode => {
             valueEnum: statusValueEnum,
         },
         {
-            title: "财务信息",
-            dataIndex: "balance_info",
-            tip: "余额/冻结/充值/消费",
-            hideInSearch: true,
-            render: (_: any, record: any) => renderBalanceInfo(record),
-        },
-        {
             title: "创建时间",
             valueType: "dateRange",
             dataIndex: "create_time",
@@ -392,7 +334,7 @@ export default (): React.ReactNode => {
                 {label: "更新于:", value: record?.update_time},
             ], false),
         },
-        ...(hasUpdateControl || hasCertificateControl || hasSessionControl || hasBalanceOperateControl || hasBalanceLogControl ? [{
+        ...(hasUpdateControl || hasCertificateControl || hasSessionControl || hasBalanceControl ? [{
             title: "操作",
             valueType: "option",
             key: "option",
@@ -415,15 +357,10 @@ export default (): React.ReactNode => {
                         label: "会话",
                         onClick: () => openSession(record),
                     } : null,
-                    hasBalanceOperateControl ? {
-                        key: "balance_operate",
+                    hasBalanceControl ? {
+                        key: "balance",
                         label: "财务",
-                        onClick: () => openBalanceOperate(record),
-                    } : null,
-                    hasBalanceLogControl ? {
-                        key: "balance_log",
-                        label: "明细",
-                        onClick: () => openBalanceLog(record),
+                        onClick: () => openBalance(record),
                     } : null,
                 ].filter(Boolean) as any;
                 if (items.length <= 0) {
@@ -478,8 +415,7 @@ export default (): React.ReactNode => {
                 />
                 <Session ref={sessionRef} control={control}/>
                 <Certificate ref={certificateRef} control={control}/>
-                <BalanceOperate ref={balanceOperateRef} control={control} onSuccess={refreshTable}/>
-                <BalanceLog ref={balanceLogRef} control={control}/>
+                <Balance ref={balanceRef} control={control} onSuccess={refreshTable}/>
                 <Batch
                     ref={batchRef}
                     control={control}

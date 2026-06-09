@@ -11,7 +11,6 @@ import (
 // Interface 仓储接口
 type Interface interface {
 	FindOrCreateByUserId(userId int64, tx ...*gorm.DB) (*model.Balance, error) // 通过用户ID查询余额，不存在则创建
-	SelectByUserIds(userIds []int64) ([]*model.Balance, error)                 // 通过用户ID批量查询余额
 	Money(userId int64, money float64, tx ...*gorm.DB) error                   // 修改余额
 	Frozen(userId int64, money float64, tx ...*gorm.DB) error                  // 修改冻结金额
 	TotalRecharge(userId int64, money float64, tx ...*gorm.DB) error           // 修改累计充值金额

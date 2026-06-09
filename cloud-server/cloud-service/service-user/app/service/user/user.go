@@ -6,7 +6,6 @@ import (
 	"service-user/app/repository/user"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/config"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/pay"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
 )
@@ -29,18 +28,16 @@ type service struct {
 	repositoryUser     user.Interface
 	repositoryRealAuth real_auth.Interface
 	config             *config.Service
-	pay                *pay.Service
 	database           *database.Database
 	cache              cache.Interface
 }
 
 // NewService 实例化service
-func NewService(repositoryUser user.Interface, repositoryRealAuth real_auth.Interface, systemConfig *config.Service, payService *pay.Service, database *database.Database, cache cache.Interface) *service {
+func NewService(repositoryUser user.Interface, repositoryRealAuth real_auth.Interface, systemConfig *config.Service, database *database.Database, cache cache.Interface) *service {
 	return &service{
 		repositoryUser:     repositoryUser,
 		repositoryRealAuth: repositoryRealAuth,
 		config:             systemConfig,
-		pay:                payService,
 		database:           database,
 		cache:              cache,
 	}

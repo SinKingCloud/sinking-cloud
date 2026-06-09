@@ -41,24 +41,3 @@ func (r *Repository) FindOrCreateByUserId(userId int64, tx ...*gorm.DB) (*model.
 	}
 	return balance, nil
 }
-
-// SelectByUserIds 通过用户ID批量查询余额
-func (r *Repository) SelectByUserIds(userIds []int64) ([]*model.Balance, error) {
-	if len(userIds) == 0 {
-		return nil, nil
-	}
-	var data []*model.Balance
-	err := r.Database.BatchExecute(userIds, 1000, func(batch interface{}) error {
-		var list []*model.Balance
-		err := r.Database.Db.
-			Model(&model.Balance{}).
-			Where("user_id IN ?", batch.([]int64)).
-			Find(&list).Error
-		if err != nil {
-			return err
-		}
-		data = append(data, list...)
-		return nil
-	})
-	return data, err
-}
