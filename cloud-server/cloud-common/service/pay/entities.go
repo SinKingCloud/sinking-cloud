@@ -9,7 +9,7 @@ type NotifyParam struct {
 	Amount    float64      `json:"amount"`     //订单金额
 	TradeNo   string       `json:"trade_no"`   //第三方支付订单号
 	PayAmount float64      `json:"pay_amount"` //支付金额
-	PayType   int          `json:"pay_type"`   //支付方式
+	PayType   string       `json:"pay_type"`   //支付方式
 	PayTime   str.DateTime `json:"pay_time"`   //支付时间
 }
 

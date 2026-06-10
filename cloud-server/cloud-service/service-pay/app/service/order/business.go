@@ -519,6 +519,7 @@ func (s *service) callback(orderId int64, tradeNo string, payAmount float64, pay
 		Amount:    info.Amount,
 		TradeNo:   tradeNo,
 		PayAmount: payAmount,
+		PayType:   info.PayType,
 		PayTime:   payTime,
 	}
 	var result bool
