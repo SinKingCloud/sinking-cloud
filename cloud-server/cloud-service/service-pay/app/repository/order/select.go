@@ -21,8 +21,8 @@ func (r *Repository) Select(where *SelectOrder, orderByField string, orderByType
 		if where.Status != "" {
 			query = query.Where("status = ?", where.Status)
 		}
-		if where.OutTradeNo != "" {
-			query = query.Where("out_trade_no = ?", where.OutTradeNo)
+		if where.TradeNo != "" {
+			query = query.Where("trade_no = ?", where.TradeNo)
 		}
 		if where.PayStatus != "" {
 			query = query.Where("pay_status = ?", where.PayStatus)

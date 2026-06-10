@@ -17,8 +17,8 @@ func (r *Repository) UpdateById(id int64, data *UpdateOrder, tx ...*gorm.DB) err
 	if data.Status != nil {
 		updates["status"] = data.Status
 	}
-	if data.OutTradeNo != nil {
-		updates["out_trade_no"] = data.OutTradeNo
+	if data.TradeNo != nil {
+		updates["trade_no"] = data.TradeNo
 	}
 	if data.PayAmount != nil {
 		updates["pay_amount"] = data.PayAmount

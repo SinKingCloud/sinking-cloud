@@ -103,11 +103,11 @@ func (e *EpayGateway) ParseCallback(req *http.Request) (*CallbackData, error) {
 	}
 
 	return &CallbackData{
-		Id:         orderId,
-		OutTradeNo: params["trade_no"],
-		Status:     params["trade_status"] == "TRADE_SUCCESS",
-		Money:      money,
-		PayTime:    params["time"],
+		Id:      orderId,
+		TradeNo: params["trade_no"],
+		Status:  params["trade_status"] == "TRADE_SUCCESS",
+		Money:   money,
+		PayTime: params["time"],
 	}, nil
 }
 
@@ -138,14 +138,14 @@ func (e *EpayGateway) QueryOrder(orderId int64) (*OrderStatus, error) {
 	if val, ok := result["money"].(float64); ok {
 		money = val
 	}
-	outTradeNo := ""
+	tradeNo := ""
 	if val, ok := result["trade_no"].(string); ok {
-		outTradeNo = val
+		tradeNo = val
 	}
 	return &OrderStatus{
-		Status:     status,
-		OutTradeNo: outTradeNo,
-		Money:      money,
+		Status:  status,
+		TradeNo: tradeNo,
+		Money:   money,
 	}, nil
 }
 

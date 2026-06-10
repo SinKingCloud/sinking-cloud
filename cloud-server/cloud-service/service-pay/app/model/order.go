@@ -17,7 +17,7 @@ type Order struct {
 	Extra        string       `gorm:"column:extra" json:"extra"`
 	Amount       float64      `gorm:"column:amount" json:"amount"`
 	Status       int          `gorm:"column:status" json:"status"`
-	OutTradeNo   string       `gorm:"column:out_trade_no" json:"out_trade_no"`
+	TradeNo      string       `gorm:"column:trade_no" json:"trade_no"`
 	PayAmount    float64      `gorm:"column:pay_amount" json:"pay_amount"`
 	RefundAmount float64      `gorm:"column:refund_amount" json:"refund_amount"`
 	PayStatus    int          `gorm:"column:pay_status" json:"pay_status"`

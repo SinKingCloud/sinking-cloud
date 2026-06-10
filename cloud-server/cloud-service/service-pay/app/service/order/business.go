@@ -241,8 +241,8 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 }
 
 // Callback 订单回调
-func (s *service) Callback(orderId int64, outTradeNo string, payAmount float64, payTime str.DateTime) error {
-	return s.callback(orderId, outTradeNo, payAmount, payTime, 0, order_log_operator_type.System, "在线支付订单成功,发货成功")
+func (s *service) Callback(orderId int64, tradeNo string, payAmount float64, payTime str.DateTime) error {
+	return s.callback(orderId, tradeNo, payAmount, payTime, 0, order_log_operator_type.System, "在线支付订单成功,发货成功")
 }
 
 // Deliver 订单发货
@@ -421,7 +421,7 @@ func (s *service) CleanExpiredUnPayOrder(day int) (int64, error) {
 }
 
 // callback 订单回调
-func (s *service) callback(orderId int64, outTradeNo string, payAmount float64, payTime str.DateTime, operatorId int64, operatorType int64, content string) error {
+func (s *service) callback(orderId int64, tradeNo string, payAmount float64, payTime str.DateTime, operatorId int64, operatorType int64, content string) error {
 	if orderId <= 0 {
 		return errors.New("订单ID错误")
 	}
@@ -451,18 +451,18 @@ func (s *service) callback(orderId int64, outTradeNo string, payAmount float64, 
 	}
 
 	notify := &payService.NotifyParam{
-		UserId:     info.UserId,
-		OrderId:    info.Id,
-		Extra:      extra.Param,
-		Amount:     info.Amount,
-		OutTradeNo: outTradeNo,
-		PayAmount:  payAmount,
-		PayTime:    payTime,
+		UserId:    info.UserId,
+		OrderId:   info.Id,
+		Extra:     extra.Param,
+		Amount:    info.Amount,
+		TradeNo:   tradeNo,
+		PayAmount: payAmount,
+		PayTime:   payTime,
 	}
 	completeTime := str.DateTime(time.Now())
 	update := &orderRepository.UpdateOrder{
 		Status:       order_status.Payed,
-		OutTradeNo:   outTradeNo,
+		TradeNo:      tradeNo,
 		PayAmount:    payAmount,
 		PayStatus:    order_pay_status.Payed,
 		PayTime:      payTime,
@@ -471,7 +471,7 @@ func (s *service) callback(orderId int64, outTradeNo string, payAmount float64, 
 
 	after := *info
 	after.Status = order_status.Payed
-	after.OutTradeNo = outTradeNo
+	after.TradeNo = tradeNo
 	after.PayAmount = payAmount
 	after.PayStatus = order_pay_status.Payed
 	after.PayTime = payTime

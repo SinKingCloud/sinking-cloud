@@ -18,7 +18,7 @@ func (Controller) List(c *context.Context) {
 		ChannelId         string `json:"channel_id" default:"" validate:"omitempty,numeric" label:"通道ID"`
 		Type              string `json:"type" default:"" validate:"omitempty,numeric" label:"订单类型"`
 		Status            string `json:"status" default:"" validate:"omitempty,numeric" label:"订单状态"`
-		OutTradeNo        string `json:"out_trade_no" default:"" validate:"omitempty" label:"外部订单号"`
+		TradeNo           string `json:"trade_no" default:"" validate:"omitempty" label:"第三方支付订单号"`
 		PayStatus         string `json:"pay_status" default:"" validate:"omitempty,numeric" label:"支付状态"`
 		PayTimeStart      string `json:"pay_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"支付起始时间"`
 		PayTimeEnd        string `json:"pay_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"支付结束时间"`
@@ -49,8 +49,8 @@ func (Controller) List(c *context.Context) {
 	if form.Status != "" {
 		where.Status = form.Status
 	}
-	if form.OutTradeNo != "" {
-		where.OutTradeNo = form.OutTradeNo
+	if form.TradeNo != "" {
+		where.TradeNo = form.TradeNo
 	}
 	if form.PayStatus != "" {
 		where.PayStatus = form.PayStatus

@@ -94,11 +94,11 @@ func (a *AlipayGateway) ParseCallback(req *http.Request) (*CallbackData, error) 
 		return nil, errors.New("订单ID错误")
 	}
 	return &CallbackData{
-		Id:         orderId,
-		OutTradeNo: bm.GetString("trade_no"), // 支付宝交易号
-		Status:     bm.GetString("trade_status") == "TRADE_SUCCESS",
-		Money:      money,
-		PayTime:    bm.GetString("gmt_payment"), // 支付时间
+		Id:      orderId,
+		TradeNo: bm.GetString("trade_no"), // 支付宝交易号
+		Status:  bm.GetString("trade_status") == "TRADE_SUCCESS",
+		Money:   money,
+		PayTime: bm.GetString("gmt_payment"), // 支付时间
 	}, nil
 }
 
@@ -139,8 +139,8 @@ func (a *AlipayGateway) QueryOrder(orderId int64) (*OrderStatus, error) {
 	// TRADE_FINISHED: 交易结束，不可退款
 	isSuccess := rsp.Response.TradeStatus == "TRADE_SUCCESS" || rsp.Response.TradeStatus == "TRADE_FINISHED"
 	return &OrderStatus{
-		Status:     isSuccess,
-		OutTradeNo: rsp.Response.TradeNo,
-		Money:      money,
+		Status:  isSuccess,
+		TradeNo: rsp.Response.TradeNo,
+		Money:   money,
 	}, nil
 }

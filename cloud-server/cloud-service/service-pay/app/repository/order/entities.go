@@ -11,7 +11,7 @@ type Order struct {
 	Type         int          `gorm:"column:type" json:"type"`
 	Amount       float64      `gorm:"column:amount" json:"amount"`
 	Status       int          `gorm:"column:status" json:"status"`
-	OutTradeNo   string       `gorm:"column:out_trade_no" json:"out_trade_no"`
+	TradeNo      string       `gorm:"column:trade_no" json:"trade_no"`
 	PayAmount    float64      `gorm:"column:pay_amount" json:"pay_amount"`
 	RefundAmount float64      `gorm:"column:refund_amount" json:"refund_amount"`
 	PayStatus    int          `gorm:"column:pay_status" json:"pay_status"`
@@ -29,7 +29,7 @@ type SelectOrder struct {
 	ChannelId         string
 	Type              string
 	Status            string
-	OutTradeNo        string
+	TradeNo           string
 	PayStatus         string
 	PayType           string
 	PayTimeStart      string
@@ -44,7 +44,7 @@ type SelectOrder struct {
 
 type UpdateOrder struct {
 	Status       interface{}
-	OutTradeNo   interface{}
+	TradeNo      interface{}
 	PayAmount    interface{}
 	RefundAmount interface{}
 	PayStatus    interface{}

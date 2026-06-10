@@ -93,7 +93,7 @@ func (Controller) Callback(c *context.Context) {
 				payTime = str.DateTime(t)
 			}
 		}
-		return service.Order.Callback(data.Id, strings.TrimSpace(data.OutTradeNo), data.Money, payTime)
+		return service.Order.Callback(data.Id, strings.TrimSpace(data.TradeNo), data.Money, payTime)
 	})
 	if method == "return" {
 		res := 200

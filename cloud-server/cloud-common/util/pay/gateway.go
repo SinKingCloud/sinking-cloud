@@ -32,16 +32,16 @@ type Order struct {
 
 // CallbackData 回调数据
 type CallbackData struct {
-	Id         int64   // 系统订单ID
-	OutTradeNo string  // 第三方订单号
-	Money      float64 // 支付金额
-	Status     bool    // 是否支付成功
-	PayTime    string  // 支付时间
+	Id      int64   // 系统订单ID
+	TradeNo string  // 第三方订单号
+	Money   float64 // 支付金额
+	Status  bool    // 是否支付成功
+	PayTime string  // 支付时间
 }
 
 // OrderStatus 订单状态
 type OrderStatus struct {
-	Status     bool    // 是否支付成功
-	Money      float64 // 支付金额
-	OutTradeNo string  // 第三方订单号
+	Status  bool    // 是否支付成功
+	Money   float64 // 支付金额
+	TradeNo string  // 第三方订单号
 }
