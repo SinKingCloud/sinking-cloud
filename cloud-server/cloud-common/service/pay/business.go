@@ -8,7 +8,7 @@ import (
 )
 
 // CreateOrder 创建订单
-func (*Service) CreateOrder(userId int64, name string, describe string, amount float64, payType string, param string, callbackRpcService string, callbackRpcFunc string) (tradeNo string, err error) {
+func (*Service) CreateOrder(userId int64, name string, describe string, amount float64, payType string, param string, callbackRpcService string, callbackRpcFunc string) (orderId int64, err error) {
 	err = rpc.InvokeFunc(constant.ServicePay, "CreateOrder", &CreateOrderParam{
 		UserId:             userId,
 		Name:               name,
@@ -18,11 +18,11 @@ func (*Service) CreateOrder(userId int64, name string, describe string, amount f
 		Param:              param,
 		CallbackRpcService: callbackRpcService,
 		CallbackRpcFunc:    callbackRpcFunc,
-	}, &tradeNo)
-	if err != nil || tradeNo == "" {
-		return "", errors.Join(errors.New("创建订单失败"), err)
+	}, &orderId)
+	if err != nil || orderId <= 0 {
+		return 0, errors.Join(errors.New("创建订单失败"), err)
 	}
-	return tradeNo, nil
+	return orderId, nil
 }
 
 // CleanExpiredUnPayOrder 清理过期未支付订单

@@ -4,7 +4,7 @@ import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str
 
 type NotifyParam struct {
 	UserId     int64        `json:"user_id"`      //用户ID
-	TradeNo    string       `json:"trade_no"`     //内部订单号
+	OrderId    int64        `json:"order_id"`     //订单ID
 	Extra      string       `json:"extra"`        //扩展信息
 	Amount     float64      `json:"amount"`       //订单金额
 	OutTradeNo string       `json:"out_trade_no"` //外部订单号

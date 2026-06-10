@@ -7,7 +7,6 @@ import (
 // UserOrder 用户订单
 type UserOrder struct {
 	Id           int64        `json:"id"`
-	TradeNo      string       `json:"trade_no"`
 	Name         string       `json:"name"`
 	Type         int          `json:"type"`
 	Amount       float64      `json:"amount"`

@@ -48,13 +48,16 @@ func NewEpayGateway(pid, key, apiUrl string) (*EpayGateway, error) {
 
 // Submit 提交支付（实现PaymentGateway接口）
 func (e *EpayGateway) Submit(order *Order) (string, error) {
+	if order == nil || order.Id <= 0 {
+		return "", errors.New("订单ID错误")
+	}
 	// 构建支付参数
 	params := map[string]string{
 		"pid":          e.pid,
 		"type":         order.PayType,
 		"notify_url":   order.NotifyUrl,
 		"return_url":   order.ReturnUrl,
-		"out_trade_no": order.TradeNo,
+		"out_trade_no": strconv.FormatInt(order.Id, 10),
 		"name":         order.Name,
 		"money":        fmt.Sprintf("%.2f", order.Money),
 	}
@@ -94,9 +97,13 @@ func (e *EpayGateway) ParseCallback(req *http.Request) (*CallbackData, error) {
 	if err != nil {
 		money = 0
 	}
+	orderId, err := strconv.ParseInt(strings.TrimSpace(params["out_trade_no"]), 10, 64)
+	if err != nil || orderId <= 0 {
+		return nil, errors.New("订单ID错误")
+	}
 
 	return &CallbackData{
-		TradeNo:    params["out_trade_no"],
+		Id:         orderId,
 		OutTradeNo: params["trade_no"],
 		Status:     params["trade_status"] == "TRADE_SUCCESS",
 		Money:      money,
@@ -115,8 +122,11 @@ func (e *EpayGateway) FailResponse() (int, http.Header, string) {
 }
 
 // QueryOrder 查询订单状态（实现PaymentGateway接口）
-func (e *EpayGateway) QueryOrder(tradeNo string) (*OrderStatus, error) {
-	result := e.queryOrderAPI(tradeNo)
+func (e *EpayGateway) QueryOrder(orderId int64) (*OrderStatus, error) {
+	if orderId <= 0 {
+		return nil, errors.New("订单ID错误")
+	}
+	result := e.queryOrderAPI(strconv.FormatInt(orderId, 10))
 	if result == nil {
 		return nil, errors.New("查询失败")
 	}
@@ -161,8 +171,8 @@ func (e *EpayGateway) getPagePayHTML(params map[string]string, button string) st
 }
 
 // queryOrderAPI 调用易支付API查询订单
-func (e *EpayGateway) queryOrderAPI(tradeNo string) map[string]interface{} {
-	queryURL := fmt.Sprintf("%s?act=order&pid=%s&key=%s&trade_no=%s", e.apiURL, e.pid, e.key, tradeNo)
+func (e *EpayGateway) queryOrderAPI(orderId string) map[string]interface{} {
+	queryURL := fmt.Sprintf("%s?act=order&pid=%s&key=%s&out_trade_no=%s", e.apiURL, e.pid, e.key, orderId)
 	response, err := http.Get(queryURL)
 	if err != nil {
 		return nil

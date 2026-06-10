@@ -195,25 +195,25 @@ func (s *service) SelectLog(where *balance_log.SelectBalanceLog, orderByField st
 }
 
 // CreateRechargeOrder 创建充值订单
-func (s *service) CreateRechargeOrder(userId int64, money int, payType string) (string, error) {
+func (s *service) CreateRechargeOrder(userId int64, money int, payType string) (int64, error) {
 	if money <= 0 {
-		return "", errors.New("充值金额必须大于0")
+		return 0, errors.New("充值金额必须大于0")
 	}
 	if s.channelService == nil {
-		return "", errors.New("获取支付配置失败")
+		return 0, errors.New("获取支付配置失败")
 	}
 	payConfig := s.channelService.GetConfig(false)
 	if payConfig == nil {
-		return "", errors.New("获取支付配置失败")
+		return 0, errors.New("获取支付配置失败")
 	}
 	amount := float64(money)
 	if payConfig.Min > 0 && amount < payConfig.Min {
-		return "", errors.New("充值金额不能小于" + strconv.FormatFloat(payConfig.Min, 'f', -1, 64) + "元")
+		return 0, errors.New("充值金额不能小于" + strconv.FormatFloat(payConfig.Min, 'f', -1, 64) + "元")
 	}
 	if payConfig.Max > 0 && amount > payConfig.Max {
-		return "", errors.New("充值金额不能大于" + strconv.FormatFloat(payConfig.Max, 'f', -1, 64) + "元")
+		return 0, errors.New("充值金额不能大于" + strconv.FormatFloat(payConfig.Max, 'f', -1, 64) + "元")
 	}
-	tradeNo, err := s.orderService.Create(userId,
+	orderId, err := s.orderService.Create(userId,
 		"在线充值",
 		order_type.Recharge,
 		payType,
@@ -222,9 +222,9 @@ func (s *service) CreateRechargeOrder(userId int64, money int, payType string) (
 		s.consul.GetName(),
 		"RechargeOrderNotify", "发起在线充值订单")
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	return tradeNo, nil
+	return orderId, nil
 }
 
 // RechargeOrderNotify 充值订单回调
@@ -235,12 +235,8 @@ func (s *service) RechargeOrderNotify(order *pay.NotifyParam) error {
 	if order.UserId <= 0 {
 		return errors.New("用户ID错误")
 	}
-	if order.TradeNo == "" {
-		return errors.New("订单号不能为空")
-	}
-	logId, err := strconv.ParseInt(order.TradeNo, 10, 64)
-	if err != nil || logId <= 0 {
-		return errors.New("订单号错误")
+	if order.OrderId <= 0 {
+		return errors.New("订单ID错误")
 	}
 	if order.PayAmount <= 0 {
 		return errors.New("支付金额必须大于0")
@@ -250,7 +246,7 @@ func (s *service) RechargeOrderNotify(order *pay.NotifyParam) error {
 		return errors.New("系统繁忙,请稍候重试")
 	}
 	defer s.cache.UnLock(lockKey)
-	logInfo, err := s.balanceLogRepository.FindById(logId)
+	logInfo, err := s.balanceLogRepository.FindById(order.OrderId)
 	if err != nil {
 		return errors.Join(errors.New("查询充值明细失败"), err)
 	}
@@ -276,7 +272,7 @@ func (s *service) RechargeOrderNotify(order *pay.NotifyParam) error {
 			return errors.Join(errors.New("更新累计充值失败"), err)
 		}
 		if err = s.balanceLogRepository.Create(&model.BalanceLog{
-			Id:           logId,
+			Id:           order.OrderId,
 			UserId:       order.UserId,
 			Type:         balance_log_type.Recharge,
 			Money:        order.PayAmount,
@@ -284,7 +280,7 @@ func (s *service) RechargeOrderNotify(order *pay.NotifyParam) error {
 			MoneyAfter:   moneyAfter,
 			FrozenBefore: frozenBefore,
 			FrozenAfter:  frozenAfter,
-			Describe:     fmt.Sprintf("在线充值[%s]", order.TradeNo),
+			Describe:     fmt.Sprintf("在线充值[%d]", order.OrderId),
 		}, tx); err != nil {
 			return errors.Join(errors.New("创建余额明细失败"), err)
 		}

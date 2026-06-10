@@ -17,10 +17,10 @@ func (Controller) Recharge(c *context.Context) {
 		return
 	}
 	u := c.GetUserInfo()
-	tradeNo, err := service.Balance.CreateRechargeOrder(u.Id, form.Money, form.Type)
+	orderId, err := service.Balance.CreateRechargeOrder(u.Id, form.Money, form.Type)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("创建订单成功", tradeNo)
+	c.SuccessWithData("创建订单成功", orderId)
 }

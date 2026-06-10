@@ -21,7 +21,7 @@ type Service interface {
 	GetConfig(refresh bool) *Config                                                                                                                                                    //获取支付配置
 	SetConfig(data *Config) error                                                                                                                                                      //更新支付配置
 	GetPayResultPageUrl(code int) string                                                                                                                                               //获取支付结果页地址
-	GetPayUrl(channelId int64, tradeNo string, name string, money float64) (string, error)                                                                                             //获取支付跳转链接
+	GetPayUrl(channelId int64, orderId int64, name string, money float64) (string, error)                                                                                              //获取支付跳转链接
 	ValidateCallback(channelId int64, req *http.Request, successFun func(data *pay.CallbackData) error) (code int, header http.Header, body string, data *pay.CallbackData, err error) //验证支付回调
 	GetPayChannel(payType string) (*Channel, error)                                                                                                                                    //获取支付通道ID
 	GetIdNameMap(refresh bool) (map[int64]string, error)                                                                                                                               //获取id name映射

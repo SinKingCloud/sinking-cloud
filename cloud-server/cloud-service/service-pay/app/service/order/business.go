@@ -3,7 +3,6 @@ package order
 import (
 	"encoding/json"
 	"errors"
-	"math/rand/v2"
 	"service-pay/app/constant"
 	"service-pay/app/enum/balance_log_type"
 	"service-pay/app/enum/order_log_operator_type"
@@ -39,24 +38,15 @@ func (s *service) FindById(id int64) (*model.Order, error) {
 	return info, nil
 }
 
-// FindByTradeNo 根据traderNo查询订单
-func (s *service) FindByTradeNo(tradeNo string) (*model.Order, error) {
-	if tradeNo == "" {
-		return nil, errors.New("订单ID错误")
-	}
-	info, err := s.orderRepository.FindByTradeNo(tradeNo)
-	if err != nil {
-		return nil, err
-	}
-	if info == nil || info.Id <= 0 {
-		return nil, errors.New("订单不存在")
-	}
-	return info, nil
-}
-
 // Select 查询订单列表
 func (s *service) Select(where *orderRepository.SelectOrder, orderByField string, orderByType string, page int, pageSize int) (list []*orderRepository.Order, total int64, err error) {
 	if where != nil {
+		if where.Id != "" {
+			orderId, err := strconv.ParseInt(where.Id, 10, 64)
+			if err != nil || orderId <= 0 {
+				return nil, 0, errors.New("订单ID错误")
+			}
+		}
 		if where.UserId != "" {
 			userId, err := strconv.ParseInt(where.UserId, 10, 64)
 			if err != nil || userId <= 0 {
@@ -105,7 +95,6 @@ func (s *service) SelectByUserId(userId int64, where *orderRepository.SelectOrde
 	for _, item := range items {
 		list = append(list, &UserOrder{
 			Id:           item.Id,
-			TradeNo:      item.TradeNo,
 			Name:         item.Name,
 			Type:         item.Type,
 			Amount:       item.Amount,
@@ -169,25 +158,25 @@ func (s *service) checkEnumValue(value string, data map[int]string, name string)
 }
 
 // Create 创建订单
-func (s *service) Create(userId int64, name string, Type int, payType string, amount float64, param string, callbackRpcService string, callbackRpcFunc string, describe string) (string, error) {
+func (s *service) Create(userId int64, name string, Type int, payType string, amount float64, param string, callbackRpcService string, callbackRpcFunc string, describe string) (int64, error) {
 	if userId <= 0 {
-		return "", errors.New("用户ID错误")
+		return 0, errors.New("用户ID错误")
 	}
 	if name == "" {
-		return "", errors.New("订单名称不能为空")
+		return 0, errors.New("订单名称不能为空")
 	}
 	if _, ok := order_type.Map()[Type]; !ok {
-		return "", errors.New("订单类型不合法")
+		return 0, errors.New("订单类型不合法")
 	}
 	if _, ok := pay_type.Map()[payType]; !ok {
-		return "", errors.New("支付类型不合法")
+		return 0, errors.New("支付类型不合法")
 	}
 	channel, err := s.channelService.GetPayChannel(payType)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	if Type == order_type.Recharge && payType == pay_type.Balance {
-		return "", errors.New("支付类型不合法")
+		return 0, errors.New("支付类型不合法")
 	}
 	payConfig := s.channelService.GetConfig(false)
 	expireTime := str.DateTime(time.Now().Add(time.Duration(payConfig.Expire) * time.Minute))
@@ -203,23 +192,13 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 	}
 	extraBytes, err := json.Marshal(extra)
 	if err != nil {
-		return "", errors.Join(errors.New("生成订单扩展信息失败"), err)
+		return 0, errors.Join(errors.New("生成订单扩展信息失败"), err)
 	}
-	tradeNo := func() string {
-		var seed string
-		formatInt := strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10)
-		if len(formatInt) > 6 {
-			seed = formatInt[len(formatInt)-6:]
-		} else {
-			seed = strconv.Itoa(100000 + rand.IntN(899999))
-		}
-		return time.Now().Format("20060102150405") + seed
-	}()
+	orderId := str.GetSnowWorkIns().GetId()
 	data := &model.Order{
-		Id:           str.GetSnowWorkIns().GetId(),
+		Id:           orderId,
 		UserId:       userId,
 		ChannelId:    channel.Id,
-		TradeNo:      tradeNo,
 		Name:         name,
 		Type:         Type,
 		Extra:        string(extraBytes),
@@ -256,14 +235,14 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 		return nil
 	})
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	return tradeNo, nil
+	return orderId, nil
 }
 
 // Callback 订单回调
-func (s *service) Callback(tradeNo string, outTradeNo string, payAmount float64, payTime str.DateTime) error {
-	return s.callback(tradeNo, outTradeNo, payAmount, payTime, 0, order_log_operator_type.System, "在线支付订单成功,发货成功")
+func (s *service) Callback(orderId int64, outTradeNo string, payAmount float64, payTime str.DateTime) error {
+	return s.callback(orderId, outTradeNo, payAmount, payTime, 0, order_log_operator_type.System, "在线支付订单成功,发货成功")
 }
 
 // Deliver 订单发货
@@ -278,7 +257,7 @@ func (s *service) Deliver(id int64, operatorId int64) error {
 	if info.Status != order_status.UnPay {
 		return errors.New("订单状态异常")
 	}
-	return s.callback(info.TradeNo, strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10), info.Amount, str.DateTime(time.Now()), operatorId, order_log_operator_type.Admin, "后台手动发货")
+	return s.callback(info.Id, "", info.Amount, str.DateTime(time.Now()), operatorId, order_log_operator_type.Admin, "后台手动发货")
 }
 
 // Refound 订单退款
@@ -293,7 +272,7 @@ func (s *service) Refound(id int64, money float64, operatorId int64) error {
 	if err != nil {
 		return errors.Join(errors.New("获取订单信息失败"), err)
 	}
-	lockKey := constant.LockOrderCallback + info.TradeNo
+	lockKey := constant.LockOrderCallback + strconv.FormatInt(info.Id, 10)
 	if !s.cache.Lock(lockKey, constant.LockTimeOrderCallback) {
 		return errors.New("系统繁忙,请稍候重试")
 	}
@@ -395,7 +374,7 @@ func (s *service) Refound(id int64, money float64, operatorId int64) error {
 			MoneyAfter:   moneyAfter,
 			FrozenBefore: frozenBefore,
 			FrozenAfter:  frozenAfter,
-			Describe:     "订单[" + info.TradeNo + "]退款",
+			Describe:     "订单[" + strconv.FormatInt(info.Id, 10) + "]退款",
 		}, tx); err != nil {
 			return errors.Join(errors.New("创建余额明细失败"), err)
 		}
@@ -442,19 +421,19 @@ func (s *service) CleanExpiredUnPayOrder(day int) (int64, error) {
 }
 
 // callback 订单回调
-func (s *service) callback(tradeNo string, outTradeNo string, payAmount float64, payTime str.DateTime, operatorId int64, operatorType int64, content string) error {
-	if tradeNo == "" {
-		return errors.New("订单号不能为空")
+func (s *service) callback(orderId int64, outTradeNo string, payAmount float64, payTime str.DateTime, operatorId int64, operatorType int64, content string) error {
+	if orderId <= 0 {
+		return errors.New("订单ID错误")
 	}
 	if content == "" {
 		content = "订单发货成功"
 	}
-	lockKey := constant.LockOrderCallback + tradeNo
+	lockKey := constant.LockOrderCallback + strconv.FormatInt(orderId, 10)
 	if !s.cache.Lock(lockKey, constant.LockTimeOrderCallback) {
 		return errors.New("系统繁忙,请稍候重试")
 	}
 	defer s.cache.UnLock(lockKey)
-	info, err := s.FindByTradeNo(tradeNo)
+	info, err := s.FindById(orderId)
 	if err != nil {
 		return errors.Join(errors.New("获取订单信息失败"), err)
 	}
@@ -473,8 +452,8 @@ func (s *service) callback(tradeNo string, outTradeNo string, payAmount float64,
 
 	notify := &payService.NotifyParam{
 		UserId:     info.UserId,
-		TradeNo:    info.TradeNo,
-		Extra:      string(extra.Param),
+		OrderId:    info.Id,
+		Extra:      extra.Param,
 		Amount:     info.Amount,
 		OutTradeNo: outTradeNo,
 		PayAmount:  payAmount,

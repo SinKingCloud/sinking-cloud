@@ -34,13 +34,13 @@ func (Controller) Config(c *context.Context) {
 // Submit 获取支付链接
 func (Controller) Submit(c *context.Context) {
 	var form struct {
-		TradeNo string `json:"trade_no" default:"" validate:"required,numeric" label:"订单号"`
+		Id int64 `json:"id" default:"0" validate:"numeric,min=1" label:"订单ID"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}
-	info, err := service.Order.FindByTradeNo(form.TradeNo)
+	info, err := service.Order.FindById(form.Id)
 	if err != nil {
 		c.Error(err.Error())
 		return
@@ -56,13 +56,13 @@ func (Controller) Submit(c *context.Context) {
 	}
 	var link string
 	if info.Amount <= 0 {
-		if err = service.Order.Callback(info.TradeNo, strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10), 0, str.DateTime(time.Now())); err != nil {
+		if err = service.Order.Callback(info.Id, strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10), 0, str.DateTime(time.Now())); err != nil {
 			c.Error(err.Error())
 			return
 		}
 		link = service.Channel.GetPayResultPageUrl(200)
 	} else {
-		link, err = service.Channel.GetPayUrl(info.ChannelId, info.TradeNo, info.Name, info.Amount)
+		link, err = service.Channel.GetPayUrl(info.ChannelId, info.Id, info.Name, info.Amount)
 		if err != nil {
 			c.Error(err.Error())
 			return
@@ -83,9 +83,8 @@ func (Controller) Callback(c *context.Context) {
 		if data == nil {
 			return errors.New("回调信息不能为空")
 		}
-		tradeNo := strings.TrimSpace(data.TradeNo)
-		if tradeNo == "" {
-			return errors.New("订单号不能为空")
+		if data.Id <= 0 {
+			return errors.New("订单ID错误")
 		}
 		payTime := str.DateTime(time.Now())
 		payTimeStr := strings.TrimSpace(data.PayTime)
@@ -94,7 +93,7 @@ func (Controller) Callback(c *context.Context) {
 				payTime = str.DateTime(t)
 			}
 		}
-		return service.Order.Callback(tradeNo, strings.TrimSpace(data.OutTradeNo), data.Money, payTime)
+		return service.Order.Callback(data.Id, strings.TrimSpace(data.OutTradeNo), data.Money, payTime)
 	})
 	if method == "return" {
 		res := 200

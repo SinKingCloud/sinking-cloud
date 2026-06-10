@@ -11,7 +11,6 @@ import (
 // Interface 仓储接口
 type Interface interface {
 	Create(data *model.Order, tx ...*gorm.DB) error                                                                                     //创建数据
-	FindByTradeNo(tradeNo string) (*model.Order, error)                                                                                 //根据订单号查询记录
 	FindById(id int64) (*model.Order, error)                                                                                            //根据ID查询记录
 	CheckChannelHasUnPayOrder(channelId int64) (bool, error)                                                                            //根据通道ID判断是否存在未过期且未支付订单
 	FindExpiredUnPayIds(expiredTime string, limit int) ([]int64, error)                                                                 //查询过期未支付订单ID

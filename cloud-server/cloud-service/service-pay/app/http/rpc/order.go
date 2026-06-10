@@ -28,9 +28,9 @@ func (*orderService) CreateOrder(params json.RawMessage) (interface{}, error) {
 	var param *pay.CreateOrderParam
 	err := json.Unmarshal(params, &param)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	tradeNo, err := service.Order.Create(param.UserId,
+	orderId, err := service.Order.Create(param.UserId,
 		param.Name,
 		order_type.Buy,
 		param.PayType,
@@ -39,7 +39,7 @@ func (*orderService) CreateOrder(params json.RawMessage) (interface{}, error) {
 		param.CallbackRpcService,
 		param.CallbackRpcFunc, param.Describe)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	return tradeNo, nil
+	return orderId, nil
 }

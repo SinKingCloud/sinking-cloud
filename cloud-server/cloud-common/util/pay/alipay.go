@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-pay/gopay"
 	"github.com/go-pay/gopay/alipay"
@@ -38,11 +39,14 @@ func NewAlipayGateway(appId, privateKey, aliPayPublicKey string) (*AlipayGateway
 
 // Submit 提交支付（电脑网站支付）
 func (a *AlipayGateway) Submit(order *Order) (string, error) {
+	if order == nil || order.Id <= 0 {
+		return "", errors.New("订单ID错误")
+	}
 	ctx := context.Background()
 	// 构建请求参数
 	bm := make(gopay.BodyMap)
 	bm.Set("subject", order.Name)
-	bm.Set("out_trade_no", order.TradeNo)
+	bm.Set("out_trade_no", strconv.FormatInt(order.Id, 10))
 	bm.Set("total_amount", fmt.Sprintf("%.2f", order.Money))
 	bm.Set("product_code", "FAST_INSTANT_TRADE_PAY")
 	// 设置回调地址
@@ -82,9 +86,16 @@ func (a *AlipayGateway) ParseCallback(req *http.Request) (*CallbackData, error) 
 	if err != nil {
 		return nil, fmt.Errorf("金额解析失败: %w", err)
 	}
+	orderId, err := strconv.ParseInt(strings.TrimSpace(bm.GetString("out_trade_no")), 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("订单ID解析失败: %w", err)
+	}
+	if orderId <= 0 {
+		return nil, errors.New("订单ID错误")
+	}
 	return &CallbackData{
-		TradeNo:    bm.GetString("out_trade_no"), // 商户订单号
-		OutTradeNo: bm.GetString("trade_no"),     // 支付宝交易号
+		Id:         orderId,
+		OutTradeNo: bm.GetString("trade_no"), // 支付宝交易号
 		Status:     bm.GetString("trade_status") == "TRADE_SUCCESS",
 		Money:      money,
 		PayTime:    bm.GetString("gmt_payment"), // 支付时间
@@ -102,11 +113,14 @@ func (a *AlipayGateway) FailResponse() (int, http.Header, string) {
 }
 
 // QueryOrder 查询订单状态
-func (a *AlipayGateway) QueryOrder(tradeNo string) (*OrderStatus, error) {
+func (a *AlipayGateway) QueryOrder(orderId int64) (*OrderStatus, error) {
+	if orderId <= 0 {
+		return nil, errors.New("订单ID错误")
+	}
 	ctx := context.Background()
 	// 构建请求参数
 	bm := make(gopay.BodyMap)
-	bm.Set("out_trade_no", tradeNo)
+	bm.Set("out_trade_no", strconv.FormatInt(orderId, 10))
 	// 调用支付宝查询订单API
 	rsp, err := a.client.TradeQuery(ctx, bm)
 	if err != nil {

@@ -17,12 +17,12 @@ type Interface interface {
 	FailResponse() (int, http.Header, string)
 
 	// QueryOrder 查询订单状态
-	QueryOrder(tradeNo string) (*OrderStatus, error)
+	QueryOrder(orderId int64) (*OrderStatus, error)
 }
 
 // Order 支付订单信息
 type Order struct {
-	TradeNo   string  // 商户订单号
+	Id        int64   // 系统订单ID
 	Name      string  // 商品名称
 	Money     float64 // 金额
 	NotifyUrl string  // 异步通知地址
@@ -32,7 +32,7 @@ type Order struct {
 
 // CallbackData 回调数据
 type CallbackData struct {
-	TradeNo    string  // 商户订单号
+	Id         int64   // 系统订单ID
 	OutTradeNo string  // 第三方订单号
 	Money      float64 // 支付金额
 	Status     bool    // 是否支付成功

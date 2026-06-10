@@ -6,14 +6,14 @@ func (r *Repository) Select(where *SelectOrder, orderByField string, orderByType
 	offset := pageSize * (page - 1)
 	query := r.Database.Db.Model(&model.Order{})
 	if where != nil {
+		if where.Id != "" {
+			query = query.Where("id = ?", where.Id)
+		}
 		if where.UserId != "" {
 			query = query.Where("user_id = ?", where.UserId)
 		}
 		if where.ChannelId != "" {
 			query = query.Where("channel_id = ?", where.ChannelId)
-		}
-		if where.TradeNo != "" {
-			query = query.Where("trade_no = ?", where.TradeNo)
 		}
 		if where.Type != "" {
 			query = query.Where("type = ?", where.Type)

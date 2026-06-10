@@ -330,7 +330,7 @@ func (s *service) GetPayResultPageUrl(code int) string {
 }
 
 // GetPayUrl 获取支付跳转链接
-func (s *service) GetPayUrl(channelId int64, tradeNo string, name string, money float64) (string, error) {
+func (s *service) GetPayUrl(channelId int64, orderId int64, name string, money float64) (string, error) {
 	config := s.configService.GetSystemConfig(commonConstant.WebGroup, false)
 	apiUrl := strings.TrimRight(strings.TrimSpace(config[commonConstant.WebApi]), "/")
 	if apiUrl == "" {
@@ -343,7 +343,7 @@ func (s *service) GetPayUrl(channelId int64, tradeNo string, name string, money 
 	notifyUrl := apiUrl + strings.ReplaceAll("/"+s.consul.GetName()+"/callback/"+strconv.FormatInt(channelInfo.Id, 10)+"/notify", "//", "/")
 	returnUrl := apiUrl + strings.ReplaceAll("/"+s.consul.GetName()+"/callback/"+strconv.FormatInt(channelInfo.Id, 10)+"/return", "//", "/")
 	url, err := client.Submit(&pay.Order{
-		TradeNo:   tradeNo,
+		Id:        orderId,
 		Name:      name,
 		Money:     money,
 		NotifyUrl: notifyUrl,
