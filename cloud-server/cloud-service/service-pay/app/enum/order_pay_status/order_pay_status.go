@@ -8,7 +8,7 @@ const (
 // Map 数据
 func Map() map[int]string {
 	return map[int]string{
-		UnPay: "未支付",
+		UnPay: "待支付",
 		Payed: "已支付",
 	}
 }
