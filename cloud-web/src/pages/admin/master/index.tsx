@@ -25,7 +25,6 @@ import {createStyles} from "antd-style";
 const useStyles: any = createStyles((): any => ({
     infoColumn: {
         width: "100%",
-        minWidth: 180,
     },
     infoRow: {
         display: "flex",
@@ -35,13 +34,14 @@ const useStyles: any = createStyles((): any => ({
     },
     labelText: {
         flex: "none",
-        minWidth: 40,
         fontSize: 12,
+        lineHeight: "18px",
     },
     smallText: {
         flex: 1,
         minWidth: 0,
         fontSize: 12,
+        lineHeight: "18px",
         whiteSpace: "nowrap",
     },
 }));
