@@ -60,18 +60,35 @@ func (s *service) Select(where *orderRepository.SelectOrder, orderByField string
 			}
 		}
 		if where.Type != "" {
-			if err = s.checkEnumValue(where.Type, order_type.Map(), "订单类型"); err != nil {
-				return nil, 0, err
+			key, err := strconv.Atoi(where.Type)
+			if err != nil {
+				return nil, 0, errors.New("订单类型参数错误")
+			}
+			if _, ok := order_type.Map()[key]; !ok {
+				return nil, 0, errors.New("订单类型参数不合法")
 			}
 		}
 		if where.Status != "" {
-			if err = s.checkEnumValue(where.Status, order_status.Map(), "订单状态"); err != nil {
-				return nil, 0, err
+			key, err := strconv.Atoi(where.Status)
+			if err != nil {
+				return nil, 0, errors.New("订单状态参数错误")
+			}
+			if _, ok := order_status.Map()[key]; !ok {
+				return nil, 0, errors.New("订单状态参数不合法")
 			}
 		}
 		if where.PayStatus != "" {
-			if err = s.checkEnumValue(where.PayStatus, order_pay_status.Map(), "支付状态"); err != nil {
-				return nil, 0, err
+			key, err := strconv.Atoi(where.PayStatus)
+			if err != nil {
+				return nil, 0, errors.New("支付状态参数错误")
+			}
+			if _, ok := order_pay_status.Map()[key]; !ok {
+				return nil, 0, errors.New("支付状态参数不合法")
+			}
+		}
+		if where.PayType != "" {
+			if _, ok := pay_type.Map()[where.PayType]; !ok {
+				return nil, 0, errors.New("支付类型参数不合法")
 			}
 		}
 	}
@@ -117,13 +134,21 @@ func (s *service) SelectByUserId(userId int64, where *orderRepository.SelectOrde
 func (s *service) SelectLog(where *orderLogRepository.SelectOrderLog, orderByField string, orderByType string, page int, pageSize int) (list []*orderLogRepository.OrderLog, total int64, err error) {
 	if where != nil {
 		if where.OperatorType != "" {
-			if err = s.checkEnumValue(where.OperatorType, order_log_operator_type.Map(), "操作人类型"); err != nil {
-				return nil, 0, err
+			key, err := strconv.Atoi(where.OperatorType)
+			if err != nil {
+				return nil, 0, errors.New("操作人类型参数错误")
+			}
+			if _, ok := order_log_operator_type.Map()[key]; !ok {
+				return nil, 0, errors.New("操作人类型参数不合法")
 			}
 		}
 		if where.Type != "" {
-			if err = s.checkEnumValue(where.Type, order_log_type.Map(), "日志类型"); err != nil {
-				return nil, 0, err
+			key, err := strconv.Atoi(where.Type)
+			if err != nil {
+				return nil, 0, errors.New("日志类型参数错误")
+			}
+			if _, ok := order_log_type.Map()[key]; !ok {
+				return nil, 0, errors.New("日志类型参数不合法")
 			}
 		}
 	}
@@ -143,18 +168,6 @@ func (s *service) FindLogById(id int64) (*model.OrderLog, error) {
 		return nil, errors.New("订单不存在")
 	}
 	return info, nil
-}
-
-// checkEnumValue 判断枚举类型
-func (s *service) checkEnumValue(value string, data map[int]string, name string) error {
-	key, err := strconv.Atoi(value)
-	if err != nil {
-		return errors.New(name + "参数错误")
-	}
-	if _, ok := data[key]; !ok {
-		return errors.New(name + "参数不合法")
-	}
-	return nil
 }
 
 // Create 创建订单
