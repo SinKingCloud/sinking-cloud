@@ -985,7 +985,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
         <ProModal
             ref={modalRef}
             title={<Title>订单信息</Title>}
-            width={720}
+            width={600}
             modalProps={{
                 footer: null,
                 forceRender: true,
@@ -1032,8 +1032,6 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                 </div>
                 <Refund
                     ref={refundRef}
-                    orderEnums={orderEnums}
-                    typeColors={typeColors}
                     onSuccess={onRefundSuccess}
                 />
             </div>

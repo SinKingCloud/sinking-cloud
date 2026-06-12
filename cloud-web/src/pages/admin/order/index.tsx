@@ -455,7 +455,7 @@ export default (): React.ReactNode => {
                     canDeliver={canDeliver}
                     onSuccess={refresh}
                 />
-                <Refund ref={refundRef} orderEnums={orderEnums} typeColors={typeColors} onSuccess={refresh}/>
+                <Refund ref={refundRef} onSuccess={refresh}/>
                 <Clear ref={clearRef} onSuccess={refresh}/>
             </>}
         </Body>
