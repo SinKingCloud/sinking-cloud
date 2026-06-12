@@ -1,6 +1,5 @@
 import React, {useRef} from "react";
 import {App, Button, Dropdown, Result, Space, Tag, Typography} from "antd";
-import {AlipayOutlined, RedEnvelopeOutlined, WechatOutlined} from "@ant-design/icons";
 import {Body, ProTable, ProTableRef, Title} from "sinking-antd";
 import {createStyles} from "antd-style";
 import {buildValueEnum, dateRangeTransform, emptyTableData, getData} from "@/utils/page";
@@ -9,10 +8,11 @@ import useEnum from "@/utils/enum";
 import {AdminControlCode} from "@/utils/permission";
 import {formatMoney} from "@/utils/string";
 import {getOrderList} from "@/service/admin/pay";
-import Detail, {type DetailRef} from "./components/detail";
-import Operate, {type OperateRef} from "./components/operate";
+import Info, {type InfoRef} from "./components/info";
+import Refund, {type RefundRef} from "./components/refund";
 import Clear, {type ClearRef} from "./components/clear";
-import Log, {type LogRef} from "./components/log";
+import Deliver, {type DeliverRef} from "./components/deliver";
+import PayType from "./components/pay-type";
 
 const useStyles: any = createStyles((): any => ({
     infoColumn: {
@@ -58,22 +58,6 @@ const useStyles: any = createStyles((): any => ({
         display: "flex",
         alignItems: "center",
     },
-    payTypeText: {
-        fontSize: 12,
-        lineHeight: "18px",
-    },
-    walletIcon: {
-        color: "#faad14",
-        fontSize: 14,
-    },
-    alipayIcon: {
-        color: "#1677ff",
-        fontSize: 14,
-    },
-    wechatIcon: {
-        color: "#07c160",
-        fontSize: 14,
-    },
 }));
 
 const enumText = (data: any, value: any) => (
@@ -88,18 +72,17 @@ export default (): React.ReactNode => {
     const control = useControl();
     const [enumData, enumLoading] = useEnum(["pay.order", "pay.order_log", "pay.channel", "pay.pay"]) as any;
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
-    const detailRef = useRef<DetailRef>({} as DetailRef);
-    const deliverRef = useRef<OperateRef>({} as OperateRef);
-    const refoundRef = useRef<OperateRef>({} as OperateRef);
+    const infoRef = useRef<InfoRef>({} as InfoRef);
+    const deliverRef = useRef<DeliverRef>({} as DeliverRef);
+    const refundRef = useRef<RefundRef>({} as RefundRef);
     const clearRef = useRef<ClearRef>({} as ClearRef);
-    const logRef = useRef<LogRef>({} as LogRef);
 
     const hasListControl = control.hasControl(AdminControlCode.WEB_ORDER_LIST);
     const hasInfoControl = control.hasControl(AdminControlCode.WEB_ORDER_INFO);
     const hasDeliverControl = control.hasControl(AdminControlCode.WEB_ORDER_DELIVER);
-    const hasRefoundControl = control.hasControl(AdminControlCode.WEB_ORDER_REFOUND);
+    const hasRefundControl = control.hasControl(AdminControlCode.WEB_ORDER_REFOUND);
     const hasClearControl = control.hasControl(AdminControlCode.WEB_ORDER_CLEAR);
-    const hasOperateControl = hasInfoControl || hasDeliverControl || hasRefoundControl;
+    const hasActionControl = hasInfoControl || hasDeliverControl || hasRefundControl;
 
     const orderEnums = enumData?.["pay.order"] || {};
     const logEnums = enumData?.["pay.order_log"] || {};
@@ -110,8 +93,8 @@ export default (): React.ReactNode => {
     const payStatus = orderEnums?.pay_status || {};
     const channelNames = channelEnums?.name || {};
     const payTypes = payEnums?.type || {};
-    const typeColors: Record<string, string> = {"0": "blue", "1": "purple"};
-    const statusColors: Record<string, string> = {"0": "orange", "1": "blue", "2": "green", "3": "red"};
+    const typeColors: Record<string, string> = {"0": "purple", "1": "cyan"};
+    const statusColors: Record<string, string> = {"0": "default", "1": "orange", "2": "green", "3": "red"};
     const payStatusColors: Record<string, string> = {"0": "orange", "1": "green"};
     const typeColor = (value: any) => typeColors?.[String(value)] || "default";
     const statusColor = (value: any) => statusColors?.[String(value)] || "default";
@@ -120,7 +103,7 @@ export default (): React.ReactNode => {
     const statusValueEnum = buildValueEnum(orderStatus, statusColors);
     const payStatusValueEnum = buildValueEnum(payStatus, payStatusColors);
     const canDeliver = (record: any) => [0, 1].includes(numberValue(record?.status));
-    const canRefound = (record: any) => (
+    const canRefund = (record: any) => (
         numberValue(record?.type) !== 0
         && numberValue(record?.pay_status) === 1
         && numberValue(record?.pay_amount) > numberValue(record?.refund_amount)
@@ -139,7 +122,27 @@ export default (): React.ReactNode => {
         clearRef.current?.open();
     };
 
-    const renderRows = (items: { label: string; value: any; copy?: any; className?: string; style?: React.CSSProperties }[]) => (
+    const openDeliver = (record: any) => deliverRef.current?.open(record);
+
+    const openRefund = (record: any) => {
+        if (!hasRefundControl) {
+            message?.warning("暂无订单退款权限");
+            return;
+        }
+        if (!canRefund(record)) {
+            message?.warning("当前订单不可退款");
+            return;
+        }
+        refundRef.current?.open(record);
+    };
+
+    const renderRows = (items: {
+        label: string;
+        value: any;
+        copy?: any;
+        className?: string;
+        style?: React.CSSProperties
+    }[]) => (
         <Space orientation="vertical" size={2} className={styles.infoColumn}>
             {items.map((item) => (
                 <div className={styles.infoRow} key={item.label}>
@@ -159,37 +162,6 @@ export default (): React.ReactNode => {
         </Space>
     );
 
-    const renderPayType = (value: any) => {
-        const text = enumText(payTypes, value);
-        const key = String(value || "").toLowerCase();
-        const label = String(text || "").toLowerCase();
-        if (key === "alipay" || key === "1" || label.includes("支付宝")) {
-            return (
-                <Space size={4}>
-                    <AlipayOutlined className={styles.alipayIcon}/>
-                    <Typography.Text className={styles.payTypeText} style={{color: "#1677ff"}}>{text}</Typography.Text>
-                </Space>
-            );
-        }
-        if (key === "wxpay" || key === "wechat" || key === "2" || label.includes("微信")) {
-            return (
-                <Space size={4}>
-                    <WechatOutlined className={styles.wechatIcon}/>
-                    <Typography.Text className={styles.payTypeText} style={{color: "#07c160"}}>{text}</Typography.Text>
-                </Space>
-            );
-        }
-        if (key === "balance" || key === "0" || label.includes("余额")) {
-            return (
-                <Space size={4}>
-                    <RedEnvelopeOutlined className={styles.walletIcon}/>
-                    <Typography.Text className={styles.payTypeText} style={{color: "#faad14"}}>{text}</Typography.Text>
-                </Space>
-            );
-        }
-        return <Typography.Text className={styles.payTypeText}>{text}</Typography.Text>;
-    };
-
     const renderOrderCell = (record: any) => renderRows([
         {label: "订单名称:", value: record?.name, className: styles.strongText},
         {label: "订单类型:", value: <Tag color={typeColor(record?.type)}>{enumText(orderType, record?.type)}</Tag>},
@@ -202,20 +174,41 @@ export default (): React.ReactNode => {
     ]);
 
     const renderPayCell = (record: any) => renderRows([
-        {label: "支付方式:", value: renderPayType(record?.pay_type)},
+        {label: "支付方式:", value: <PayType data={payTypes} value={record?.pay_type}/>},
         {label: "支付通道:", value: hasValue(record?.channel_id) ? enumText(channelNames, record?.channel_id) : "-"},
         {label: "通道ID:", value: record?.channel_id, copy: record?.channel_id},
     ]);
 
     const renderStatusCell = (record: any) => renderRows([
-        {label: "订单状态:", value: <Tag color={statusColor(record?.status)}>{enumText(orderStatus, record?.status)}</Tag>},
-        {label: "支付状态:", value: <Tag color={payStatusColor(record?.pay_status)}>{enumText(payStatus, record?.pay_status)}</Tag>},
+        {
+            label: "订单状态:",
+            value: <Tag color={statusColor(record?.status)}>{enumText(orderStatus, record?.status)}</Tag>
+        },
+        {
+            label: "支付状态:",
+            value: <Tag color={payStatusColor(record?.pay_status)}>{enumText(payStatus, record?.pay_status)}</Tag>
+        },
     ]);
 
     const renderMoneyCell = (record: any) => renderRows([
-        {label: "订单金额:", value: formatMoney(record?.amount), className: styles.moneyText, style: {color: "#1677ff"}},
-        {label: "实付金额:", value: formatMoney(record?.pay_amount), className: styles.moneyText, style: {color: "#52c41a"}},
-        {label: "退款金额:", value: formatMoney(record?.refund_amount), className: styles.moneyText, style: {color: "#ff4d4f"}},
+        {
+            label: "订单金额:",
+            value: formatMoney(record?.amount),
+            className: styles.moneyText,
+            style: {color: "#1677ff"}
+        },
+        {
+            label: "实付金额:",
+            value: formatMoney(record?.pay_amount),
+            className: styles.moneyText,
+            style: {color: "#52c41a"}
+        },
+        {
+            label: "退款金额:",
+            value: formatMoney(record?.refund_amount),
+            className: styles.moneyText,
+            style: {color: "#ff4d4f"}
+        },
     ]);
 
     const renderTimeCell = (record: any) => renderRows([
@@ -366,7 +359,7 @@ export default (): React.ReactNode => {
             hideInSearch: true,
             render: (_: any, record: any) => renderTimeCell(record),
         },
-        ...(hasOperateControl ? [{
+        ...(hasActionControl ? [{
             title: "操作",
             valueType: "option",
             key: "option",
@@ -378,24 +371,24 @@ export default (): React.ReactNode => {
                     hasInfoControl ? {
                         key: "info",
                         label: "详情",
-                        onClick: () => detailRef.current?.open(record?.id),
+                        onClick: () => infoRef.current?.open(record, "info"),
                     } : null,
                     hasInfoControl ? {
                         key: "log",
                         label: "日志",
-                        onClick: () => logRef.current?.open(record),
+                        onClick: () => infoRef.current?.open(record, "log"),
                     } : null,
                     hasDeliverControl ? {
                         key: "deliver",
                         label: "发货",
                         disabled: !canDeliver(record),
-                        onClick: () => deliverRef.current?.open(record),
+                        onClick: () => openDeliver(record),
                     } : null,
-                    hasRefoundControl ? {
-                        key: "refound",
+                    hasRefundControl ? {
+                        key: "refund",
                         label: "退款",
-                        disabled: !canRefound(record),
-                        onClick: () => refoundRef.current?.open(record),
+                        disabled: !canRefund(record),
+                        onClick: () => openRefund(record),
                     } : null,
                 ].filter(Boolean) as any[];
                 if (items.length <= 0) {
@@ -440,17 +433,30 @@ export default (): React.ReactNode => {
                     paginationAffix={true}
                     selectionAffix={true}
                 />
-                <Detail
-                    ref={detailRef}
+                <Info
+                    ref={infoRef}
                     orderEnums={orderEnums}
+                    logEnums={logEnums}
+                    payTypes={payTypes}
+                    channelNames={channelNames}
+                    hasDeliverControl={hasDeliverControl}
+                    canDeliver={canDeliver}
+                    onDeliver={openDeliver}
+                    hasRefundControl={hasRefundControl}
+                    canRefund={canRefund}
+                    onRefundSuccess={refresh}
                     typeColors={typeColors}
                     statusColors={statusColors}
                     payStatusColors={payStatusColors}
                 />
-                <Operate ref={deliverRef} type="deliver" orderEnums={orderEnums} typeColors={typeColors} onSuccess={refresh}/>
-                <Operate ref={refoundRef} type="refound" orderEnums={orderEnums} typeColors={typeColors} onSuccess={refresh}/>
+                <Deliver
+                    ref={deliverRef}
+                    hasControl={hasDeliverControl}
+                    canDeliver={canDeliver}
+                    onSuccess={refresh}
+                />
+                <Refund ref={refundRef} orderEnums={orderEnums} typeColors={typeColors} onSuccess={refresh}/>
                 <Clear ref={clearRef} onSuccess={refresh}/>
-                <Log ref={logRef} logEnums={logEnums}/>
             </>}
         </Body>
     );

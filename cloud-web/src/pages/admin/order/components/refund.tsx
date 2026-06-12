@@ -2,15 +2,14 @@ import React, {forwardRef, useImperativeHandle, useRef, useState} from "react";
 import {App, Form, InputNumber, Tag, Typography} from "antd";
 import {ProModal, ProModalRef, Title} from "sinking-antd";
 import {createStyles} from "antd-style";
-import {deliverOrder, refoundOrder} from "@/service/admin/pay";
+import {refoundOrder} from "@/service/admin/pay";
 import {formatMoney} from "@/utils/string";
 
-export type OperateRef = {
+export type RefundRef = {
     open: (record: any) => void;
 };
 
-type OperateProps = {
-    type: "deliver" | "refound";
+type RefundProps = {
     orderEnums: any;
     typeColors?: Record<string, string>;
     onSuccess?: () => void;
@@ -110,15 +109,13 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
 const enumText = (data: any, value: any) => data?.[String(value)] || data?.[value] || "-";
 const numberValue = (value: any) => Number(value || 0);
 
-const Operate = forwardRef<OperateRef, OperateProps>(({type, orderEnums, typeColors, onSuccess}, ref) => {
+const Refund = forwardRef<RefundRef, RefundProps>(({orderEnums, typeColors, onSuccess}, ref) => {
     const {message} = App.useApp();
     const {styles} = useStyles();
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const [form] = Form.useForm();
     const [record, setRecord] = useState<any>();
     const [submitting, setSubmitting] = useState(false);
-    const isRefound = type === "refound";
-    const title = isRefound ? "订单退款" : "订单发货";
     const refundableMoney = Math.max(0, numberValue(record?.pay_amount) - numberValue(record?.refund_amount));
 
     useImperativeHandle(ref, () => ({
@@ -127,7 +124,7 @@ const Operate = forwardRef<OperateRef, OperateProps>(({type, orderEnums, typeCol
             setRecord(nextRecord);
             form.resetFields();
             form.setFieldsValue({
-                money: isRefound ? Math.max(0, numberValue(nextRecord?.pay_amount) - numberValue(nextRecord?.refund_amount)) : undefined,
+                money: Math.max(0, numberValue(nextRecord?.pay_amount) - numberValue(nextRecord?.refund_amount)),
             });
             modalRef.current?.show();
         },
@@ -140,15 +137,15 @@ const Operate = forwardRef<OperateRef, OperateProps>(({type, orderEnums, typeCol
             return;
         }
         setSubmitting(true);
-        await (isRefound ? refoundOrder : deliverOrder)({
-            body: isRefound ? {id, money: Number(values?.money || 0)} : {id},
+        await refoundOrder({
+            body: {id, money: Number(values?.money || 0)},
             onSuccess: (res: any) => {
                 modalRef.current?.hide();
                 onSuccess?.();
-                message?.success(res?.message || "操作成功");
+                message?.success(res?.message || "退款成功");
             },
             onFail: (res: any) => {
-                message?.error(res?.message || "操作失败");
+                message?.error(res?.message || "退款失败");
             },
         }).finally(() => {
             setSubmitting(false);
@@ -158,12 +155,12 @@ const Operate = forwardRef<OperateRef, OperateProps>(({type, orderEnums, typeCol
     return (
         <ProModal
             ref={modalRef}
-            title={<Title>{title}</Title>}
+            title={<Title>订单退款</Title>}
             onOk={form.submit}
             width={460}
             modalProps={{
                 confirmLoading: submitting,
-                okText: isRefound ? "确认退款" : "确认发货",
+                okText: "确认退款",
                 cancelText: "取消",
                 forceRender: true,
                 mask: {
@@ -202,33 +199,28 @@ const Operate = forwardRef<OperateRef, OperateProps>(({type, orderEnums, typeCol
                     </div>
                 </div>
                 <div className={styles.notice}>
-                    {isRefound
-                        ? "退款成功后会记录退款金额，并返还到用户可用余额。输入 0 时按当前可退款金额处理。"
-                        : "发货会触发订单业务回调，业务处理成功后订单状态会更新为已到账。"}
+                    退款金额大于 0 时会返还到用户可用余额；输入 0 时仅标记订单为已退款。
                 </div>
-                {isRefound && (
-                    <Form className={styles.form} form={form} layout="vertical" onFinish={submit}>
-                        <Form.Item
-                            name="money"
-                            label="退款金额"
-                            rules={[{required: true, message: "请输入退款金额"}]}>
-                            <InputNumber
-                                min={0}
-                                max={refundableMoney || undefined}
-                                precision={2}
-                                step={1}
-                                style={{width: "100%"}}
-                                placeholder="请输入退款金额"
-                            />
-                        </Form.Item>
-                    </Form>
-                )}
-                {!isRefound && <Form form={form} onFinish={submit}/>}
+                <Form className={styles.form} form={form} layout="vertical" onFinish={submit}>
+                    <Form.Item
+                        name="money"
+                        label="退款金额"
+                        rules={[{required: true, message: "请输入退款金额"}]}>
+                        <InputNumber
+                            min={0}
+                            max={refundableMoney || undefined}
+                            precision={2}
+                            step={1}
+                            style={{width: "100%"}}
+                            placeholder="请输入退款金额"
+                        />
+                    </Form.Item>
+                </Form>
             </div>
         </ProModal>
     );
 });
 
-Operate.displayName = "Operate";
+Refund.displayName = "Refund";
 
-export default Operate;
+export default Refund;

@@ -317,19 +317,13 @@ func (s *service) Refound(id int64, money float64, operatorId int64) error {
 	if info.PayStatus != order_pay_status.Payed {
 		return errors.New("该订单未支付,不能退款")
 	}
-	if info.PayAmount <= 0 {
+	refundMoney := money
+	if info.PayAmount <= 0 && refundMoney > 0 {
 		return errors.New("该订单实际支付金额为0,无需退款")
 	}
 	refundableMoney := info.PayAmount - info.RefundAmount
-	if refundableMoney <= 0 {
+	if refundableMoney <= 0 && refundMoney > 0 {
 		return errors.New("该订单已全部退款,无需重复退款")
-	}
-	refundMoney := money
-	if refundMoney == 0 || refundMoney > info.Amount {
-		refundMoney = refundableMoney
-	}
-	if refundMoney <= 0 {
-		return errors.New("退款金额必须大于0")
 	}
 	if refundMoney > refundableMoney {
 		return errors.New("退款金额不能大于订单可退款金额")
@@ -337,7 +331,7 @@ func (s *service) Refound(id int64, money float64, operatorId int64) error {
 
 	newRefundAmount := info.RefundAmount + refundMoney
 	newStatus := info.Status
-	if newRefundAmount >= info.PayAmount {
+	if refundMoney == 0 || newRefundAmount >= info.PayAmount {
 		newStatus = order_status.Refunded
 	}
 	update := &orderRepository.UpdateOrder{
@@ -385,6 +379,9 @@ func (s *service) Refound(id int64, money float64, operatorId int64) error {
 		}, tx); err != nil {
 			return errors.Join(errors.New("创建订单日志失败"), err)
 		}
+		if refundMoney == 0 {
+			return nil
+		}
 		if err = s.balanceRepository.Money(info.UserId, refundMoney, tx); err != nil {
 			return errors.Join(errors.New("更新余额失败"), err)
 		}
@@ -406,7 +403,9 @@ func (s *service) Refound(id int64, money float64, operatorId int64) error {
 	if err != nil {
 		return err
 	}
-	s.cache.Delete(constant.CacheNameWithBalance + strconv.FormatInt(info.UserId, 10))
+	if refundMoney > 0 {
+		s.cache.Delete(constant.CacheNameWithBalance + strconv.FormatInt(info.UserId, 10))
+	}
 	return nil
 }
 
