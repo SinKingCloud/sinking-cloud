@@ -93,7 +93,7 @@ type BalanceLogProps = {
 // ==================== 常量配置 ====================
 
 const ALL_VALUE = "all";
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 const DEFAULT_OPERATION_TYPE: OperationType = "add";
 
 const ACCOUNT_OPTIONS: SelectOption<OperateAccount>[] = [
@@ -396,11 +396,7 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
         logPanel: {
             display: "flex",
             flexDirection: "column",
-            height: isCompactMode ? "min(520px, calc(100dvh - 210px))" : "min(560px, calc(100dvh - 226px))",
             minHeight: 0,
-            "&.empty": {
-                height: "auto",
-            },
         },
         customRangeTrigger: {
             position: "relative",
@@ -486,11 +482,7 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
         logListWrap: {
             display: "flex",
             flexDirection: "column",
-            flex: "1 1 214px",
             minHeight: 0,
-            overflowY: "auto",
-            overflowX: "hidden",
-            overscrollBehavior: "contain",
             paddingRight: 1,
         },
         logList: {
@@ -941,8 +933,6 @@ const Balance = forwardRef<BalanceRef, BalanceProps>(({control, onSuccess}, ref)
                 },
                 styles: {
                     body: {
-                        maxHeight: isCompactMode ? "calc(100dvh - 150px)" : "calc(100dvh - 166px)",
-                        overflow: "hidden",
                         padding: isCompactMode ? "4px 8px 10px" : "2px 4px 8px",
                     },
                 },

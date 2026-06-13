@@ -39,9 +39,6 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
         display: flex;
         flex-direction: column;
         gap: 10px;
-        min-height: 360px;
-        max-height: calc(100dvh - 160px);
-        overflow: hidden;
     `,
     segmentWrap: css`
         flex: none;
@@ -50,9 +47,7 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
         padding: 2px 0 4px;
     `,
     panelContent: css`
-        flex: 1;
         min-height: 0;
-        overflow: auto;
         display: flex;
         flex-direction: column;
         gap: 10px;
@@ -246,7 +241,6 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
         }
     `,
     logPanel: css`
-        flex: 1;
         display: flex;
         flex-direction: column;
         gap: 8px;
@@ -270,7 +264,6 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
         }
     `,
     logContent: css`
-        flex: 1;
         display: grid;
         grid-template-columns: minmax(0, 1fr) 260px;
         gap: 8px;
@@ -282,7 +275,6 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
     `,
     timelineShell: css`
         min-height: 260px;
-        overflow: auto;
         border: 1px solid ${token.colorBorderSecondary};
         border-radius: ${token.borderRadius}px;
         background: ${token.colorBgContainer};
@@ -398,7 +390,6 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
     `,
     logDetail: css`
         min-height: 260px;
-        overflow: auto;
         border: 1px solid ${token.colorBorderSecondary};
         border-radius: ${token.borderRadius}px;
         background: ${token.colorBgContainer};
@@ -466,9 +457,7 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
         }
 
         .jsonText {
-            max-height: 170px;
             margin-bottom: 0 !important;
-            overflow: auto;
             color: ${token.colorTextSecondary};
             font-size: 12px;
             line-height: 18px;
@@ -994,8 +983,6 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                 },
                 styles: {
                     body: {
-                        maxHeight: "calc(100dvh - 150px)",
-                        overflow: "hidden",
                         padding: "2px 6px 10px",
                     },
                 },
