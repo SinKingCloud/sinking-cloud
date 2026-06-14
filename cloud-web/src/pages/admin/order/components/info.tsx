@@ -1,5 +1,5 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from "react";
-import {App, Button, Empty, Pagination, Segmented, Space, Spin, Tag, Typography} from "antd";
+import {App, Button, Empty, Pagination, Segmented, Space, Spin, Tag, Tooltip, Typography} from "antd";
 import {RollbackOutlined, TruckOutlined} from "@ant-design/icons";
 import {ProModal, ProModalRef, Title, useTheme} from "sinking-antd";
 import {createStyles} from "antd-style";
@@ -44,554 +44,554 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
     const axisTop = isCompactMode ? 13 : 15;
 
     return {
-    modalBody: css`
-        display: flex;
-        flex-direction: column;
-        gap: ${isCompactMode ? 8 : 10}px;
-    `,
-    segmentWrap: css`
-        flex: none;
-        display: flex;
-        justify-content: center;
-        padding: ${isCompactMode ? "1px 0 3px" : "2px 0 4px"};
-    `,
-    panelContent: css`
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        gap: ${isCompactMode ? 8 : 10}px;
-        padding: 0 2px 2px;
-    `,
-    loading: css`
-        min-height: 300px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    `,
-    summary: css`
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 2px 2px 4px;
-
-        .title {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .titleLine {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 0;
-        }
-
-        .mark {
-            flex: none;
-            width: 3px;
-            height: 16px;
-            border-radius: 99px;
-            background: ${token.colorPrimary};
-        }
-
-        .name {
-            min-width: 0;
-            overflow: hidden;
-            color: ${token.colorText};
-            font-size: 15px;
-            font-weight: 600;
-            line-height: 22px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .id {
-            display: block;
-            margin-top: 2px;
-            padding-left: 11px;
-            color: ${token.colorTextTertiary};
-            font-size: 12px;
-            line-height: 18px;
-        }
-
-        .actions {
-            flex: none;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 6px;
-        }
-
-        .ant-tag {
-            margin-inline-end: 0;
-        }
-
-        @media (max-width: 575px) {
-            align-items: flex-start;
-            flex-direction: column;
-
-            .actions {
-                justify-content: flex-start;
-            }
-        }
-    `,
-    metrics: css`
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 8px;
-
-        @media (max-width: 575px) {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-    `,
-    metric: css`
-        min-width: 0;
-        padding: 10px;
-        border: 1px solid ${token.colorBorderSecondary};
-        border-radius: ${token.borderRadius}px;
-        background: ${token.colorBgContainer};
-
-        .label {
-            color: ${token.colorTextTertiary};
-            font-size: 12px;
-            line-height: 18px;
-        }
-
-        .value {
-            margin-top: 2px;
-            overflow: hidden;
-            font-size: 15px;
-            font-variant-numeric: tabular-nums;
-            line-height: 22px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-    `,
-    sectionGrid: css`
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
-
-        @media (max-width: 575px) {
-            grid-template-columns: minmax(0, 1fr);
-        }
-    `,
-    section: css`
-        min-width: 0;
-        padding: 10px 12px;
-        border: 1px solid ${token.colorBorderSecondary};
-        border-radius: ${token.borderRadius}px;
-        background: ${token.colorBgContainer};
-
-        .sectionTitle {
-            margin-bottom: 8px;
-            color: ${token.colorText};
-            font-size: 13px;
-            font-weight: 500;
-            line-height: 20px;
-        }
-
-        .infoList {
+        modalBody: css`
             display: flex;
             flex-direction: column;
-            gap: 6px;
-        }
-
-        .infoItem {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 0;
-            min-height: 20px;
-        }
-
-        .label {
+            gap: ${isCompactMode ? 8 : 10}px;
+        `,
+        segmentWrap: css`
             flex: none;
-            color: ${token.colorTextTertiary};
-            font-size: 12px;
-            line-height: 20px;
-        }
-
-        .value {
-            display: flex;
-            align-items: center;
-            flex: 1;
-            min-width: 0;
-            color: ${token.colorText};
-            font-size: 12px;
-            line-height: 20px;
-            word-break: break-all;
-        }
-
-        .value .ant-typography {
-            font-size: 12px;
-            line-height: 20px;
-        }
-
-        .value .ant-tag {
-            margin-inline-end: 0;
-            line-height: 18px;
-        }
-    `,
-    timeSection: css`
-        grid-column: 1 / -1;
-
-        .infoList {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 6px 16px;
-        }
-
-        @media (max-width: 430px) {
-            .infoList {
-                grid-template-columns: minmax(0, 1fr);
-            }
-        }
-    `,
-    logPanel: css`
-        display: flex;
-        flex-direction: column;
-        gap: ${isCompactMode ? 8 : 10}px;
-        min-height: 0;
-    `,
-    timelineShell: css`
-        min-height: ${isCompactMode ? 220 : 240}px;
-    `,
-    timeline: css`
-        display: flex;
-        flex-direction: column;
-        padding: 2px 0 0;
-    `,
-    timelineItem: css`
-        position: relative;
-        display: grid;
-        grid-template-columns: ${isCompactMode ? 20 : 24}px minmax(0, 1fr);
-        gap: ${isCompactMode ? 8 : 10}px;
-        padding-bottom: ${isCompactMode ? 8 : 10}px;
-
-        &:last-child {
-            padding-bottom: 0;
-
-            .line {
-                display: none;
-            }
-        }
-
-        .axis {
-            position: relative;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            min-height: 100%;
-            padding-top: ${axisTop}px;
-        }
-
-        .dot {
-            position: relative;
-            z-index: 1;
-            width: ${dotSize}px;
-            height: ${dotSize}px;
-            border: 2px solid ${token.colorPrimary};
-            border-radius: 50%;
-            background: ${token.colorBgContainer};
-        }
-
-        .line {
-            position: absolute;
-            top: 0;
-            bottom: -${isCompactMode ? 10 : 12}px;
-            left: 50%;
-            width: 1px;
-            transform: translateX(-50%);
-            background: ${token.colorBorderSecondary};
-        }
-
-        .body {
-            position: relative;
-            min-width: 0;
-            padding: ${isCompactMode ? "8px 10px" : "10px 12px"};
-            border-radius: ${token.borderRadius}px;
-            background: ${token.colorFillQuaternary};
-            cursor: pointer;
-            transition: background ${token.motionDurationSlow};
-        }
-
-        .body:before {
-            content: "";
-            position: absolute;
-            top: ${axisTop - 1}px;
-            left: -6px;
-            width: 0;
-            height: 0;
-            border-top: 6px solid transparent;
-            border-bottom: 6px solid transparent;
-            border-right: 6px solid ${token.colorFillQuaternary};
-            transition: border-right-color ${token.motionDurationSlow};
-        }
-
-        .body:hover {
-            background: ${token.colorFillSecondary};
-        }
-
-        .body:hover:before {
-            border-right-color: ${token.colorFillSecondary};
-        }
-
-        .head {
+            padding: ${isCompactMode ? "1px 0 3px" : "2px 0 4px"};
+        `,
+        panelContent: css`
+            min-height: 0;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            min-width: 0;
-            margin-bottom: ${isCompactMode ? 5 : 6}px;
-        }
-
-        .meta {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
-            min-width: 0;
-        }
-
-        .ant-tag {
-            margin-inline-end: 0;
-        }
-
-        .time {
-            color: ${token.colorTextTertiary};
-            font-size: 12px;
-            line-height: 18px;
-        }
-
-        .time {
-            flex: none;
-            font-variant-numeric: tabular-nums;
-            white-space: nowrap;
-        }
-
-        .text {
-            margin-top: ${isCompactMode ? 5 : 6}px;
-            color: ${token.colorTextSecondary};
-            font-size: 12px;
-            line-height: 18px;
-            word-break: break-all;
-        }
-
-        .extra {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            margin-top: ${isCompactMode ? 5 : 6}px;
-            color: ${token.colorTextTertiary};
-            font-size: 12px;
-            line-height: 18px;
-        }
-
-        .operator {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex: 1;
-            min-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .operator .ant-typography {
-            color: ${token.colorTextTertiary};
-            font-size: 12px;
-            line-height: 18px;
-        }
-
-        .detail {
-            flex: none;
-            padding: 0;
-            height: auto;
-            font-size: 12px;
-        }
-
-        @media (max-width: 575px) {
-            grid-template-columns: ${isCompactMode ? 16 : 18}px minmax(0, 1fr);
-            gap: 8px;
-
-            .head {
-                align-items: flex-start;
-                flex-direction: column;
-                gap: 4px;
-            }
-
-            .extra {
-                align-items: flex-end;
-            }
-
-            .time {
-                white-space: normal;
-            }
-        }
-    `,
-    empty: css`
-        min-height: 240px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    `,
-    logDetail: css`
-        border: 1px solid ${token.colorBorderSecondary};
-        border-radius: ${token.borderRadius}px;
-        background: ${token.colorBgContainer};
-
-        .placeholder {
-            min-height: 240px;
+            flex-direction: column;
+            gap: ${isCompactMode ? 8 : 10}px;
+            padding: 0 2px 2px;
+        `,
+        loading: css`
+            min-height: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: ${token.colorTextTertiary};
-            font-size: 12px;
-        }
-
-        .head {
+        `,
+        summary: css`
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
             gap: 12px;
-            padding: 10px 12px;
-            border-bottom: 1px solid ${token.colorBorderSecondary};
-            background: ${token.colorFillQuaternary};
-        }
+            padding: 2px 2px 4px;
 
-        .headMain {
-            min-width: 0;
-        }
+            .title {
+                flex: 1;
+                min-width: 0;
+            }
 
-        .headMeta {
-            flex: none;
-            color: ${token.colorTextTertiary};
-            font-size: 12px;
-            line-height: 18px;
-        }
+            .titleLine {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                min-width: 0;
+            }
 
-        .content {
-            margin-top: 6px;
-            color: ${token.colorText};
-            font-size: 13px;
-            font-weight: 500;
-            line-height: 20px;
-            word-break: break-all;
-        }
+            .mark {
+                flex: none;
+                width: 3px;
+                height: 16px;
+                border-radius: 99px;
+                background: ${token.colorPrimary};
+            }
 
-        .info {
+            .name {
+                min-width: 0;
+                overflow: hidden;
+                color: ${token.colorText};
+                font-size: 15px;
+                font-weight: 600;
+                line-height: 22px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .id {
+                display: block;
+                margin-top: 2px;
+                padding-left: 11px;
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+                line-height: 18px;
+            }
+
+            .actions {
+                flex: none;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 6px;
+            }
+
+            .ant-tag {
+                margin-inline-end: 0;
+            }
+
+            @media (max-width: 575px) {
+                align-items: flex-start;
+                flex-direction: column;
+
+                .actions {
+                    justify-content: flex-start;
+                }
+            }
+        `,
+        metrics: css`
             display: grid;
-            grid-template-columns: 1.1fr 1fr 1.2fr;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 8px;
-            padding: 10px 12px;
-            border-bottom: 1px solid ${token.colorBorderSecondary};
-        }
 
-        .infoRow {
+            @media (max-width: 575px) {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        `,
+        metric: css`
             min-width: 0;
-            font-size: 12px;
-            line-height: 20px;
-        }
+            padding: 10px;
+            border: 1px solid ${token.colorBorderSecondary};
+            border-radius: ${token.borderRadius}px;
+            background: ${token.colorBgContainer};
 
-        .label {
-            display: block;
-            margin-bottom: 2px;
-            color: ${token.colorTextTertiary};
-        }
+            .label {
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+                line-height: 18px;
+            }
 
-        .value {
-            display: block;
-            min-width: 0;
-            color: ${token.colorText};
-            word-break: break-all;
-        }
-
-        .value .ant-typography {
-            font-size: 12px;
-            line-height: 20px;
-        }
-
-        .changeHeader,
-        .changeRow {
+            .value {
+                margin-top: 2px;
+                overflow: hidden;
+                font-size: 15px;
+                font-variant-numeric: tabular-nums;
+                line-height: 22px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        `,
+        sectionGrid: css`
             display: grid;
-            grid-template-columns: 120px repeat(2, minmax(0, 1fr));
-        }
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
 
-        .changeHeader {
-            border-bottom: 1px solid ${token.colorBorderSecondary};
-            background: ${token.colorFillQuaternary};
-            color: ${token.colorTextSecondary};
-            font-size: 12px;
-            font-weight: 500;
-            line-height: 18px;
-        }
-
-        .changeHeader > div,
-        .changeCell {
+            @media (max-width: 575px) {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        `,
+        section: css`
             min-width: 0;
-            padding: 8px 10px;
-        }
+            padding: 10px 12px;
+            border: 1px solid ${token.colorBorderSecondary};
+            border-radius: ${token.borderRadius}px;
+            background: ${token.colorBgContainer};
 
-        .changeRow {
-            border-bottom: 1px solid ${token.colorBorderSecondary};
-        }
+            .sectionTitle {
+                margin-bottom: 8px;
+                color: ${token.colorText};
+                font-size: 13px;
+                font-weight: 500;
+                line-height: 20px;
+            }
 
-        .changeRow:last-child {
-            border-bottom: none;
-        }
-
-        .changeRow.changed {
-            background: ${token.colorWarningBg};
-        }
-
-        .changeKey {
-            color: ${token.colorTextTertiary};
-            font-size: 12px;
-            line-height: 18px;
-            word-break: break-all;
-        }
-
-        .changeValue {
-            color: ${token.colorTextSecondary};
-            font-size: 12px;
-            line-height: 18px;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-
-        .changed .changeValue.after {
-            color: ${token.colorError};
-            font-weight: 500;
-        }
-
-        @media (max-width: 700px) {
-            .head {
+            .infoList {
+                display: flex;
                 flex-direction: column;
                 gap: 6px;
             }
 
+            .infoItem {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                min-width: 0;
+                min-height: 20px;
+            }
+
+            .label {
+                flex: none;
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+                line-height: 20px;
+            }
+
+            .value {
+                display: flex;
+                align-items: center;
+                flex: 1;
+                min-width: 0;
+                color: ${token.colorText};
+                font-size: 12px;
+                line-height: 20px;
+                word-break: break-all;
+            }
+
+            .value .ant-typography {
+                font-size: 12px;
+                line-height: 20px;
+            }
+
+            .value .ant-tag {
+                margin-inline-end: 0;
+                line-height: 18px;
+            }
+        `,
+        timeSection: css`
+            grid-column: 1 / -1;
+
+            .infoList {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 6px 16px;
+            }
+
+            @media (max-width: 430px) {
+                .infoList {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+            }
+        `,
+        logPanel: css`
+            display: flex;
+            flex-direction: column;
+            gap: ${isCompactMode ? 8 : 10}px;
+            min-height: 0;
+        `,
+        timelineShell: css`
+            min-height: ${isCompactMode ? 220 : 240}px;
+        `,
+        timeline: css`
+            display: flex;
+            flex-direction: column;
+            padding: 2px 0 0;
+        `,
+        timelineItem: css`
+            position: relative;
+            display: grid;
+            grid-template-columns: ${isCompactMode ? 20 : 24}px minmax(0, 1fr);
+            gap: ${isCompactMode ? 8 : 10}px;
+            padding-bottom: ${isCompactMode ? 8 : 10}px;
+
+            &:last-child {
+                padding-bottom: 0;
+
+                .line {
+                    display: none;
+                }
+            }
+
+            .axis {
+                position: relative;
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                min-height: 100%;
+                padding-top: ${axisTop}px;
+            }
+
+            .dot {
+                position: relative;
+                z-index: 1;
+                width: ${dotSize}px;
+                height: ${dotSize}px;
+                border: 2px solid ${token.colorPrimary};
+                border-radius: 50%;
+                background: ${token.colorBgContainer};
+            }
+
+            .line {
+                position: absolute;
+                top: 0;
+                bottom: -${isCompactMode ? 10 : 12}px;
+                left: 50%;
+                width: 1px;
+                transform: translateX(-50%);
+                background: ${token.colorBorderSecondary};
+            }
+
+            .body {
+                position: relative;
+                min-width: 0;
+                padding: ${isCompactMode ? "8px 10px" : "10px 12px"};
+                border-radius: ${token.borderRadius}px;
+                background: ${token.colorFillQuaternary};
+                cursor: pointer;
+                transition: background ${token.motionDurationSlow};
+            }
+
+            .body:before {
+                content: "";
+                position: absolute;
+                top: ${axisTop - 1}px;
+                left: -6px;
+                width: 0;
+                height: 0;
+                border-top: 6px solid transparent;
+                border-bottom: 6px solid transparent;
+                border-right: 6px solid ${token.colorFillQuaternary};
+                transition: border-right-color ${token.motionDurationSlow};
+            }
+
+            .body:hover {
+                background: ${token.colorFillSecondary};
+            }
+
+            .body:hover:before {
+                border-right-color: ${token.colorFillSecondary};
+            }
+
+            .head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                min-width: 0;
+                margin-bottom: ${isCompactMode ? 5 : 6}px;
+            }
+
+            .meta {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 6px;
+                min-width: 0;
+            }
+
+            .ant-tag {
+                margin-inline-end: 0;
+            }
+
+            .time {
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+                line-height: 18px;
+            }
+
+            .time {
+                flex: none;
+                font-variant-numeric: tabular-nums;
+                white-space: nowrap;
+            }
+
+            .text {
+                margin-top: ${isCompactMode ? 5 : 6}px;
+                color: ${token.colorTextSecondary};
+                font-size: 12px;
+                line-height: 18px;
+                word-break: break-all;
+            }
+
+            .extra {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                margin-top: ${isCompactMode ? 5 : 6}px;
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+                line-height: 18px;
+            }
+
+            .operator {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                flex: 1;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .operator .ant-typography {
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+                line-height: 18px;
+            }
+
+            .detail {
+                flex: none;
+                padding: 0;
+                height: auto;
+                font-size: 12px;
+            }
+
+            @media (max-width: 575px) {
+                grid-template-columns: ${isCompactMode ? 16 : 18}px minmax(0, 1fr);
+                gap: 8px;
+
+                .head {
+                    align-items: flex-start;
+                    flex-direction: column;
+                    gap: 4px;
+                }
+
+                .extra {
+                    align-items: flex-end;
+                }
+
+                .time {
+                    white-space: normal;
+                }
+            }
+        `,
+        empty: css`
+            min-height: 240px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `,
+        logDetail: css`
+            border: 1px solid ${token.colorBorderSecondary};
+            border-radius: ${token.borderRadius}px;
+            background: ${token.colorBgContainer};
+
+            .placeholder {
+                min-height: 240px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+            }
+
+            .head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 12px;
+                padding: 10px 12px;
+                border-bottom: 1px solid ${token.colorBorderSecondary};
+                background: ${token.colorFillQuaternary};
+            }
+
+            .headMain {
+                min-width: 0;
+            }
+
+            .headMeta {
+                flex: none;
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+                line-height: 18px;
+            }
+
+            .content {
+                margin-top: 6px;
+                color: ${token.colorText};
+                font-size: 13px;
+                font-weight: 500;
+                line-height: 20px;
+                word-break: break-all;
+            }
+
             .info {
-                grid-template-columns: minmax(0, 1fr);
+                display: grid;
+                grid-template-columns: 1.1fr 1fr 1.2fr;
+                gap: 8px;
+                padding: 10px 12px;
+                border-bottom: 1px solid ${token.colorBorderSecondary};
+            }
+
+            .infoRow {
+                min-width: 0;
+                font-size: 12px;
+                line-height: 20px;
+            }
+
+            .label {
+                display: block;
+                margin-bottom: 2px;
+                color: ${token.colorTextTertiary};
+            }
+
+            .value {
+                display: block;
+                min-width: 0;
+                color: ${token.colorText};
+                word-break: break-all;
+            }
+
+            .value .ant-typography {
+                font-size: 12px;
+                line-height: 20px;
             }
 
             .changeHeader,
             .changeRow {
-                grid-template-columns: 92px repeat(2, minmax(0, 1fr));
+                display: grid;
+                grid-template-columns: 120px repeat(2, minmax(0, 1fr));
             }
-        }
-    `,
-    pagination: css`
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        color: ${token.colorTextTertiary};
-        font-size: 12px;
-    `,
+
+            .changeHeader {
+                border-bottom: 1px solid ${token.colorBorderSecondary};
+                background: ${token.colorFillQuaternary};
+                color: ${token.colorTextSecondary};
+                font-size: 12px;
+                font-weight: 500;
+                line-height: 18px;
+            }
+
+            .changeHeader > div,
+            .changeCell {
+                min-width: 0;
+                padding: 8px 10px;
+            }
+
+            .changeRow {
+                border-bottom: 1px solid ${token.colorBorderSecondary};
+            }
+
+            .changeRow:last-child {
+                border-bottom: none;
+            }
+
+            .changeRow.changed {
+                background: ${token.colorWarningBg};
+            }
+
+            .changeKey {
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+                line-height: 18px;
+                word-break: break-all;
+            }
+
+            .changeValue {
+                color: ${token.colorTextSecondary};
+                font-size: 12px;
+                line-height: 18px;
+                white-space: pre-wrap;
+                word-break: break-all;
+            }
+
+            .changed .changeValue.after {
+                color: ${token.colorError};
+                font-weight: 500;
+            }
+
+            @media (max-width: 700px) {
+                .head {
+                    flex-direction: column;
+                    gap: 6px;
+                }
+
+                .info {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+
+                .changeHeader,
+                .changeRow {
+                    grid-template-columns: 92px repeat(2, minmax(0, 1fr));
+                }
+            }
+        `,
+        pagination: css`
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            color: ${token.colorTextTertiary};
+            font-size: 12px;
+        `,
     };
 });
 
@@ -726,10 +726,17 @@ const ExpiredTime = ({value}: any) => {
         return <Typography.Text>{text}</Typography.Text>;
     }
     const expired = isExpiredTime(value);
+    if (expired) {
+        return (
+            <Tooltip title={text}>
+                <Tag color="red">已过期</Tag>
+            </Tooltip>
+        );
+    }
     return (
         <Space size={4}>
             <Typography.Text>{text}</Typography.Text>
-            <Tag color={expired ? "red" : "green"}>{expired ? "已过期" : "未过期"}</Tag>
+            <Tag color="green">未过期</Tag>
         </Space>
     );
 };
@@ -758,13 +765,13 @@ const ChangeCompare = ({before, after, orderEnums, payTypes, channelNames}: any)
 };
 
 const LogDetail = forwardRef<LogDetailRef, any>(({
-    logTypes,
-    operatorTypes,
-    logTypeColor,
-    orderEnums,
-    payTypes,
-    channelNames,
-}, ref) => {
+                                                     logTypes,
+                                                     operatorTypes,
+                                                     logTypeColor,
+                                                     orderEnums,
+                                                     payTypes,
+                                                     channelNames,
+                                                 }, ref) => {
     const {message} = App.useApp();
     const {styles} = useStyles();
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
@@ -834,7 +841,8 @@ const LogDetail = forwardRef<LogDetailRef, any>(({
                                 </Space>
                                 <div className="content">{detail?.content || "-"}</div>
                             </div>
-                            <Typography.Text className="headMeta" copyable={detail?.id ? {text: String(detail.id)} : false}>
+                            <Typography.Text className="headMeta"
+                                             copyable={detail?.id ? {text: String(detail.id)} : false}>
                                 日志ID {detail?.id || "-"}
                             </Typography.Text>
                         </div>
@@ -842,7 +850,8 @@ const LogDetail = forwardRef<LogDetailRef, any>(({
                             <div className="infoRow">
                                 <span className="label">订单ID</span>
                                 <span className="value">
-                                    <Typography.Text copyable={detail?.order_id ? {text: String(detail.order_id)} : false}>
+                                    <Typography.Text
+                                        copyable={detail?.order_id ? {text: String(detail.order_id)} : false}>
                                         {detail?.order_id || "-"}
                                     </Typography.Text>
                                 </span>
@@ -885,20 +894,20 @@ const LogDetail = forwardRef<LogDetailRef, any>(({
 LogDetail.displayName = "LogDetail";
 
 const Info = forwardRef<InfoRef, InfoProps>(({
-    orderEnums,
-    logEnums,
-    payTypes,
-    channelNames,
-    hasDeliverControl,
-    canDeliver,
-    onDeliver,
-    hasRefundControl,
-    canRefund,
-    onRefundSuccess,
-    typeColors,
-    statusColors,
-    payStatusColors,
-}, ref) => {
+                                                 orderEnums,
+                                                 logEnums,
+                                                 payTypes,
+                                                 channelNames,
+                                                 hasDeliverControl,
+                                                 canDeliver,
+                                                 onDeliver,
+                                                 hasRefundControl,
+                                                 canRefund,
+                                                 onRefundSuccess,
+                                                 typeColors,
+                                                 statusColors,
+                                                 payStatusColors,
+                                             }, ref) => {
     const {message} = App.useApp();
     const theme = useTheme();
     const isCompactMode = theme?.isCompactTheme?.() || false;
@@ -1183,7 +1192,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
         <ProModal
             ref={modalRef}
             title={<Title>订单信息</Title>}
-            width={550}
+            width={600}
             modalProps={{
                 footer: null,
                 forceRender: true,
