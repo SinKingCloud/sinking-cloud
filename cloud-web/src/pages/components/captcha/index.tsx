@@ -133,17 +133,17 @@ const Captcha = forwardRef<CaptchaRef>((_, ref): any => {
                     }
                 },
                 onFail: (error) => {
-                    message.error(error?.message || "验证码加载失败");
                     close();
+                    message.error(error?.message || "验证码加载失败");
                 },
                 onFinally: () => {
                     setLoading(false);
                 }
             });
         } catch (error) {
-            message.error("验证码加载失败");
             setLoading(false);
             close();
+            message.error("验证码加载失败");
         }
     };
 

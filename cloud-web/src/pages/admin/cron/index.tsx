@@ -141,8 +141,8 @@ export default (): React.ReactNode => {
                 });
             },
             onFail: (res: any) => {
-                message?.error(res?.message || "读取任务失败");
                 formModalRef.current?.hide();
+                message?.error(res?.message || "读取任务失败");
             },
         }).finally(() => {
             setFormInfoLoading(false)

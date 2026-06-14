@@ -584,8 +584,8 @@ export default (): React.ReactNode => {
                 form.setFieldsValue(formValues);
             },
             onFail: (res: any) => {
-                message.error(res?.message || "获取数据失败");
                 formModalRef.current?.hide();
+                message.error(res?.message || "获取数据失败");
             },
             onFinally: () => setFormLoading(false),
         });

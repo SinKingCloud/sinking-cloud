@@ -106,8 +106,8 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
                 setConfigFields(Object.keys(config));
             },
             onFail: (res: any) => {
-                message?.error(res?.message || "获取通道详情失败");
                 modalRef.current?.hide();
+                message?.error(res?.message || "获取通道详情失败");
             },
         }).finally(() => {
             setInfoLoading(false);

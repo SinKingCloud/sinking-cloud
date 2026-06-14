@@ -117,8 +117,8 @@ export default (): React.ReactNode => {
                 });
             },
             onFail: (res: any) => {
-                message?.error(res?.message || "获取通道详情失败");
                 channelModalRef.current?.hide();
+                message?.error(res?.message || "获取通道详情失败");
             },
         }).finally(() => {
             setChannelInfoLoading(false)

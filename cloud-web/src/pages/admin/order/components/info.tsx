@@ -532,20 +532,20 @@ const ExpiredTime = ({value}: any) => {
 };
 
 const Info = forwardRef<InfoRef, InfoProps>(({
-    orderEnums,
-    logEnums,
-    payTypes,
-    channelNames,
-    hasDeliverControl,
-    canDeliver,
-    onDeliver,
-    hasRefundControl,
-    canRefund,
-    onRefundSuccess,
-    typeColors,
-    statusColors,
-    payStatusColors,
-}, ref) => {
+                                                 orderEnums,
+                                                 logEnums,
+                                                 payTypes,
+                                                 channelNames,
+                                                 hasDeliverControl,
+                                                 canDeliver,
+                                                 onDeliver,
+                                                 hasRefundControl,
+                                                 canRefund,
+                                                 onRefundSuccess,
+                                                 typeColors,
+                                                 statusColors,
+                                                 payStatusColors,
+                                             }, ref) => {
     const {message} = App.useApp();
     const {styles} = useStyles();
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
@@ -585,8 +585,8 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                 setOrderInfo((prev: any) => ({...(prev || {}), ...nextInfo}));
             },
             onFail: (res: any) => {
-                message?.error(res?.message || "获取订单详情失败");
                 modalRef.current?.hide();
+                message?.error(res?.message || "获取订单详情失败");
             },
         })
             .finally(() => {
@@ -774,11 +774,13 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                             <InfoRow label="所属用户" value={data?.user_id} copy/>
                             <InfoRow
                                 label="订单类型"
-                                value={<Tag color={typeColors?.[String(data?.type)] || "default"}>{enumText(orderEnums?.type, data?.type)}</Tag>}
+                                value={<Tag
+                                    color={typeColors?.[String(data?.type)] || "default"}>{enumText(orderEnums?.type, data?.type)}</Tag>}
                             />
                             <InfoRow
                                 label="订单状态"
-                                value={<Tag color={statusColors?.[String(data?.status)] || "default"}>{enumText(orderEnums?.status, data?.status)}</Tag>}
+                                value={<Tag
+                                    color={statusColors?.[String(data?.status)] || "default"}>{enumText(orderEnums?.status, data?.status)}</Tag>}
                             />
                         </div>
                     </div>
@@ -790,7 +792,8 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                             <InfoRow label="通道ID" value={data?.channel_id} copy/>
                             <InfoRow
                                 label="支付状态"
-                                value={<Tag color={payStatusColors?.[String(data?.pay_status)] || "default"}>{enumText(orderEnums?.pay_status, data?.pay_status)}</Tag>}
+                                value={<Tag
+                                    color={payStatusColors?.[String(data?.pay_status)] || "default"}>{enumText(orderEnums?.pay_status, data?.pay_status)}</Tag>}
                             />
                             <InfoRow label="过期时间" value={<ExpiredTime value={data?.expired_time}/>}/>
                         </div>
@@ -926,8 +929,10 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                                                     <Tag color={logTypeColor(item?.type)}>
                                                         {enumText(logTypes, item?.type)}
                                                     </Tag>
-                                                    <Typography.Text className="logId">#{item?.id || "-"}</Typography.Text>
-                                                    <Typography.Text className="time">{item?.create_time || "-"}</Typography.Text>
+                                                    <Typography.Text
+                                                        className="logId">#{item?.id || "-"}</Typography.Text>
+                                                    <Typography.Text
+                                                        className="time">{item?.create_time || "-"}</Typography.Text>
                                                 </div>
                                             </div>
                                             <div className="text">{item?.content || "-"}</div>
