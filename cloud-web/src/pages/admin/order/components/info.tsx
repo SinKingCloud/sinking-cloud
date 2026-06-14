@@ -1,7 +1,7 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from "react";
-import {App, Button, DatePicker, Empty, Pagination, Segmented, Select, Space, Spin, Tag, Typography} from "antd";
+import {App, Button, Empty, Pagination, Segmented, Space, Spin, Tag, Typography} from "antd";
 import {RollbackOutlined, TruckOutlined} from "@ant-design/icons";
-import {ProModal, ProModalRef, Title} from "sinking-antd";
+import {ProModal, ProModalRef, Title, useTheme} from "sinking-antd";
 import {createStyles} from "antd-style";
 import {getOrderInfo, getOrderLogInfo, getOrderLogList} from "@/service/admin/pay";
 import {formatMoney} from "@/utils/string";
@@ -9,6 +9,11 @@ import PayType from "./pay-type";
 import Refund, {type RefundRef} from "./refund";
 
 type ActivePanel = "info" | "log";
+
+type LogDetailRef = {
+    open: (id: any) => void;
+    reset: () => void;
+};
 
 export type InfoRef = {
     open: (record: any, panel?: ActivePanel) => void;
@@ -30,27 +35,31 @@ type InfoProps = {
     payStatusColors?: Record<string, string>;
 };
 
-const ALL_VALUE = "__all__";
 const PAGE_SIZE = 8;
 const LOG_TYPE_COLORS = ["blue", "green", "orange", "red", "purple"];
 
-const useStyles: any = createStyles(({css, token}: any): any => ({
+const useStyles: any = createStyles(({css, token}: any, props: any = {}): any => {
+    const isCompactMode = props?.isCompactMode || false;
+    const dotSize = isCompactMode ? 8 : 9;
+    const axisTop = isCompactMode ? 13 : 15;
+
+    return {
     modalBody: css`
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: ${isCompactMode ? 8 : 10}px;
     `,
     segmentWrap: css`
         flex: none;
         display: flex;
         justify-content: center;
-        padding: 2px 0 4px;
+        padding: ${isCompactMode ? "1px 0 3px" : "2px 0 4px"};
     `,
     panelContent: css`
         min-height: 0;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: ${isCompactMode ? 8 : 10}px;
         padding: 0 2px 2px;
     `,
     loading: css`
@@ -243,56 +252,27 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
     logPanel: css`
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: ${isCompactMode ? 8 : 10}px;
         min-height: 0;
-    `,
-    toolbar: css`
-        display: grid;
-        grid-template-columns: 128px 128px minmax(0, 1fr) auto;
-        gap: 8px;
-
-        .dateRange {
-            width: 100%;
-        }
-
-        @media (max-width: 575px) {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-
-            .dateRange {
-                grid-column: 1 / -1;
-            }
-        }
-    `,
-    logContent: css`
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 260px;
-        gap: 8px;
-        min-height: 0;
-
-        @media (max-width: 700px) {
-            grid-template-columns: minmax(0, 1fr);
-        }
     `,
     timelineShell: css`
-        min-height: 260px;
-        border: 1px solid ${token.colorBorderSecondary};
-        border-radius: ${token.borderRadius}px;
-        background: ${token.colorBgContainer};
+        min-height: ${isCompactMode ? 220 : 240}px;
     `,
     timeline: css`
         display: flex;
         flex-direction: column;
-        padding: 4px 0;
+        padding: 2px 0 0;
     `,
     timelineItem: css`
         position: relative;
         display: grid;
-        grid-template-columns: 18px minmax(0, 1fr);
-        gap: 8px;
-        padding: 7px 10px;
-        cursor: pointer;
+        grid-template-columns: ${isCompactMode ? 20 : 24}px minmax(0, 1fr);
+        gap: ${isCompactMode ? 8 : 10}px;
+        padding-bottom: ${isCompactMode ? 8 : 10}px;
 
         &:last-child {
+            padding-bottom: 0;
+
             .line {
                 display: none;
             }
@@ -302,14 +282,16 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
             position: relative;
             display: flex;
             justify-content: center;
-            padding-top: 7px;
+            align-items: flex-start;
+            min-height: 100%;
+            padding-top: ${axisTop}px;
         }
 
         .dot {
             position: relative;
             z-index: 1;
-            width: 8px;
-            height: 8px;
+            width: ${dotSize}px;
+            height: ${dotSize}px;
             border: 2px solid ${token.colorPrimary};
             border-radius: 50%;
             background: ${token.colorBgContainer};
@@ -317,8 +299,8 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
 
         .line {
             position: absolute;
-            top: 18px;
-            bottom: -8px;
+            top: 0;
+            bottom: -${isCompactMode ? 10 : 12}px;
             left: 50%;
             width: 1px;
             transform: translateX(-50%);
@@ -326,15 +308,34 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
         }
 
         .body {
+            position: relative;
             min-width: 0;
-            padding: 7px 9px;
+            padding: ${isCompactMode ? "8px 10px" : "10px 12px"};
             border-radius: ${token.borderRadius}px;
+            background: ${token.colorFillQuaternary};
+            cursor: pointer;
             transition: background ${token.motionDurationSlow};
         }
 
-        &.active .body,
+        .body:before {
+            content: "";
+            position: absolute;
+            top: ${axisTop - 1}px;
+            left: -6px;
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-right: 6px solid ${token.colorFillQuaternary};
+            transition: border-right-color ${token.motionDurationSlow};
+        }
+
         .body:hover {
-            background: ${token.colorFillQuaternary};
+            background: ${token.colorFillSecondary};
+        }
+
+        .body:hover:before {
+            border-right-color: ${token.colorFillSecondary};
         }
 
         .head {
@@ -343,6 +344,7 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
             justify-content: space-between;
             gap: 8px;
             min-width: 0;
+            margin-bottom: ${isCompactMode ? 5 : 6}px;
         }
 
         .meta {
@@ -357,29 +359,78 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
             margin-inline-end: 0;
         }
 
-        .logId,
-        .time,
-        .operator {
+        .time {
             color: ${token.colorTextTertiary};
             font-size: 12px;
             line-height: 18px;
         }
 
         .time {
+            flex: none;
             font-variant-numeric: tabular-nums;
             white-space: nowrap;
         }
 
         .text {
-            margin-top: 4px;
-            color: ${token.colorText};
-            font-size: 13px;
-            line-height: 20px;
+            margin-top: ${isCompactMode ? 5 : 6}px;
+            color: ${token.colorTextSecondary};
+            font-size: 12px;
+            line-height: 18px;
             word-break: break-all;
         }
 
+        .extra {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: ${isCompactMode ? 5 : 6}px;
+            color: ${token.colorTextTertiary};
+            font-size: 12px;
+            line-height: 18px;
+        }
+
         .operator {
-            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .operator .ant-typography {
+            color: ${token.colorTextTertiary};
+            font-size: 12px;
+            line-height: 18px;
+        }
+
+        .detail {
+            flex: none;
+            padding: 0;
+            height: auto;
+            font-size: 12px;
+        }
+
+        @media (max-width: 575px) {
+            grid-template-columns: ${isCompactMode ? 16 : 18}px minmax(0, 1fr);
+            gap: 8px;
+
+            .head {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .extra {
+                align-items: flex-end;
+            }
+
+            .time {
+                white-space: normal;
+            }
         }
     `,
     empty: css`
@@ -389,7 +440,6 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
         justify-content: center;
     `,
     logDetail: css`
-        min-height: 260px;
         border: 1px solid ${token.colorBorderSecondary};
         border-radius: ${token.borderRadius}px;
         background: ${token.colorBgContainer};
@@ -404,65 +454,134 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
         }
 
         .head {
-            padding: 10px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 12px;
             border-bottom: 1px solid ${token.colorBorderSecondary};
             background: ${token.colorFillQuaternary};
         }
 
+        .headMain {
+            min-width: 0;
+        }
+
+        .headMeta {
+            flex: none;
+            color: ${token.colorTextTertiary};
+            font-size: 12px;
+            line-height: 18px;
+        }
+
         .content {
-            margin-top: 8px;
+            margin-top: 6px;
             color: ${token.colorText};
             font-size: 13px;
+            font-weight: 500;
             line-height: 20px;
             word-break: break-all;
         }
 
         .info {
-            padding: 10px;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr 1.2fr;
+            gap: 8px;
+            padding: 10px 12px;
             border-bottom: 1px solid ${token.colorBorderSecondary};
         }
 
         .infoRow {
-            display: flex;
-            gap: 8px;
+            min-width: 0;
             font-size: 12px;
             line-height: 20px;
         }
 
         .label {
-            flex: none;
+            display: block;
+            margin-bottom: 2px;
             color: ${token.colorTextTertiary};
         }
 
         .value {
+            display: block;
             min-width: 0;
+            color: ${token.colorText};
             word-break: break-all;
         }
 
-        .json {
-            padding: 10px;
-            border-bottom: 1px solid ${token.colorBorderSecondary};
-        }
-
-        .json:last-child {
-            border-bottom: none;
-        }
-
-        .jsonTitle {
-            margin-bottom: 6px;
-            color: ${token.colorText};
-            font-size: 13px;
-            font-weight: 500;
+        .value .ant-typography {
+            font-size: 12px;
             line-height: 20px;
         }
 
-        .jsonText {
-            margin-bottom: 0 !important;
+        .changeHeader,
+        .changeRow {
+            display: grid;
+            grid-template-columns: 120px repeat(2, minmax(0, 1fr));
+        }
+
+        .changeHeader {
+            border-bottom: 1px solid ${token.colorBorderSecondary};
+            background: ${token.colorFillQuaternary};
+            color: ${token.colorTextSecondary};
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 18px;
+        }
+
+        .changeHeader > div,
+        .changeCell {
+            min-width: 0;
+            padding: 8px 10px;
+        }
+
+        .changeRow {
+            border-bottom: 1px solid ${token.colorBorderSecondary};
+        }
+
+        .changeRow:last-child {
+            border-bottom: none;
+        }
+
+        .changeRow.changed {
+            background: ${token.colorWarningBg};
+        }
+
+        .changeKey {
+            color: ${token.colorTextTertiary};
+            font-size: 12px;
+            line-height: 18px;
+            word-break: break-all;
+        }
+
+        .changeValue {
             color: ${token.colorTextSecondary};
             font-size: 12px;
             line-height: 18px;
             white-space: pre-wrap;
             word-break: break-all;
+        }
+
+        .changed .changeValue.after {
+            color: ${token.colorError};
+            font-weight: 500;
+        }
+
+        @media (max-width: 700px) {
+            .head {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .info {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .changeHeader,
+            .changeRow {
+                grid-template-columns: 92px repeat(2, minmax(0, 1fr));
+            }
         }
     `,
     pagination: css`
@@ -473,7 +592,8 @@ const useStyles: any = createStyles(({css, token}: any): any => ({
         color: ${token.colorTextTertiary};
         font-size: 12px;
     `,
-}));
+    };
+});
 
 const enumText = (data: any, value: any) => data?.[String(value)] || data?.[value] || "-";
 const textValue = (value: any) => (value === undefined || value === null || value === "" ? "-" : String(value));
@@ -484,23 +604,106 @@ const isExpiredTime = (value: any) => {
     const time = new Date(String(value).replace(/-/g, "/")).getTime();
     return Number.isFinite(time) && time > 0 && time < Date.now();
 };
-const buildOptions = (data: any, allLabel = "全部") => [
-    {label: allLabel, value: ALL_VALUE},
-    ...Object.entries(data || {}).map(([value, label]) => ({value, label: String(label)})),
-];
 const buildTypeColors = (data: any) => Object.keys(data || {}).reduce((colors: Record<string, string>, key, index) => {
     colors[String(key)] = LOG_TYPE_COLORS[index % LOG_TYPE_COLORS.length];
     return colors;
 }, {});
-const formatJson = (value: any) => {
+const parseJsonValue = (value: any) => {
     if (!value) {
-        return "-";
+        return undefined;
+    }
+    if (typeof value === "object") {
+        return value;
     }
     try {
-        return JSON.stringify(JSON.parse(String(value)), null, 2);
+        return JSON.parse(String(value));
     } catch (_) {
-        return String(value);
+        return undefined;
     }
+};
+
+const CHANGE_FIELD_LABELS: Record<string, string> = {
+    id: "订单编号",
+    order_id: "订单编号",
+    user_id: "用户编号",
+    channel_id: "通道编号",
+    name: "订单名称",
+    type: "订单类型",
+    extra: "扩展信息",
+    amount: "订单金额",
+    status: "订单状态",
+    trade_no: "外部单号",
+    pay_amount: "实付金额",
+    refund_amount: "退款金额",
+    pay_status: "支付状态",
+    pay_type: "支付方式",
+    pay_time: "支付时间",
+    expired_time: "过期时间",
+    complete_time: "完成时间",
+    create_time: "创建时间",
+    update_time: "更新时间",
+    operator_id: "操作账号",
+    operator_type: "操作类型",
+    content: "日志内容",
+    before_info: "变更前值",
+    after_info: "变更后值",
+};
+
+const getChangeFieldLabel = (field: string) => CHANGE_FIELD_LABELS[field] || field;
+
+const getChangeEnumData = (field: string, enums: any) => {
+    if (field === "status") {
+        return enums?.orderEnums?.status;
+    }
+    if (field === "pay_status") {
+        return enums?.orderEnums?.pay_status;
+    }
+    if (field === "pay_type") {
+        return enums?.payTypes;
+    }
+    if (field === "channel_id") {
+        return enums?.channelNames;
+    }
+    return undefined;
+};
+
+const formatChangeValue = (field: string, value: any, enums?: any) => {
+    if (value === undefined || value === null || value === "") {
+        return "-";
+    }
+    const enumData = getChangeEnumData(field, enums);
+    if (enumData) {
+        return enumText(enumData, value);
+    }
+    if (typeof value === "string") {
+        const parsed = parseJsonValue(value);
+        if (parsed !== undefined) {
+            return JSON.stringify(parsed, null, 2);
+        }
+        return value;
+    }
+    if (typeof value === "object") {
+        return JSON.stringify(value, null, 2);
+    }
+    return String(value);
+};
+
+const buildChangeRows = (beforeValue: any, afterValue: any, enums?: any) => {
+    const before = parseJsonValue(beforeValue) || {};
+    const after = parseJsonValue(afterValue) || {};
+    const keys = Array.from(new Set([...Object.keys(before), ...Object.keys(after)]));
+    return keys.map((key) => {
+        const beforeRaw = before?.[key];
+        const afterRaw = after?.[key];
+        const beforeText = formatChangeValue(key, beforeRaw, enums);
+        const afterText = formatChangeValue(key, afterRaw, enums);
+        return {
+            key,
+            beforeText,
+            afterText,
+            changed: formatChangeValue("", beforeRaw) !== formatChangeValue("", afterRaw),
+        };
+    });
 };
 
 const InfoRow = ({label, value, copy}: any) => {
@@ -531,43 +734,188 @@ const ExpiredTime = ({value}: any) => {
     );
 };
 
-const Info = forwardRef<InfoRef, InfoProps>(({
-                                                 orderEnums,
-                                                 logEnums,
-                                                 payTypes,
-                                                 channelNames,
-                                                 hasDeliverControl,
-                                                 canDeliver,
-                                                 onDeliver,
-                                                 hasRefundControl,
-                                                 canRefund,
-                                                 onRefundSuccess,
-                                                 typeColors,
-                                                 statusColors,
-                                                 payStatusColors,
-                                             }, ref) => {
+const ChangeCompare = ({before, after, orderEnums, payTypes, channelNames}: any) => {
+    const rows = buildChangeRows(before, after, {orderEnums, payTypes, channelNames});
+    if (rows.length === 0) {
+        return <div className="placeholder">暂无变更信息</div>;
+    }
+    return (
+        <div className="changeCompare">
+            <div className="changeHeader">
+                <div>字段名称</div>
+                <div>变更前</div>
+                <div>变更后</div>
+            </div>
+            {rows.map((item) => (
+                <div className={`changeRow ${item.changed ? "changed" : ""}`} key={item.key}>
+                    <div className="changeCell changeKey">{getChangeFieldLabel(item.key)}</div>
+                    <div className="changeCell changeValue">{item.beforeText}</div>
+                    <div className="changeCell changeValue after">{item.afterText}</div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+const LogDetail = forwardRef<LogDetailRef, any>(({
+    logTypes,
+    operatorTypes,
+    logTypeColor,
+    orderEnums,
+    payTypes,
+    channelNames,
+}, ref) => {
     const {message} = App.useApp();
     const {styles} = useStyles();
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
+    const [loading, setLoading] = useState(false);
+    const [detail, setDetail] = useState<any>();
+
+    useImperativeHandle(ref, () => ({
+        open: (id: any) => {
+            const logId = Number(id);
+            if (!logId) {
+                message?.warning("日志ID错误");
+                return;
+            }
+            setDetail(undefined);
+            setLoading(true);
+            modalRef.current?.show();
+            void getOrderLogInfo({
+                body: {id: logId},
+                onSuccess: (res: any) => setDetail(res?.data || {}),
+                onFail: (res: any) => {
+                    modalRef.current?.hide();
+                    message?.error(res?.message || "获取日志详情失败");
+                },
+            })
+                .finally(() => setLoading(false))
+                .catch(() => undefined);
+        },
+        reset: () => {
+            modalRef.current?.hide();
+            setLoading(false);
+            setDetail(undefined);
+        },
+    }));
+
+    return (
+        <ProModal
+            ref={modalRef}
+            title={<Title>日志详情</Title>}
+            width={720}
+            modalProps={{
+                footer: null,
+                forceRender: true,
+                mask: {
+                    closable: true,
+                },
+                styles: {
+                    body: {
+                        padding: "4px 6px 10px",
+                    },
+                },
+                afterClose: () => {
+                    setLoading(false);
+                    setDetail(undefined);
+                },
+            } as any}>
+            <div className={styles.logDetail}>
+                {loading ? (
+                    <div className="placeholder">
+                        <Spin/>
+                    </div>
+                ) : detail ? (
+                    <>
+                        <div className="head">
+                            <div className="headMain">
+                                <Space size={6} wrap>
+                                    <Tag color={logTypeColor(detail?.type)}>{enumText(logTypes, detail?.type)}</Tag>
+                                </Space>
+                                <div className="content">{detail?.content || "-"}</div>
+                            </div>
+                            <Typography.Text className="headMeta" copyable={detail?.id ? {text: String(detail.id)} : false}>
+                                日志ID {detail?.id || "-"}
+                            </Typography.Text>
+                        </div>
+                        <div className="info">
+                            <div className="infoRow">
+                                <span className="label">订单ID</span>
+                                <span className="value">
+                                    <Typography.Text copyable={detail?.order_id ? {text: String(detail.order_id)} : false}>
+                                        {detail?.order_id || "-"}
+                                    </Typography.Text>
+                                </span>
+                            </div>
+                            <div className="infoRow">
+                                <span className="label">操作人</span>
+                                <span className="value">
+                                    {enumText(operatorTypes, detail?.operator_type)}
+                                    {detail?.operator_id ? (
+                                        <>
+                                            {" "}
+                                            <Typography.Text copyable={{text: String(detail.operator_id)}}>
+                                                账号ID：{detail.operator_id}
+                                            </Typography.Text>
+                                        </>
+                                    ) : null}
+                                </span>
+                            </div>
+                            <div className="infoRow">
+                                <span className="label">创建时间</span>
+                                <span className="value">{detail?.create_time || "-"}</span>
+                            </div>
+                        </div>
+                        <ChangeCompare
+                            before={detail?.before_info}
+                            after={detail?.after_info}
+                            orderEnums={orderEnums}
+                            payTypes={payTypes}
+                            channelNames={channelNames}
+                        />
+                    </>
+                ) : (
+                    <div className="placeholder">暂无日志详情</div>
+                )}
+            </div>
+        </ProModal>
+    );
+});
+
+LogDetail.displayName = "LogDetail";
+
+const Info = forwardRef<InfoRef, InfoProps>(({
+    orderEnums,
+    logEnums,
+    payTypes,
+    channelNames,
+    hasDeliverControl,
+    canDeliver,
+    onDeliver,
+    hasRefundControl,
+    canRefund,
+    onRefundSuccess,
+    typeColors,
+    statusColors,
+    payStatusColors,
+}, ref) => {
+    const {message} = App.useApp();
+    const theme = useTheme();
+    const isCompactMode = theme?.isCompactTheme?.() || false;
+    const {styles} = useStyles({isCompactMode});
+    const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const refundRef = useRef<RefundRef>({} as RefundRef);
+    const logDetailRef = useRef<LogDetailRef>({} as LogDetailRef);
     const [activePanel, setActivePanel] = useState<ActivePanel>("info");
     const [orderInfo, setOrderInfo] = useState<any>();
     const [info, setInfo] = useState<any>();
     const [infoLoading, setInfoLoading] = useState(false);
-    const [logType, setLogType] = useState(ALL_VALUE);
-    const [operatorType, setOperatorType] = useState(ALL_VALUE);
-    const [range, setRange] = useState<any>();
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
     const [logs, setLogs] = useState<any[]>([]);
     const [logLoading, setLogLoading] = useState(false);
-    const [activeLogId, setActiveLogId] = useState<any>();
-    const [logDetail, setLogDetail] = useState<any>();
-    const [logDetailLoading, setLogDetailLoading] = useState(false);
     const logTypes = logEnums?.type || {};
     const operatorTypes = logEnums?.operator_type || {};
-    const logTypeOptions = buildOptions(logTypes, "全部类型");
-    const operatorOptions = buildOptions(operatorTypes, "全部操作人");
     const logTypeColors = buildTypeColors(logTypes);
     const logTypeColor = (value: any) => logTypeColors?.[String(value)] || "default";
     const orderId = Number(orderInfo?.id);
@@ -607,59 +955,16 @@ const Info = forwardRef<InfoRef, InfoProps>(({
             order_by_field: "id",
             order_by_type: "desc",
         };
-        if (logType !== ALL_VALUE) {
-            body.type = logType;
-        }
-        if (operatorType !== ALL_VALUE) {
-            body.operator_type = operatorType;
-        }
-        if (range?.[0] && range?.[1]) {
-            body.create_time_start = range[0]?.startOf
-                ? range[0].startOf("day").format("YYYY-MM-DD HH:mm:ss")
-                : range[0];
-            body.create_time_end = range[1]?.endOf
-                ? range[1].endOf("day").format("YYYY-MM-DD HH:mm:ss")
-                : range[1];
-        }
         void getOrderLogList({
             body,
             onSuccess: (res: any) => {
-                const nextList = res?.data?.list || [];
-                setLogs(nextList);
+                setLogs(res?.data?.list || []);
                 setTotal(Number(res?.data?.total || 0));
-                if (nextList.length > 0) {
-                    loadLogDetail(nextList[0]?.id);
-                } else {
-                    setActiveLogId(undefined);
-                    setLogDetail(undefined);
-                }
             },
             onFail: (res: any) => message?.error(res?.message || "获取订单日志失败"),
         })
             .finally(() => {
                 setLogLoading(false);
-            })
-            .catch(() => undefined);
-    };
-
-    const loadLogDetail = (id: any) => {
-        const logId = Number(id);
-        if (!logId) {
-            message?.warning("日志ID错误");
-            return;
-        }
-        setActiveLogId(logId);
-        setLogDetail(undefined);
-        setLogDetailLoading(true);
-        void getOrderLogInfo({
-            body: {id: logId},
-            onSuccess: (res: any) => {
-                setLogDetail(res?.data || {});
-            },
-            onFail: (res: any) => message?.error(res?.message || "获取日志详情失败"),
-        })
-            .finally(() => {
-                setLogDetailLoading(false);
             })
             .catch(() => undefined);
     };
@@ -674,14 +979,9 @@ const Info = forwardRef<InfoRef, InfoProps>(({
             setActivePanel(panel);
             setOrderInfo(typeof record === "object" ? record : {id});
             setInfo(undefined);
-            setLogType(ALL_VALUE);
-            setOperatorType(ALL_VALUE);
-            setRange(undefined);
             setPage(1);
             setTotal(0);
             setLogs([]);
-            setActiveLogId(undefined);
-            setLogDetail(undefined);
             modalRef.current?.show();
             loadInfo(id);
         },
@@ -692,16 +992,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
             return;
         }
         loadLogs();
-    }, [activePanel, orderId, logType, operatorType, range, page]);
-
-    const resetLogFilter = () => {
-        setLogType(ALL_VALUE);
-        setOperatorType(ALL_VALUE);
-        setRange(undefined);
-        setPage(1);
-        setActiveLogId(undefined);
-        setLogDetail(undefined);
-    };
+    }, [activePanel, orderId, page]);
 
     const renderInfo = () => {
         if (infoLoading) {
@@ -812,147 +1103,62 @@ const Info = forwardRef<InfoRef, InfoProps>(({
         );
     };
 
-    const renderJson = (title: string, value: any) => {
-        const text = formatJson(value);
-        return (
-            <div className="json">
-                <div className="jsonTitle">{title}</div>
-                <Typography.Paragraph
-                    className="jsonText"
-                    copyable={text !== "-" ? {text} : false}>
-                    {text}
-                </Typography.Paragraph>
-            </div>
-        );
-    };
-
-    const renderLogDetail = () => {
-        if (logDetailLoading) {
-            return (
-                <div className="placeholder">
-                    <Spin/>
-                </div>
-            );
-        }
-        if (!logDetail) {
-            return <div className="placeholder">选择左侧日志查看详情</div>;
-        }
-        return (
-            <>
-                <div className="head">
-                    <Space size={6} wrap>
-                        <Tag color={logTypeColor(logDetail?.type)}>{enumText(logTypes, logDetail?.type)}</Tag>
-                        <Typography.Text type="secondary">#{logDetail?.id || "-"}</Typography.Text>
-                    </Space>
-                    <div className="content">{logDetail?.content || "-"}</div>
-                </div>
-                <div className="info">
-                    <div className="infoRow">
-                        <span className="label">操作人</span>
-                        <span className="value">
-                            {enumText(operatorTypes, logDetail?.operator_type)} #{logDetail?.operator_id || 0}
-                        </span>
-                    </div>
-                    <div className="infoRow">
-                        <span className="label">创建时间</span>
-                        <span className="value">{logDetail?.create_time || "-"}</span>
-                    </div>
-                </div>
-                {renderJson("变更前", logDetail?.before_info)}
-                {renderJson("变更后", logDetail?.after_info)}
-            </>
-        );
-    };
-
     const renderLog = () => (
         <div className={styles.logPanel}>
-            <div className={styles.summary}>
-                <div className="title">
-                    <div className="name">{orderInfo?.name || info?.name || "订单日志"}</div>
-                    <Typography.Text
-                        className="id"
-                        copyable={orderId ? {text: String(orderId)} : false}>
-                        订单ID {orderId || "-"}
-                    </Typography.Text>
-                </div>
-            </div>
-            <div className={styles.toolbar}>
-                <Select
-                    value={logType}
-                    options={logTypeOptions}
-                    onChange={(value) => {
-                        setLogType(value);
-                        setPage(1);
-                        setActiveLogId(undefined);
-                        setLogDetail(undefined);
-                    }}
-                />
-                <Select
-                    value={operatorType}
-                    options={operatorOptions}
-                    onChange={(value) => {
-                        setOperatorType(value);
-                        setPage(1);
-                        setActiveLogId(undefined);
-                        setLogDetail(undefined);
-                    }}
-                />
-                <DatePicker.RangePicker
-                    className="dateRange"
-                    value={range}
-                    onChange={(value) => {
-                        setRange(value);
-                        setPage(1);
-                        setActiveLogId(undefined);
-                        setLogDetail(undefined);
-                    }}
-                />
-                <Button onClick={resetLogFilter}>重置</Button>
-            </div>
             <Spin spinning={logLoading}>
-                <div className={styles.logContent}>
-                    <div className={styles.timelineShell}>
-                        {logs.length > 0 ? (
-                            <div className={styles.timeline}>
-                                {logs.map((item: any) => (
-                                    <div
-                                        className={`${styles.timelineItem} ${Number(activeLogId) === Number(item?.id) ? "active" : ""}`}
-                                        key={item?.id}
-                                        onClick={() => loadLogDetail(item?.id)}>
-                                        <div className="axis">
-                                            <span className="dot"/>
-                                            <span className="line"/>
+                <div className={styles.timelineShell}>
+                    {logs.length > 0 ? (
+                        <div className={styles.timeline}>
+                            {logs.map((item: any) => (
+                                <div className={styles.timelineItem} key={item?.id}>
+                                    <div className="axis">
+                                        <span className="dot"/>
+                                        <span className="line"/>
+                                    </div>
+                                    <div className="body" onClick={() => logDetailRef.current?.open(item?.id)}>
+                                        <div className="head">
+                                            <div className="meta">
+                                                <Tag color={logTypeColor(item?.type)}>
+                                                    {enumText(logTypes, item?.type)}
+                                                </Tag>
+                                            </div>
+                                            <Typography.Text
+                                                className="time">
+                                                {item?.create_time || "-"}
+                                            </Typography.Text>
                                         </div>
-                                        <div className="body">
-                                            <div className="head">
-                                                <div className="meta">
-                                                    <Tag color={logTypeColor(item?.type)}>
-                                                        {enumText(logTypes, item?.type)}
-                                                    </Tag>
+                                        <div className="text">{item?.content || "-"}</div>
+                                        <div className="extra">
+                                            <span className="operator">
+                                                <span>操作人：{enumText(operatorTypes, item?.operator_type)}</span>
+                                                {item?.operator_id ? (
                                                     <Typography.Text
-                                                        className="logId">#{item?.id || "-"}</Typography.Text>
-                                                    <Typography.Text
-                                                        className="time">{item?.create_time || "-"}</Typography.Text>
-                                                </div>
-                                            </div>
-                                            <div className="text">{item?.content || "-"}</div>
-                                            <div className="operator">
-                                                {enumText(operatorTypes, item?.operator_type)}
-                                                {item?.operator_id ? ` #${item.operator_id}` : ""}
-                                            </div>
+                                                        copyable={{text: String(item.operator_id)}}
+                                                        onClick={(event) => event.stopPropagation()}>
+                                                        账号ID：{item.operator_id}
+                                                    </Typography.Text>
+                                                ) : null}
+                                            </span>
+                                            <Button
+                                                className="detail"
+                                                size="small"
+                                                type="link"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    logDetailRef.current?.open(item?.id);
+                                                }}>
+                                                查看详情
+                                            </Button>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className={styles.empty}>
-                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
-                            </div>
-                        )}
-                    </div>
-                    <div className={styles.logDetail}>
-                        {renderLogDetail()}
-                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className={styles.empty}>
+                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
+                        </div>
+                    )}
                 </div>
             </Spin>
             {total > 0 && (
@@ -966,8 +1172,6 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                         showSizeChanger={false}
                         onChange={(nextPage) => {
                             setPage(nextPage);
-                            setActiveLogId(undefined);
-                            setLogDetail(undefined);
                         }}
                     />
                 </div>
@@ -979,7 +1183,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
         <ProModal
             ref={modalRef}
             title={<Title>订单信息</Title>}
-            width={600}
+            width={550}
             modalProps={{
                 footer: null,
                 forceRender: true,
@@ -996,16 +1200,11 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                     setOrderInfo(undefined);
                     setInfo(undefined);
                     setInfoLoading(false);
-                    setLogType(ALL_VALUE);
-                    setOperatorType(ALL_VALUE);
-                    setRange(undefined);
                     setPage(1);
                     setTotal(0);
                     setLogs([]);
                     setLogLoading(false);
-                    setActiveLogId(undefined);
-                    setLogDetail(undefined);
-                    setLogDetailLoading(false);
+                    logDetailRef.current?.reset();
                 },
             } as any}>
             <div className={styles.modalBody}>
@@ -1025,6 +1224,15 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                 <Refund
                     ref={refundRef}
                     onSuccess={onRefundSuccess}
+                />
+                <LogDetail
+                    ref={logDetailRef}
+                    logTypes={logTypes}
+                    operatorTypes={operatorTypes}
+                    logTypeColor={logTypeColor}
+                    orderEnums={orderEnums}
+                    payTypes={payTypes}
+                    channelNames={channelNames}
                 />
             </div>
         </ProModal>
