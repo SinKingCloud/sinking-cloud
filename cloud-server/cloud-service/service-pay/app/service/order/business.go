@@ -330,15 +330,10 @@ func (s *service) Refound(id int64, money float64, operatorId int64) error {
 	}
 
 	newRefundAmount := info.RefundAmount + refundMoney
-	newStatus := info.Status
-	if refundMoney == 0 || newRefundAmount >= info.PayAmount {
-		newStatus = order_status.Refunded
-	}
+	newStatus := order_status.Refunded
 	update := &orderRepository.UpdateOrder{
 		RefundAmount: newRefundAmount,
-	}
-	if newStatus != info.Status {
-		update.Status = newStatus
+		Status:       order_status.Refunded,
 	}
 	after := *info
 	after.RefundAmount = newRefundAmount
