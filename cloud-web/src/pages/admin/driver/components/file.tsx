@@ -383,6 +383,10 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
                     confirmLoading: submitLoading,
                     okText: "提交",
                     cancelText: "取消",
+                    style: {
+                        top: 100,
+                        paddingBottom: 100,
+                    },
                     mask: {
                         closable: true,
                     },

@@ -325,6 +325,10 @@ export default (): React.ReactNode => {
                         okText: "提交",
                         cancelText: "取消",
                         footer: channelInfoLoading ? null : undefined,
+                        style: {
+                            top: 100,
+                            paddingBottom: 100,
+                        },
                         afterClose: () => {
                             channelForm.resetFields();
                             setChannelSubmitting(false);

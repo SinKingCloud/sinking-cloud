@@ -368,6 +368,10 @@ const Certificate = forwardRef<CertificateRef, CertificateProps>(({control}, ref
             width={540}
             modalProps={{
                 footer: null,
+                style: {
+                    top: 100,
+                    paddingBottom: 100,
+                },
                 mask: {
                     closable: true,
                 },

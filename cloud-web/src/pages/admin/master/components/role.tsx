@@ -72,6 +72,10 @@ const Role = forwardRef<RoleRef, RoleProps>(({control, onSuccess}, ref) => {
             width={340}
             modalProps={{
                 confirmLoading: submitting,
+                style: {
+                    top: 100,
+                    paddingBottom: 100,
+                },
                 mask: {
                     closable: true,
                 },

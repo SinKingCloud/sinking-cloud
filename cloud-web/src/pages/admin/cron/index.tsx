@@ -449,7 +449,10 @@ export default (): React.ReactNode => {
                         okText: "提交",
                         cancelText: "取消",
                         footer: formInfoLoading ? null : undefined,
-                        style: {top: 30},
+                        style: {
+                            top: 100,
+                            paddingBottom: 100,
+                        },
                         afterClose: () => {
                             form.resetFields();
                             setFormSubmitting(false);
@@ -538,6 +541,10 @@ export default (): React.ReactNode => {
                     modalProps={{
                         forceRender: true,
                         footer: null,
+                        style: {
+                            top: 100,
+                            paddingBottom: 100,
+                        },
                         mask: {
                             closable: true,
                         },

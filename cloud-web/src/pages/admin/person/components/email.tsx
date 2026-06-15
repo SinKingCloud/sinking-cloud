@@ -158,6 +158,10 @@ const Email = forwardRef<EmailRef, EmailProps>((props, ref) => {
                     confirmLoading: loading,
                     okButtonProps: {style: {minWidth: 72}},
                     cancelButtonProps: {style: {minWidth: 72}},
+                    style: {
+                        top: 100,
+                        paddingBottom: 100,
+                    },
                     destroyOnHidden: true,
                     forceRender: true,
                 } as any}>

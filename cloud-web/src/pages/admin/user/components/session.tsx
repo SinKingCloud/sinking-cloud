@@ -177,6 +177,10 @@ const Session = forwardRef<SessionRef, SessionProps>(({control}, ref) => {
             width={910}
             modalProps={{
                 footer: null,
+                style: {
+                    top: 100,
+                    paddingBottom: 100,
+                },
                 mask: {
                     closable: true,
                 },

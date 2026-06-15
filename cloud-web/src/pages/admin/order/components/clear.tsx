@@ -53,6 +53,10 @@ const Clear = forwardRef<ClearRef, ClearProps>(({onSuccess}, ref) => {
                 okText: "提交",
                 cancelText: "取消",
                 forceRender: true,
+                style: {
+                    top: 100,
+                    paddingBottom: 100,
+                },
                 mask: {
                     closable: true,
                 },

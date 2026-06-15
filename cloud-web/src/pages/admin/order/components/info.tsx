@@ -814,6 +814,10 @@ const LogDetail = forwardRef<LogDetailRef, any>(({
             modalProps={{
                 footer: null,
                 forceRender: true,
+                style: {
+                    top: 100,
+                    paddingBottom: 100,
+                },
                 mask: {
                     closable: true,
                 },
@@ -1196,6 +1200,10 @@ const Info = forwardRef<InfoRef, InfoProps>(({
             modalProps={{
                 footer: null,
                 forceRender: true,
+                style: {
+                    top: 100,
+                    paddingBottom: 100,
+                },
                 mask: {
                     closable: true,
                 },

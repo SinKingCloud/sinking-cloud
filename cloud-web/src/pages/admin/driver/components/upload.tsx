@@ -394,6 +394,10 @@ const FileUploadModal = forwardRef<FileUploadModalRef, FileUploadModalProps>(({s
             modalProps={{
                 forceRender: true,
                 destroyOnHidden: false,
+                style: {
+                    top: 100,
+                    paddingBottom: 100,
+                },
                 mask: {
                     closable: !loading,
                 },

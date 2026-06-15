@@ -309,6 +309,10 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
                     okText: "提交",
                     cancelText: "取消",
                     footer: infoLoading ? null : undefined,
+                    style: {
+                        top: 100,
+                        paddingBottom: 100,
+                    },
                     afterClose: () => {
                         form.resetFields();
                         setSubmitLoading(false);

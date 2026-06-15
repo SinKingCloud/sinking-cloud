@@ -62,6 +62,10 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref) => {
             afterClose={() => form.resetFields()}
             modalProps={{
                 confirmLoading: loading,
+                style: {
+                    top: 100,
+                    paddingBottom: 100,
+                },
                 destroyOnHidden: true,
                 forceRender: true,
             } as any}>

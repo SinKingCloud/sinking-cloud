@@ -888,6 +888,10 @@ export default (): React.ReactNode => {
                         okButtonProps: {
                             disabled: formLoading,
                         },
+                        style: {
+                            top: 100,
+                            paddingBottom: 100,
+                        },
                         afterClose: () => {
                             form.resetFields();
                             setFormLoading(false);

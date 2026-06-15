@@ -240,6 +240,10 @@ const Info = forwardRef<InfoRef, InfoProps>(({control, statusOptions, onSuccess}
                 okText: "提交",
                 cancelText: "取消",
                 forceRender: true,
+                style: {
+                    top: 100,
+                    paddingBottom: 100,
+                },
                 afterClose: () => {
                     form.resetFields();
                     setFormSubmitting(false);

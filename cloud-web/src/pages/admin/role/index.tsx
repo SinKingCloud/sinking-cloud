@@ -448,6 +448,10 @@ export default (): React.ReactNode => {
                         forceRender: true,
                         okText: "提交",
                         cancelText: "取消",
+                        style: {
+                            top: 100,
+                            paddingBottom: 100,
+                        },
                         afterClose: () => {
                             form.resetFields();
                             setFormSubmitting(false);
