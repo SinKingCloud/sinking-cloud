@@ -19,7 +19,8 @@ export const admin = [
     {
         path: "index",
         component: "@/pages/admin/index",
-        title: "网站概览",
+        title: "系统首页",
+        icon: "icon-home",
         name: AdminPageCode.INDEX,
     },
     {

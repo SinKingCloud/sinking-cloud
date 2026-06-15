@@ -247,7 +247,8 @@ const RightTop: React.FC = () => {
                              <Icon type="RightOutlined"></Icon>
                          </li>
                          <li className={menuItem} onClick={() => historyPush("admin.person.session")}>
-                             <div className={menuItemLabel}><Icon type="DeploymentUnitOutlined" className={menuItemLeadIcon}/>会话管理
+                             <div className={menuItemLabel}><Icon type="DeploymentUnitOutlined"
+                                                                  className={menuItemLeadIcon}/>会话管理
                              </div>
                              <Icon type="RightOutlined"></Icon>
                          </li>
@@ -345,8 +346,22 @@ const SKLayout: React.FC = () => {
         fillRouteMap(adminRoutes || []);
         return map;
     }, []);
-    const currentMenus = useMemo(() => getMenuItems(adminMenus, '/' + adminPath, true), [adminMenus]);
-    const currentMenusWithHidden = useMemo(() => getMenuItems(adminMenus, '/' + adminPath, false), [adminMenus]);
+    const adminIndexMenu = useMemo(() => {
+        const routeItem = adminRoutes?.[0] || {};
+        return {
+            path: getFullPathByName(routeItem.name),
+            title: routeItem?.title,
+            name: routeItem?.name,
+            icon: routeItem?.icon,
+            component: routeItem?.component,
+        };
+    }, []);
+    const visibleAdminMenus = useMemo(() => [
+        adminIndexMenu,
+        ...adminMenus.filter((item: any) => item?.name !== adminIndexMenu?.name),
+    ], [adminIndexMenu, adminMenus]);
+    const currentMenus = useMemo(() => getMenuItems(visibleAdminMenus, '/' + adminPath, true), [visibleAdminMenus]);
+    const currentMenusWithHidden = useMemo(() => getMenuItems(visibleAdminMenus, '/' + adminPath, false), [visibleAdminMenus]);
     const localMenusWithHidden = useMemo(() => getMenuItems(adminRoutes, '/' + adminPath, false), []);
     const transformAdminMenus = (menus: any[]): any[] => {
         if (!Array.isArray(menus) || menus.length <= 0) {
