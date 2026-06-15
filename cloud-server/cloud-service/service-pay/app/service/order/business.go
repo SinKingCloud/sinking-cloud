@@ -333,7 +333,7 @@ func (s *service) Refound(id int64, money float64, operatorId int64) error {
 	newStatus := order_status.Refunded
 	update := &orderRepository.UpdateOrder{
 		RefundAmount: newRefundAmount,
-		Status:       order_status.Refunded,
+		Status:       newStatus,
 	}
 	after := *info
 	after.RefundAmount = newRefundAmount
