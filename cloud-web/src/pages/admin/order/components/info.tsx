@@ -648,6 +648,7 @@ const CHANGE_FIELD_LABELS: Record<string, string> = {
     before_info: "变更前值",
     after_info: "变更后值",
 };
+const MONEY_CHANGE_FIELDS = ["amount", "pay_amount", "refund_amount"];
 
 const getChangeFieldLabel = (field: string) => CHANGE_FIELD_LABELS[field] || field;
 
@@ -674,6 +675,9 @@ const formatChangeValue = (field: string, value: any, enums?: any) => {
     const enumData = getChangeEnumData(field, enums);
     if (enumData) {
         return enumText(enumData, value);
+    }
+    if (MONEY_CHANGE_FIELDS.includes(field)) {
+        return formatMoney(value);
     }
     if (typeof value === "string") {
         const parsed = parseJsonValue(value);
