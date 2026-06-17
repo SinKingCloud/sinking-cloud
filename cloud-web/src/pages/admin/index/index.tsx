@@ -130,9 +130,9 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             position: 'absolute',
             zIndex: 0,
             top: '50%',
-            right: '8px',
-            width: '320px',
-            opacity: isDarkMode ? 0.32 : 0.44,
+            right: '-18px',
+            width: '390px',
+            opacity: isDarkMode ? 0.5 : 0.68,
             color: token.colorPrimary,
             display: 'flex',
             alignItems: 'center',
@@ -141,18 +141,18 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             pointerEvents: 'none',
         },
         '.overview-visual svg': {
-            width: '320px',
-            height: '130px',
+            width: '390px',
+            height: '164px',
         },
         '@media (max-width: 900px)': {
             '.overview-visual': {
-                right: '-8px',
-                width: '220px',
-                opacity: isDarkMode ? 0.26 : 0.34,
+                right: '-42px',
+                width: '260px',
+                opacity: isDarkMode ? 0.38 : 0.5,
             },
             '.overview-visual svg': {
-                width: '220px',
-                height: '90px',
+                width: '260px',
+                height: '110px',
             },
         },
         '@media (max-width: 520px)': {
@@ -175,13 +175,13 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
                 lineHeight: '20px',
             },
             '.overview-visual': {
-                right: '-36px',
-                width: '160px',
-                opacity: isDarkMode ? 0.2 : 0.28,
+                right: '-54px',
+                width: '190px',
+                opacity: isDarkMode ? 0.28 : 0.38,
             },
             '.overview-visual svg': {
-                width: '160px',
-                height: '66px',
+                width: '190px',
+                height: '80px',
             },
         },
     },
@@ -449,37 +449,71 @@ const AvatarEffect = () => (
 );
 
 const WelcomeGraphic = () => (
-    <svg viewBox="0 0 340 152" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 420 176" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <linearGradient id="centerCore" x1="118" y1="28" x2="222" y2="124" gradientUnits="userSpaceOnUse">
-                <stop stopColor="currentColor" stopOpacity=".30"/>
-                <stop offset="1" stopColor="currentColor" stopOpacity=".08"/>
+            <linearGradient id="welcomeFlowMain" x1="30" y1="40" x2="400" y2="138" gradientUnits="userSpaceOnUse">
+                <stop stopColor="currentColor" stopOpacity=".95"/>
+                <stop offset=".52" stopColor="#13c2c2" stopOpacity=".88"/>
+                <stop offset="1" stopColor="#52c41a" stopOpacity=".72"/>
             </linearGradient>
+            <linearGradient id="welcomeFlowSoft" x1="36" y1="128" x2="390" y2="48" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#52c41a" stopOpacity=".12"/>
+                <stop offset=".5" stopColor="currentColor" stopOpacity=".46"/>
+                <stop offset="1" stopColor="#13c2c2" stopOpacity=".18"/>
+            </linearGradient>
+            <radialGradient id="welcomeCoreGlow" cx="50%" cy="50%" r="50%">
+                <stop stopColor="#13c2c2" stopOpacity=".86"/>
+                <stop offset=".48" stopColor="currentColor" stopOpacity=".42"/>
+                <stop offset="1" stopColor="currentColor" stopOpacity="0"/>
+            </radialGradient>
+            <filter id="welcomeFlowGlow" x="-12%" y="-35%" width="124%" height="170%">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
         </defs>
-        <path d="M48 76H292" stroke="currentColor" strokeOpacity=".12"/>
-        <path d="M170 22V130" stroke="currentColor" strokeOpacity=".10"/>
-        <path d="M74 44H114L134 76L114 108H74L54 76L74 44Z" fill="currentColor" fillOpacity=".08"/>
-        <path d="M226 44H266L286 76L266 108H226L206 76L226 44Z" fill="currentColor" fillOpacity=".08"/>
-        <path d="M136 26H204L238 76L204 126H136L102 76L136 26Z" fill="url(#centerCore)"/>
-        <path d="M136 26H204L238 76L204 126H136L102 76L136 26Z" stroke="currentColor" strokeOpacity=".28"/>
-        <path d="M124 76H216" stroke="currentColor" strokeWidth="2" strokeOpacity=".20"/>
-        <path d="M170 40V112" stroke="currentColor" strokeWidth="2" strokeOpacity=".16"/>
-        <path d="M136 54H204M128 76H212M136 98H204" stroke="currentColor" strokeOpacity=".18"/>
-        <path d="M82 76H122M218 76H258" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeOpacity=".34"/>
-        <path d="M114 44L136 54M114 108L136 98M226 44L204 54M226 108L204 98" stroke="currentColor" strokeOpacity=".24"/>
-        <rect x="150" y="58" width="40" height="8" rx="4" fill="currentColor" fillOpacity=".36"/>
-        <rect x="142" y="76" width="56" height="8" rx="4" fill="currentColor" fillOpacity=".22"/>
-        <rect x="154" y="94" width="32" height="8" rx="4" fill="currentColor" fillOpacity=".16"/>
-        <path d="M72 122C116 112 142 118 170 126C198 134 226 136 276 122" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeOpacity=".18">
-            <animate attributeName="stroke-opacity" values=".12;.28;.12" dur="4.2s" repeatCount="indefinite"/>
+        <path d="M30 112C92 42 150 42 206 88C258 132 310 138 390 58" stroke="url(#welcomeFlowSoft)" strokeWidth="28" strokeLinecap="round" filter="url(#welcomeFlowGlow)">
+            <animate attributeName="stroke-opacity" values=".18;.36;.2;.18" dur="5.4s" repeatCount="indefinite"/>
         </path>
-        <path d="M72 30C116 40 142 34 170 26C198 18 226 16 276 30" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeOpacity=".12">
-            <animate attributeName="stroke-opacity" values=".08;.22;.08" dur="4.6s" repeatCount="indefinite"/>
+        <path d="M26 92C86 32 142 34 198 82C254 130 314 134 396 74" stroke="url(#welcomeFlowMain)" strokeWidth="5" strokeLinecap="round" strokeDasharray="44 260" filter="url(#welcomeFlowGlow)">
+            <animate attributeName="stroke-dashoffset" values="0;-304" dur="4.2s" repeatCount="indefinite"/>
+            <animate attributeName="stroke-width" values="4.2;6;4.2" dur="4.2s" repeatCount="indefinite"/>
         </path>
-        <rect x="102" y="74" width="136" height="4" rx="2" fill="currentColor" fillOpacity=".38">
-            <animate attributeName="x" values="102;116;102" dur="5s" repeatCount="indefinite"/>
-            <animate attributeName="width" values="136;108;136" dur="5s" repeatCount="indefinite"/>
-        </rect>
+        <path d="M54 132C122 82 168 98 222 126C274 152 326 134 384 100" stroke="url(#welcomeFlowMain)" strokeWidth="3.2" strokeLinecap="round" strokeDasharray="30 210">
+            <animate attributeName="stroke-dashoffset" values="0;-240" dur="5.8s" repeatCount="indefinite"/>
+            <animate attributeName="stroke-opacity" values=".28;.82;.28" dur="5.8s" repeatCount="indefinite"/>
+        </path>
+        <path d="M58 42C118 64 150 56 194 36C246 12 304 28 374 54" stroke="url(#welcomeFlowMain)" strokeWidth="3" strokeLinecap="round" strokeDasharray="28 190">
+            <animate attributeName="stroke-dashoffset" values="0;-218" dur="5s" repeatCount="indefinite"/>
+            <animate attributeName="stroke-opacity" values=".22;.72;.22" dur="5s" repeatCount="indefinite"/>
+        </path>
+        <g filter="url(#welcomeFlowGlow)">
+            <circle cx="286" cy="90" r="34" fill="url(#welcomeCoreGlow)">
+                <animate attributeName="r" values="28;38;28" dur="4.6s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values=".46;.78;.46" dur="4.6s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="286" cy="90" r="10" fill="currentColor" fillOpacity=".5"/>
+            <circle cx="286" cy="90" r="18" stroke="#13c2c2" strokeOpacity=".62" strokeWidth="2" strokeDasharray="18 12">
+                <animateTransform attributeName="transform" type="rotate" from="0 286 90" to="360 286 90" dur="8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="348" cy="68" r="5" fill="#52c41a" fillOpacity=".9">
+                <animate attributeName="opacity" values=".28;1;.28" dur="3.2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="226" cy="126" r="4" fill="#13c2c2" fillOpacity=".86">
+                <animate attributeName="opacity" values=".25;.9;.25" dur="3.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="174" cy="48" r="4" fill="currentColor" fillOpacity=".8">
+                <animate attributeName="opacity" values=".2;.86;.2" dur="4.2s" repeatCount="indefinite"/>
+            </circle>
+        </g>
+        <g stroke="currentColor" strokeOpacity=".18" strokeLinecap="round">
+            <path d="M248 56H326"/>
+            <path d="M236 148H336"/>
+            <path d="M116 28H194"/>
+            <path d="M320 118H386"/>
+        </g>
     </svg>
 );
 
