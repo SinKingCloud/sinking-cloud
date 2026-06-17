@@ -132,7 +132,7 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             top: '50%',
             right: '-18px',
             width: '390px',
-            opacity: isDarkMode ? 0.5 : 0.68,
+            opacity: isDarkMode ? 0.5 : 0.66,
             color: token.colorPrimary,
             display: 'flex',
             alignItems: 'center',
@@ -177,7 +177,7 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             '.overview-visual': {
                 right: '-54px',
                 width: '190px',
-                opacity: isDarkMode ? 0.28 : 0.38,
+                opacity: isDarkMode ? 0.3 : 0.4,
             },
             '.overview-visual svg': {
                 width: '190px',
@@ -451,68 +451,114 @@ const AvatarEffect = () => (
 const WelcomeGraphic = () => (
     <svg viewBox="0 0 420 176" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <linearGradient id="welcomeFlowMain" x1="30" y1="40" x2="400" y2="138" gradientUnits="userSpaceOnUse">
-                <stop stopColor="currentColor" stopOpacity=".95"/>
-                <stop offset=".52" stopColor="#13c2c2" stopOpacity=".88"/>
-                <stop offset="1" stopColor="#52c41a" stopOpacity=".72"/>
+            <linearGradient id="cyberLine" x1="40" y1="42" x2="398" y2="132" gradientUnits="userSpaceOnUse">
+                <stop stopColor="currentColor" stopOpacity=".16"/>
+                <stop offset=".45" stopColor="currentColor" stopOpacity=".88"/>
+                <stop offset=".68" stopColor="#13c2c2" stopOpacity=".9"/>
+                <stop offset="1" stopColor="#597ef7" stopOpacity=".48"/>
             </linearGradient>
-            <linearGradient id="welcomeFlowSoft" x1="36" y1="128" x2="390" y2="48" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#52c41a" stopOpacity=".12"/>
-                <stop offset=".5" stopColor="currentColor" stopOpacity=".46"/>
-                <stop offset="1" stopColor="#13c2c2" stopOpacity=".18"/>
+            <linearGradient id="cyberScan" x1="0" y1="0" x2="92" y2="0" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#13c2c2" stopOpacity="0"/>
+                <stop offset=".46" stopColor="#13c2c2" stopOpacity=".68"/>
+                <stop offset="1" stopColor="currentColor" stopOpacity="0"/>
             </linearGradient>
-            <radialGradient id="welcomeCoreGlow" cx="50%" cy="50%" r="50%">
-                <stop stopColor="#13c2c2" stopOpacity=".86"/>
-                <stop offset=".48" stopColor="currentColor" stopOpacity=".42"/>
+            <radialGradient id="cyberGlowCore" cx="50%" cy="50%" r="50%">
+                <stop stopColor="#13c2c2" stopOpacity=".74"/>
+                <stop offset=".42" stopColor="currentColor" stopOpacity=".3"/>
                 <stop offset="1" stopColor="currentColor" stopOpacity="0"/>
             </radialGradient>
-            <filter id="welcomeFlowGlow" x="-12%" y="-35%" width="124%" height="170%">
-                <feGaussianBlur stdDeviation="4" result="blur"/>
+            <filter id="cyberGlow" x="-18%" y="-36%" width="136%" height="172%">
+                <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#13c2c2" floodOpacity=".44"/>
+                <feDropShadow dx="0" dy="0" stdDeviation="8" floodColor="#1677ff" floodOpacity=".22"/>
+            </filter>
+            <filter id="cyberSoftBlur" x="-20%" y="-40%" width="140%" height="180%">
+                <feGaussianBlur stdDeviation="8" result="blur"/>
                 <feMerge>
                     <feMergeNode in="blur"/>
                     <feMergeNode in="SourceGraphic"/>
                 </feMerge>
             </filter>
+            <clipPath id="cyberClip">
+                <path d="M226 36H318L364 88L318 140H226L180 88L226 36Z"/>
+            </clipPath>
         </defs>
-        <path d="M30 112C92 42 150 42 206 88C258 132 310 138 390 58" stroke="url(#welcomeFlowSoft)" strokeWidth="28" strokeLinecap="round" filter="url(#welcomeFlowGlow)">
-            <animate attributeName="stroke-opacity" values=".18;.36;.2;.18" dur="5.4s" repeatCount="indefinite"/>
-        </path>
-        <path d="M26 92C86 32 142 34 198 82C254 130 314 134 396 74" stroke="url(#welcomeFlowMain)" strokeWidth="5" strokeLinecap="round" strokeDasharray="44 260" filter="url(#welcomeFlowGlow)">
-            <animate attributeName="stroke-dashoffset" values="0;-304" dur="4.2s" repeatCount="indefinite"/>
-            <animate attributeName="stroke-width" values="4.2;6;4.2" dur="4.2s" repeatCount="indefinite"/>
-        </path>
-        <path d="M54 132C122 82 168 98 222 126C274 152 326 134 384 100" stroke="url(#welcomeFlowMain)" strokeWidth="3.2" strokeLinecap="round" strokeDasharray="30 210">
-            <animate attributeName="stroke-dashoffset" values="0;-240" dur="5.8s" repeatCount="indefinite"/>
-            <animate attributeName="stroke-opacity" values=".28;.82;.28" dur="5.8s" repeatCount="indefinite"/>
-        </path>
-        <path d="M58 42C118 64 150 56 194 36C246 12 304 28 374 54" stroke="url(#welcomeFlowMain)" strokeWidth="3" strokeLinecap="round" strokeDasharray="28 190">
-            <animate attributeName="stroke-dashoffset" values="0;-218" dur="5s" repeatCount="indefinite"/>
-            <animate attributeName="stroke-opacity" values=".22;.72;.22" dur="5s" repeatCount="indefinite"/>
-        </path>
-        <g filter="url(#welcomeFlowGlow)">
-            <circle cx="286" cy="90" r="34" fill="url(#welcomeCoreGlow)">
-                <animate attributeName="r" values="28;38;28" dur="4.6s" repeatCount="indefinite"/>
-                <animate attributeName="opacity" values=".46;.78;.46" dur="4.6s" repeatCount="indefinite"/>
-            </circle>
-            <circle cx="286" cy="90" r="10" fill="currentColor" fillOpacity=".5"/>
-            <circle cx="286" cy="90" r="18" stroke="#13c2c2" strokeOpacity=".62" strokeWidth="2" strokeDasharray="18 12">
-                <animateTransform attributeName="transform" type="rotate" from="0 286 90" to="360 286 90" dur="8s" repeatCount="indefinite"/>
-            </circle>
-            <circle cx="348" cy="68" r="5" fill="#52c41a" fillOpacity=".9">
-                <animate attributeName="opacity" values=".28;1;.28" dur="3.2s" repeatCount="indefinite"/>
-            </circle>
-            <circle cx="226" cy="126" r="4" fill="#13c2c2" fillOpacity=".86">
-                <animate attributeName="opacity" values=".25;.9;.25" dur="3.8s" repeatCount="indefinite"/>
-            </circle>
-            <circle cx="174" cy="48" r="4" fill="currentColor" fillOpacity=".8">
-                <animate attributeName="opacity" values=".2;.86;.2" dur="4.2s" repeatCount="indefinite"/>
-            </circle>
-        </g>
-        <g stroke="currentColor" strokeOpacity=".18" strokeLinecap="round">
-            <path d="M248 56H326"/>
-            <path d="M236 148H336"/>
-            <path d="M116 28H194"/>
-            <path d="M320 118H386"/>
+        <g transform="translate(8 0)">
+            <g clipPath="url(#cyberClip)" opacity=".72">
+                <g stroke="currentColor" strokeOpacity=".13">
+                    <path d="M180 62H364"/>
+                    <path d="M180 88H364"/>
+                    <path d="M180 114H364"/>
+                    <path d="M226 36V140"/>
+                    <path d="M272 36V140"/>
+                    <path d="M318 36V140"/>
+                </g>
+                <rect x="130" y="36" width="64" height="104" fill="url(#cyberScan)" opacity=".72">
+                    <animate attributeName="x" values="130;364;130" dur="5.8s" repeatCount="indefinite"/>
+                </rect>
+            </g>
+
+            <g stroke="url(#cyberLine)" strokeLinecap="round" filter="url(#cyberGlow)">
+                <path d="M32 58H112L180 88H232" strokeWidth="3" strokeDasharray="42 210">
+                    <animate attributeName="stroke-dashoffset" values="0;-252" dur="3.8s" repeatCount="indefinite"/>
+                </path>
+                <path d="M34 118H114L180 88H232" strokeWidth="3" strokeDasharray="36 216">
+                    <animate attributeName="stroke-dashoffset" values="0;-252" dur="4.5s" repeatCount="indefinite"/>
+                </path>
+                <path d="M312 88H352L398 48" strokeWidth="3.2" strokeDasharray="42 200">
+                    <animate attributeName="stroke-dashoffset" values="0;-242" dur="4.1s" repeatCount="indefinite"/>
+                </path>
+                <path d="M312 88H352L400 128" strokeWidth="3.2" strokeDasharray="42 200">
+                    <animate attributeName="stroke-dashoffset" values="0;-242" dur="4.7s" repeatCount="indefinite"/>
+                </path>
+            </g>
+
+            <g filter="url(#cyberSoftBlur)">
+                <circle cx="272" cy="88" r="46" fill="url(#cyberGlowCore)">
+                    <animate attributeName="opacity" values=".42;.72;.42" dur="4.2s" repeatCount="indefinite"/>
+                </circle>
+            </g>
+
+            <g filter="url(#cyberGlow)">
+                <circle cx="272" cy="88" r="14" fill="currentColor" fillOpacity=".46"/>
+                <circle cx="272" cy="88" r="28" stroke="#13c2c2" strokeOpacity=".66" strokeWidth="2.2" strokeDasharray="18 12">
+                    <animateTransform attributeName="transform" type="rotate" from="0 272 88" to="360 272 88" dur="7.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="272" cy="88" r="40" stroke="currentColor" strokeOpacity=".28" strokeWidth="1.6" strokeDasharray="5 12">
+                    <animateTransform attributeName="transform" type="rotate" from="360 272 88" to="0 272 88" dur="12s" repeatCount="indefinite"/>
+                </circle>
+            </g>
+
+            <g fill="currentColor">
+                <rect x="222" y="58" width="56" height="5" rx="2.5" fillOpacity=".42"/>
+                <rect x="218" y="78" width="42" height="6" rx="3" fillOpacity=".30"/>
+                <rect x="284" y="78" width="32" height="6" rx="3" fill="#13c2c2" fillOpacity=".52"/>
+                <rect x="222" y="100" width="88" height="6" rx="3" fillOpacity=".24"/>
+                <rect x="238" y="118" width="56" height="5" rx="2.5" fill="#597ef7" fillOpacity=".38"/>
+            </g>
+
+            <g filter="url(#cyberGlow)">
+                <circle cx="112" cy="58" r="4.5" fill="#13c2c2">
+                    <animate attributeName="opacity" values=".32;1;.32" dur="3.2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="114" cy="118" r="4.5" fill="#13c2c2">
+                    <animate attributeName="opacity" values=".22;.9;.22" dur="3.8s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="398" cy="48" r="5" fill="#597ef7">
+                    <animate attributeName="opacity" values=".24;.95;.24" dur="4s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="400" cy="128" r="5" fill="#597ef7">
+                    <animate attributeName="opacity" values=".28;1;.28" dur="4.4s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="180" cy="88" r="4" fill="currentColor" fillOpacity=".72"/>
+                <circle cx="364" cy="88" r="4" fill="currentColor" fillOpacity=".58"/>
+            </g>
+
+            <g stroke="currentColor" strokeOpacity=".20" strokeLinecap="round">
+                <path d="M54 34H142"/>
+                <path d="M52 144H154"/>
+                <path d="M324 28H392"/>
+                <path d="M334 150H404"/>
+            </g>
         </g>
     </svg>
 );
