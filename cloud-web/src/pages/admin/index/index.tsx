@@ -30,63 +30,60 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
     overviewCard: {
         position: 'relative',
         overflow: 'hidden',
-        minHeight: '154px',
+        minHeight: '146px',
         borderRadius: token.borderRadiusLG,
         border: 'none',
-        background: isDarkMode
-            ? `linear-gradient(135deg, ${token.colorBgContainer} 0%, rgba(22,119,255,0.16) 100%)`
-            : `linear-gradient(135deg, ${token.colorBgContainer} 0%, ${token.colorPrimaryBg} 58%, ${token.colorBgContainer} 100%)`,
+        background: token.colorPrimaryBg,
         boxShadow: isDarkMode ? 'none' : '0 12px 32px rgba(22, 119, 255, 0.10)',
         '&::before': {
             content: '""',
             position: 'absolute',
             top: 0,
-            right: 0,
-            width: '54%',
+            left: 0,
+            width: '100%',
             height: '100%',
             backgroundImage: `
                 linear-gradient(${isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(22,119,255,0.07)'} 1px, transparent 1px),
                 linear-gradient(90deg, ${isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(22,119,255,0.07)'} 1px, transparent 1px)
             `,
             backgroundSize: '22px 22px',
-            maskImage: 'linear-gradient(90deg, transparent 0%, #000 38%, #000 100%)',
-            opacity: isDarkMode ? 0.5 : 0.75,
-        },
-        '&::after': {
-            content: '""',
-            position: 'absolute',
-            inset: 0,
-            background: `linear-gradient(115deg, transparent 0%, transparent 45%, ${isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.42)'} 52%, transparent 60%, transparent 100%)`,
-            transform: 'translateX(-45%)',
-            transition: 'transform .8s ease',
+            opacity: isDarkMode ? 0.42 : 0.58,
             pointerEvents: 'none',
-        },
-        '&:hover::after': {
-            transform: 'translateX(45%)',
         },
         '.ant-card-body': {
             position: 'relative',
             zIndex: 1,
             height: '100%',
-            padding: '18px 26px',
+            padding: '12px 24px',
+        },
+        '@media (max-width: 520px)': {
+            minHeight: 'auto',
+            '.ant-card-body': {
+                padding: '16px',
+            },
         },
     },
     overview: {
+        position: 'relative',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '22px',
+        minHeight: '128px',
         '.overview-main': {
+            position: 'relative',
+            zIndex: 1,
             flex: 1,
             minWidth: 0,
             display: 'flex',
             alignItems: 'center',
             gap: '18px',
         },
+        '.overview-info': {
+            minWidth: 0,
+        },
         '.overview-avatar-wrap': {
             position: 'relative',
-            width: '112px',
-            height: '112px',
+            width: '140px',
+            height: '140px',
             flexShrink: 0,
             display: 'flex',
             alignItems: 'center',
@@ -108,11 +105,19 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             background: token.colorPrimary,
             boxShadow: isDarkMode ? 'none' : '0 12px 26px rgba(22, 119, 255, 0.18)',
         },
+        '.overview-avatar img': {
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+        },
         '.overview-name': {
             fontSize: '22px',
             fontWeight: 600,
             color: token.colorTextHeading,
             lineHeight: '30px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
         },
         '.overview-desc': {
             display: 'block',
@@ -122,32 +127,61 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             lineHeight: '22px',
         },
         '.overview-visual': {
-            flexShrink: 0,
-            width: '300px',
+            position: 'absolute',
+            zIndex: 0,
+            top: '50%',
+            right: '8px',
+            width: '320px',
+            opacity: isDarkMode ? 0.32 : 0.44,
             color: token.colorPrimary,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            transform: 'translateY(-50%)',
+            pointerEvents: 'none',
         },
         '.overview-visual svg': {
-            width: '300px',
-            height: '122px',
+            width: '320px',
+            height: '130px',
         },
         '@media (max-width: 900px)': {
-            flexDirection: 'column',
-            alignItems: 'stretch',
             '.overview-visual': {
-                width: '100%',
+                right: '-8px',
+                width: '220px',
+                opacity: isDarkMode ? 0.26 : 0.34,
+            },
+            '.overview-visual svg': {
+                width: '220px',
+                height: '90px',
             },
         },
         '@media (max-width: 520px)': {
-            gap: '18px',
+            minHeight: '92px',
             '.overview-main': {
-                alignItems: 'flex-start',
+                alignItems: 'center',
+                gap: '12px',
+            },
+            '.overview-avatar-wrap': {
+                width: '96px',
+                height: '96px',
+            },
+            '.overview-name': {
+                fontSize: '18px',
+                lineHeight: '26px',
+            },
+            '.overview-desc': {
+                marginTop: '4px',
+                fontSize: '13px',
+                lineHeight: '20px',
+            },
+            '.overview-visual': {
+                right: '-36px',
+                width: '160px',
+                opacity: isDarkMode ? 0.2 : 0.28,
             },
             '.overview-visual svg': {
-                width: '240px',
-                height: '100px',
+                width: '160px',
+                height: '66px',
             },
         },
     },
@@ -531,7 +565,7 @@ export default (): React.ReactNode => {
                             <div className="overview-avatar-wrap">
                                 <AvatarEffect/>
                                 <Avatar
-                                    size={68}
+                                    size={{xs: 64, sm: 76, md: 88, lg: 88, xl: 88, xxl: 88, xxxl: 88}}
                                     src={user?.system?.avatar || undefined}
                                     alt={nickName}
                                     className="overview-avatar"
@@ -539,7 +573,7 @@ export default (): React.ReactNode => {
                                     {nickName?.slice(0, 1)}
                                 </Avatar>
                             </div>
-                            <div>
+                            <div className="overview-info">
                                 <div className="overview-name">{getGreeting()}，{nickName}</div>
                                 <Typography.Text className="overview-desc">
                                     欢迎回来，今天也把重要的事情稳稳推进。
