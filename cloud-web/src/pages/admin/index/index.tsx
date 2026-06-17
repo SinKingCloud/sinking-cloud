@@ -1,6 +1,7 @@
 import React from 'react';
 import {Body, Title} from "sinking-antd";
-import {Avatar, Button, Card, Col, Row, Typography} from "antd";
+import {Avatar, Card, Typography} from "antd";
+import {RightOutlined, SettingOutlined, ShoppingCartOutlined, TeamOutlined, UserOutlined} from "@ant-design/icons";
 import {createStyles} from 'antd-style';
 import {useModel} from "umi";
 import {historyPush} from "@/utils/route";
@@ -13,12 +14,6 @@ type QuickItem = {
     tone: string;
     bg: string;
     icon: React.ReactNode;
-};
-
-type NoteItem = {
-    title: string;
-    content: string;
-    time: string;
 };
 
 const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
@@ -202,7 +197,7 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
     },
     quickGrid: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+        gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
         gap: '10px',
         '@media (max-width: 1080px)': {
             gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
@@ -235,6 +230,7 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
+            fontSize: '20px',
         },
         '.quick-main': {
             flex: 1,
@@ -267,132 +263,7 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             transform: 'translateX(2px)',
         },
     },
-    noteList: {
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    noteItem: {
-        display: 'flex',
-        gap: '10px',
-        padding: '11px 0',
-        borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.06)' : token.colorBorderSecondary}`,
-        '&:first-child': {
-            paddingTop: 0,
-        },
-        '&:last-child': {
-            borderBottom: 'none',
-            paddingBottom: 0,
-        },
-        '.note-mark': {
-            width: '24px',
-            height: '24px',
-            borderRadius: token.borderRadiusSM,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            color: token.colorPrimary,
-            background: isDarkMode ? 'rgba(22,119,255,0.14)' : token.colorFillTertiary,
-        },
-        '.note-main': {
-            flex: 1,
-            minWidth: 0,
-        },
-        '.note-top': {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '10px',
-        },
-        '.note-title': {
-            minWidth: 0,
-            fontSize: '13px',
-            fontWeight: 600,
-            color: token.colorTextHeading,
-            lineHeight: '20px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-        },
-        '.note-time': {
-            flexShrink: 0,
-            fontSize: '12px',
-            color: token.colorTextTertiary,
-            lineHeight: '18px',
-        },
-        '.note-content': {
-            marginTop: '4px',
-            fontSize: '12px',
-            color: token.colorTextSecondary,
-            lineHeight: '18px',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-        },
-    },
 }));
-
-const ModuleIcon = ({type}: { type: 'user' | 'order' | 'master' | 'cron' | 'config' | 'driver' }) => {
-    const paths = {
-        user: (
-            <>
-                <circle cx="16" cy="12" r="5" stroke="currentColor" strokeWidth="2"/>
-                <path d="M7 26C8.5 20 23.5 20 25 26" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </>
-        ),
-        order: (
-            <>
-                <rect x="8" y="6" width="16" height="20" rx="4" stroke="currentColor" strokeWidth="2"/>
-                <path d="M12 12H20M12 17H20M12 22H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </>
-        ),
-        master: (
-            <>
-                <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="2"/>
-                <circle cx="22" cy="15" r="3" stroke="currentColor" strokeWidth="2"/>
-                <path d="M6 26C7.2 21.5 17 21.5 18 26M18 25C18.8 22.4 25.5 22.4 26 25" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </>
-        ),
-        cron: (
-            <>
-                <circle cx="16" cy="16" r="10" stroke="currentColor" strokeWidth="2"/>
-                <path d="M16 10V16L20 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </>
-        ),
-        config: (
-            <>
-                <path d="M16 11A5 5 0 1 1 16 21A5 5 0 0 1 16 11Z" stroke="currentColor" strokeWidth="2"/>
-                <path d="M16 5V8M16 24V27M5 16H8M24 16H27M8.2 8.2L10.4 10.4M21.6 21.6L23.8 23.8M23.8 8.2L21.6 10.4M10.4 21.6L8.2 23.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </>
-        ),
-        driver: (
-            <>
-                <rect x="7" y="8" width="18" height="16" rx="4" stroke="currentColor" strokeWidth="2"/>
-                <path d="M11 13H21M11 18H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                <circle cx="21" cy="19" r="1.6" fill="currentColor"/>
-            </>
-        ),
-    };
-    return (
-        <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {paths[type]}
-        </svg>
-    );
-};
-
-const ArrowIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-);
-
-const NoteIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M4 2.5H10.5L13 5V13.5H4V2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-        <path d="M10.5 2.5V5H13M6 8H11M6 10.5H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-);
 
 const AvatarEffect = () => (
     <svg className="overview-avatar-effect" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -570,7 +441,7 @@ const quickItems: QuickItem[] = [
         route: AdminPageCode.WEB_USER,
         tone: '#1677ff',
         bg: 'rgba(22,119,255,0.1)',
-        icon: <ModuleIcon type="user"/>,
+        icon: <UserOutlined/>,
     },
     {
         title: '订单管理',
@@ -578,7 +449,7 @@ const quickItems: QuickItem[] = [
         route: AdminPageCode.WEB_ORDER,
         tone: '#fa8c16',
         bg: 'rgba(250,140,22,0.12)',
-        icon: <ModuleIcon type="order"/>,
+        icon: <ShoppingCartOutlined/>,
     },
     {
         title: '员工管理',
@@ -586,15 +457,7 @@ const quickItems: QuickItem[] = [
         route: AdminPageCode.SYSTEM_MASTER,
         tone: '#13c2c2',
         bg: 'rgba(19,194,194,0.1)',
-        icon: <ModuleIcon type="master"/>,
-    },
-    {
-        title: '任务管理',
-        desc: '定时任务、执行日志',
-        route: AdminPageCode.SYSTEM_CRON,
-        tone: '#722ed1',
-        bg: 'rgba(114,46,209,0.1)',
-        icon: <ModuleIcon type="cron"/>,
+        icon: <TeamOutlined/>,
     },
     {
         title: '系统设置',
@@ -602,22 +465,8 @@ const quickItems: QuickItem[] = [
         route: AdminPageCode.SYSTEM_CONFIG,
         tone: '#52c41a',
         bg: 'rgba(82,196,26,0.12)',
-        icon: <ModuleIcon type="config"/>,
+        icon: <SettingOutlined/>,
     },
-    {
-        title: '存储管理',
-        desc: '文件、场景、存储通道',
-        route: AdminPageCode.SYSTEM_DRIVER,
-        tone: '#eb2f96',
-        bg: 'rgba(235,47,150,0.1)',
-        icon: <ModuleIcon type="driver"/>,
-    },
-];
-
-const notes: NoteItem[] = [
-    {title: '补单检查', content: '核对发货中订单，确认是否存在需要手动补单的记录。', time: '今天 09:30'},
-    {title: '上线前确认', content: '检查支付通道、存储通道和任务脚本配置。', time: '昨天 18:10'},
-    {title: '后台优化', content: '继续统一弹窗间距、列表密度和移动端显示效果。', time: '06-15 14:20'},
 ];
 
 const getGreeting = () => {
@@ -666,58 +515,28 @@ export default (): React.ReactNode => {
                     </div>
                 </Card>
 
-                <Row gutter={[10, 10]}>
-                    <Col xs={24} xl={16}>
-                        <Card className={styles.contentCard} title={<Title>快捷访问</Title>} variant="borderless">
-                            <div className={styles.quickGrid}>
-                                {quickItems.map((item) => (
-                                    <div
-                                        className={styles.quickItem}
-                                        key={item.title}
-                                        onClick={() => historyPush(item.route)}
-                                    >
-                                        <div className="quick-icon" style={{color: item.tone, background: item.bg}}>
-                                            {item.icon}
-                                        </div>
-                                        <div className="quick-main">
-                                            <span className="quick-title">{item.title}</span>
-                                            <span className="quick-desc">{item.desc}</span>
-                                        </div>
-                                        <span className="quick-arrow">
-                                            <ArrowIcon/>
-                                        </span>
-                                    </div>
-                                ))}
+                <Card className={styles.contentCard} title={<Title>快捷访问</Title>} variant="borderless">
+                    <div className={styles.quickGrid}>
+                        {quickItems.map((item) => (
+                            <div
+                                className={styles.quickItem}
+                                key={item.title}
+                                onClick={() => historyPush(item.route)}
+                            >
+                                <div className="quick-icon" style={{color: item.tone, background: item.bg}}>
+                                    {item.icon}
+                                </div>
+                                <div className="quick-main">
+                                    <span className="quick-title">{item.title}</span>
+                                    <span className="quick-desc">{item.desc}</span>
+                                </div>
+                                <span className="quick-arrow">
+                                    <RightOutlined/>
+                                </span>
                             </div>
-                        </Card>
-                    </Col>
-
-                    <Col xs={24} xl={8}>
-                        <Card
-                            className={styles.contentCard}
-                            title={<Title>便签事项</Title>}
-                            variant="borderless"
-                            extra={<Button type="link" size="small">查看全部</Button>}
-                        >
-                            <div className={styles.noteList}>
-                                {notes.map((item) => (
-                                    <div className={styles.noteItem} key={item.title}>
-                                        <span className="note-mark">
-                                            <NoteIcon/>
-                                        </span>
-                                        <div className="note-main">
-                                            <div className="note-top">
-                                                <Typography.Text className="note-title">{item.title}</Typography.Text>
-                                                <span className="note-time">{item.time}</span>
-                                            </div>
-                                            <div className="note-content">{item.content}</div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </Card>
-                    </Col>
-                </Row>
+                        ))}
+                    </div>
+                </Card>
             </div>
         </Body>
     );
