@@ -82,7 +82,7 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
     profile: {
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
+        justifyContent: "flex-start",
         gap: "16px",
         padding: "20px",
         borderRight: `1px solid ${isDarkMode ? "rgba(255,255,255,0.07)" : token.colorBorderSecondary}`,
@@ -131,11 +131,6 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
         },
         ".stack-tag": {
             flexShrink: 0,
-        },
-        ".profile-footer": {
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "6px",
         },
         ".ant-tag": {
             marginInlineEnd: 0,
@@ -434,7 +429,7 @@ export default (): React.ReactNode => {
         <Card className={styles.card} variant="borderless">
             <div className={styles.header}>
                 <div>
-                    <span className="overview-title">项目概览</span>
+                    <span className="overview-title">服务概览</span>
                     <span className="overview-desc">面向个人业务沉淀的微服务后台基础系统</span>
                 </div>
                 <div className="overview-health">
@@ -446,7 +441,7 @@ export default (): React.ReactNode => {
                 <div className={styles.profile}>
                     <div>
                         <span className="profile-title">Sinking Cloud</span>
-                        <span className="profile-desc">围绕用户、权限、支付、存储和任务调度构建的后台系统。</span>
+                        <span className="profile-desc">基于sinking技术栈的微服务中后台系统</span>
                     </div>
                     <div className="stack-list">
                         <div className="stack-item">
@@ -470,11 +465,6 @@ export default (): React.ReactNode => {
                             </span>
                             <Tag color="success" className="stack-tag">Consul</Tag>
                         </div>
-                    </div>
-                    <div className="profile-footer">
-                        <Tag>微服务</Tag>
-                        <Tag>RPC</Tag>
-                        <Tag>Queue</Tag>
                     </div>
                 </div>
                 <div className={styles.servicePanel}>
