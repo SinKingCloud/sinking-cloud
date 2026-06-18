@@ -11,6 +11,7 @@ import {
     TeamOutlined,
 } from "@ant-design/icons";
 import {createStyles} from "antd-style";
+import {Title} from "sinking-antd";
 
 type ServiceItem = {
     name: string;
@@ -26,37 +27,20 @@ type ServiceItem = {
 const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
     card: {
         borderRadius: token.borderRadiusLG,
+        ".ant-card-head": {
+            marginBottom: 0,
+            borderBottom: "none",
+            boxShadow: `inset 0 -1px 0 ${isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(5,5,5,0.06)"}`,
+        },
         ".ant-card-body": {
             padding: 0,
         },
     },
-    header: {
+    extra: {
         display: "flex",
         alignItems: "center",
-        justifyContent: "space-between",
-        gap: "16px",
-        padding: "18px 20px",
-        borderBottom: `1px solid ${isDarkMode ? "rgba(255,255,255,0.07)" : token.colorBorderSecondary}`,
-        ".overview-title": {
-            display: "block",
-            color: token.colorTextHeading,
-            fontSize: "15px",
-            fontWeight: 600,
-            lineHeight: "22px",
-        },
-        ".overview-desc": {
-            display: "block",
-            marginTop: "3px",
-            color: token.colorTextTertiary,
-            fontSize: "12px",
-            lineHeight: "18px",
-        },
-        ".overview-health": {
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            flexShrink: 0,
-        },
+        gap: "10px",
+        flexShrink: 0,
         ".health-dot": {
             position: "relative",
             width: "8px",
@@ -64,11 +48,6 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             borderRadius: "50%",
             background: token.colorSuccess,
             boxShadow: `0 0 0 4px ${isDarkMode ? "rgba(82,196,26,0.12)" : "rgba(82,196,26,0.14)"}`,
-        },
-        "@media (max-width: 576px)": {
-            alignItems: "flex-start",
-            flexDirection: "column",
-            padding: "16px",
         },
     },
     summary: {
@@ -137,7 +116,7 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
         },
         "@media (max-width: 960px)": {
             borderRight: "none",
-            borderBottom: `1px solid ${isDarkMode ? "rgba(255,255,255,0.07)" : token.colorBorderSecondary}`,
+            borderBottom: `1px solid ${isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(5,5,5,0.06)"}`,
         },
         "@media (max-width: 576px)": {
             padding: "16px",
@@ -426,17 +405,17 @@ export default (): React.ReactNode => {
     const {styles} = useStyles();
 
     return (
-        <Card className={styles.card} variant="borderless">
-            <div className={styles.header}>
-                <div>
-                    <span className="overview-title">服务概览</span>
-                    <span className="overview-desc">面向个人业务沉淀的微服务后台基础系统</span>
-                </div>
-                <div className="overview-health">
+        <Card
+            className={styles.card}
+            variant="borderless"
+            title={<Title>服务概览</Title>}
+            extra={
+                <div className={styles.extra}>
                     <span className="health-dot"/>
                     <Tag color="success">服务正常</Tag>
                 </div>
-            </div>
+            }
+        >
             <div className={styles.summary}>
                 <div className={styles.profile}>
                     <div>
