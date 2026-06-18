@@ -4,6 +4,7 @@ import {Card} from "antd";
 import {createStyles} from "antd-style";
 import Info from "./components/info";
 import Link from "./components/link";
+import Overview from "./components/overview";
 
 const useStyles: any = createStyles((): any => ({
     card: {
@@ -22,6 +23,7 @@ export default (): React.ReactNode => {
                 <Info/>
                 <Link/>
             </Card>
+            <Overview/>
         </Body>
     );
 };
