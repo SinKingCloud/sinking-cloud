@@ -12,6 +12,7 @@ import (
 	"service-admin/app/repository/user_role"
 	"service-admin/app/service/auth"
 	"service-admin/app/service/config"
+	"service-admin/app/service/dashboard"
 	"service-admin/app/service/rbac"
 	"service-admin/app/service/user"
 
@@ -20,10 +21,11 @@ import (
 )
 
 var (
-	Config config.Service
-	Auth   auth.Service
-	Rbac   rbac.Service
-	User   user.Service
+	Config    config.Service
+	Auth      auth.Service
+	Rbac      rbac.Service
+	User      user.Service
+	Dashboard dashboard.Service
 )
 
 func Init() {
@@ -44,4 +46,5 @@ func Init() {
 	Auth = auth.NewService(authService, sessionRepository, userRepository, database, cache)
 	Rbac = rbac.NewService(roleRepository, permissionRepository, userRoleRepository, roleMenuRepository, menuRepository, menuPermRepository, database, cache)
 	User = user.NewService(userRepository, sessionRepository, userRoleRepository, configRepository, Rbac, database, cache)
+	Dashboard = dashboard.NewService(global.App.Consul, cache)
 }

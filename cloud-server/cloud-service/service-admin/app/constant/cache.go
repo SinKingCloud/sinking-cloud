@@ -32,4 +32,7 @@ const (
 
 	CacheNameWithEnum = "Enum_"           //枚举缓存
 	CacheTimeWithEnum = int64(600 * 1000) //枚举缓存储存时间
+
+	CacheNameWithDashboardServiceCount = "DashboardServiceCount" //首页服务数量
+	CacheTimeWithDashboardServiceCount = int64(1 * 60 * 1000)    //首页服务数量储存时间
 )

@@ -17,6 +17,10 @@ func loadAdmin(s *sinking_web.Engine) {
 		page.ANY("/menu", context.HandleFunc(controller.Page.Menu))       //菜单列表
 		page.ANY("/control", context.HandleFunc(controller.Page.Control)) //控件列表
 	}
+	dashboard := g.Group("/dashboard")
+	{
+		dashboard.ANY("/service", context.HandleFunc(controller.Dashboard.Service)) //服务数量
+	}
 	person := g.Group("/person")
 	{
 		person.ANY("/info", context.HandleFunc(controller.Person.Info))     //个人信息
