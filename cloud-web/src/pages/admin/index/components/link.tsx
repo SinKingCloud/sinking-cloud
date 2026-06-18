@@ -9,7 +9,6 @@ type QuickItem = {
     title: string;
     desc: string;
     route: string;
-    tone: string;
     icon: React.ReactNode;
 };
 
@@ -55,6 +54,7 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
+            color: token.colorPrimary,
             fontSize: "21px",
         },
         ".quick-main": {
@@ -110,28 +110,24 @@ const quickItems: QuickItem[] = [
         title: "用户管理",
         desc: "用户资料、实名、会话",
         route: AdminPageCode.WEB_USER,
-        tone: "#1677ff",
         icon: <UserOutlined/>,
     },
     {
         title: "订单管理",
         desc: "订单详情、发货、退款",
         route: AdminPageCode.WEB_ORDER,
-        tone: "#fa8c16",
         icon: <ShoppingCartOutlined/>,
     },
     {
         title: "员工管理",
         desc: "员工资料、角色、会话",
         route: AdminPageCode.SYSTEM_MASTER,
-        tone: "#13c2c2",
         icon: <TeamOutlined/>,
     },
     {
         title: "系统设置",
         desc: "站点、界面、支付配置",
         route: AdminPageCode.SYSTEM_CONFIG,
-        tone: "#52c41a",
         icon: <SettingOutlined/>,
     },
 ];
@@ -148,7 +144,7 @@ export default (): React.ReactNode => {
                         key={item.title}
                         onClick={() => historyPush(item.route)}
                     >
-                        <div className="quick-icon" style={{color: item.tone}}>
+                        <div className="quick-icon">
                             {item.icon}
                         </div>
                         <div className="quick-main">

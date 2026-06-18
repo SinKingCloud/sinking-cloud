@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {Card, Tag} from "antd";
 import {
     CloudServerOutlined,
@@ -12,13 +12,13 @@ import {
 } from "@ant-design/icons";
 import {createStyles} from "antd-style";
 import {Title} from "sinking-antd";
+import {getServiceCount} from "@/service/admin/dashboard";
 
 type ServiceItem = {
     name: string;
     code: string;
     desc: string;
     count: number;
-    status: string;
     scope: string;
     tone: string;
     icon: React.ReactNode;
@@ -46,8 +46,8 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             width: "8px",
             height: "8px",
             borderRadius: "50%",
-            background: token.colorSuccess,
-            boxShadow: `0 0 0 4px ${isDarkMode ? "rgba(82,196,26,0.12)" : "rgba(82,196,26,0.14)"}`,
+            background: "var(--overview-status-color)",
+            boxShadow: `0 0 0 4px var(--overview-status-shadow)`,
         },
     },
     summary: {
@@ -234,7 +234,7 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             display: "inline-flex",
             alignItems: "center",
             gap: "5px",
-            color: token.colorSuccess,
+            color: "var(--service-status-color)",
             fontSize: "12px",
             lineHeight: "18px",
             flexShrink: 0,
@@ -292,7 +292,7 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             width: "6px",
             height: "6px",
             borderRadius: "50%",
-            background: token.colorSuccess,
+            background: "var(--service-status-color)",
         },
         "@media (max-width: 1180px)": {
             "&:nth-child(2n)": {
@@ -323,8 +323,7 @@ const services: ServiceItem[] = [
         name: "网关服务",
         code: "gateway",
         desc: "统一入口、鉴权转发与路由治理",
-        count: 1,
-        status: "运行中",
+        count: 0,
         scope: "入口",
         tone: "#1677ff",
         icon: <GatewayOutlined/>,
@@ -333,8 +332,7 @@ const services: ServiceItem[] = [
         name: "授权服务",
         code: "auth",
         desc: "验证码、登录授权与身份校验",
-        count: 1,
-        status: "运行中",
+        count: 0,
         scope: "鉴权",
         tone: "#722ed1",
         icon: <LockOutlined/>,
@@ -343,8 +341,7 @@ const services: ServiceItem[] = [
         name: "推送服务",
         code: "socket",
         desc: "站内连接、实时消息与事件推送",
-        count: 1,
-        status: "运行中",
+        count: 0,
         scope: "推送",
         tone: "#13c2c2",
         icon: <SendOutlined/>,
@@ -353,8 +350,7 @@ const services: ServiceItem[] = [
         name: "定时任务",
         code: "cron",
         desc: "任务编排、定时执行与运行日志",
-        count: 1,
-        status: "运行中",
+        count: 0,
         scope: "调度",
         tone: "#faad14",
         icon: <ScheduleOutlined/>,
@@ -363,8 +359,7 @@ const services: ServiceItem[] = [
         name: "支付服务",
         code: "pay",
         desc: "订单、余额、支付通道与回调",
-        count: 1,
-        status: "运行中",
+        count: 0,
         scope: "交易",
         tone: "#fa541c",
         icon: <CreditCardOutlined/>,
@@ -373,8 +368,7 @@ const services: ServiceItem[] = [
         name: "存储服务",
         code: "driver",
         desc: "文件场景、存储通道与资源预览",
-        count: 1,
-        status: "运行中",
+        count: 0,
         scope: "存储",
         tone: "#2f54eb",
         icon: <DatabaseOutlined/>,
@@ -383,8 +377,7 @@ const services: ServiceItem[] = [
         name: "用户服务",
         code: "user",
         desc: "前台用户、实名信息与会话能力",
-        count: 1,
-        status: "运行中",
+        count: 0,
         scope: "用户",
         tone: "#52c41a",
         icon: <TeamOutlined/>,
@@ -393,8 +386,7 @@ const services: ServiceItem[] = [
         name: "后台服务",
         code: "admin",
         desc: "后台员工、权限菜单与系统配置",
-        count: 1,
-        status: "运行中",
+        count: 0,
         scope: "后台",
         tone: "#eb2f96",
         icon: <CloudServerOutlined/>,
@@ -403,6 +395,44 @@ const services: ServiceItem[] = [
 
 export default (): React.ReactNode => {
     const {styles} = useStyles();
+    const [serviceCount, setServiceCount] = useState<Record<string, number>>({});
+    const serviceList = useMemo(() => services.map((item) => ({
+        ...item,
+        count: serviceCount?.[item.code] ?? item.count,
+    })), [serviceCount]);
+    const overviewStatus = useMemo(() => {
+        const normalCount = serviceList.filter((item) => item.count > 0).length;
+        if (normalCount === serviceList.length) {
+            return {
+                color: "success",
+                text: "服务正常",
+                dotColor: "#52c41a",
+                dotShadow: "rgba(82,196,26,0.14)",
+            };
+        }
+        if (normalCount === 0) {
+            return {
+                color: "error",
+                text: "服务异常",
+                dotColor: "#ff4d4f",
+                dotShadow: "rgba(255,77,79,0.14)",
+            };
+        }
+        return {
+            color: "warning",
+            text: "部分异常",
+            dotColor: "#faad14",
+            dotShadow: "rgba(250,173,20,0.16)",
+        };
+    }, [serviceList]);
+
+    useEffect(() => {
+        void getServiceCount({
+            onSuccess: (res) => {
+                setServiceCount(res?.data || {});
+            },
+        });
+    }, []);
 
     return (
         <Card
@@ -410,9 +440,15 @@ export default (): React.ReactNode => {
             variant="borderless"
             title={<Title>服务概览</Title>}
             extra={
-                <div className={styles.extra}>
+                <div
+                    className={styles.extra}
+                    style={{
+                        "--overview-status-color": overviewStatus.dotColor,
+                        "--overview-status-shadow": overviewStatus.dotShadow,
+                    } as React.CSSProperties}
+                >
                     <span className="health-dot"/>
-                    <Tag color="success">服务正常</Tag>
+                    <Tag color={overviewStatus.color}>{overviewStatus.text}</Tag>
                 </div>
             }
         >
@@ -426,21 +462,21 @@ export default (): React.ReactNode => {
                         <div className="stack-item">
                             <span>
                                 <span className="stack-name">sinking-antd</span>
-                                <span className="stack-desc">后台界面组件体系</span>
+                                <span className="stack-desc">界面组件体系</span>
                             </span>
-                            <Tag className="stack-tag">UI</Tag>
+                            <Tag className="stack-tag">Ui</Tag>
                         </div>
                         <div className="stack-item">
                             <span>
                                 <span className="stack-name">sinking-go</span>
-                                <span className="stack-desc">后端业务服务框架</span>
+                                <span className="stack-desc">后端服务框架</span>
                             </span>
                             <Tag color="processing" className="stack-tag">Go</Tag>
                         </div>
                         <div className="stack-item">
                             <span>
                                 <span className="stack-name">sinking-consule</span>
-                                <span className="stack-desc">服务注册发现与节点治理</span>
+                                <span className="stack-desc">服务注册发现与配置管理</span>
                             </span>
                             <Tag color="success" className="stack-tag">Consul</Tag>
                         </div>
@@ -448,11 +484,14 @@ export default (): React.ReactNode => {
                 </div>
                 <div className={styles.servicePanel}>
                     <div className={styles.serviceList}>
-                        {services.map((item) => (
+                        {serviceList.map((item) => (
                             <div
                                 className={styles.service}
                                 key={item.code}
-                                style={{"--service-color": item.tone} as React.CSSProperties}
+                                style={{
+                                    "--service-color": item.tone,
+                                    "--service-status-color": item.count > 0 ? "#52c41a" : "#ff4d4f",
+                                } as React.CSSProperties}
                             >
                                 <span className="service-watermark">{item.icon}</span>
                                 <div className="service-main">
@@ -468,7 +507,7 @@ export default (): React.ReactNode => {
                                         </span>
                                         <span className="service-status">
                                             <span className="status-dot"/>
-                                            {item.status}
+                                            {item.count > 0 ? "健康" : "异常"}
                                         </span>
                                     </div>
                                     <span className="service-desc">{item.desc}</span>
