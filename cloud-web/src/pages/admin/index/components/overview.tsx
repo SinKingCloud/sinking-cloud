@@ -24,7 +24,7 @@ type ServiceItem = {
     icon: React.ReactNode;
 };
 
-const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
+const useStyles: any = createStyles(({css, token, isDarkMode}: any): any => ({
     card: {
         borderRadius: token.borderRadiusLG,
         overflow: "hidden",
@@ -74,6 +74,12 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
         borderBottomLeftRadius: token.borderRadiusLG,
         background: isDarkMode ? "rgba(255,255,255,0.012)" : token.colorFillAlter,
         overflow: "hidden",
+        isolation: "isolate",
+        transform: "perspective(920px) rotateX(var(--profile-rotate-x, 0deg)) rotateY(var(--profile-rotate-y, 0deg)) scale(var(--profile-scale, 1))",
+        transformOrigin: "50% 50%",
+        transformStyle: "preserve-3d",
+        transition: "transform var(--profile-transform-duration, 0.18s) ease-out, box-shadow 0.32s ease, background-color 0.32s ease",
+        willChange: "transform",
         "&:before": {
             position: "absolute",
             top: "-58px",
@@ -85,8 +91,8 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
                 isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.7)"
             } 48%, transparent 78%)`,
             content: "\"\"",
-            filter: "blur(24px)",
-            opacity: isDarkMode ? 0.18 : 0.22,
+            filter: "blur(36px)",
+            opacity: isDarkMode ? 0.09 : 0.12,
             transform: "rotate(-18deg)",
         },
         "&:after": {
@@ -100,13 +106,32 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
                 isDarkMode ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)"
             } 50%, transparent 78%)`,
             content: "\"\"",
-            filter: "blur(26px)",
-            opacity: isDarkMode ? 0.14 : 0.16,
+            filter: "blur(38px)",
+            opacity: isDarkMode ? 0.08 : 0.1,
             transform: "rotate(18deg)",
         },
         ".profile-head, .stack-list": {
             position: "relative",
+            zIndex: 2,
+            transform: "translateZ(22px)",
+        },
+        ".profile-ambient": {
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            pointerEvents: "none",
+        },
+        ".profile-shine": {
+            position: "absolute",
+            inset: 0,
             zIndex: 1,
+            opacity: 0,
+            pointerEvents: "none",
+            background: `radial-gradient(circle at var(--profile-shine-x, 50%) var(--profile-shine-y, 50%), ${
+                isDarkMode ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.78)"
+            } 0%, ${isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(22,119,255,0.10)"} 18%, transparent 48%)`,
+            transition: "opacity 0.24s ease",
+            mixBlendMode: isDarkMode ? "screen" : "normal",
         },
         ".profile-title": {
             display: "block",
@@ -135,7 +160,10 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
             padding: "11px 12px",
             border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.07)" : token.colorBorderSecondary}`,
             borderRadius: token.borderRadius,
-            background: token.colorBgContainer,
+            background: isDarkMode ? "rgba(20,20,20,0.58)" : "rgba(255,255,255,0.78)",
+            backdropFilter: "blur(10px)",
+            transform: "translateZ(0)",
+            transition: "transform 0.26s ease, border-color 0.26s ease, box-shadow 0.26s ease, background-color 0.26s ease",
         },
         ".stack-name": {
             display: "block",
@@ -164,7 +192,93 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
         "@media (max-width: 576px)": {
             padding: "16px",
         },
+        "@media (hover: hover)": {
+            "&:hover": {
+                "--profile-scale": "1.012",
+                boxShadow: isDarkMode ? "inset 0 1px 0 rgba(255,255,255,0.04)" : "0 14px 34px rgba(22,119,255,0.07)",
+            },
+            "&:hover .profile-shine": {
+                opacity: isDarkMode ? 0.32 : 0.44,
+            },
+            ".stack-item:hover": {
+                transform: "perspective(640px) translateZ(14px) translateY(-1px)",
+                borderColor: isDarkMode ? "rgba(255,255,255,0.12)" : "rgba(22,119,255,0.18)",
+                boxShadow: isDarkMode ? "0 10px 22px rgba(0,0,0,0.22)" : "0 10px 22px rgba(22,119,255,0.08)",
+                background: isDarkMode ? "rgba(24,24,24,0.66)" : "rgba(255,255,255,0.86)",
+            },
+        },
     },
+    profileMotion: css`
+        .profile-ambient::before {
+            content: '';
+            position: absolute;
+            inset: -52px;
+            background:
+                radial-gradient(circle at 24% 18%, ${isDarkMode ? "rgba(255,255,255,0.10)" : "rgba(22,119,255,0.16)"} 0%, transparent 36%),
+                radial-gradient(circle at 80% 72%, ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(19,194,194,0.13)"} 0%, transparent 38%),
+                linear-gradient(112deg, transparent 0 40%, ${isDarkMode ? "rgba(255,255,255,0.11)" : "rgba(22,119,255,0.16)"} 48%, transparent 58%) -220px 0 / 210px 100% no-repeat,
+                linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.024)" : "rgba(22,119,255,0.036)"} 1px, transparent 1px),
+                linear-gradient(0deg, ${isDarkMode ? "rgba(255,255,255,0.02)" : "rgba(19,194,194,0.03)"} 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 210px 100%, 32px 32px, 32px 32px;
+            opacity: ${isDarkMode ? 0.32 : 0.38};
+            filter: blur(2.5px);
+            transform: rotate(-7deg) translate3d(-18px, -12px, 0);
+            animation: overviewProfileScan 6.4s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+            -webkit-mask-image: linear-gradient(135deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.34) 58%, transparent 100%);
+            mask-image: linear-gradient(135deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.34) 58%, transparent 100%);
+        }
+
+        .profile-ambient::after {
+            content: '';
+            position: absolute;
+            right: -126px;
+            bottom: -104px;
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            background:
+                radial-gradient(circle, ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(22,119,255,0.13)"} 0%, transparent 46%),
+                conic-gradient(from 0deg, transparent 0 12%, ${isDarkMode ? "rgba(255,255,255,0.10)" : "rgba(22,119,255,0.16)"} 20%, transparent 34%, ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(19,194,194,0.13)"} 52%, transparent 72%, ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(47,84,235,0.12)"} 86%, transparent 100%);
+            filter: blur(36px);
+            opacity: ${isDarkMode ? 0.13 : 0.16};
+            transform: rotate(0deg) scale(1);
+            animation: overviewProfileOrbit 8s linear infinite;
+        }
+
+        &:hover .profile-ambient::before {
+            opacity: ${isDarkMode ? 0.42 : 0.48};
+            filter: blur(3.5px);
+        }
+
+        &:hover .profile-ambient::after {
+            opacity: ${isDarkMode ? 0.2 : 0.24};
+            filter: blur(42px);
+        }
+
+        @keyframes overviewProfileScan {
+            0% {
+                background-position: 0 0, 0 0, -220px 0, 0 0, 0 0;
+            }
+            50% {
+                background-position: 0 0, 0 0, 54% 0, 16px 16px, -16px -16px;
+            }
+            100% {
+                background-position: 0 0, 0 0, calc(100% + 220px) 0, 32px 32px, -32px -32px;
+            }
+        }
+
+        @keyframes overviewProfileOrbit {
+            0% {
+                transform: rotate(0deg) scale(0.94);
+            }
+            50% {
+                transform: rotate(180deg) scale(1.04);
+            }
+            100% {
+                transform: rotate(360deg) scale(0.94);
+            }
+        }
+    `,
     serviceList: {
         display: "grid",
         alignContent: "stretch",
@@ -490,6 +604,27 @@ export default (): React.ReactNode => {
         });
     }, []);
 
+    const handleProfileMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+        const target = event.currentTarget;
+        const rect = target.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width;
+        const y = (event.clientY - rect.top) / rect.height;
+        target.style.setProperty("--profile-rotate-x", `${((0.5 - y) * 12).toFixed(2)}deg`);
+        target.style.setProperty("--profile-rotate-y", `${((x - 0.5) * 15).toFixed(2)}deg`);
+        target.style.setProperty("--profile-shine-x", `${(x * 100).toFixed(1)}%`);
+        target.style.setProperty("--profile-shine-y", `${(y * 100).toFixed(1)}%`);
+        target.style.setProperty("--profile-transform-duration", "0.08s");
+    };
+
+    const handleProfileMouseLeave = (event: React.MouseEvent<HTMLDivElement>) => {
+        const target = event.currentTarget;
+        target.style.setProperty("--profile-rotate-x", "0deg");
+        target.style.setProperty("--profile-rotate-y", "0deg");
+        target.style.setProperty("--profile-shine-x", "50%");
+        target.style.setProperty("--profile-shine-y", "50%");
+        target.style.setProperty("--profile-transform-duration", "0.42s");
+    };
+
     return (
         <Card
             className={styles.card}
@@ -509,7 +644,13 @@ export default (): React.ReactNode => {
             }
         >
             <div className={styles.summary}>
-                <div className={styles.profile}>
+                <div
+                    className={`${styles.profile} ${styles.profileMotion}`}
+                    onMouseMove={handleProfileMouseMove}
+                    onMouseLeave={handleProfileMouseLeave}
+                >
+                    <span className="profile-ambient"/>
+                    <span className="profile-shine"/>
                     <div className="profile-head">
                         <span className="profile-title">Sinking Cloud</span>
                         <span className="profile-desc">基于sinking技术栈的微服务中后台系统</span>
