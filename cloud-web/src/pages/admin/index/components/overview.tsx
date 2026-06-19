@@ -27,6 +27,7 @@ type ServiceItem = {
 const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
     card: {
         borderRadius: token.borderRadiusLG,
+        overflow: "hidden",
         ".ant-card-head": {
             marginBottom: 0,
             borderBottom: "none",
@@ -34,6 +35,8 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
         },
         ".ant-card-body": {
             padding: 0,
+            overflow: "hidden",
+            borderRadius: `0 0 ${token.borderRadiusLG}px ${token.borderRadiusLG}px`,
         },
     },
     extra: {
@@ -54,6 +57,8 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
         display: "grid",
         gridTemplateColumns: "300px minmax(0, 1fr)",
         minHeight: "210px",
+        overflow: "hidden",
+        borderRadius: `0 0 ${token.borderRadiusLG}px ${token.borderRadiusLG}px`,
         "@media (max-width: 960px)": {
             gridTemplateColumns: "1fr",
         },
@@ -66,6 +71,7 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
         gap: "16px",
         padding: "20px",
         borderRight: `1px solid ${isDarkMode ? "rgba(255,255,255,0.07)" : token.colorBorderSecondary}`,
+        borderBottomLeftRadius: token.borderRadiusLG,
         background: isDarkMode ? "rgba(255,255,255,0.012)" : token.colorFillAlter,
         overflow: "hidden",
         "&:before": {
@@ -152,6 +158,7 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
         },
         "@media (max-width: 960px)": {
             borderRight: "none",
+            borderBottomLeftRadius: 0,
             borderBottom: `1px solid ${isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(5,5,5,0.06)"}`,
         },
         "@media (max-width: 576px)": {
@@ -211,6 +218,9 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
         },
         "&:nth-last-child(-n + 4)": {
             borderBottom: "none",
+        },
+        "&:last-child": {
+            borderBottomRightRadius: token.borderRadiusLG,
         },
         ".service-watermark": {
             position: "absolute",
@@ -341,14 +351,24 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
                 borderBottom: "none",
             },
         },
+        "@media (max-width: 960px)": {
+            "&:nth-last-child(2)": {
+                borderBottomLeftRadius: token.borderRadiusLG,
+            },
+        },
         "@media (max-width: 576px)": {
             minHeight: "112px",
             borderRight: "none",
             "&:nth-last-child(-n + 2)": {
                 borderBottom: `1px solid ${isDarkMode ? "rgba(255,255,255,0.07)" : token.colorBorderSecondary}`,
             },
+            "&:nth-last-child(2)": {
+                borderBottomLeftRadius: 0,
+            },
             "&:last-child": {
                 borderBottom: "none",
+                borderBottomLeftRadius: token.borderRadiusLG,
+                borderBottomRightRadius: token.borderRadiusLG,
             },
         },
     },
