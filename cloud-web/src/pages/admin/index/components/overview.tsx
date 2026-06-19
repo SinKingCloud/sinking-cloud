@@ -59,6 +59,7 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
         },
     },
     profile: {
+        position: "relative",
         display: "flex",
         flexDirection: "column",
         justifyContent: "flex-start",
@@ -66,6 +67,41 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => ({
         padding: "20px",
         borderRight: `1px solid ${isDarkMode ? "rgba(255,255,255,0.07)" : token.colorBorderSecondary}`,
         background: isDarkMode ? "rgba(255,255,255,0.012)" : token.colorFillAlter,
+        overflow: "hidden",
+        "&:before": {
+            position: "absolute",
+            top: "-58px",
+            right: "-72px",
+            width: "172px",
+            height: "172px",
+            borderRadius: "50%",
+            background: `radial-gradient(circle, ${token.colorPrimary} 0%, ${
+                isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.7)"
+            } 48%, transparent 78%)`,
+            content: "\"\"",
+            filter: "blur(24px)",
+            opacity: isDarkMode ? 0.18 : 0.22,
+            transform: "rotate(-18deg)",
+        },
+        "&:after": {
+            position: "absolute",
+            left: "-68px",
+            bottom: "-72px",
+            width: "178px",
+            height: "178px",
+            borderRadius: "50%",
+            background: `radial-gradient(circle, #13c2c2 0%, ${
+                isDarkMode ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)"
+            } 50%, transparent 78%)`,
+            content: "\"\"",
+            filter: "blur(26px)",
+            opacity: isDarkMode ? 0.14 : 0.16,
+            transform: "rotate(18deg)",
+        },
+        ".profile-head, .stack-list": {
+            position: "relative",
+            zIndex: 1,
+        },
         ".profile-title": {
             display: "block",
             color: token.colorTextHeading,
@@ -454,7 +490,7 @@ export default (): React.ReactNode => {
         >
             <div className={styles.summary}>
                 <div className={styles.profile}>
-                    <div>
+                    <div className="profile-head">
                         <span className="profile-title">Sinking Cloud</span>
                         <span className="profile-desc">基于sinking技术栈的微服务中后台系统</span>
                     </div>
