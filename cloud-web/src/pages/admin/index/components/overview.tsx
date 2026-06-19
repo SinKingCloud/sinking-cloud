@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from "react";
-import {Card, Tag} from "antd";
+import {Card, Spin, Tag} from "antd";
 import {
     CloudServerOutlined,
     CreditCardOutlined,
@@ -296,6 +296,17 @@ const useStyles: any = createStyles(({css, token, isDarkMode}: any): any => ({
         minWidth: 0,
         height: "100%",
     },
+    serviceLoading: {
+        height: "100%",
+        minHeight: "210px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: token.colorBgContainer,
+        "@media (max-width: 576px)": {
+            minHeight: "180px",
+        },
+    },
     service: {
         position: "relative",
         display: "flex",
@@ -566,6 +577,7 @@ const services: ServiceItem[] = [
 export default (): React.ReactNode => {
     const {styles} = useStyles();
     const [serviceCount, setServiceCount] = useState<Record<string, number>>({});
+    const [loading, setLoading] = useState(false);
     const serviceList = useMemo(() => services.map((item) => ({
         ...item,
         count: serviceCount?.[item.code] ?? item.count,
@@ -597,10 +609,13 @@ export default (): React.ReactNode => {
     }, [serviceList]);
 
     useEffect(() => {
+        setLoading(true);
         void getServiceCount({
             onSuccess: (res) => {
                 setServiceCount(res?.data || {});
             },
+        }).finally(() => {
+            setLoading(false);
         });
     }, []);
 
@@ -682,45 +697,51 @@ export default (): React.ReactNode => {
                     </div>
                 </div>
                 <div className={styles.servicePanel}>
-                    <div className={styles.serviceList}>
-                        {serviceList.map((item) => (
-                            <div
-                                className={styles.service}
-                                key={item.code}
-                                style={{
-                                    "--service-color": item.tone,
-                                    "--service-status-color": item.count > 0 ? "#52c41a" : "#ff4d4f",
-                                } as React.CSSProperties}
-                            >
-                                <span className="service-watermark">{item.icon}</span>
-                                <div className="service-main">
-                                    <div className="service-top">
-                                        <span className="service-title">
-                                            <span className="service-icon">
-                                                {item.icon}
+                    {loading ? (
+                        <div className={styles.serviceLoading}>
+                            <Spin/>
+                        </div>
+                    ) : (
+                        <div className={styles.serviceList}>
+                            {serviceList.map((item) => (
+                                <div
+                                    className={styles.service}
+                                    key={item.code}
+                                    style={{
+                                        "--service-color": item.tone,
+                                        "--service-status-color": item.count > 0 ? "#52c41a" : "#ff4d4f",
+                                    } as React.CSSProperties}
+                                >
+                                    <span className="service-watermark">{item.icon}</span>
+                                    <div className="service-main">
+                                        <div className="service-top">
+                                            <span className="service-title">
+                                                <span className="service-icon">
+                                                    {item.icon}
+                                                </span>
+                                                <span className="service-title-content">
+                                                    <span className="service-name">{item.name}</span>
+                                                    <span className="service-code">{item.code}</span>
+                                                </span>
                                             </span>
-                                            <span className="service-title-content">
-                                                <span className="service-name">{item.name}</span>
-                                                <span className="service-code">{item.code}</span>
+                                            <span className="service-status">
+                                                <span className="status-dot"/>
+                                                {item.count > 0 ? "健康" : "异常"}
                                             </span>
-                                        </span>
-                                        <span className="service-status">
-                                            <span className="status-dot"/>
-                                            {item.count > 0 ? "健康" : "异常"}
+                                        </div>
+                                        <span className="service-desc">{item.desc}</span>
+                                    </div>
+                                    <div className="service-footer">
+                                        <span className="service-code">{item.code}</span>
+                                        <span className="service-meta">
+                                            <span className="service-count">{item.count} 实例</span>
+                                            <span className="service-scope">{item.scope}</span>
                                         </span>
                                     </div>
-                                    <span className="service-desc">{item.desc}</span>
                                 </div>
-                                <div className="service-footer">
-                                    <span className="service-code">{item.code}</span>
-                                    <span className="service-meta">
-                                        <span className="service-count">{item.count} 实例</span>
-                                        <span className="service-scope">{item.scope}</span>
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </Card>
