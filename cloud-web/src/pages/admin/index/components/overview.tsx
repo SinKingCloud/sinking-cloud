@@ -618,11 +618,13 @@ export default (): React.ReactNode => {
 
     const handleProfileMouseLeave = (event: React.MouseEvent<HTMLDivElement>) => {
         const target = event.currentTarget;
-        target.style.setProperty("--profile-rotate-x", "0deg");
-        target.style.setProperty("--profile-rotate-y", "0deg");
+        target.style.setProperty("--profile-transform-duration", "0.55s");
         target.style.setProperty("--profile-shine-x", "50%");
         target.style.setProperty("--profile-shine-y", "50%");
-        target.style.setProperty("--profile-transform-duration", "0.42s");
+        requestAnimationFrame(() => {
+            target.style.setProperty("--profile-rotate-x", "0deg");
+            target.style.setProperty("--profile-rotate-y", "0deg");
+        });
     };
 
     return (
