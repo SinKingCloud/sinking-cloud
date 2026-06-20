@@ -1,4 +1,4 @@
-export const AVATAR_SCENE_ID = 1;
+export const SYSTEM_FILE_SCENE_ID = 1;
 
 export const getUploadUrl = (result: any) => {
     if (result?.url) {

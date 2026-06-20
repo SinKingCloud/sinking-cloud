@@ -5,7 +5,7 @@ import {createStyles} from "antd-style";
 import {useModel} from "umi";
 import {Upload, type UploadRef} from "@/pages/components/upload";
 import {updatePersonInfo} from "@/service/admin/person";
-import {AVATAR_SCENE_ID, getUploadUrl} from "@/utils/upload";
+import {SYSTEM_FILE_SCENE_ID, getUploadUrl} from "@/utils/upload";
 
 export interface AvatarProps {
     avatar?: string;
@@ -73,7 +73,7 @@ const AvatarUpload = forwardRef<AvatarRef, AvatarProps>((props, ref) => {
         }
         setLoading(true);
         const task = uploadRef.current?.upload?.({
-            sceneId: AVATAR_SCENE_ID,
+            sceneId: SYSTEM_FILE_SCENE_ID,
             accept: "image/*",
             onComplete: async (result: any) => {
                 const url = getUploadUrl(result);

@@ -3,7 +3,7 @@ import {App, Avatar, Col, Form, Input, Row, Select} from "antd";
 import {UserOutlined} from "@ant-design/icons";
 import {ProModal, ProModalRef, Title} from "sinking-antd";
 import {createStyles} from "antd-style";
-import {AVATAR_SCENE_ID, getUploadUrl} from "@/utils/upload";
+import {SYSTEM_FILE_SCENE_ID, getUploadUrl} from "@/utils/upload";
 import {Upload, type UploadRef} from "@/pages/components/upload";
 import {updateUser} from "@/service/admin/user";
 import {AdminControlCode} from "@/utils/permission";
@@ -126,7 +126,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
         }
         setAvatarUploading(true);
         const task = avatarUploadRef.current?.upload?.({
-            sceneId: AVATAR_SCENE_ID,
+            sceneId: SYSTEM_FILE_SCENE_ID,
             accept: "image/*",
             onComplete: async (result: any) => {
                 const url = getUploadUrl(result);
