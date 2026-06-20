@@ -248,16 +248,31 @@ const useSKLayoutStyles = createStyles(({token}): any => {
                 color: token?.colorPrimaryHover + " !important",
             },
         },
-        menuHeader: {
-            ".ant-layout-header": {
-                height: "120px !important"
-            }
+        collapsedImg: {
+            width: "35px",
         },
         collapsedLogo: {
-            width: "39px",
+            fontSize: "27px",
         },
-        unCollapsedLogo: {
-            width: "160px",
+        unCollapsed: {
+            overflow: "hidden",
+            position: "absolute",
+            display: "inline-flex",
+            ">span": {
+                fontSize: "27px",
+            },
+            ">img": {
+                width: "35px",
+                float: "left"
+            },
+            ">div": {
+                fontSize: "25px",
+                marginLeft: "5px",
+                fontWeight: "bolder",
+                float: "left",
+                lineHeight: "35px",
+                whiteSpace: "nowrap",
+            }
         }
     };
 });
@@ -274,7 +289,7 @@ const SKLayout: React.FC = () => {
     const location = useLocation();
     const match = useSelectedRoutes();
     const [loading, setLoading] = useState(true);
-    const {styles: {menuColor, menuHeader, collapsedLogo, unCollapsedLogo}} = useSKLayoutStyles();
+    const {styles: {menuColor, collapsedImg, collapsedLogo, unCollapsed}} = useSKLayoutStyles();
 
     /**
      * 计算面包屑数据
@@ -309,7 +324,7 @@ const SKLayout: React.FC = () => {
      */
     useEffect(() => {
         setLoading(true)
-        user?.refreshWebUser((data) => {
+        user?.refreshWebUser((data: any) => {
             setLoading(false);
             if (!data) {
                 historyPush("user.login");
@@ -327,7 +342,6 @@ const SKLayout: React.FC = () => {
                 waterMark={web?.info?.ui?.user?.watermark ? [user?.web?.nick_name, user?.web?.email] : ""}
                 menus={getCurrentMenus(location?.pathname, true)}
                 menuClassNames={menuColor}
-                menuHeaderClassNames={menuHeader}
                 layout={web?.info?.ui?.user?.layout != "left" ? "horizontal" : "inline"}
                 flowLayout={web?.info?.ui?.user?.layout != "left"}
                 menuTheme={web?.info?.ui?.user?.theme == "dark" ? "dark" : "light"}
@@ -341,14 +355,24 @@ const SKLayout: React.FC = () => {
                 menuBottomBtnIcon={web?.info?.contact ? <Icon type={"icon-customer"}/> : false}
                 menuBottomBtnText={web?.info?.contact ? <>&nbsp;&nbsp;客户服务</> : false}
                 collapsedLogo={() => {
-                    return <img src={getPath("logo.svg")} className={collapsedLogo}
-                                alt={defaultSettings?.title}/>;
+                    return web?.info?.logo ? <img
+                            src={web?.info?.logo || getPath("logo.svg")}
+                            alt={web?.info?.name} className={collapsedImg}/> :
+                        <Icon type="icon-logo" style={{color: web?.info?.ui?.user?.color || defaultSettings?.color}}
+                              className={collapsedLogo}/>
                 }}
-                unCollapsedLogo={(isLight) => {
-                    return <img
-                        src={getPath((isLight ? "logo_light.png" : "logo_dark.png"))}
-                        className={unCollapsedLogo}
-                        alt={defaultSettings?.title}/>;
+                unCollapsedLogo={() => {
+                    return <div className={unCollapsed}>
+                        {web?.info?.logo ? <img
+                                src={web?.info?.logo || getPath("logo.svg")}
+                                alt={web?.info?.name || Settings?.title}/> :
+                            <Icon type="icon-logo"
+                                  style={{color: web?.info?.ui?.user?.color || defaultSettings?.color}}/>}
+                        <div
+                            style={{color: web?.info?.ui?.user?.color ? web?.info?.ui?.user?.color : defaultSettings?.color}}>
+                            {web?.info?.name || Settings?.title}
+                        </div>
+                    </div>
                 }}>
             <Outlet/>
         </Layout>

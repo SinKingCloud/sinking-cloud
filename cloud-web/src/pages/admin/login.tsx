@@ -95,12 +95,12 @@ export default () => {
                         justify-content: center;
                         gap: ${token.marginSM}px;
                         margin-bottom: ${token.marginXS}px;
-                        height: ${isCompact ? 40 : 48}px;
+                        height: ${isCompact ? 45 : 50}px;
                     }
 
                     img {
-                        width: ${isCompact ? 40 : 48}px;
-                        height: ${isCompact ? 40 : 48}px;
+                        width: ${isCompact ? 45 : 50}px;
+                        height: ${isCompact ? 45 : 50}px;
                         flex-shrink: 0;
                     }
 
