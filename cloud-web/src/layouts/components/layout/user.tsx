@@ -332,51 +332,49 @@ const SKLayout: React.FC = () => {
         });
     }, []);
 
-    return (<>
-        <Layout loading={loading || !user?.web}
-                pathname={location?.pathname}
-                matchedRoutes={match || []}
-                onNavigate={(path) => history.push(path)}
-                breadCrumbItems={breadCrumbItems}
-                hideBreadCrumb={match?.at(-1)?.route?.hideBreadCrumb}
-                waterMark={web?.info?.ui?.user?.watermark ? [user?.web?.nick_name, user?.web?.email] : ""}
-                menus={getCurrentMenus(location?.pathname, true)}
-                menuClassNames={menuColor}
-                layout={web?.info?.ui?.user?.layout != "left" ? "horizontal" : "inline"}
-                flowLayout={web?.info?.ui?.user?.layout != "left"}
-                menuTheme={web?.info?.ui?.user?.theme == "dark" ? "dark" : "light"}
-                footer={<>©{new Date().getFullYear()} All Right
-                    Revered {web?.info?.name || Settings?.title}</>}
-                headerHidden={false}
-                headerFixed={false}
-                headerRight={<RightTop/>}
-                menuCollapsedWidth={60}
-                menuUnCollapsedWidth={210}
-                menuBottomBtnIcon={web?.info?.contact ? <Icon type={"icon-customer"}/> : false}
-                menuBottomBtnText={web?.info?.contact ? <>&nbsp;&nbsp;客户服务</> : false}
-                collapsedLogo={() => {
-                    return web?.info?.logo ? <img
-                            src={web?.info?.logo || getPath("logo.svg")}
-                            alt={web?.info?.name} className={collapsedImg}/> :
-                        <Icon type="icon-logo" style={{color: web?.info?.ui?.user?.color || defaultSettings?.color}}
-                              className={collapsedLogo}/>
-                }}
-                unCollapsedLogo={() => {
-                    return <div className={unCollapsed}>
-                        {web?.info?.logo ? <img
-                                src={web?.info?.logo || getPath("logo.svg")}
-                                alt={web?.info?.name || Settings?.title}/> :
-                            <Icon type="icon-logo"
-                                  style={{color: web?.info?.ui?.user?.color || defaultSettings?.color}}/>}
-                        <div
-                            style={{color: web?.info?.ui?.user?.color ? web?.info?.ui?.user?.color : defaultSettings?.color}}>
-                            {web?.info?.name || Settings?.title}
-                        </div>
-                    </div>
-                }}>
-            <Outlet/>
-        </Layout>
-    </>);
+    return <Layout loading={loading || !user?.web}
+                   pathname={location?.pathname}
+                   matchedRoutes={match || []}
+                   onNavigate={(path) => history.push(path)}
+                   breadCrumbItems={breadCrumbItems}
+                   hideBreadCrumb={match?.at(-1)?.route?.hideBreadCrumb}
+                   waterMark={web?.info?.ui?.user?.watermark ? [user?.web?.nick_name, user?.web?.email] : ""}
+                   menus={getCurrentMenus(location?.pathname, true)}
+                   menuClassNames={menuColor}
+                   layout={web?.info?.ui?.user?.layout != "left" ? "horizontal" : "inline"}
+                   flowLayout={web?.info?.ui?.user?.layout != "left"}
+                   menuTheme={web?.info?.ui?.user?.theme == "dark" ? "dark" : "light"}
+                   footer={<>©{new Date().getFullYear()} All Right
+                       Revered {web?.info?.name || Settings?.title}</>}
+                   headerHidden={false}
+                   headerFixed={false}
+                   headerRight={<RightTop/>}
+                   menuCollapsedWidth={60}
+                   menuUnCollapsedWidth={210}
+                   menuBottomBtnIcon={web?.info?.contact ? <Icon type={"icon-customer"}/> : false}
+                   menuBottomBtnText={web?.info?.contact ? <>&nbsp;&nbsp;客户服务</> : false}
+                   collapsedLogo={() => {
+                       return web?.info?.logo ? <img
+                               src={web?.info?.logo || getPath("logo.svg")}
+                               alt={web?.info?.name} className={collapsedImg}/> :
+                           <Icon type="icon-logo" style={{color: web?.info?.ui?.user?.color || defaultSettings?.color}}
+                                 className={collapsedLogo}/>
+                   }}
+                   unCollapsedLogo={() => {
+                       return <div className={unCollapsed}>
+                           {web?.info?.logo ? <img
+                                   src={web?.info?.logo || getPath("logo.svg")}
+                                   alt={web?.info?.name || Settings?.title}/> :
+                               <Icon type="icon-logo"
+                                     style={{color: web?.info?.ui?.user?.color || defaultSettings?.color}}/>}
+                           <div
+                               style={{color: web?.info?.ui?.user?.color ? web?.info?.ui?.user?.color : defaultSettings?.color}}>
+                               {web?.info?.name || Settings?.title}
+                           </div>
+                       </div>
+                   }}>
+        <Outlet/>
+    </Layout>;
 }
 
 
