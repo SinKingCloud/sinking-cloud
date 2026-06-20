@@ -11,8 +11,7 @@ const (
 	WebContact  = WebGroup + ".contact"  //网站联系人
 	WebLogo     = WebGroup + ".logo"     //网站logo
 
-	UiGroup = "ui" //界面配置
-
+	UiGroup          = "ui"                         //界面配置
 	UiUserLayout     = UiGroup + ".user.layout"     //前台界面布局
 	UiUserWaterMark  = UiGroup + ".user.watermark"  //前台界面水印
 	UiUserTheme      = UiGroup + ".user.theme"      //前台界面主题
