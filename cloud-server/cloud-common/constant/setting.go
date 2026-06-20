@@ -11,13 +11,20 @@ const (
 	WebContact  = WebGroup + ".contact"  //网站联系人
 	WebLogo     = WebGroup + ".logo"     //网站logo
 
-	UiGroup     = "ui"                   //界面配置
-	UiLayout    = UiGroup + ".layout"    //界面布局
-	UiWaterMark = UiGroup + ".watermark" //界面水印
-	UiTheme     = UiGroup + ".theme"     //界面主题
-	UiCompact   = UiGroup + ".compact"   //紧凑模式
-	UiColor     = UiGroup + ".color"     //主题色
-	UiRadius    = UiGroup + ".radius"    //主题圆角
+	UiGroup = "ui" //界面配置
+
+	UiUserLayout     = UiGroup + ".user.layout"     //前台界面布局
+	UiUserWaterMark  = UiGroup + ".user.watermark"  //前台界面水印
+	UiUserTheme      = UiGroup + ".user.theme"      //前台界面主题
+	UiUserCompact    = UiGroup + ".user.compact"    //前台紧凑模式
+	UiUserColor      = UiGroup + ".user.color"      //前台主题色
+	UiUserRadius     = UiGroup + ".user.radius"     //前台主题圆角
+	UiAdminLayout    = UiGroup + ".admin.layout"    //后台界面布局
+	UiAdminWaterMark = UiGroup + ".admin.watermark" //后台界面水印
+	UiAdminTheme     = UiGroup + ".admin.theme"     //后台界面主题
+	UiAdminCompact   = UiGroup + ".admin.compact"   //后台紧凑模式
+	UiAdminColor     = UiGroup + ".admin.color"     //后台主题色
+	UiAdminRadius    = UiGroup + ".admin.radius"    //后台主题圆角
 
 	AliGroup       = "ali"                      //阿里云配置
 	AliKey         = AliGroup + ".key"          //阿里云key

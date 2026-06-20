@@ -22,12 +22,22 @@ func Info(c *context.Context) {
 		"api":      c.GetStringWithDefault(web[constant.WebApi], ""),
 		"logo":     c.GetStringWithDefault(web[constant.WebLogo], ""),
 		"ui": sinking_web.H{
-			"layout":    c.GetStringWithDefault(ui[constant.UiLayout], "left"),
-			"watermark": c.GetBoolWithDefault(ui[constant.UiWaterMark], false),
-			"theme":     c.GetStringWithDefault(ui[constant.UiTheme], "light"),
-			"compact":   c.GetBoolWithDefault(ui[constant.UiCompact], false),
-			"color":     c.GetStringWithDefault(ui[constant.UiColor], "rgb(0, 83, 251)"),
-			"radius":    c.GetIntWithDefault(ui[constant.UiRadius], 0),
+			"user": sinking_web.H{
+				"layout":    c.GetStringWithDefault(ui[constant.UiUserLayout], "left"),
+				"watermark": c.GetBoolWithDefault(ui[constant.UiUserWaterMark], false),
+				"theme":     c.GetStringWithDefault(ui[constant.UiUserTheme], "light"),
+				"compact":   c.GetBoolWithDefault(ui[constant.UiUserCompact], false),
+				"color":     c.GetStringWithDefault(ui[constant.UiUserColor], "rgb(0, 83, 251)"),
+				"radius":    c.GetIntWithDefault(ui[constant.UiUserRadius], 0),
+			},
+			"admin": sinking_web.H{
+				"layout":    c.GetStringWithDefault(ui[constant.UiAdminLayout], "left"),
+				"watermark": c.GetBoolWithDefault(ui[constant.UiAdminWaterMark], false),
+				"theme":     c.GetStringWithDefault(ui[constant.UiAdminTheme], "light"),
+				"compact":   c.GetBoolWithDefault(ui[constant.UiAdminCompact], false),
+				"color":     c.GetStringWithDefault(ui[constant.UiAdminColor], "rgb(0, 83, 251)"),
+				"radius":    c.GetIntWithDefault(ui[constant.UiAdminRadius], 0),
+			},
 		},
 	})
 }

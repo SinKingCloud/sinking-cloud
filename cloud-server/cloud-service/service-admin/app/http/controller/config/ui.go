@@ -8,11 +8,17 @@ import (
 // Ui 界面配置
 func (s Controller) Ui(c *context.Context) {
 	s.config(c, constant.UiGroup, []string{
-		constant.UiLayout,
-		constant.UiWaterMark,
-		constant.UiTheme,
-		constant.UiCompact,
-		constant.UiColor,
-		constant.UiRadius,
+		constant.UiUserLayout,
+		constant.UiUserWaterMark,
+		constant.UiUserTheme,
+		constant.UiUserCompact,
+		constant.UiUserColor,
+		constant.UiUserRadius,
+		constant.UiAdminLayout,
+		constant.UiAdminWaterMark,
+		constant.UiAdminTheme,
+		constant.UiAdminCompact,
+		constant.UiAdminColor,
+		constant.UiAdminRadius,
 	})
 }

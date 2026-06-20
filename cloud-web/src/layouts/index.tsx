@@ -56,6 +56,8 @@ const ProLayout = () => {
     const location = useLocation();
     const [systemPath, setSystemPath] = useState("");
     const [isLoginPage, setIsLoginPage] = useState(false);
+    const currentSystemPath = getCurrentPath(location?.pathname)?.substring(1);
+    const ui = currentSystemPath == adminPath ? web?.info?.ui?.admin : web?.info?.ui?.user;
 
     // 初始化 iconfont 地址
     useEffect(() => {
@@ -68,7 +70,7 @@ const ProLayout = () => {
      * 监听路由数据
      */
     useEffect(() => {
-        const path = getCurrentPath(location?.pathname)?.substring(1);
+        const path = currentSystemPath;
         let loginPage = false
         if (location?.pathname?.startsWith("/" + path + "/login")) {
             setIsLoginPage(true);
@@ -84,22 +86,22 @@ const ProLayout = () => {
 
     // 初始化主题
     useEffect(() => {
-        if (web?.info?.ui) {
-            if (web.info.ui.color) {
-                theme?.setColor(web.info.ui.color);
+        if (ui) {
+            if (ui.color) {
+                theme?.setColor(ui.color);
             }
-            if (web.info.ui.radius >= 0) {
-                theme?.setRadius(web.info.ui.radius <= 15 ? web.info.ui.radius : 0);
+            if (ui.radius >= 0) {
+                theme?.setRadius(ui.radius <= 15 ? ui.radius : 0);
             }
-            if (web.info.ui.compact) {
+            if (ui.compact) {
                 theme?.setCompactTheme();
             } else {
                 theme?.setDefaultTheme();
             }
         }
-    }, [web?.info?.ui]);
+    }, [ui]);
 
-    if (!web?.info || !web?.info?.ui) {
+    if (!web?.info || !ui) {
         return <Spin spinning={true} size="large" className={load}/>;
     }
     if (!isLoginPage && systemPath == userPath) {

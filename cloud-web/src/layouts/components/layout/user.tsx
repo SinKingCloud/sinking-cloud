@@ -4,11 +4,11 @@ import {historyPush, getCurrentMenus, getFirstMenuWithoutChildren, getParentList
 import {createStyles} from 'antd-style';
 import Settings from "@/../config/defaultSettings";
 import defaultSettings from "@/../config/defaultSettings";
-import {Icon, Layout, ProModal, useTheme} from "sinking-antd";
+import {Icon, Layout, useTheme} from "sinking-antd";
 import {getPath} from "@/utils/assets";
 import {deleteHeader} from "@/utils/auth";
 import {logout} from "@/service/common/login";
-import {App, Avatar, Button, Col, Popover, Row, Tooltip, Typography} from "antd";
+import {App, Avatar, Col, Popover, Row, Tooltip} from "antd";
 
 /**
  * 样式
@@ -138,7 +138,6 @@ const useRightTopStyles = createStyles(({css, token, isDarkMode}: any): any => {
     };
 });
 
-
 /**
  * 右侧部分组件
  * @constructor
@@ -233,301 +232,11 @@ const RightTop: React.FC = () => {
                     {(user?.web?.nick_name || "未设置")}
                 </Avatar>
                 <span className={nickname}>{user?.web?.nick_name || "未设置"}</span>
-                <Icon className={web?.info?.ui?.theme == "dark" ? bottomIconDark : ""} type="DownOutlined"/>
+                <Icon className={web?.info?.ui?.user?.theme == "dark" ? bottomIconDark : ""} type="DownOutlined"/>
             </div>
         </Popover>
     </>
 }
-
-
-/**
- * 客服弹窗组件样式
- */
-const useCustomerStyles: any = createStyles(({token, isDarkMode}: any): any => {
-    return {
-        container: {
-            position: "relative" as const,
-            overflow: "hidden",
-            borderRadius: token.borderRadiusLG + "px",
-            display: "flex",
-            flexDirection: "column" as const,
-        },
-        closeBtn: {
-            position: "absolute" as const,
-            top: "16px",
-            right: "16px",
-            width: "32px",
-            height: "32px",
-            borderRadius: "50%",
-            background: "rgba(255, 255, 255, 0.2)",
-            border: "none",
-            color: "white",
-            fontSize: "16px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "all 0.3s ease",
-            zIndex: 10,
-            backdropFilter: "blur(10px)",
-            "&:hover": {
-                background: "rgba(255, 255, 255, 0.3)",
-                transform: "rotate(90deg)",
-            }
-        },
-        header: {
-            textAlign: "center" as const,
-            padding: "32px 28px 28px",
-            background: `linear-gradient(135deg, ${token.colorPrimary} 0%, ${token.colorPrimaryHover} 100%)`,
-            position: "relative" as const,
-            overflow: "hidden",
-            "&::before": {
-                content: '""',
-                position: "absolute",
-                top: "-50%",
-                right: "-20%",
-                width: "160px",
-                height: "160px",
-                background: "rgba(255, 255, 255, 0.1)",
-                borderRadius: "50%",
-            },
-            "&::after": {
-                content: '""',
-                position: "absolute",
-                bottom: "-30%",
-                left: "-10%",
-                width: "120px",
-                height: "120px",
-                background: "rgba(255, 255, 255, 0.08)",
-                borderRadius: "50%",
-            },
-            ".service-icon": {
-                fontSize: "48px",
-                color: "white",
-                marginBottom: "12px",
-                display: "block",
-                position: "relative",
-                zIndex: 1,
-            },
-            ".service-title": {
-                fontSize: "18px",
-                fontWeight: "700",
-                color: "white",
-                marginBottom: "6px",
-                position: "relative",
-                zIndex: 1,
-                letterSpacing: "0.5px",
-            },
-            ".service-subtitle": {
-                fontSize: "12px",
-                color: "rgba(255, 255, 255, 0.9)",
-                position: "relative",
-                zIndex: 1,
-            }
-        },
-        body: {
-            padding: "24px",
-            paddingBottom: "0",
-            background: isDarkMode ? token.colorBgContainer : "#f8f9fa",
-            minHeight: "160px",
-            flex: 1,
-        },
-        contactBox: {
-            background: isDarkMode
-                ? token.colorBgElevated
-                : "white",
-            borderRadius: token.borderRadiusLG + "px",
-            padding: "24px",
-            border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)"}`,
-            boxShadow: isDarkMode
-                ? "0 6px 20px rgba(0,0,0,0.4)"
-                : "0 6px 20px rgba(0,0,0,0.08)",
-            marginBottom: "24px",
-            position: "relative" as const,
-            display: "flex",
-            alignItems: "center",
-            gap: "20px",
-            "&::before": {
-                content: '""',
-                position: "absolute",
-                left: "24px",
-                top: "24px",
-                width: "4px",
-                height: "24px",
-                background: `linear-gradient(180deg, ${token.colorPrimary}, ${token.colorPrimaryHover})`,
-                borderRadius: "2px",
-            }
-        },
-        contactLeft: {
-            flex: 1,
-            paddingLeft: "16px",
-        },
-        contactLabel: {
-            fontSize: "12px",
-            color: isDarkMode ? token.colorTextTertiary : token.colorTextSecondary,
-            fontWeight: "600",
-            textTransform: "uppercase" as const,
-            letterSpacing: "0.5px",
-            marginBottom: "12px",
-        },
-        contactContent: {
-            fontSize: "15px",
-            lineHeight: "1.8",
-            color: isDarkMode ? token.colorText : token.colorTextHeading,
-            whiteSpace: "pre-wrap" as const,
-            wordBreak: "break-word" as const,
-            fontWeight: "500",
-            ".ant-typography": {
-                marginBottom: 0,
-                fontSize: "15px",
-                color: "inherit",
-                lineHeight: "1.8",
-            }
-        },
-        divider: {
-            margin: "20px 0",
-            marginLeft: "16px",
-            borderColor: isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
-        },
-        copyBtn: {
-            height: "32px",
-            borderRadius: token.borderRadius + "px",
-            fontWeight: "600",
-            fontSize: "13px",
-            paddingLeft: "20px",
-            paddingRight: "20px",
-            transition: "all 0.3s ease",
-        },
-        footer: {
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-            padding: "14px",
-            margin: "0 -24px 0",
-            background: isDarkMode
-                ? token.colorBgElevated
-                : token.colorPrimaryBg,
-            ".footer-text": {
-                fontSize: "12px",
-                color: isDarkMode ? token.colorTextSecondary : token.colorTextTertiary,
-                margin: 0,
-                fontWeight: "500",
-            }
-        }
-    };
-});
-
-/**
- * 客服弹窗组件
- */
-const CustomerModal: React.FC<{
-    open: boolean;
-    onCancel: () => void;
-    contact?: string;
-}> = ({open, onCancel, contact}) => {
-    const {styles} = useCustomerStyles();
-    const {message} = App.useApp();
-
-    const handleCopyContact = async () => {
-        if (!contact) return;
-        try {
-            if (navigator.clipboard && window.isSecureContext) {
-                await navigator.clipboard.writeText(contact);
-                message.success('联系方式已复制到剪贴板');
-                return;
-            }
-            const textarea = document.createElement('textarea');
-            textarea.value = contact;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            textarea.style.top = '0';
-            textarea.style.left = '0';
-            document.body.appendChild(textarea);
-            textarea.focus();
-            textarea.select();
-            textarea.setSelectionRange(0, contact.length);
-            const successful = document.execCommand('copy');
-            document.body.removeChild(textarea);
-            if (successful) {
-                message.success('联系方式已复制到剪贴板');
-            } else {
-                message.error('复制失败，请手动复制');
-            }
-        } catch (err) {
-            message.error('复制失败，请手动复制');
-        }
-    };
-
-    return (
-        <ProModal
-            width={420}
-            onCancel={onCancel}
-            modalProps={{
-                open: open,
-                title: null,
-                closable: false,
-                footer: null,
-                centered: false,
-                mask: {
-                    closable: false
-                },
-                style: {
-                    top: 40,
-                },
-                styles: {
-                    container: {
-                        padding: 0,
-                    },
-                    body: {
-                        padding: 0,
-                        borderRadius: styles.container.borderRadius,
-                    },
-                    content: {
-                        padding: 0,
-                        borderRadius: styles.container.borderRadius,
-                    },
-                }
-            } as any}>
-            <div className={styles.container}>
-                <button className={styles.closeBtn} onClick={onCancel}>
-                    ✕
-                </button>
-                <div className={styles.header}>
-                    <div className="service-title">客户服务中心</div>
-                    <div className="service-subtitle">我们随时为您提供专业的服务支持</div>
-                </div>
-                <div className={styles.body}>
-                    <div className={styles.contactBox}>
-                        <div className={styles.contactLeft}>
-                            <div className={styles.contactLabel}>联系方式</div>
-                            <div className={styles.contactContent}>
-                                <Typography.Paragraph copyable={false}>
-                                    {contact || '暂未设置联系方式'}
-                                </Typography.Paragraph>
-                            </div>
-                        </div>
-                        {contact && (
-                            <Button
-                                type="primary"
-                                className={styles.copyBtn}
-                                onClick={handleCopyContact}
-                                ghost
-                                size="small"
-                            >
-                                联系
-                            </Button>
-                        )}
-                    </div>
-                    <div className={styles.footer}>
-                        <span className="footer-text">服务时间: 周一至周日 9:00 - 22:00</span>
-                    </div>
-                </div>
-            </div>
-        </ProModal>
-    );
-};
-
 
 /**
  * 样式信息
@@ -565,7 +274,6 @@ const SKLayout: React.FC = () => {
     const location = useLocation();
     const match = useSelectedRoutes();
     const [loading, setLoading] = useState(true);
-    const [customerVisible, setCustomerVisible] = useState(false);
     const {styles: {menuColor, menuHeader, collapsedLogo, unCollapsedLogo}} = useSKLayoutStyles();
 
     /**
@@ -610,23 +318,19 @@ const SKLayout: React.FC = () => {
     }, []);
 
     return (<>
-        <CustomerModal
-            open={customerVisible}
-            onCancel={() => setCustomerVisible(false)}
-            contact={web?.info?.contact}/>
         <Layout loading={loading || !user?.web}
                 pathname={location?.pathname}
                 matchedRoutes={match || []}
                 onNavigate={(path) => history.push(path)}
                 breadCrumbItems={breadCrumbItems}
                 hideBreadCrumb={match?.at(-1)?.route?.hideBreadCrumb}
-                waterMark={web?.info?.ui?.water_mark ? [user?.web?.nick_name, user?.web?.email] : ""}
+                waterMark={web?.info?.ui?.user?.watermark ? [user?.web?.nick_name, user?.web?.email] : ""}
                 menus={getCurrentMenus(location?.pathname, true)}
                 menuClassNames={menuColor}
                 menuHeaderClassNames={menuHeader}
-                layout={web?.info?.ui?.layout != "left" ? "horizontal" : "inline"}
-                flowLayout={web?.info?.ui?.layout != "left"}
-                menuTheme={web?.info?.ui?.theme == "dark" ? "dark" : "light"}
+                layout={web?.info?.ui?.user?.layout != "left" ? "horizontal" : "inline"}
+                flowLayout={web?.info?.ui?.user?.layout != "left"}
+                menuTheme={web?.info?.ui?.user?.theme == "dark" ? "dark" : "light"}
                 footer={<>©{new Date().getFullYear()} All Right
                     Revered {web?.info?.name || Settings?.title}</>}
                 headerHidden={false}
@@ -636,9 +340,6 @@ const SKLayout: React.FC = () => {
                 menuUnCollapsedWidth={210}
                 menuBottomBtnIcon={web?.info?.contact ? <Icon type={"icon-customer"}/> : false}
                 menuBottomBtnText={web?.info?.contact ? <>&nbsp;&nbsp;客户服务</> : false}
-                onMenuBottomBtnClick={() => {
-                    setCustomerVisible(true);
-                }}
                 collapsedLogo={() => {
                     return <img src={getPath("logo.svg")} className={collapsedLogo}
                                 alt={defaultSettings?.title}/>;

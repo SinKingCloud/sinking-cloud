@@ -264,7 +264,7 @@ const RightTop: React.FC = () => {
                     {(user?.system?.nick_name || "未设置")}
                 </Avatar>
                 <span className={nickname}>{user?.system?.nick_name || "未设置"}</span>
-                <Icon className={web?.info?.ui?.theme == "dark" ? bottomIconDark : ""} type="DownOutlined"/>
+                <Icon className={web?.info?.ui?.admin?.theme == "dark" ? bottomIconDark : ""} type="DownOutlined"/>
             </div>
         </Popover>
     </>
@@ -447,12 +447,12 @@ const SKLayout: React.FC = () => {
                 onNavigate={(path) => history.push(path)}
                 breadCrumbItems={breadCrumbItems}
                 hideBreadCrumb={match?.at(-1)?.route?.hideBreadCrumb}
-                waterMark={web?.info?.ui?.watermark ? [user?.system?.nick_name, user?.system?.email] : ""}
+                waterMark={web?.info?.ui?.admin?.watermark ? [user?.system?.nick_name, user?.system?.email] : ""}
                 menus={currentMenus}
                 menuClassNames={menuColor}
-                layout={web?.info?.ui?.layout != "left" ? "horizontal" : "inline"}
-                flowLayout={web?.info?.ui?.layout != "left"}
-                menuTheme={web?.info?.ui?.theme == "dark" ? "dark" : "light"}
+                layout={web?.info?.ui?.admin?.layout != "left" ? "horizontal" : "inline"}
+                flowLayout={web?.info?.ui?.admin?.layout != "left"}
+                menuTheme={web?.info?.ui?.admin?.theme == "dark" ? "dark" : "light"}
                 footer={<>©{new Date().getFullYear()} All Right
                     Revered {web?.info?.name || Settings?.title}</>}
                 menuBottomBtnIcon={<Icon type={"icon-computer"} className={color}/>}
@@ -471,7 +471,7 @@ const SKLayout: React.FC = () => {
                     return web?.info?.logo ? <img
                             src={web?.info?.logo || getPath("logo.svg")}
                             alt={web?.info?.name} className={collapsedImg}/> :
-                        <Icon type="icon-logo" style={{color: web?.info?.ui?.color || defaultSettings?.color}}
+                        <Icon type="icon-logo" style={{color: web?.info?.ui?.admin?.color || defaultSettings?.color}}
                               className={collapsedLogo}/>
                 }}
                 unCollapsedLogo={() => {
@@ -480,9 +480,9 @@ const SKLayout: React.FC = () => {
                                 src={web?.info?.logo || getPath("logo.svg")}
                                 alt={web?.info?.name || Settings?.title}/> :
                             <Icon type="icon-logo"
-                                  style={{color: web?.info?.ui?.color || defaultSettings?.color}}/>}
+                                  style={{color: web?.info?.ui?.admin?.color || defaultSettings?.color}}/>}
                         <div
-                            style={{color: web?.info?.ui?.color ? web?.info?.ui?.color : defaultSettings?.color}}>
+                            style={{color: web?.info?.ui?.admin?.color ? web?.info?.ui?.admin?.color : defaultSettings?.color}}>
                             {web?.info?.name || Settings?.title}
                         </div>
                     </div>

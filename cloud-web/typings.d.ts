@@ -80,14 +80,19 @@ declare namespace API {
         contact?: string;
         url?: string;
         logo?: string;
-        ui?: Ui,
+        ui?: UiConfig,
+    }
+
+    type UiConfig = {
+        user?: Ui;
+        admin?: Ui;
     }
 
     /**
      * 界面信息
      */
     type Ui = {
-        watermark?: string;
+        watermark?: boolean;
         layout?: string;
         theme?: string;
         color?: string;
@@ -95,4 +100,3 @@ declare namespace API {
         radius?: number;
     }
 }
-
