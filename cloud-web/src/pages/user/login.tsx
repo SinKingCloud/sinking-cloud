@@ -166,43 +166,6 @@ export default () => {
                     align-items: center;
                     justify-content: center;
                 `,
-                brandLogo: css`
-                    font-size: ${isCompact ? token.fontSizeHeading1 * 2 : token.fontSizeHeading1 * 2.5}px;
-                    color: white;
-                    margin-bottom: ${token.marginXS}px;
-                    transition: all 0.4s ease;
-
-                    &:hover {
-                        transform: scale(1.1) rotate(5deg);
-                    }
-
-                    img {
-                        width: ${isCompact ? 64 : 80}px;
-                        height: ${isCompact ? 64 : 80}px;
-                        border-radius: ${token.borderRadiusLG}px;
-                        transition: all 0.4s ease;
-                    }
-
-                    ${responsive.md} {
-                        font-size: ${token.fontSizeHeading1 * 2}px;
-                        margin-bottom: ${token.marginXS}px;
-
-                        img {
-                            width: 64px;
-                            height: 64px;
-                        }
-                    }
-
-                    ${responsive.sm} {
-                        font-size: ${token.fontSizeHeading1 * 1.5}px;
-                        margin-bottom: ${token.marginXXS}px;
-
-                        img {
-                            width: 56px;
-                            height: 56px;
-                        }
-                    }
-                `,
                 brandTitle: css`
                     font-size: ${token.fontSizeHeading1 * 1.5}px;
                     font-weight: 700;
@@ -392,8 +355,8 @@ export default () => {
                         }
 
                         img {
-                            width: 40px;
-                            height: 40px;
+                            width: 50px;
+                            height: 50px;
                         }
                     }
                 `,
@@ -924,13 +887,6 @@ export default () => {
                 <Captcha ref={captcha}/>
                 <div className={styles.leftPanel}>
                     <div className={styles.brandContent}>
-                        <div className={styles.brandLogo}>
-                            {web?.info?.logo ? (
-                                <img src={web?.info?.logo || ((Settings?.basePath || '/') + 'logo.svg')} alt="logo"/>
-                            ) : (
-                                <Icon type="icon-logo"/>
-                            )}
-                        </div>
                         <div className={styles.brandTitle}>
                             {web?.info?.name || Settings?.title}
                         </div>
