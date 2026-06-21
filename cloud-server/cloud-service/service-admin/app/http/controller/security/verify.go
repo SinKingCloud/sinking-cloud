@@ -45,7 +45,7 @@ func (Controller) Verify(c *context.Context) {
 	}
 	if form.Type == "password" {
 		if u.Phone != "" || u.Email != "" {
-			c.Error("已绑定手机或邮箱时不可使用密码验证")
+			c.Error("暂不支持此种验证方式")
 			return
 		}
 		if u.Password == "" {
