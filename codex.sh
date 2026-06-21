@@ -4,7 +4,7 @@
 # 格式：序号|BaseURL|API_KEY   【重要：不要用 : 分隔】
 ACCOUNTS=(
   "1|https://api.umapis.com|sk-fd4a370a64e2ecc1f2e6079a73b1dd32e932f04d24ecf6f692ea670adcb52864"
-  "2|https://api.bi8bo.cn|sk-e0a414d7dd437eed845ce6e04033339d95342b4e08936e1f0060da99a817dcde"
+  "2|https://api.bi8bo.cn|sk-7ae012fb31c664e16413fd482e1e5da950cf2a4871c1e0dcb78de05d64c0ab5c"
   "3|https://new.sharedchat.cc/codex|sk-673afe2647954384af2e9f3a1420a50a"
   "4|https://new.sharedchat.cc/codex|sk-2038bac55b3211f18dcf00163e012d40"
   "5|https://www.mlyapi.com|sk-08006246047fe4134e2fe0e58d26d9c5fa54068fda30b21bc9102e54982a61f4"

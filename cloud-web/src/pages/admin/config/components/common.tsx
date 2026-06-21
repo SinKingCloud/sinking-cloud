@@ -1,6 +1,9 @@
-import React from "react";
-import {Button, ColorPicker, Flex, Form, Input, InputNumber, Select, Spin} from "antd";
+import React, {useRef, useState} from "react";
+import {App, Button, ColorPicker, Flex, Form, Image, Input, InputNumber, Select, Spin} from "antd";
+import {DeleteOutlined, EyeOutlined, PlusOutlined} from "@ant-design/icons";
 import {createStyles} from "antd-style";
+import {Upload, type UploadRef} from "@/pages/components/upload";
+import {SYSTEM_FILE_SCENE_ID, getUploadUrl} from "@/utils/upload";
 
 const useStyles: any = createStyles(({css, token}: any) => ({
     actions: css`
@@ -14,6 +17,74 @@ const useStyles: any = createStyles(({css, token}: any) => ({
         align-items: center;
         justify-content: center;
     `,
+    uploadBox: css`
+        position: relative;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px dashed ${token.colorBorder};
+        border-radius: ${token.borderRadius}px;
+        background-color: ${token.colorFillAlter};
+        cursor: pointer;
+        transition: border-color 0.3s, background-color 0.3s;
+        overflow: hidden;
+
+        &:hover {
+            border-color: ${token.colorPrimary};
+            background-color: ${token.colorFillSecondary};
+        }
+    `,
+    uploadContent: css`
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: ${token.colorTextSecondary};
+
+        .anticon {
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+    `,
+    uploadText: css`
+        font-size: ${token.fontSizeSM}px;
+        color: ${token.colorTextSecondary};
+    `,
+    imagePreview: css`
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    `,
+    uploadMask: css`
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        opacity: 0;
+        background-color: rgba(0, 0, 0, 0.48);
+        transition: opacity 0.3s;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        .anticon {
+            padding: 5px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.3s;
+
+            &:hover {
+                transform: scale(1.18);
+            }
+        }
+    `,
 }));
 
 type BaseFormProps = {
@@ -25,7 +96,7 @@ type BaseFormProps = {
 };
 
 type FormFieldProps = {
-    type: "input" | "textarea" | "number" | "select" | "color";
+    type: "input" | "textarea" | "number" | "select" | "color" | "upload";
     name: string;
     label: string;
     tooltip?: string;
@@ -39,6 +110,141 @@ type FormFieldProps = {
     maxWidth?: string | number;
     format?: "hex" | "rgb";
     defaultColor?: string;
+    accept?: string;
+    sceneId?: number | string;
+    uploadText?: string;
+};
+
+type UploadFieldProps = {
+    name: string;
+    label: string;
+    tooltip?: string;
+    rules?: any[];
+    style?: any;
+    accept?: string;
+    sceneId?: number | string;
+    uploadText?: string;
+};
+
+const imageAccept = ".svg,.svgz,image/svg+xml,image/png,image/jpeg,image/webp,image/gif";
+
+const HiddenValue: React.FC<{ value?: string; onChange?: (value: string) => void }> = () => null;
+
+const UploadField = ({
+                         name,
+                         label,
+                         tooltip,
+                         rules,
+                         style,
+                         accept = imageAccept,
+                         sceneId = SYSTEM_FILE_SCENE_ID,
+                         uploadText = "上传",
+                     }: UploadFieldProps): React.ReactNode => {
+    const {message, modal} = App.useApp();
+    const {styles} = useStyles();
+    const uploadRef = useRef<UploadRef>({} as UploadRef);
+    const [loading, setLoading] = useState(false);
+    const [previewImage, setPreviewImage] = useState("");
+
+    return (
+        <Form.Item label={label} tooltip={tooltip || label} style={style}>
+            <Upload ref={uploadRef}/>
+            <Form.Item name={name as any} rules={rules} noStyle>
+                <HiddenValue/>
+            </Form.Item>
+            <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues?.[name] !== currentValues?.[name]} noStyle>
+                {({getFieldValue, setFieldValue}: any) => {
+                    const value = getFieldValue(name as any);
+                    const uploadFile = () => {
+                        if (loading) {
+                            return;
+                        }
+                        setLoading(true);
+                        const task = uploadRef.current?.upload?.({
+                            sceneId,
+                            accept,
+                            onComplete: (result: any) => {
+                                const url = getUploadUrl(result);
+                                if (!url) {
+                                    message?.warning(`${label}上传成功，但未返回地址`);
+                                    setLoading(false);
+                                    return;
+                                }
+                                setFieldValue(name as any, url);
+                                message?.success(`${label}上传成功`);
+                                setLoading(false);
+                            },
+                            onError: (error: Error) => {
+                                message?.error(error?.message || `${label}上传失败`);
+                                setLoading(false);
+                            },
+                        } as any);
+                        if (!task) {
+                            setLoading(false);
+                            return;
+                        }
+                        task.promise.then((result: any) => {
+                            if (!result) {
+                                setLoading(false);
+                            }
+                        }).catch(() => setLoading(false));
+                    };
+                    const removeFile = (event: React.MouseEvent) => {
+                        event.stopPropagation();
+                        modal.confirm({
+                            title: "确认删除",
+                            content: `确定要移除${label}吗？`,
+                            okText: "确定",
+                            cancelText: "取消",
+                            mask: {
+                                closable: true,
+                            },
+                            onOk: () => setFieldValue(name as any, ""),
+                        } as any);
+                    };
+                    const previewFile = (event: React.MouseEvent) => {
+                        event.stopPropagation();
+                        setPreviewImage(value);
+                    };
+                    return (
+                        <>
+                            <div className={styles.uploadBox} onClick={() => !value && uploadFile()}>
+                                {loading ? (
+                                    <Spin/>
+                                ) : value ? (
+                                    <>
+                                        <img src={value} alt={label} className={styles.imagePreview}/>
+                                        <div className={styles.uploadMask}>
+                                            <EyeOutlined onClick={previewFile}/>
+                                            <DeleteOutlined onClick={removeFile}/>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className={styles.uploadContent}>
+                                        <PlusOutlined/>
+                                        <div className={styles.uploadText}>{uploadText}</div>
+                                    </div>
+                                )}
+                            </div>
+                            <Image
+                                src={previewImage}
+                                style={{display: "none"}}
+                                preview={{
+                                    visible: !!previewImage,
+                                    src: previewImage,
+                                    onVisibleChange: (visible: boolean) => {
+                                        if (!visible) {
+                                            setPreviewImage("");
+                                        }
+                                    },
+                                }}
+                            />
+                        </>
+                    );
+                }}
+            </Form.Item>
+        </Form.Item>
+    );
 };
 
 export const Loading = (): React.ReactNode => {
@@ -96,10 +302,20 @@ export const FormField = ({
                               rules,
                               maxWidth = "350px",
                               format = "rgb",
+                              accept,
+                              sceneId,
+                              uploadText,
                           }: FormFieldProps): React.ReactNode => {
-    const itemRules = rules || (required ? [{required: true, message: `${type === "select" ? "请选择" : "请输入"}${label}`}] : undefined);
+    const inputAction = type === "select" ? "请选择" : type === "upload" ? "请上传" : "请输入";
+    const itemRules = rules || (required ? [{required: true, message: `${inputAction}${label}`}] : undefined);
     const itemTooltip = tooltip || label;
     const itemStyle = {maxWidth, width: "100%"};
+    if (type === "upload") {
+        return (
+            <UploadField name={name} label={label} tooltip={itemTooltip} rules={itemRules} style={itemStyle}
+                         accept={accept} sceneId={sceneId} uploadText={uploadText}/>
+        );
+    }
     if (type === "textarea") {
         return (
             <Form.Item name={name as any} label={label} tooltip={itemTooltip} rules={itemRules} style={itemStyle}>

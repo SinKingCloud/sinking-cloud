@@ -23,7 +23,8 @@ const WebView: React.FC = () => {
                 <FormField type="input" name="web.keywords" label="网站关键词" placeholder="请输入网站关键词"/>
                 <FormField type="textarea" name="web.describe" label="网站描述" placeholder="请输入网站描述" rows={4}/>
                 <FormField type="input" name="web.contact" label="网站联系人" placeholder="请输入网站联系人"/>
-                <FormField type="input" name="web.logo" label="网站logo" placeholder="请输入网站logo"/>
+                <FormField type="upload" name="web.logo" label="网站logo"
+                           tooltip="支持上传 svg、png、jpg、jpeg、webp、gif 图片"/>
             </BaseForm>
         </Form>
     );
