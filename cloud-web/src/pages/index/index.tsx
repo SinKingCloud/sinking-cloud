@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {Body, Icon, useTheme} from "sinking-antd";
 import {useModel} from "umi";
 import {Row, Col, Statistic} from "antd";
@@ -18,6 +18,109 @@ import {deleteHeader} from "@/utils/auth";
 import {logout} from "@/service/common/login";
 import {historyPush} from "@/utils/route";
 import {getPath as getAssetPath} from "@/utils/assets";
+
+type HomeSvgIconType = "deploy" | "shield" | "speed" | "module" | "support" | "global" | "monitor" | "api" | "safe" | "ops";
+
+const HomeSvgIcon = ({type}: { type: HomeSvgIconType }) => {
+    const common = {
+        className: "theme-svg-icon",
+        viewBox: "0 0 48 48",
+        fill: "none",
+        xmlns: "http://www.w3.org/2000/svg",
+    };
+    const line = {
+        stroke: "currentColor",
+        strokeWidth: 2.4,
+        strokeLinecap: "round" as const,
+        strokeLinejoin: "round" as const,
+    };
+    switch (type) {
+        case "deploy":
+            return (
+                <svg {...common}>
+                    <path d="M24 6l14 8v16L24 38 10 30V14L24 6Z" fill="currentColor" fillOpacity=".08"/>
+                    <path d="M24 6l14 8v16L24 38 10 30V14L24 6Z" {...line}/>
+                    <path d="M10 14l14 8 14-8M24 22v16" {...line}/>
+                    <path d="M17 42h14M24 38v4" {...line}/>
+                </svg>
+            );
+        case "shield":
+            return (
+                <svg {...common}>
+                    <path d="M24 5l14 5v10.5C38 31 32.5 38.5 24 43c-8.5-4.5-14-12-14-22.5V10l14-5Z" fill="currentColor" fillOpacity=".08"/>
+                    <path d="M24 5l14 5v10.5C38 31 32.5 38.5 24 43c-8.5-4.5-14-12-14-22.5V10l14-5Z" {...line}/>
+                    <path d="M18 24l4 4 8-10" {...line}/>
+                </svg>
+            );
+        case "speed":
+            return (
+                <svg {...common}>
+                    <path d="M9 34a15 15 0 1 1 30 0" {...line}/>
+                    <path d="M14 34h20" {...line}/>
+                    <path d="M24 34l8-13" {...line}/>
+                    <path d="M15 21h5M28 21h5M24 13v5" {...line}/>
+                    <circle cx="24" cy="34" r="3" fill="currentColor" fillOpacity=".14" stroke="currentColor" strokeWidth="2.4"/>
+                </svg>
+            );
+        case "module":
+            return (
+                <svg {...common}>
+                    <rect x="8" y="8" width="13" height="13" rx="3" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
+                    <rect x="27" y="8" width="13" height="13" rx="3" stroke="currentColor" strokeWidth="2.4"/>
+                    <rect x="8" y="27" width="13" height="13" rx="3" stroke="currentColor" strokeWidth="2.4"/>
+                    <rect x="27" y="27" width="13" height="13" rx="3" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
+                </svg>
+            );
+        case "support":
+            return (
+                <svg {...common}>
+                    <circle cx="24" cy="18" r="8" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
+                    <path d="M10 41c2.5-7 7.2-11 14-11s11.5 4 14 11" {...line}/>
+                    <path d="M9 23v-3a15 15 0 0 1 30 0v3" {...line}/>
+                    <path d="M39 23v3a5 5 0 0 1-5 5h-4" {...line}/>
+                </svg>
+            );
+        case "global":
+            return (
+                <svg {...common}>
+                    <circle cx="24" cy="24" r="17" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
+                    <path d="M7 24h34M24 7c5 4.5 7.5 10.2 7.5 17S29 36.5 24 41M24 7c-5 4.5-7.5 10.2-7.5 17S19 36.5 24 41" {...line}/>
+                </svg>
+            );
+        case "monitor":
+            return (
+                <svg {...common}>
+                    <rect x="7" y="9" width="34" height="24" rx="4" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
+                    <path d="M17 39h14M24 33v6M15 24l5-5 5 5 7-9" {...line}/>
+                </svg>
+            );
+        case "api":
+            return (
+                <svg {...common}>
+                    <rect x="7" y="10" width="34" height="28" rx="4" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
+                    <path d="M15 20h18M15 29h8M28 29h5M14 10V7M24 10V7M34 10V7M14 41v-3M24 41v-3M34 41v-3" {...line}/>
+                </svg>
+            );
+        case "safe":
+            return (
+                <svg {...common}>
+                    <path d="M12 22v-5a12 12 0 0 1 24 0v5" {...line}/>
+                    <rect x="9" y="22" width="30" height="20" rx="4" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
+                    <path d="M24 30v5" {...line}/>
+                </svg>
+            );
+        case "ops":
+            return (
+                <svg {...common}>
+                    <path d="M24 7v6M24 35v6M7 24h6M35 24h6M12 12l4.2 4.2M31.8 31.8 36 36M36 12l-4.2 4.2M16.2 31.8 12 36" {...line}/>
+                    <circle cx="24" cy="24" r="9" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
+                    <path d="M21 24l2 2 5-5" {...line}/>
+                </svg>
+            );
+        default:
+            return null;
+    }
+};
 
 // 优化后的动画元素配置 - 减少数量提升性能
 const ANIMATION_ELEMENTS = {
@@ -1078,6 +1181,30 @@ const useStyles: any = createStyles(({token, css, isDarkMode}) => ({
         radial-gradient(circle at 70% 80%, ${token.colorPrimaryHover}${isDarkMode ? '08' : '06'} 0%, transparent 45%);
         opacity: 0.6;
     `,
+    heroCursorGlow: css`
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 520px;
+        height: 520px;
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate3d(calc(var(--mouse-x, 50vw) - 50%), calc(var(--mouse-y, 45vh) - 50%), 0);
+        opacity: var(--mouse-active, 0);
+        transition: opacity 0.35s ease;
+        background:
+                radial-gradient(circle at 50% 50%, ${token.colorPrimary}${isDarkMode ? '3f' : '2f'} 0%, transparent 34%),
+                radial-gradient(circle at 38% 42%, ${token.colorInfo}${isDarkMode ? '30' : '24'} 0%, transparent 40%),
+                radial-gradient(circle at 64% 60%, ${token.colorSuccess}${isDarkMode ? '26' : '1d'} 0%, transparent 42%);
+        filter: blur(34px) saturate(1.2);
+        mix-blend-mode: ${isDarkMode ? 'screen' : 'multiply'};
+        z-index: 0;
+        will-change: transform, opacity;
+
+        @media (max-width: 768px) {
+            display: none;
+        }
+    `,
     heroGlowOrbs: css`
         position: absolute;
         inset: 0;
@@ -1505,11 +1632,8 @@ const useStyles: any = createStyles(({token, css, isDarkMode}) => ({
                     animation-play-state: running;
                 }
 
-                img {
+                .theme-svg-icon {
                     transform: scale(1.25) rotate(-10deg);
-                    filter: ${isDarkMode
-                            ? `brightness(1.6) contrast(1.25) saturate(1.4) drop-shadow(0 6px 16px ${token.colorPrimary})`
-                            : `brightness(1.15) contrast(1.12) saturate(1.3) drop-shadow(0 4px 12px ${token.colorPrimary}70)`};
                 }
             }
 
@@ -1565,13 +1689,12 @@ const useStyles: any = createStyles(({token, css, isDarkMode}) => ({
             }
         }
 
-        img {
+        .theme-svg-icon {
             width: 40px;
             height: 40px;
-            object-fit: contain;
-            filter: ${isDarkMode
-                    ? `brightness(1.3) contrast(1.1) drop-shadow(0 2px 4px ${token.colorPrimary}40)`
-                    : `brightness(0.95) contrast(1.05) drop-shadow(0 1px 2px rgba(0,0,0,0.1))`};
+            display: block;
+            color: ${token.colorPrimary};
+            overflow: visible;
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
@@ -1581,7 +1704,7 @@ const useStyles: any = createStyles(({token, css, isDarkMode}) => ({
             height: 64px;
             margin-bottom: 18px;
 
-            img {
+            .theme-svg-icon {
                 width: 32px;
                 height: 32px;
             }
@@ -1660,8 +1783,8 @@ const useStyles: any = createStyles(({token, css, isDarkMode}) => ({
             }
 
             .product-icon-bg {
-                transform: scale(1.08) rotate(-3deg);
-                opacity: ${isDarkMode ? '0.25' : '0.22'};
+                transform: scale(1.08) rotate(-8deg);
+                opacity: ${isDarkMode ? '0.3' : '0.24'};
             }
 
             h4 {
@@ -1676,26 +1799,50 @@ const useStyles: any = createStyles(({token, css, isDarkMode}) => ({
     `,
     productIconBg: css`
         position: absolute;
-        top: -20px;
-        right: -20px;
-        width: 160px;
-        height: 160px;
-        opacity: ${isDarkMode ? '0.18' : '0.15'};
+        top: -38px;
+        right: -42px;
+        width: 176px;
+        height: 176px;
+        opacity: ${isDarkMode ? '0.26' : '0.18'};
+        color: ${token.colorPrimary};
         transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         z-index: 0;
         pointer-events: none;
+        transform: rotate(-8deg);
 
-        img {
+        &::before {
+            content: '';
+            position: absolute;
+            inset: 10px;
+            border-radius: 999px;
+            background:
+                    radial-gradient(circle at 34% 34%, ${token.colorPrimary} 0%, transparent 34%),
+                    radial-gradient(circle at 66% 42%, ${token.colorInfo} 0%, transparent 32%),
+                    radial-gradient(circle at 52% 72%, ${token.colorSuccess} 0%, transparent 34%);
+            opacity: ${isDarkMode ? '.5' : '.4'};
+            filter: blur(28px) saturate(1.35);
+        }
+
+        .theme-svg-icon {
+            position: relative;
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            display: block;
+            color: currentColor;
+            opacity: .76;
+            filter: blur(7px) drop-shadow(0 0 24px ${token.colorPrimary}90);
+            mix-blend-mode: ${isDarkMode ? 'screen' : 'multiply'};
         }
 
         @media (max-width: 768px) {
-            width: 120px;
-            height: 120px;
-            top: -15px;
-            right: -15px;
+            width: 142px;
+            height: 142px;
+            top: -30px;
+            right: -34px;
+
+            .theme-svg-icon {
+                filter: blur(6px) drop-shadow(0 0 18px ${token.colorPrimary}70);
+            }
         }
     `,
     productTitle: css`
@@ -2193,6 +2340,16 @@ export default () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [showBackToTop, setShowBackToTop] = useState(false);
+    const heroRef = useRef<HTMLDivElement | null>(null);
+    const cursorFrameRef = useRef<number | null>(null);
+    const cursorPointRef = useRef({
+        x: 0,
+        y: 0,
+        targetX: 0,
+        targetY: 0,
+        active: false,
+        initialized: false,
+    });
 
     // 滚动监听 - 监听 window 滚动（AdaptiveScroll 已做事件桥接）
     useEffect(() => {
@@ -2217,34 +2374,42 @@ export default () => {
         };
     }, []);
 
+    useEffect(() => {
+        return () => {
+            if (cursorFrameRef.current) {
+                cancelAnimationFrame(cursorFrameRef.current);
+            }
+        };
+    }, []);
+
     const features = [
         {
-            icon: getAssetPath("images/target.svg"),
+            icon: "deploy" as HomeSvgIconType,
             title: "快速部署",
             description: "分钟级快速部署，无需复杂配置，开箱即用，让您的项目快速上线运营。",
         },
         {
-            icon: getAssetPath("images/警示.svg"),
+            icon: "shield" as HomeSvgIconType,
             title: "安全防护",
             description: "多重安全防护体系，数据加密传输，符合行业安全标准，保障业务安全。",
         },
         {
-            icon: getAssetPath("images/profit.svg"),
+            icon: "speed" as HomeSvgIconType,
             title: "高性能",
             description: "采用先进的技术架构，毫秒级响应速度，支持高并发访问，稳定可靠。",
         },
         {
-            icon: getAssetPath("images/模块.svg"),
+            icon: "module" as HomeSvgIconType,
             title: "弹性扩展",
             description: "灵活的扩展机制，根据业务需求自动调整资源，应对流量高峰。",
         },
         {
-            icon: getAssetPath("images/user.svg"),
+            icon: "support" as HomeSvgIconType,
             title: "专业支持",
             description: "7×24小时专业技术支持，快速响应您的需求，助力业务持续发展。",
         },
         {
-            icon: getAssetPath("images/导航.svg"),
+            icon: "global" as HomeSvgIconType,
             title: "全球加速",
             description: "全球CDN加速节点，智能路由分发，无论用户在哪里都能获得极速体验。",
         }
@@ -2252,25 +2417,25 @@ export default () => {
 
     const products = [
         {
-            icon: getAssetPath("images/定位.svg"),
+            icon: "monitor" as HomeSvgIconType,
             title: "智能监控",
             description: "实时监控系统运行状态，智能告警，让您随时掌握系统健康状况。",
             features: ["实时数据监控", "智能告警通知", "可视化报表", "性能分析"]
         },
         {
-            icon: getAssetPath("images/设置.svg"),
+            icon: "api" as HomeSvgIconType,
             title: "API 服务",
             description: "提供丰富的API接口，文档完善，便于集成，助力快速开发。",
             features: ["RESTful API", "完善文档", "SDK支持", "高并发处理"]
         },
         {
-            icon: getAssetPath("images/警示.svg"),
+            icon: "safe" as HomeSvgIconType,
             title: "数据安全",
             description: "企业级数据安全方案，多重备份机制，确保数据万无一失。",
             features: ["数据加密", "定期备份", "灾难恢复", "权限管理"]
         },
         {
-            icon: getAssetPath("images/指南.svg"),
+            icon: "ops" as HomeSvgIconType,
             title: "自动化运维",
             description: "自动化部署与运维工具，提升运维效率，降低人工成本。",
             features: ["自动部署", "日志管理", "版本控制", "回滚机制"]
@@ -2344,6 +2509,50 @@ export default () => {
             top: 0,
             behavior: 'smooth'
         });
+    };
+
+    const runCursorFollow = () => {
+        const hero = heroRef.current;
+        const point = cursorPointRef.current;
+        if (!hero) {
+            cursorFrameRef.current = null;
+            return;
+        }
+        point.x += (point.targetX - point.x) * 0.16;
+        point.y += (point.targetY - point.y) * 0.16;
+        hero.style.setProperty('--mouse-x', `${point.x}px`);
+        hero.style.setProperty('--mouse-y', `${point.y}px`);
+        if (point.active || Math.abs(point.targetX - point.x) > 0.4 || Math.abs(point.targetY - point.y) > 0.4) {
+            cursorFrameRef.current = requestAnimationFrame(runCursorFollow);
+        } else {
+            cursorFrameRef.current = null;
+        }
+    };
+
+    const startCursorFollow = () => {
+        if (!cursorFrameRef.current) {
+            cursorFrameRef.current = requestAnimationFrame(runCursorFollow);
+        }
+    };
+
+    const handleHeroMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const point = cursorPointRef.current;
+        point.targetX = event.clientX - rect.left;
+        point.targetY = event.clientY - rect.top;
+        point.active = true;
+        if (!point.initialized) {
+            point.x = point.targetX;
+            point.y = point.targetY;
+            point.initialized = true;
+        }
+        event.currentTarget.style.setProperty('--mouse-active', '1');
+        startCursorFollow();
+    };
+
+    const handleHeroMouseLeave = (event: React.MouseEvent<HTMLDivElement>) => {
+        cursorPointRef.current.active = false;
+        event.currentTarget.style.setProperty('--mouse-active', '0');
     };
 
     const navItems = [
@@ -2551,10 +2760,17 @@ export default () => {
             <div className={styles.pageWrapper}>
                 <div className={styles.contentWrapper}>
                     {/* Hero Section - 科技感背景动画 */}
-                    <div id="home" className={styles.heroSection}>
+                    <div
+                        ref={heroRef}
+                        id="home"
+                        className={styles.heroSection}
+                        onMouseMove={handleHeroMouseMove}
+                        onMouseLeave={handleHeroMouseLeave}
+                    >
                         {/* 基础背景层 */}
                         <div className={styles.heroGradient}></div>
                         <div className={styles.heroSpotlight}></div>
+                        <div className={styles.heroCursorGlow}></div>
 
                         {/* 科技感动画层 - 轻量级纯CSS动画 */}
                         <div className={styles.heroGrid}></div>
@@ -2698,7 +2914,7 @@ export default () => {
                                 <Col xs={24} sm={12} md={8} lg={8} key={index}>
                                     <div className={styles.featureCard}>
                                         <div className={styles.featureIcon}>
-                                            <img src={feature.icon} alt={feature.title}/>
+                                            <HomeSvgIcon type={feature.icon}/>
                                         </div>
                                         <h4 className={`${styles.title} ${styles.h4} ${styles.featureTitle}`}>
                                             {feature.title}
@@ -2727,7 +2943,7 @@ export default () => {
                                     <Col xs={24} sm={12} md={12} lg={6} key={index}>
                                         <div className={styles.productCard}>
                                             <div className={`${styles.productIconBg} product-icon-bg`}>
-                                                <img src={product.icon} alt={product.title}/>
+                                                <HomeSvgIcon type={product.icon}/>
                                             </div>
                                             <h4 className={`${styles.title} ${styles.h4} ${styles.productTitle}`}>
                                                 {product.title}
