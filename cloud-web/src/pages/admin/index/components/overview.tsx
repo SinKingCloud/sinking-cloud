@@ -689,7 +689,7 @@ export default (): React.ReactNode => {
                         </div>
                         <div className="stack-item">
                             <span>
-                                <span className="stack-name">sinking-consule</span>
+                                <span className="stack-name">sinking-consul</span>
                                 <span className="stack-desc">服务注册发现与配置管理</span>
                             </span>
                             <Tag color="success" className="stack-tag">Consul</Tag>
