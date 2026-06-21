@@ -1,14 +1,7 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from "react";
+
 import {App, Button, Form, Progress, Select, Typography} from "antd";
-import {
-    CheckCircleOutlined,
-    CloudUploadOutlined,
-    FileOutlined,
-    PauseCircleOutlined,
-    ReloadOutlined,
-    UploadOutlined,
-} from "@ant-design/icons";
-import {ProModal, ProModalRef, Title} from "sinking-antd";
+import {Icon, ProModal, ProModalRef, Title} from "sinking-antd";
 import {createStyles} from "antd-style";
 import {
     upload as uploadManager,
@@ -427,7 +420,7 @@ const FileUploadModal = forwardRef<FileUploadModalRef, FileUploadModalProps>(({s
                 <div className={styles.panel}>
                     <div className={styles.panelHead}>
                         <div className={styles.iconBox}>
-                            <CloudUploadOutlined className={styles.cloudIcon}/>
+                            <Icon type="CloudUploadOutlined" className={styles.cloudIcon}/>
                         </div>
                         <div className={styles.main}>
                             <Typography.Text className={styles.title}>上传文件</Typography.Text>
@@ -435,7 +428,7 @@ const FileUploadModal = forwardRef<FileUploadModalRef, FileUploadModalProps>(({s
                         </div>
                         <Button
                             type="primary"
-                            icon={paused ? <ReloadOutlined/> : <UploadOutlined/>}
+                            icon={paused ? <Icon type="ReloadOutlined"/> : <Icon type="UploadOutlined"/>}
                             loading={loading}
                             disabled={loading}
                             onClick={chooseFile}
@@ -447,9 +440,9 @@ const FileUploadModal = forwardRef<FileUploadModalRef, FileUploadModalProps>(({s
                     {progress && (
                         <div className={styles.file}>
                             {progress.status === "success" ? (
-                                <CheckCircleOutlined className={styles.fileIcon}/>
+                                <Icon type="CheckCircleOutlined" className={styles.fileIcon}/>
                             ) : (
-                                <FileOutlined className={styles.fileIcon}/>
+                                <Icon type="FileOutlined" className={styles.fileIcon}/>
                             )}
                             <div className={styles.main}>
                                 <Typography.Text
@@ -495,7 +488,7 @@ const FileUploadModal = forwardRef<FileUploadModalRef, FileUploadModalProps>(({s
                 )}
 
                 {loading && (
-                    <Button block icon={<PauseCircleOutlined/>} onClick={pauseUpload}>
+                    <Button block icon={<Icon type="PauseCircleOutlined"/>} onClick={pauseUpload}>
                         暂停上传
                     </Button>
                 )}

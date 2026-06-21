@@ -1,11 +1,4 @@
-import {
-    UserOutlined,
-    SafetyCertificateOutlined,
-    ThunderboltOutlined,
-    CustomerServiceOutlined,
-    LoginOutlined,
-    SwapOutlined
-} from '@ant-design/icons';
+
 import {App, Button, Checkbox, Form, Input, Tabs, Avatar, Spin} from 'antd';
 import React, {useRef, useState, useEffect} from 'react';
 import {Body, Icon, useTheme} from 'sinking-antd';
@@ -895,19 +888,19 @@ export default () => {
                         </div>
                         <div className={styles.brandFeatures}>
                             <div className={styles.featureItem}>
-                                <SafetyCertificateOutlined className="feature-icon"/>
+                                <Icon type="SafetyCertificateOutlined" className="feature-icon"/>
                                 <span className="feature-text">安全可靠</span>
                             </div>
                             <div className={styles.featureItem}>
-                                <ThunderboltOutlined className="feature-icon"/>
+                                <Icon type="ThunderboltOutlined" className="feature-icon"/>
                                 <span className="feature-text">快速响应</span>
                             </div>
                             <div className={styles.featureItem}>
-                                <UserOutlined className="feature-icon"/>
+                                <Icon type="UserOutlined" className="feature-icon"/>
                                 <span className="feature-text">专业团队</span>
                             </div>
                             <div className={styles.featureItem}>
-                                <CustomerServiceOutlined className="feature-icon"/>
+                                <Icon type="CustomerServiceOutlined" className="feature-icon"/>
                                 <span className="feature-text">7×24服务</span>
                             </div>
                         </div>
@@ -944,7 +937,7 @@ export default () => {
                                     <Avatar
                                         size={80}
                                         src={user?.web?.avatar || false}
-                                        icon={<UserOutlined/>}
+                                        icon={<Icon type="UserOutlined"/>}
                                         className="user-avatar"
                                     />
                                     <div className="user-name">
@@ -955,11 +948,11 @@ export default () => {
                                     </div>
                                 </div>
                                 <div className={styles.quickActions}>
-                                    <Button type="primary" icon={<LoginOutlined/>}
+                                    <Button type="primary" icon={<Icon type="LoginOutlined"/>}
                                             onClick={() => historyPush("user.index")} block>
                                         快捷登录
                                     </Button>
-                                    <Button icon={<SwapOutlined/>} onClick={() => setShowRelogin(true)} block>
+                                    <Button icon={<Icon type="SwapOutlined"/>} onClick={() => setShowRelogin(true)} block>
                                         切换账号
                                     </Button>
                                 </div>

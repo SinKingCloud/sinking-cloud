@@ -1,6 +1,7 @@
 import React, {forwardRef, useImperativeHandle, useRef, useState} from "react";
-import {Avatar, App, Spin} from "antd";
-import {CameraOutlined, UserOutlined} from "@ant-design/icons";
+import {App, Avatar, Spin} from "antd";
+import {Icon} from "sinking-antd";
+
 import {createStyles} from "antd-style";
 import {useModel} from "umi";
 import {Upload, type UploadRef} from "@/pages/components/upload";
@@ -125,13 +126,13 @@ const AvatarUpload = forwardRef<AvatarRef, AvatarProps>((props, ref) => {
                         <Avatar
                             size={size}
                             src={avatar}
-                            icon={<UserOutlined/>}
+                            icon={<Icon type="UserOutlined"/>}
                             className={styles.avatarStyle}>
                             {nickName || "用户"}
                         </Avatar>
                     </Spin>
                     <div className={`${styles.avatarOverlay} avatar-overlay`}>
-                        <CameraOutlined/>
+                        <Icon type="CameraOutlined"/>
                     </div>
                 </div>
             )}

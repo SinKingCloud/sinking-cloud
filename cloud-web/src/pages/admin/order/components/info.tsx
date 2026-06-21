@@ -1,7 +1,7 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from "react";
+
 import {App, Button, Empty, Pagination, Segmented, Space, Spin, Tag, Tooltip, Typography} from "antd";
-import {RollbackOutlined, TruckOutlined} from "@ant-design/icons";
-import {ProModal, ProModalRef, Title, useTheme} from "sinking-antd";
+import {Icon, ProModal, ProModalRef, Title, useTheme} from "sinking-antd";
 import {createStyles} from "antd-style";
 import {getOrderInfo, getOrderLogInfo, getOrderLogList} from "@/service/admin/pay";
 import {formatMoney} from "@/utils/string";
@@ -1040,7 +1040,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                                 <Button
                                     type="primary"
                                     size="small"
-                                    icon={<TruckOutlined/>}
+                                    icon={<Icon type="TruckOutlined"/>}
                                     disabled={!canDeliver?.(data)}
                                     onClick={() => onDeliver?.(data)}>
                                     发货
@@ -1050,7 +1050,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                                 <Button
                                     danger
                                     size="small"
-                                    icon={<RollbackOutlined/>}
+                                    icon={<Icon type="RollbackOutlined"/>}
                                     disabled={!canRefund?.(data)}
                                     onClick={() => refundRef.current?.open(data)}>
                                     退款

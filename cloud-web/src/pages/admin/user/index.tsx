@@ -1,7 +1,7 @@
 import React, {useRef} from "react";
-import {Body, ProTable, ProTableRef, Title} from "sinking-antd";
 import {App, Avatar, Button, Dropdown, Result, Space, Typography} from "antd";
-import {UserOutlined} from "@ant-design/icons";
+import {Body, Icon, ProTable, ProTableRef, Title} from "sinking-antd";
+
 import {createStyles} from "antd-style";
 import {getData} from "@/utils/page";
 import useControl from "@/utils/control";
@@ -168,7 +168,7 @@ export default (): React.ReactNode => {
             <Avatar
                 size={40}
                 src={record?.avatar || undefined}
-                icon={<UserOutlined/>}
+                icon={<Icon type="UserOutlined"/>}
                 className={styles.userAvatar}
             />
             <div className={styles.userMeta}>

@@ -1,11 +1,11 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from "react";
 import {App, Empty, Image, Spin, Typography} from "antd";
-import {ProModal, ProModalRef, Title, useTheme} from "sinking-antd";
 import {createStyles} from "antd-style";
+import {Icon, ProModal, ProModalRef, Title, useTheme} from "sinking-antd";
+
+import {copyText} from "@/utils/string";
 import {getUserCertificate} from "@/service/admin/user";
 import {AdminControlCode} from "@/utils/permission";
-import {PlayCircleOutlined} from "@ant-design/icons";
-import {copyText} from "@/utils/string";
 
 export type CertificateRef = {
     open: (record: any) => void;
@@ -454,7 +454,7 @@ const Certificate = forwardRef<CertificateRef, CertificateProps>(({control}, ref
                                             />
                                             <div className={styles.playMask}>
                                                 <div className={styles.playButton}>
-                                                    <PlayCircleOutlined/>
+                                                    <Icon type="PlayCircleOutlined"/>
                                                 </div>
                                             </div>
                                         </div>

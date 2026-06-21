@@ -1,5 +1,6 @@
 import React from "react";
-import {AlipayOutlined, RedEnvelopeOutlined, WechatOutlined} from "@ant-design/icons";
+import {Icon} from "sinking-antd";
+
 import {Space, Typography} from "antd";
 import {createStyles} from "antd-style";
 
@@ -39,7 +40,7 @@ const PayType = ({data, value}: PayTypeProps): React.ReactNode => {
     if (key === "alipay" || key === "1" || label.includes("支付宝")) {
         return (
             <Space size={4}>
-                <AlipayOutlined className={styles.alipayIcon}/>
+                <Icon type="AlipayOutlined" className={styles.alipayIcon}/>
                 <Typography.Text className={styles.text} style={{color: "#1677ff"}}>{text}</Typography.Text>
             </Space>
         );
@@ -47,7 +48,7 @@ const PayType = ({data, value}: PayTypeProps): React.ReactNode => {
     if (key === "wxpay" || key === "wechat" || key === "2" || label.includes("微信")) {
         return (
             <Space size={4}>
-                <WechatOutlined className={styles.wechatIcon}/>
+                <Icon type="WechatOutlined" className={styles.wechatIcon}/>
                 <Typography.Text className={styles.text} style={{color: "#07c160"}}>{text}</Typography.Text>
             </Space>
         );
@@ -55,7 +56,7 @@ const PayType = ({data, value}: PayTypeProps): React.ReactNode => {
     if (key === "balance" || key === "0" || label.includes("余额")) {
         return (
             <Space size={4}>
-                <RedEnvelopeOutlined className={styles.walletIcon}/>
+                <Icon type="RedEnvelopeOutlined" className={styles.walletIcon}/>
                 <Typography.Text className={styles.text} style={{color: "#faad14"}}>{text}</Typography.Text>
             </Space>
         );

@@ -1,6 +1,7 @@
 import React, {useRef, useState} from "react";
 import {App, Button, ColorPicker, Flex, Form, Image, Input, InputNumber, Select, Spin} from "antd";
-import {DeleteOutlined, EyeOutlined, PlusOutlined} from "@ant-design/icons";
+import {Icon} from "sinking-antd";
+
 import {createStyles} from "antd-style";
 import {Upload, type UploadRef} from "@/pages/components/upload";
 import {SYSTEM_FILE_SCENE_ID, getUploadUrl} from "@/utils/upload";
@@ -215,13 +216,13 @@ const UploadField = ({
                                     <>
                                         <img src={value} alt={label} className={styles.imagePreview}/>
                                         <div className={styles.uploadMask}>
-                                            <EyeOutlined onClick={previewFile}/>
-                                            <DeleteOutlined onClick={removeFile}/>
+                                            <Icon type="EyeOutlined" onClick={previewFile}/>
+                                            <Icon type="DeleteOutlined" onClick={removeFile}/>
                                         </div>
                                     </>
                                 ) : (
                                     <div className={styles.uploadContent}>
-                                        <PlusOutlined/>
+                                        <Icon type="PlusOutlined"/>
                                         <div className={styles.uploadText}>{uploadText}</div>
                                     </div>
                                 )}

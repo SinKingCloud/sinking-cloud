@@ -244,18 +244,18 @@ const RightTop: React.FC = () => {
                          <li className={menuItem} onClick={() => historyPush("admin.person.info")}>
                              <div className={menuItemLabel}><Icon type="SettingOutlined" className={menuItemLeadIcon}/>账户管理
                              </div>
-                             <Icon type="RightOutlined"></Icon>
+                             <Icon type="RightOutlined"/>
                          </li>
                          <li className={menuItem} onClick={() => historyPush("admin.person.session")}>
                              <div className={menuItemLabel}><Icon type="DeploymentUnitOutlined"
                                                                   className={menuItemLeadIcon}/>会话管理
                              </div>
-                             <Icon type="RightOutlined"></Icon>
+                             <Icon type="RightOutlined"/>
                          </li>
                          <li className={menuItem} onClick={confirmOutLogin}>
                              <div className={menuItemLabel}><Icon type="LogoutOutlined" className={menuItemLeadIcon}/>退出登录
                              </div>
-                             <Icon type="RightOutlined"></Icon>
+                             <Icon type="RightOutlined"/>
                          </li>
                      </ul>
                  </>}>

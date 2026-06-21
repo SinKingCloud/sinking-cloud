@@ -1,5 +1,4 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {Body, getAllIconNames, Icon, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {
     App,
     AutoComplete,
@@ -20,10 +19,11 @@ import {
     Space,
     Spin,
     Tag,
-    Typography
+    Typography,
 } from "antd";
 import type {MenuProps} from "antd";
-import {ExclamationCircleOutlined} from "@ant-design/icons";
+import {Body, getAllIconNames, Icon, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
+
 import {createStyles} from "antd-style";
 import {createMenu, deleteMenu, getMenuControls, getMenuInfo, getMenuList, updateMenu} from "@/service/admin/menu";
 import useEnum from "@/utils/enum";
@@ -670,7 +670,7 @@ export default (): React.ReactNode => {
         }
         modal.confirm({
             title: "确认删除",
-            icon: <ExclamationCircleOutlined/>,
+            icon: <Icon type="ExclamationCircleOutlined"/>,
             content: "删除后数据不可恢复，确定要删除吗？",
             okType: "danger",
             onOk: async () => {

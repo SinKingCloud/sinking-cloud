@@ -1,8 +1,8 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from "react";
+
 import {App, Button, Form, Input, Steps, Typography} from "antd";
-import {CheckCircleFilled, LockOutlined, MailOutlined, MobileOutlined} from "@ant-design/icons";
 import {createStyles} from "antd-style";
-import {ProModal, ProModalRef, Title} from "sinking-antd";
+import {ProModal, Icon, ProModalRef, Title} from "sinking-antd";
 import Captcha, {type CaptchaRef} from "@/pages/components/captcha";
 import {sendMail} from "@/service/common/mail";
 import {sendSms} from "@/service/common/sms";
@@ -523,7 +523,7 @@ const Verify = forwardRef<VerifyRef>((_, ref) => {
                     <div className={styles.methodValue}>{value || "未绑定"}</div>
                 </div>
                 <span className={cx(styles.methodCheck, active && styles.methodCheckActive)}>
-                    <CheckCircleFilled/>
+                    <Icon type="CheckCircleFilled"/>
                 </span>
             </div>
         );
@@ -588,9 +588,9 @@ const Verify = forwardRef<VerifyRef>((_, ref) => {
                                     </div>
                                 </div>
                                 <div className={styles.methodList}>
-                                    {renderMethod("phone", <MobileOutlined/>, "手机验证", info?.phone)}
-                                    {renderMethod("mail", <MailOutlined/>, "邮箱验证", info?.mail)}
-                                    {renderMethod("password", <LockOutlined/>, "密码验证", info?.password ? "登录密码" : "")}
+                                    {renderMethod("phone", <Icon type="MobileOutlined"/>, "手机验证", info?.phone)}
+                                    {renderMethod("mail", <Icon type="MailOutlined"/>, "邮箱验证", info?.mail)}
+                                    {renderMethod("password", <Icon type="LockOutlined"/>, "密码验证", info?.password ? "登录密码" : "")}
                                 </div>
                             </div>
                         )}

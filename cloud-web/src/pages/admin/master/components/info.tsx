@@ -1,7 +1,7 @@
 import React, {forwardRef, useImperativeHandle, useRef, useState} from "react";
+
 import {App, Avatar, Col, Form, Input, Row, Select} from "antd";
-import {UserOutlined} from "@ant-design/icons";
-import {ProModal, ProModalRef, Title} from "sinking-antd";
+import {Icon, ProModal, ProModalRef, Title} from "sinking-antd";
 import {createStyles} from "antd-style";
 import {SYSTEM_FILE_SCENE_ID, getUploadUrl} from "@/utils/upload";
 import {Upload, type UploadRef} from "@/pages/components/upload";
@@ -255,7 +255,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({control, statusOptions, onSuccess}
                 <div className={styles.avatarContainer}>
                     <Upload ref={avatarUploadRef}/>
                     <div className={styles.avatarUpload} onClick={uploadAvatar}>
-                        <Avatar size={72} src={(avatarValue || undefined) as any} icon={<UserOutlined/>}/>
+                        <Avatar size={72} src={(avatarValue || undefined) as any} icon={<Icon type="UserOutlined"/>}/>
                         <div className={`${styles.uploadHint} upload-hint`}>上传</div>
                     </div>
                     <div className={styles.avatarInfo}>

@@ -1,7 +1,7 @@
 import React, {useRef} from "react";
-import {Body, ProTable, ProTableRef, Title} from "sinking-antd";
 import {App, Avatar, Button, Dropdown, Result, Space, Typography} from "antd";
-import {UserOutlined} from "@ant-design/icons";
+import {Body, Icon, ProTable, ProTableRef, Title} from "sinking-antd";
+
 import {getData} from "@/utils/page";
 import useControl from "@/utils/control";
 import {AdminControlCode} from "@/utils/permission";
@@ -143,7 +143,7 @@ export default (): React.ReactNode => {
             dataIndex: "avatar",
             tip: "员工头像",
             hideInSearch: true,
-            render: (text: any) => <Avatar src={text || undefined} icon={<UserOutlined/>}/>,
+            render: (text: any) => <Avatar src={text || undefined} icon={<Icon type="UserOutlined"/>}/>,
         },
         {
             title: "昵称",

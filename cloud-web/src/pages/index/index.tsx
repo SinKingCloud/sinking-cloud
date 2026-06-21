@@ -1,18 +1,9 @@
 import React, {useEffect, useRef, useState} from "react";
-import {Body, Icon, useTheme} from "sinking-antd";
+import {Col, Row, Statistic} from "antd";
+import {createStyles} from "antd-style";
 import {useModel} from "umi";
-import {Row, Col, Statistic} from "antd";
-import {createStyles} from 'antd-style';
-import {
-    RocketOutlined,
-    CheckCircleOutlined,
-    StarFilled,
-    MenuOutlined,
-    LoginOutlined,
-    CloseOutlined,
-    LogoutOutlined,
-    HomeOutlined,
-} from "@ant-design/icons";
+import {Body, Icon, useTheme} from "sinking-antd";
+
 import Settings from "@/../config/defaultSettings";
 import {deleteHeader} from "@/utils/auth";
 import {logout} from "@/service/common/login";
@@ -2609,14 +2600,14 @@ export default () => {
                                         className={`${styles.navBtn} btn-secondary`}
                                         onClick={() => historyPush("user.index")}
                                     >
-                                        <HomeOutlined/>
+                                        <Icon type="HomeOutlined"/>
                                         进入系统
                                     </button>
                                     <button
                                         className={`${styles.navBtn} btn-primary`}
                                         onClick={handleLogout}
                                     >
-                                        <LogoutOutlined/>
+                                        <Icon type="LogoutOutlined"/>
                                         退出
                                     </button>
                                 </>
@@ -2626,7 +2617,7 @@ export default () => {
                                         className={`${styles.navBtn} btn-secondary`}
                                         onClick={() => historyPush("user.login")}
                                     >
-                                        <LoginOutlined/>
+                                        <Icon type="LoginOutlined"/>
                                         登录
                                     </button>
                                     <button
@@ -2643,7 +2634,7 @@ export default () => {
                             className={styles.mobileMenuBtn}
                             onClick={() => setMobileMenuOpen(true)}
                         >
-                            <MenuOutlined/>
+                            <Icon type="MenuOutlined"/>
                         </button>
                     </div>
                 </div>
@@ -2660,7 +2651,7 @@ export default () => {
                         className={styles.mobileMenuClose}
                         onClick={() => setMobileMenuOpen(false)}
                     >
-                        <CloseOutlined/>
+                        <Icon type="CloseOutlined"/>
                     </button>
                 </div>
 
@@ -2714,7 +2705,7 @@ export default () => {
                                         setMobileMenuOpen(false);
                                     }}
                                 >
-                                    <HomeOutlined/>
+                                    <Icon type="HomeOutlined"/>
                                     <span>进入系统</span>
                                 </button>
                                 <button
@@ -2724,7 +2715,7 @@ export default () => {
                                         setMobileMenuOpen(false);
                                     }}
                                 >
-                                    <LogoutOutlined/>
+                                    <Icon type="LogoutOutlined"/>
                                     <span>退出登录</span>
                                 </button>
                             </>
@@ -2737,7 +2728,7 @@ export default () => {
                                         setMobileMenuOpen(false);
                                     }}
                                 >
-                                    <RocketOutlined/>
+                                    <Icon type="RocketOutlined"/>
                                     <span>免费开始</span>
                                 </button>
                                 <button
@@ -2747,7 +2738,7 @@ export default () => {
                                         setMobileMenuOpen(false);
                                     }}
                                 >
-                                    <LoginOutlined/>
+                                    <Icon type="LoginOutlined"/>
                                     <span>登录账号</span>
                                 </button>
                             </>
@@ -2833,12 +2824,12 @@ export default () => {
                                 >
                                     {user?.web ? (
                                         <>
-                                            <HomeOutlined/>
+                                            <Icon type="HomeOutlined"/>
                                             进入系统
                                         </>
                                     ) : (
                                         <>
-                                            <RocketOutlined/>
+                                            <Icon type="RocketOutlined"/>
                                             开始体验
                                         </>
                                     )}
@@ -2954,7 +2945,7 @@ export default () => {
                                             <div className={styles.productFeatures}>
                                                 {product.features.map((feature, idx) => (
                                                     <div key={idx} className={styles.productFeatureItem}>
-                                                        <CheckCircleOutlined/>
+                                                        <Icon type="CheckCircleOutlined"/>
                                                         <span>{feature}</span>
                                                     </div>
                                                 ))}
@@ -3010,7 +3001,7 @@ export default () => {
                                         <div className={styles.testimonialCard}>
                                             <div className={styles.testimonialStars}>
                                                 {[1, 2, 3, 4, 5].map((star) => (
-                                                    <StarFilled key={star}/>
+                                                    <Icon type="StarFilled" key={star}/>
                                                 ))}
                                             </div>
                                             <div className={styles.testimonialContent}>
@@ -3052,12 +3043,12 @@ export default () => {
                                 >
                                     {user?.web ? (
                                         <>
-                                            <HomeOutlined/>
+                                            <Icon type="HomeOutlined"/>
                                             进入控制台
                                         </>
                                     ) : (
                                         <>
-                                            <RocketOutlined/>
+                                            <Icon type="RocketOutlined"/>
                                             立即开始
                                         </>
                                     )}

@@ -13,6 +13,29 @@ export const user = [
         hideInMenu: false,
         component: "@/pages/user/index",
     },
+    {
+        path: "person",
+        title: "账户管理",
+        name: "user.person",
+        icon: 'icon-account',
+        hideInMenu: false,
+        routes: [
+            {
+                path: "info",
+                component: "@/pages/user/person/info",
+                title: "账户信息",
+                name: "user.person.info",
+                icon: '•',
+            },
+            {
+                path: "session",
+                component: "@/pages/user/person/session",
+                title: "会话管理",
+                name: "user.person.session",
+                icon: '•',
+            },
+        ]
+    },
 ];
 export const adminPath = "admin";
 export const admin = [

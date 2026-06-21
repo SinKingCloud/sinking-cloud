@@ -1,5 +1,4 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from "react";
-import type {FormInstance} from "antd";
 import {
     App,
     Button,
@@ -12,8 +11,9 @@ import {
     Segmented,
     Spin,
 } from "antd";
-import {CaretLeftFilled, CaretRightFilled} from "@ant-design/icons";
-import {ProModal, ProModalRef, Title, useTheme} from "sinking-antd";
+import type {FormInstance} from "antd";
+
+import {Icon, ProModal, ProModalRef, Title, useTheme} from "sinking-antd";
 import {createStyles} from "antd-style";
 import {getUserBalanceInfo, getUserBalanceLogList, operateUserBalance} from "@/service/admin/pay";
 import useEnum from "@/utils/enum";
@@ -703,7 +703,7 @@ const FilterScroller = ({options, value, onChange, renderItem, styles}: FilterSc
             <Button
                 className={`${styles.filterScrollButton} scrollButton left`}
                 htmlType="button"
-                icon={<CaretLeftFilled/>}
+                icon={<Icon type="CaretLeftFilled"/>}
                 size="small"
                 title="向左滚动"
                 type="text"
@@ -730,7 +730,7 @@ const FilterScroller = ({options, value, onChange, renderItem, styles}: FilterSc
             <Button
                 className={`${styles.filterScrollButton} scrollButton right`}
                 htmlType="button"
-                icon={<CaretRightFilled/>}
+                icon={<Icon type="CaretRightFilled"/>}
                 size="small"
                 title="向右滚动"
                 type="text"

@@ -1,6 +1,7 @@
 import React from "react";
 import {Card} from "antd";
-import {RightOutlined, SettingOutlined, ShoppingCartOutlined, TeamOutlined, UserOutlined} from "@ant-design/icons";
+import {Icon} from "sinking-antd";
+
 import {createStyles} from "antd-style";
 import {historyPush} from "@/utils/route";
 import {AdminPageCode} from "@/utils/permission";
@@ -110,25 +111,25 @@ const quickItems: QuickItem[] = [
         title: "用户管理",
         desc: "用户资料、实名、会话",
         route: AdminPageCode.WEB_USER,
-        icon: <UserOutlined/>,
+        icon: <Icon type="UserOutlined"/>,
     },
     {
         title: "订单管理",
         desc: "订单详情、发货、退款",
         route: AdminPageCode.WEB_ORDER,
-        icon: <ShoppingCartOutlined/>,
+        icon: <Icon type="ShoppingCartOutlined"/>,
     },
     {
         title: "员工管理",
         desc: "员工资料、角色、会话",
         route: AdminPageCode.SYSTEM_MASTER,
-        icon: <TeamOutlined/>,
+        icon: <Icon type="TeamOutlined"/>,
     },
     {
         title: "系统设置",
         desc: "站点、界面、支付配置",
         route: AdminPageCode.SYSTEM_CONFIG,
-        icon: <SettingOutlined/>,
+        icon: <Icon type="SettingOutlined"/>,
     },
 ];
 
@@ -152,7 +153,7 @@ export default (): React.ReactNode => {
                             <span className="quick-desc">{item.desc}</span>
                         </div>
                         <span className="quick-arrow">
-                            <RightOutlined/>
+                            <Icon type="RightOutlined"/>
                         </span>
                     </div>
                 ))}

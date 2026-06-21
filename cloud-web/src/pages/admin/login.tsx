@@ -1,8 +1,4 @@
-import {
-    UserOutlined,
-    LoginOutlined,
-    SwapOutlined
-} from '@ant-design/icons';
+
 import {App, Button, Checkbox, Form, Input, Tabs, Avatar, Spin} from 'antd';
 import React, {useRef, useState, useEffect} from 'react';
 import {Body, Icon, useTheme} from 'sinking-antd';
@@ -682,7 +678,7 @@ export default () => {
                                     <Avatar
                                         size={80}
                                         src={user?.system?.avatar || false}
-                                        icon={<UserOutlined/>}
+                                        icon={<Icon type="UserOutlined"/>}
                                         className="user-avatar"
                                     />
                                     <div className="user-name">
@@ -693,11 +689,11 @@ export default () => {
                                     </div>
                                 </div>
                                 <div className={styles.quickActions}>
-                                    <Button type="primary" icon={<LoginOutlined/>}
+                                    <Button type="primary" icon={<Icon type="LoginOutlined"/>}
                                             onClick={() => historyPush(AdminPageCode.INDEX)} block>
                                         快捷登录
                                     </Button>
-                                    <Button icon={<SwapOutlined/>} onClick={() => setShowRelogin(true)} block>
+                                    <Button icon={<Icon type="SwapOutlined"/>} onClick={() => setShowRelogin(true)} block>
                                         切换账号
                                     </Button>
                                 </div>

@@ -1,17 +1,8 @@
 import React, {useEffect, useMemo, useState} from "react";
+
 import {Card, Spin, Tag} from "antd";
-import {
-    CloudServerOutlined,
-    CreditCardOutlined,
-    DatabaseOutlined,
-    GatewayOutlined,
-    LockOutlined,
-    ScheduleOutlined,
-    SendOutlined,
-    TeamOutlined,
-} from "@ant-design/icons";
 import {createStyles} from "antd-style";
-import {Title} from "sinking-antd";
+import {Title, Icon} from "sinking-antd";
 import {getServiceCount} from "@/service/admin/dashboard";
 
 type ServiceItem = {
@@ -507,7 +498,7 @@ const services: ServiceItem[] = [
         count: 0,
         scope: "入口",
         tone: "#1677ff",
-        icon: <GatewayOutlined/>,
+        icon: <Icon type="GatewayOutlined"/>,
     },
     {
         name: "授权服务",
@@ -516,7 +507,7 @@ const services: ServiceItem[] = [
         count: 0,
         scope: "鉴权",
         tone: "#722ed1",
-        icon: <LockOutlined/>,
+        icon: <Icon type="LockOutlined"/>,
     },
     {
         name: "推送服务",
@@ -525,7 +516,7 @@ const services: ServiceItem[] = [
         count: 0,
         scope: "推送",
         tone: "#13c2c2",
-        icon: <SendOutlined/>,
+        icon: <Icon type="SendOutlined"/>,
     },
     {
         name: "定时任务",
@@ -534,7 +525,7 @@ const services: ServiceItem[] = [
         count: 0,
         scope: "调度",
         tone: "#faad14",
-        icon: <ScheduleOutlined/>,
+        icon: <Icon type="ScheduleOutlined"/>,
     },
     {
         name: "支付服务",
@@ -543,7 +534,7 @@ const services: ServiceItem[] = [
         count: 0,
         scope: "交易",
         tone: "#fa541c",
-        icon: <CreditCardOutlined/>,
+        icon: <Icon type="CreditCardOutlined"/>,
     },
     {
         name: "存储服务",
@@ -552,7 +543,7 @@ const services: ServiceItem[] = [
         count: 0,
         scope: "存储",
         tone: "#2f54eb",
-        icon: <DatabaseOutlined/>,
+        icon: <Icon type="DatabaseOutlined"/>,
     },
     {
         name: "用户服务",
@@ -561,7 +552,7 @@ const services: ServiceItem[] = [
         count: 0,
         scope: "用户",
         tone: "#52c41a",
-        icon: <TeamOutlined/>,
+        icon: <Icon type="TeamOutlined"/>,
     },
     {
         name: "后台服务",
@@ -570,7 +561,7 @@ const services: ServiceItem[] = [
         count: 0,
         scope: "后台",
         tone: "#eb2f96",
-        icon: <CloudServerOutlined/>,
+        icon: <Icon type="CloudServerOutlined"/>,
     },
 ];
 
