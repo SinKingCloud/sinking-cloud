@@ -76,8 +76,8 @@ const useStyles: any = createStyles(({css, token, isDarkMode}: any): any => ({
         },
         ".overview-avatar-wrap": {
             position: "relative",
-            width: "140px",
-            height: "140px",
+            width: "clamp(140px, 8vw, 158px)",
+            height: "clamp(140px, 8vw, 158px)",
             flexShrink: 0,
             display: "flex",
             alignItems: "center",
@@ -95,6 +95,9 @@ const useStyles: any = createStyles(({css, token, isDarkMode}: any): any => ({
             position: "relative",
             zIndex: 1,
             flexShrink: 0,
+            width: "clamp(88px, 5vw, 104px) !important",
+            height: "clamp(88px, 5vw, 104px) !important",
+            fontSize: "32px",
             border: `4px solid ${isDarkMode ? "rgba(255,255,255,0.12)" : token.colorBgContainer}`,
             background: token.colorPrimary,
             boxShadow: isDarkMode ? "none" : "0 12px 26px rgba(22, 119, 255, 0.18)",
@@ -158,6 +161,11 @@ const useStyles: any = createStyles(({css, token, isDarkMode}: any): any => ({
             ".overview-avatar-wrap": {
                 width: "96px",
                 height: "96px",
+            },
+            ".overview-avatar": {
+                width: "64px !important",
+                height: "64px !important",
+                fontSize: "24px",
             },
             ".overview-name": {
                 fontSize: "18px",
@@ -381,7 +389,6 @@ export default (): React.ReactNode => {
                     <div className="overview-avatar-wrap">
                         <AvatarEffect/>
                         <Avatar
-                            size={{xs: 64, sm: 76, md: 88, lg: 88, xl: 88, xxl: 88}}
                             src={user?.system?.avatar || undefined}
                             alt={nickName}
                             className="overview-avatar"
