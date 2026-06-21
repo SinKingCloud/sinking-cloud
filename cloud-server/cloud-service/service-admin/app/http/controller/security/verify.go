@@ -13,9 +13,10 @@ import (
 // Verify 安全验证
 func (Controller) Verify(c *context.Context) {
 	var form struct {
-		Action string `json:"action" default:"get" validate:"required,oneof=get verify" label:"步骤"`
-		Type   string `json:"type" default:"phone" validate:"omitempty,oneof=mail phone" label:"验证方式"`
-		Code   string `json:"code" default:"" validate:"omitempty,numeric,len=6" label:"验证码"`
+		Action   string `json:"action" default:"get" validate:"required,oneof=get verify" label:"步骤"`
+		Type     string `json:"type" default:"phone" validate:"omitempty,oneof=mail phone password" label:"验证方式"`
+		Code     string `json:"code" default:"" validate:"omitempty,numeric,len=6" label:"验证码"`
+		Password string `json:"password" default:"" validate:"omitempty,min=6,max=20" label:"登录密码"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
@@ -36,26 +37,48 @@ func (Controller) Verify(c *context.Context) {
 		if u.Email != "" {
 			data["mail"] = str.NewStringTool(u.Email).Show(3, 8, "*")
 		}
+		if u.Phone == "" && u.Email == "" && u.Password != "" {
+			data["password"] = true
+		}
 		c.SuccessWithData("获取验证方式成功", data)
 		return
 	}
-	if form.Code == "" {
-		c.Error("请输入验证码")
-		return
-	}
-	account := u.Email
-	check := service2.Auth.CheckMail
-	if form.Type == "phone" {
-		check = service2.Auth.CheckSms
-		account = u.Phone
-	}
-	if account == "" {
-		c.Error("当前验证方式未绑定")
-		return
-	}
-	if !check(account, form.Code) {
-		c.Error("验证码校验失败")
-		return
+	if form.Type == "password" {
+		if u.Phone != "" || u.Email != "" {
+			c.Error("已绑定手机或邮箱时不可使用密码验证")
+			return
+		}
+		if u.Password == "" {
+			c.Error("当前账号未设置密码")
+			return
+		}
+		if form.Password == "" {
+			c.Error("请输入登录密码")
+			return
+		}
+		if !str.NewStringTool(u.Password).CheckPassword(form.Password) {
+			c.Error("密码错误")
+			return
+		}
+	} else {
+		if form.Code == "" {
+			c.Error("请输入验证码")
+			return
+		}
+		account := u.Email
+		check := service2.Auth.CheckMail
+		if form.Type == "phone" {
+			check = service2.Auth.CheckSms
+			account = u.Phone
+		}
+		if account == "" {
+			c.Error("当前验证方式未绑定")
+			return
+		}
+		if !check(account, form.Code) {
+			c.Error("验证码校验失败")
+			return
+		}
 	}
 	minute := 10
 	service.User.SetUserVerifyStatus(u.Id, true, minute)
