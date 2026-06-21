@@ -43,7 +43,7 @@ func (Controller) Certificate(c *context.Context) {
 			"status": info.Status == real_auth_status.Authed,
 		}
 		if info.Status == real_auth_status.Authed {
-			data["auth_time"] = info.AuthTime
+			data["auth_time"] = info.AuthTime.String()
 			data["card_name"] = str.NewStringTool(info.CardName).Show(1, 0, "*")
 			data["card_no"] = str.NewStringTool(info.CardNo).Show(4, 2, "*")
 			if info.Type == real_auth_type.Company {
