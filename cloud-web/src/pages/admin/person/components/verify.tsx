@@ -1,6 +1,6 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from "react";
 import {App, Button, Form, Input, Steps, Typography} from "antd";
-import {CheckCircleFilled, MailOutlined, MobileOutlined} from "@ant-design/icons";
+import {CheckCircleFilled, LockOutlined, MailOutlined, MobileOutlined} from "@ant-design/icons";
 import {createStyles} from "antd-style";
 import {ProModal, ProModalRef, Title} from "sinking-antd";
 import Captcha, {type CaptchaRef} from "@/pages/components/captcha";
@@ -12,6 +12,7 @@ export type VerifyInfo = {
     status?: boolean;
     phone?: string;
     mail?: string;
+    password?: boolean;
 };
 
 export type VerifyRef = {
@@ -88,14 +89,12 @@ const useStyles: any = createStyles(({token, responsive}: any): any => ({
         },
     },
     panel: {
-        minHeight: 124,
         display: "grid",
         alignContent: "start",
         gap: 16,
-        padding: "4px 12px 8px",
+        padding: "4px 12px 0px",
 
         [responsive.mobile]: {
-            minHeight: 120,
             paddingInline: 0,
         },
     },
@@ -138,6 +137,7 @@ const useStyles: any = createStyles(({token, responsive}: any): any => ({
         background: `${token.colorPrimaryBg} !important`,
     },
     methodDisabled: {
+        display: "none",
         opacity: 0.45,
         cursor: "not-allowed",
 
@@ -279,6 +279,9 @@ const getDefaultType = (info?: VerifyInfo) => {
     if (info?.mail) {
         return "mail";
     }
+    if (info?.password) {
+        return "password";
+    }
     return "phone";
 };
 
@@ -286,6 +289,9 @@ const getDefaultType = (info?: VerifyInfo) => {
  * 根据验证方式获取对应的绑定目标。
  */
 const getTargetValue = (info: VerifyInfo, type: string) => {
+    if (type === "password") {
+        return info?.password ? "账户密码" : "";
+    }
     return type === "mail" ? info?.mail : info?.phone;
 };
 
@@ -293,6 +299,9 @@ const getTargetValue = (info: VerifyInfo, type: string) => {
  * 将验证方式转换为界面展示名称。
  */
 const getTypeName = (type: string) => {
+    if (type === "password") {
+        return "密码";
+    }
     return type === "mail" ? "邮箱" : "手机";
 };
 
@@ -383,8 +392,8 @@ const Verify = forwardRef<VerifyRef>((_, ref) => {
             if (nextInfo?.status) {
                 return true;
             }
-            if (!nextInfo?.phone && !nextInfo?.mail) {
-                message?.warning("当前账号未绑定手机号或邮箱，无法完成安全验证");
+            if (!nextInfo?.phone && !nextInfo?.mail && !nextInfo?.password) {
+                message?.warning("当前账号未绑定手机号、邮箱或密码，无法完成安全验证");
                 return false;
             }
             const nextType = getDefaultType(nextInfo);
@@ -468,6 +477,7 @@ const Verify = forwardRef<VerifyRef>((_, ref) => {
                 action: "verify",
                 type: verifyType,
                 code: values?.code,
+                password: values?.password,
             },
             onSuccess: () => {
                 setPrimaryLoading(false);
@@ -493,7 +503,8 @@ const Verify = forwardRef<VerifyRef>((_, ref) => {
         }
     };
 
-    const okText = currentStep === 0 ? "发送" : "验证";
+    const isPasswordVerify = verifyType === "password";
+    const okText = currentStep === 0 ? (isPasswordVerify ? "继续" : "发送") : "验证";
     const targetValue = getTargetValue(info, verifyType);
 
     /**
@@ -505,8 +516,7 @@ const Verify = forwardRef<VerifyRef>((_, ref) => {
         return (
             <div
                 className={cx(styles.methodItem, active && styles.methodActive, disabled && styles.methodDisabled)}
-                onClick={() => selectType(type)}
-            >
+                onClick={() => selectType(type)}>
                 <span className={cx(styles.methodIcon, active && styles.methodIconActive)}>{icon}</span>
                 <div className={styles.methodBody}>
                     <div className={styles.methodTitle}>{title}</div>
@@ -525,7 +535,7 @@ const Verify = forwardRef<VerifyRef>((_, ref) => {
             <ProModal
                 ref={modalRef}
                 title={<Title>安全验证</Title>}
-                width={450}
+                width={420}
                 okText={okText}
                 onOk={handleOk}
                 onCancel={() => resolveAndClose(false)}
@@ -563,7 +573,7 @@ const Verify = forwardRef<VerifyRef>((_, ref) => {
                             size="small"
                             items={[
                                 {title: "验证方式"},
-                                {title: "检查验证码"},
+                                {title: "安全验证"},
                                 {title: "验证通过"},
                             ]}
                         />
@@ -571,17 +581,22 @@ const Verify = forwardRef<VerifyRef>((_, ref) => {
                             <div className={styles.panel}>
                                 <div className={styles.choiceHead}>
                                     <div className={styles.choiceTitle}>请选择验证方式</div>
-                                    <div className={styles.choiceDesc}>使用已绑定的手机或邮箱接收验证码。</div>
+                                    <div className={styles.choiceDesc}>
+                                        {info?.password && !info?.phone && !info?.mail
+                                            ? "当前账号未绑定手机或邮箱，可使用登录密码完成验证。"
+                                            : "使用已绑定的手机或邮箱接收验证码。"}
+                                    </div>
                                 </div>
                                 <div className={styles.methodList}>
                                     {renderMethod("phone", <MobileOutlined/>, "手机验证", info?.phone)}
                                     {renderMethod("mail", <MailOutlined/>, "邮箱验证", info?.mail)}
+                                    {renderMethod("password", <LockOutlined/>, "密码验证", info?.password ? "登录密码" : "")}
                                 </div>
                             </div>
                         )}
                         {currentStep === 1 && (
                             <div className={styles.panel}>
-                                <div className={styles.targetBox}>
+                                {!isPasswordVerify && <div className={styles.targetBox}>
                                     <div>
                                         <div className={styles.targetLabel}>验证码已发送至</div>
                                         <div className={styles.targetValue}>{getTypeName(verifyType)}验证</div>
@@ -603,32 +618,47 @@ const Verify = forwardRef<VerifyRef>((_, ref) => {
                                             </Button>
                                         </div>
                                     </div>
-                                </div>
+                                </div>}
                                 <div className={styles.codeRow}>
                                     <div className={styles.codeInputWrap}>
-                                        <Form.Item
-                                            name="code"
-                                            label="验证码"
-                                            rules={[
-                                                {required: true, message: "请输入验证码"},
-                                                {pattern: /^\d{6}$/, message: "验证码为 6 位数字"},
-                                            ]}>
-                                            <Input
-                                                className={styles.codeInput}
-                                                maxLength={6}
-                                                placeholder="请输入 6 位验证码"
-                                                autoFocus
-                                            />
-                                        </Form.Item>
+                                        {isPasswordVerify ? <Form.Item
+                                                name="password"
+                                                label="登录密码"
+                                                rules={[
+                                                    {required: true, message: "请输入登录密码"},
+                                                    {min: 6, max: 20, message: "密码长度为 6-20 个字符"},
+                                                ]}>
+                                                <Input
+                                                    className={styles.codeInput}
+                                                    maxLength={20}
+                                                    showCount
+                                                    placeholder="请输入当前账号登录密码"
+                                                    autoFocus
+                                                />
+                                            </Form.Item> :
+                                            <Form.Item
+                                                name="code"
+                                                label="验证码"
+                                                rules={[
+                                                    {required: true, message: "请输入验证码"},
+                                                    {pattern: /^\d{6}$/, message: "验证码为 6 位数字"},
+                                                ]}>
+                                                <Input
+                                                    className={styles.codeInput}
+                                                    maxLength={6}
+                                                    placeholder="请输入 6 位验证码"
+                                                    autoFocus
+                                                />
+                                            </Form.Item>}
                                     </div>
-                                    <Button
+                                    {!isPasswordVerify && <Button
                                         className={styles.resendButton}
                                         loading={resendLoading}
                                         disabled={countdown > 0}
                                         onClick={() => sendCode(false, true)}
                                     >
                                         {countdown > 0 ? `${countdown}s 后重发` : "重新发送"}
-                                    </Button>
+                                    </Button>}
                                 </div>
                             </div>
                         )}
