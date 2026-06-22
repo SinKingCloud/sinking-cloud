@@ -678,6 +678,8 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
             .session-list {
                 display: grid;
                 overflow: hidden;
+                gap: ${isCompactMode ? 8 : 10}px;
+                padding: ${isCompactMode ? 10 : 12}px;
             }
 
             .session-item {
@@ -686,17 +688,20 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
                 gap: ${isCompactMode ? 10 : 10}px;
                 min-width: 0;
                 padding: ${isCompactMode ? "11px 12px" : "11px 12px"};
-                background: transparent;
-                transition: background-color 0.2s ease;
+                border-radius: ${token.borderRadius}px;
+                border: 1px solid ${token.colorBorderSecondary};
+                background: ${token.colorBgContainer};
+                transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
             }
 
             .session-item + .session-item {
-                border-top: 1px solid ${token.colorBorderSecondary};
                 box-shadow: none;
             }
 
             .session-item:hover {
-                background: ${token.colorFillTertiary};
+                border-color: ${token.colorPrimaryBorder};
+                background: ${isDarkMode ? "rgba(255,255,255,0.018)" : token.colorFillAlter};
+                box-shadow: ${isDarkMode ? "none" : "0 6px 14px rgba(15, 23, 42, 0.04)"};
             }
 
             .session-item:hover .session-icon {
