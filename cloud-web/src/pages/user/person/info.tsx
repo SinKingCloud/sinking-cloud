@@ -516,7 +516,9 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
         `,
         settingGrid: css`
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: ${isCompactMode ? 8 : 10}px;
+            padding: ${isCompactMode ? 10 : 12}px;
 
             @media (max-width: 720px) {
                 grid-template-columns: 1fr;
@@ -537,35 +539,15 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
             gap: ${isCompactMode ? 10 : 10}px;
             min-height: ${isCompactMode ? 56 : 58}px;
             padding: ${isCompactMode ? "10px 12px" : "10px 12px"};
-            border-radius: 0;
-            background: transparent;
-            transition: background-color 0.2s ease;
-
-            &:nth-child(2n - 1) {
-                box-shadow: inset -1px 0 0 ${token.colorBorderSecondary};
-            }
-
-            &:nth-child(n + 3) {
-                border-top: none;
-                box-shadow: inset 0 1px 0 ${token.colorBorderSecondary};
-            }
-
-            &:nth-child(2n - 1):nth-child(n + 3) {
-                box-shadow: inset -1px 0 0 ${token.colorBorderSecondary}, inset 0 1px 0 ${token.colorBorderSecondary};
-            }
-
-            @media (max-width: 720px) {
-                &:nth-child(2n - 1) {
-                    box-shadow: none;
-                }
-
-                &:nth-child(n + 2) {
-                    box-shadow: inset 0 1px 0 ${token.colorBorderSecondary};
-                }
-            }
+            border-radius: ${token.borderRadius}px;
+            border: 1px solid ${token.colorBorderSecondary};
+            background: ${token.colorBgContainer};
+            transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 
             &:hover {
-                background: ${token.colorFillTertiary};
+                border-color: ${token.colorPrimaryBorder};
+                background: ${isDarkMode ? "rgba(255,255,255,0.018)" : token.colorFillAlter};
+                box-shadow: ${isDarkMode ? "none" : "0 6px 14px rgba(15, 23, 42, 0.04)"};
             }
 
             &:hover .item-icon {
