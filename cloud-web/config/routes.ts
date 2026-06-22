@@ -28,6 +28,13 @@ export const user = [
                 icon: '•',
             },
             {
+                path: "certificate",
+                component: "@/pages/user/person/certificate",
+                title: "实名认证",
+                name: "user.person.certificate",
+                icon: '•',
+            },
+            {
                 path: "session",
                 component: "@/pages/user/person/session",
                 title: "会话管理",

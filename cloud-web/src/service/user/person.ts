@@ -45,3 +45,8 @@ export async function getSessionList(params: API.RequestParams = {}) {
 export async function logoutSession(params: API.RequestParams = {}) {
     return post("/user/security/logout", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
 }
+
+/** 实名认证 POST /user/security/certificate */
+export async function certificate(params: API.RequestParams = {}) {
+    return post("/user/security/certificate", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
+}
