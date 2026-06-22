@@ -19,7 +19,6 @@ type SettingItem = {
     title: string;
     desc?: string;
     value: React.ReactNode;
-    actionText?: string;
     disabled?: boolean;
     onClick?: () => void;
     readonly?: boolean;
@@ -517,9 +516,9 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
         `,
         settingGrid: css`
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 
-            ${responsive.mobile} {
+            @media (max-width: 720px) {
                 grid-template-columns: 1fr;
             }
         `,
@@ -553,6 +552,16 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
 
             &:nth-child(2n - 1):nth-child(n + 3) {
                 box-shadow: inset -1px 0 0 ${token.colorBorderSecondary}, inset 0 1px 0 ${token.colorBorderSecondary};
+            }
+
+            @media (max-width: 720px) {
+                &:nth-child(2n - 1) {
+                    box-shadow: none;
+                }
+
+                &:nth-child(n + 2) {
+                    box-shadow: inset 0 1px 0 ${token.colorBorderSecondary};
+                }
             }
 
             &:hover {
@@ -630,15 +639,6 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
 
             ${responsive.mobile} {
                 gap: ${isCompactMode ? 8 : 9}px;
-
-                &:nth-child(2n - 1) {
-                    box-shadow: none;
-                }
-
-                &:nth-child(n + 2) {
-                    border-top: none;
-                    box-shadow: inset 0 1px 0 ${token.colorBorderSecondary};
-                }
 
                 .item-main {
                     flex-basis: auto;
@@ -823,7 +823,6 @@ export default () => {
                 size={36}
                 onSuccess={handleSuccess}
             />,
-            actionText: "上传",
             onClick: () => avatarRef.current?.triggerUpload(),
         },
         {
@@ -831,7 +830,6 @@ export default () => {
             title: "账号昵称",
             desc: "设置您的显示昵称",
             value: currentPerson?.nick_name || "未设置",
-            actionText: "修改",
             onClick: () => infoRef.current?.show(),
         },
         {
@@ -839,7 +837,6 @@ export default () => {
             title: "登录账号",
             desc: "账号仅支持设置一次",
             value: currentPerson?.account || "未设置",
-            actionText: currentPerson?.account ? "已设置" : "设置",
             disabled: !!currentPerson?.account,
             onClick: () => accountRef.current?.show(),
         },
@@ -851,7 +848,6 @@ export default () => {
             title: "绑定手机",
             desc: "用于登录和安全验证",
             value: currentPerson?.phone || "未绑定",
-            actionText: currentPerson?.phone ? "换绑" : "绑定",
             onClick: () => phoneRef.current?.show(),
         },
         {
@@ -859,7 +855,6 @@ export default () => {
             title: "绑定邮箱",
             desc: "用于通知和安全验证",
             value: currentPerson?.email || "未绑定",
-            actionText: currentPerson?.email ? "换绑" : "绑定",
             onClick: () => emailRef.current?.show(),
         },
         {
@@ -867,7 +862,6 @@ export default () => {
             title: "登录密码",
             desc: "用于账户登录验证",
             value: currentPerson?.password ? "已设置" : "未设置",
-            actionText: "修改",
             onClick: () => passwordRef.current?.show(),
         },
     ];
@@ -897,7 +891,7 @@ export default () => {
                     disabled={item.disabled}
                     onClick={item.onClick}
                 >
-                    {item.actionText || "修改"}
+                    修改
                 </Button>
             )}
         </div>
