@@ -534,9 +534,9 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
             min-width: 0;
             display: flex;
             align-items: center;
-            gap: ${isCompactMode ? 8 : 10}px;
-            min-height: ${isCompactMode ? 52 : 58}px;
-            padding: ${isCompactMode ? "8px 10px" : "10px 12px"};
+            gap: ${isCompactMode ? 10 : 10}px;
+            min-height: ${isCompactMode ? 56 : 58}px;
+            padding: ${isCompactMode ? "10px 12px" : "10px 12px"};
             border-radius: 0;
             background: transparent;
             transition: background-color 0.2s ease;
@@ -568,17 +568,21 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
                 background: ${token.colorFillTertiary};
             }
 
+            &:hover .item-icon {
+                color: ${token.colorPrimary};
+            }
+
             .item-icon {
-                width: ${isCompactMode ? 28 : 30}px;
-                height: ${isCompactMode ? 28 : 30}px;
+                width: ${isCompactMode ? 24 : 24}px;
+                height: ${isCompactMode ? 24 : 24}px;
                 flex: none;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                border-radius: ${token.borderRadius}px;
                 color: ${token.colorPrimary};
-                background: ${isDarkMode ? "rgba(255,255,255,0.045)" : token.colorPrimaryBg};
-                font-size: ${isCompactMode ? 14 : 15}px;
+                font-size: ${isCompactMode ? 15 : 15}px;
+                opacity: ${isDarkMode ? 0.82 : 0.76};
+                transition: opacity 0.2s ease, color 0.2s ease;
             }
 
             .item-main {
@@ -589,9 +593,9 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
             .item-title {
                 min-width: 0;
                 color: ${token.colorText};
-                font-size: ${isCompactMode ? 12 : 13}px;
+                font-size: ${isCompactMode ? 13 : 13}px;
                 font-weight: 400;
-                line-height: ${isCompactMode ? 18 : 20}px;
+                line-height: ${isCompactMode ? 20 : 20}px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
@@ -607,7 +611,7 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
                 justify-content: flex-end;
                 color: ${token.colorTextSecondary};
                 font-size: ${isCompactMode ? 12 : 12}px;
-                line-height: ${isCompactMode ? 18 : 20}px;
+                line-height: ${isCompactMode ? 20 : 20}px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
@@ -621,8 +625,8 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
 
             .item-desc {
                 color: ${token.colorTextTertiary};
-                font-size: ${isCompactMode ? 10 : 11}px;
-                line-height: ${isCompactMode ? 15 : 16}px;
+                font-size: ${isCompactMode ? 11 : 11}px;
+                line-height: ${isCompactMode ? 16 : 16}px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
@@ -631,14 +635,14 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
 
             .edit-btn {
                 flex: none;
-                height: ${isCompactMode ? 20 : 22}px;
+                height: ${isCompactMode ? 22 : 22}px;
                 min-width: 34px;
                 padding-inline: 0;
                 font-size: ${isCompactMode ? 12 : 12}px;
             }
 
             ${responsive.mobile} {
-                gap: ${isCompactMode ? 8 : 9}px;
+                gap: ${isCompactMode ? 9 : 9}px;
 
                 .item-main {
                     flex-basis: auto;
@@ -665,18 +669,18 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
                 flex-wrap: wrap;
 
                 .item-main {
-                    flex-basis: calc(100% - ${isCompactMode ? 38 : 40}px);
+                    flex-basis: calc(100% - ${isCompactMode ? 34 : 34}px);
                 }
 
                 .item-value {
-                    width: calc(100% - ${isCompactMode ? 38 : 40}px);
+                    width: calc(100% - ${isCompactMode ? 34 : 34}px);
                     max-width: none;
-                    margin-left: ${isCompactMode ? 38 : 40}px;
+                    margin-left: ${isCompactMode ? 34 : 34}px;
                     justify-content: flex-start;
                 }
 
                 .edit-btn {
-                    margin-left: ${isCompactMode ? 38 : 40}px;
+                    margin-left: ${isCompactMode ? 34 : 34}px;
                 }
             }
         `,
@@ -697,9 +701,9 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
             .session-item {
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                gap: ${isCompactMode ? 10 : 10}px;
                 min-width: 0;
-                padding: ${isCompactMode ? "10px 11px" : "11px 12px"};
+                padding: ${isCompactMode ? "11px 12px" : "11px 12px"};
                 background: transparent;
                 transition: background-color 0.2s ease;
             }
@@ -713,29 +717,34 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
                 background: ${token.colorFillTertiary};
             }
 
+            .session-item:hover .session-icon {
+                color: ${token.colorPrimary};
+            }
+
             .session-icon {
-                width: 30px;
-                height: 30px;
+                width: ${isCompactMode ? 24 : 24}px;
+                height: ${isCompactMode ? 24 : 24}px;
                 flex: none;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                border-radius: ${token.borderRadius}px;
                 color: ${token.colorPrimary};
-                background: ${isDarkMode ? "rgba(255,255,255,0.045)" : token.colorPrimaryBg};
+                font-size: ${isCompactMode ? 15 : 15}px;
+                opacity: ${isDarkMode ? 0.82 : 0.76};
+                transition: opacity 0.2s ease, color 0.2s ease;
             }
 
             .session-label {
                 color: ${token.colorTextTertiary};
-                font-size: 12px;
-                line-height: 18px;
+                font-size: ${isCompactMode ? 11 : 11}px;
+                line-height: ${isCompactMode ? 16 : 16}px;
             }
 
             .session-value {
                 display: block;
                 color: ${token.colorText};
-                font-size: 13px;
-                line-height: 20px;
+                font-size: ${isCompactMode ? 12 : 12}px;
+                line-height: ${isCompactMode ? 20 : 20}px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
@@ -1005,7 +1014,7 @@ export default () => {
                                         size="small"
                                         onClick={() => historyPush("user.person.session")}
                                     >
-                                        会话列表
+                                        全部
                                     </Button>
                                 )}
                                 variant="borderless"
