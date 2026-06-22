@@ -1,8 +1,8 @@
 import React, {useEffect, useRef, useState} from "react";
 import {useModel} from "umi";
-import {Body, Icon, useTheme} from "sinking-antd";
-import {Avatar, Button, Card, Col, Row} from "antd";
+import {Avatar, Button, Card, Col, Row, Tag, Typography} from "antd";
 import {createStyles} from "antd-style";
+import {Body, Icon, Title, useTheme} from "sinking-antd";
 import {ago} from "@/utils/time";
 import Info, {InfoRef} from "@/pages/user/person/components/info";
 import Account, {AccountRef} from "@/pages/user/person/components/account";
@@ -12,462 +12,734 @@ import PhoneComponent, {PhoneRef} from "@/pages/user/person/components/phone";
 import EmailComponent, {EmailRef} from "@/pages/user/person/components/email";
 import Verify, {VerifyRef} from "@/pages/user/person/components/verify";
 import {getPersonInfo} from "@/service/user/person";
+import {historyPush} from "@/utils/route";
+
+type SettingItem = {
+    icon: React.ReactNode;
+    title: string;
+    desc?: string;
+    value: React.ReactNode;
+    actionText?: string;
+    disabled?: boolean;
+    onClick?: () => void;
+    readonly?: boolean;
+};
 
 const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props: any = {}) => {
     const isCompactMode = props?.isCompactMode || false;
-    const pagePadding = isCompactMode ? 12 : 16;
-    const profilePadding = isCompactMode ? 24 : 30;
-    const sessionPadding = isCompactMode ? "14px 18px 16px" : "16px 24px 18px";
-    const avatarSize = isCompactMode ? 80 : 92;
-    const mobileAvatarSize = isCompactMode ? 64 : 68;
+    const panelPadding = isCompactMode ? 14 : 16;
+    const avatarSize = isCompactMode ? 76 : 80;
 
     return {
-        pageShell: css`
-            padding-bottom: ${pagePadding}px;
+        pageRow: css`
+            max-width: 1120px;
+            margin: 0 auto;
         `,
-        userCard: css`
-            border: 1px solid ${token.colorBorderSecondary};
-            border-radius: ${token.borderRadius}px;
+        overview: css`
             overflow: hidden;
+            border: none;
+            border-radius: ${token.borderRadiusLG}px;
             background: ${token.colorBgContainer};
+            box-shadow: ${isDarkMode ? "none" : "0 10px 28px rgba(15, 23, 42, 0.04)"};
 
-            .profile-shell {
-                position: relative;
-                overflow: hidden;
-                background:
-                    linear-gradient(142deg, ${token.colorPrimary} 0%, ${token.colorPrimaryHover} 46%, ${token.colorPrimaryActive} 100%);
-                isolation: isolate;
-
-                &::before {
-                    content: '';
-                    position: absolute;
-                    inset: -32px;
-                    z-index: -2;
-                    background:
-                        linear-gradient(118deg, transparent 0%, rgba(255, 255, 255, ${isDarkMode ? 0.04 : 0.08}) 38%, transparent 72%),
-                        repeating-linear-gradient(135deg, rgba(255, 255, 255, ${isDarkMode ? 0.025 : 0.05}) 0 1px, transparent 1px 22px);
-                    opacity: ${isDarkMode ? 0.46 : 0.58};
-                    animation: profileTextureFlow 18s ease-in-out infinite;
-                    pointer-events: none;
-                }
-
-                &::after {
-                    content: '';
-                    position: absolute;
-                    inset: 0;
-                    z-index: -1;
-                    background:
-                        linear-gradient(90deg, rgba(0, 0, 0, ${isDarkMode ? 0.16 : 0.08}), transparent 38%, rgba(0, 0, 0, ${isDarkMode ? 0.18 : 0.10})),
-                        linear-gradient(180deg, rgba(0, 0, 0, ${isDarkMode ? 0.05 : 0.00}), rgba(0, 0, 0, ${isDarkMode ? 0.22 : 0.14}));
-                    pointer-events: none;
-                }
+            .ant-row {
+                align-items: stretch;
             }
 
-            @keyframes profileTextureFlow {
-                0%, 100% {
-                    transform: translate3d(-10px, 0, 0);
-                    background-position: 0 0, 0 0;
-                }
-                50% {
-                    transform: translate3d(10px, 0, 0);
-                    background-position: 42px 0, 24px 24px;
-                }
-            }
-
-            .profile-grid {
-                position: relative;
-                z-index: 1;
+            .ant-col {
                 display: flex;
-                flex-direction: column;
             }
+        `,
+        profilePanel: css`
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 214px;
+            padding: ${panelPadding}px;
+            display: grid;
+            align-content: center;
+            gap: 25px;
+            box-shadow: ${isDarkMode ? "none" : "inset -1px 0 0 rgba(15,23,42,0.06)"};
+            background: ${isDarkMode ? "rgba(255,255,255,0.012)" : token.colorFillAlter};
+            isolation: isolate;
+            overflow: hidden;
 
-            .profile-main {
-                position: relative;
-                min-width: 0;
-                padding: ${profilePadding}px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                gap: ${isCompactMode ? 14 : 18}px;
-                color: #fff;
-
-                ${responsive.mobile} {
-                    padding: ${isCompactMode ? "16px 14px 14px" : "20px 16px 18px"};
-                    gap: ${isCompactMode ? 12 : 15}px;
-                }
-            }
-
-            .profile-main::before {
+            &::before {
                 content: '';
                 position: absolute;
-                inset: 0;
-                background: linear-gradient(135deg, rgba(255, 255, 255, ${isDarkMode ? 0.03 : 0.06}), transparent 54%);
+                top: -58px;
+                right: -72px;
+                width: 172px;
+                height: 172px;
+                border-radius: 50%;
+                background: radial-gradient(circle, ${token.colorPrimary} 0%, ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.7)"} 48%, transparent 78%);
+                filter: blur(36px);
+                opacity: ${isDarkMode ? 0.09 : 0.12};
+                transform: rotate(-18deg);
+                z-index: -1;
+            }
+
+            &::after {
+                content: '';
+                position: absolute;
+                left: -68px;
+                bottom: -72px;
+                width: 178px;
+                height: 178px;
+                border-radius: 50%;
+                background: radial-gradient(circle, ${token.colorPrimaryHover} 0%, ${isDarkMode ? "rgba(255,255,255,0.07)" : token.colorPrimaryBg} 50%, transparent 78%);
+                filter: blur(38px);
+                opacity: ${isDarkMode ? 0.08 : 0.1};
+                transform: rotate(18deg);
+                z-index: -1;
+            }
+
+            .profile-ambient,
+            .profile-shine,
+            .profile-watermark {
+                position: absolute;
                 pointer-events: none;
             }
 
-            .profile-main-top {
-                position: relative;
-                z-index: 1;
-                display: flex;
-                align-items: center;
-                gap: ${isCompactMode ? 16 : 20}px;
-                min-width: 0;
+            .profile-ambient {
+                inset: 0;
+                z-index: 0;
             }
 
-            .avatar-section {
-                min-width: 0;
+            .profile-ambient::before {
+                content: '';
+                position: absolute;
+                inset: -78px;
+                background:
+                    radial-gradient(circle at 22% 12%, ${isDarkMode ? "rgba(255,255,255,0.12)" : token.colorPrimaryBgHover} 0%, transparent 38%),
+                    radial-gradient(circle at 82% 78%, ${isDarkMode ? "rgba(255,255,255,0.10)" : token.colorPrimaryBg} 0%, transparent 42%),
+                    radial-gradient(circle at 64% 24%, ${isDarkMode ? "rgba(255,255,255,0.08)" : token.colorPrimaryBg} 0%, transparent 34%),
+                    linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.03)" : token.colorPrimaryBg} 1px, transparent 1px),
+                    linear-gradient(0deg, ${isDarkMode ? "rgba(255,255,255,0.026)" : token.colorPrimaryBg} 1px, transparent 1px);
+                background-size: 100% 100%, 100% 100%, 100% 100%, 34px 34px, 34px 34px;
+                opacity: ${isDarkMode ? 0.42 : 0.58};
+                filter: blur(3px);
+                transform: rotate(-7deg) translate3d(-18px, -12px, 0);
+                -webkit-mask-image: linear-gradient(135deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.34) 58%, transparent 100%);
+                mask-image: linear-gradient(135deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.34) 58%, transparent 100%);
+            }
 
-                .user-avatar {
-                    width: ${avatarSize}px !important;
-                    height: ${avatarSize}px !important;
-                    border: 3px solid rgba(255, 255, 255, 0.92);
-                    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
-                    cursor: pointer;
+            .profile-ambient::after {
+                content: '';
+                position: absolute;
+                right: -176px;
+                bottom: -154px;
+                width: 500px;
+                height: 500px;
+                border-radius: 50%;
+                background:
+                    radial-gradient(circle, ${isDarkMode ? "rgba(255,255,255,0.10)" : token.colorPrimaryBgHover} 0%, transparent 46%),
+                    conic-gradient(from 0deg, transparent 0 12%, ${isDarkMode ? "rgba(255,255,255,0.12)" : token.colorPrimaryBgHover} 20%, transparent 34%, ${isDarkMode ? "rgba(255,255,255,0.10)" : token.colorPrimaryBg} 52%, transparent 72%, ${isDarkMode ? "rgba(255,255,255,0.09)" : token.colorPrimaryBorder} 86%, transparent 100%);
+                filter: blur(42px);
+                opacity: ${isDarkMode ? 0.22 : 0.32};
+                transform: rotate(18deg) scale(1.02);
+            }
 
-                    ${responsive.mobile} {
-                        width: ${mobileAvatarSize}px !important;
-                        height: ${mobileAvatarSize}px !important;
-                    }
+            .profile-shine {
+                inset: 0;
+                z-index: 1;
+                opacity: ${isDarkMode ? 0.20 : 0.34};
+                background: radial-gradient(circle at 68% 40%, ${isDarkMode ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.70)"} 0%, ${isDarkMode ? "rgba(255,255,255,0.06)" : token.colorPrimaryBgHover} 20%, transparent 52%);
+                mix-blend-mode: ${isDarkMode ? "screen" : "normal"};
+            }
+
+            .profile-watermark {
+                right: -78px;
+                bottom: -104px;
+                z-index: 1;
+                color: ${token.colorPrimary};
+                font-size: 320px;
+                line-height: 1;
+                opacity: ${isDarkMode ? 0.17 : 0.14};
+                transform: rotate(-24deg);
+                filter: blur(20px);
+            }
+
+            @media (max-width: 1199px) {
+                box-shadow: ${isDarkMode ? "none" : "inset 0 -1px 0 rgba(15,23,42,0.06)"};
+                min-height: auto;
+
+                .profile-ambient::after {
+                    right: -148px;
+                    bottom: -150px;
+                    width: 430px;
+                    height: 430px;
+                }
+
+                .profile-watermark {
+                    right: -62px;
+                    bottom: -90px;
+                    font-size: 260px;
                 }
             }
 
-            .user-content {
+            ${responsive.mobile} {
+                padding: ${isCompactMode ? 12 : 14}px;
+                gap: 25px;
+
+                .profile-ambient::before {
+                    inset: -54px;
+                    background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+                }
+
+                .profile-ambient::after {
+                    right: -116px;
+                    bottom: -118px;
+                    width: 330px;
+                    height: 330px;
+                    filter: blur(36px);
+                }
+
+                .profile-watermark {
+                    right: -48px;
+                    bottom: -68px;
+                    font-size: 210px;
+                    filter: blur(18px);
+                }
+            }
+        `,
+        profileMain: css`
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: ${isCompactMode ? 14 : 16}px;
+            min-width: 0;
+            align-self: center;
+
+            .avatar-wrap {
+                position: relative;
+                flex: none;
+                cursor: pointer;
+            }
+
+            .avatar {
+                width: ${avatarSize}px !important;
+                height: ${avatarSize}px !important;
+                border: 3px solid ${isDarkMode ? "rgba(255,255,255,0.08)" : token.colorBgContainer};
+                box-shadow: 0 8px 20px rgba(15, 23, 42, ${isDarkMode ? 0.26 : 0.12});
+            }
+
+            .camera {
+                position: absolute;
+                right: -1px;
+                bottom: -1px;
+                width: 26px;
+                height: 26px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                color: #fff;
+                background: ${token.colorPrimary};
+                border: 2px solid ${isDarkMode ? "rgba(255,255,255,0.08)" : token.colorBgContainer};
+                font-size: 12px;
+            }
+
+            .identity {
                 min-width: 0;
                 flex: 1;
             }
 
-            .user-title-line {
+            .name-line {
                 display: flex;
                 align-items: center;
-                gap: 10px;
-                min-width: 0;
-                margin-bottom: ${isCompactMode ? 10 : 12}px;
                 flex-wrap: wrap;
+                gap: 8px;
+                min-width: 0;
+                margin-bottom: 6px;
             }
 
-            .user-name {
-                margin: 0;
+            .name {
                 min-width: 0;
-                color: #fff;
-                font-size: ${isCompactMode ? 26 : 30}px;
-                font-weight: 800;
-                line-height: ${isCompactMode ? 34 : 38}px;
+                margin: 0;
+                color: ${token.colorText};
+                font-size: ${isCompactMode ? 24 : 25}px;
+                font-weight: 700;
+                line-height: ${isCompactMode ? 32 : 33}px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
+            }
 
-                ${responsive.mobile} {
-                    font-size: ${isCompactMode ? 22 : 24}px;
-                    line-height: ${isCompactMode ? 30 : 32}px;
+            .sub {
+                color: ${token.colorTextTertiary};
+                font-size: 13px;
+                line-height: 20px;
+            }
+
+            ${responsive.mobile} {
+                gap: 12px;
+
+                .avatar {
+                    width: ${isCompactMode ? 68 : 68}px !important;
+                    height: ${isCompactMode ? 68 : 68}px !important;
                 }
-            }
 
-            .user-id {
-                flex: none;
-                display: inline-flex;
-                align-items: center;
-                height: 22px;
-                padding: 0 8px;
-                border-radius: ${token.borderRadius}px;
-                color: rgba(255, 255, 255, 0.82);
-                background: rgba(255, 255, 255, 0.14);
-                font-size: 12px;
-                line-height: 22px;
-                backdrop-filter: blur(8px);
-            }
-
-            .user-contact {
-                display: flex;
-                flex-wrap: wrap;
-                gap: ${isCompactMode ? 6 : 8}px;
-                min-width: 0;
-
-                ${responsive.mobile} {
-                    gap: 5px;
-                }
-            }
-
-            .contact-item {
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                flex: 0 1 auto;
-                min-width: 0;
-                max-width: 100%;
-                height: ${isCompactMode ? 28 : 30}px;
-                padding: 0 11px;
-                border-radius: ${token.borderRadius}px;
-                color: rgba(255, 255, 255, 0.88);
-                background: rgba(255, 255, 255, 0.13);
-                font-size: 12px;
-                backdrop-filter: blur(8px);
-
-                ${responsive.mobile} {
-                    gap: 4px;
+                .camera {
+                    width: 24px;
                     height: 24px;
-                    padding: 0 8px;
                     font-size: 11px;
                 }
 
-                .anticon {
-                    flex: none;
-                    color: rgba(255, 255, 255, 0.68);
-                    font-size: 12px;
-
-                    ${responsive.mobile} {
-                        font-size: 11px;
-                    }
+                .name {
+                    font-size: ${isCompactMode ? 22 : 22}px;
+                    line-height: ${isCompactMode ? 30 : 30}px;
                 }
             }
+        `,
+        metaGrid: css`
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 0;
 
-            .contact-value {
-                min-width: 0;
-                max-width: 100%;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
+            ${responsive.mobile} {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 6px;
+                margin-top: 0;
             }
+        `,
+        metaItem: css`
+            min-width: 0;
+            padding: ${isCompactMode ? "9px 11px" : "8px 10px"};
+            border: none;
+            border-radius: ${token.borderRadius}px;
+            background: rgba(255, 255, 255, ${isDarkMode ? 0.02 : 0.56});
 
-            .profile-session {
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: ${isCompactMode ? 10 : 12}px;
-                padding: ${sessionPadding};
-                color: #fff;
-                background: rgba(255, 255, 255, ${isDarkMode ? 0.06 : 0.08});
-                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
-                backdrop-filter: blur(12px);
-
-                ${responsive.mobile} {
-                    padding: ${isCompactMode ? "12px 14px 14px" : "14px 16px 16px"};
-                }
-            }
-
-            .session-head {
+            .label {
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
-                gap: 12px;
-                min-width: 0;
-            }
-
-            .session-title-wrap {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                min-width: 0;
-            }
-
-            .session-dot {
-                width: 8px;
-                height: 8px;
-                flex: none;
-                border-radius: 50%;
-                background: #79f2c0;
-                box-shadow: 0 0 0 4px rgba(121, 242, 192, 0.16);
-            }
-
-            .session-title {
-                min-width: 0;
-                color: rgba(255, 255, 255, 0.94);
-                font-size: 13px;
-                font-weight: 600;
-                line-height: 20px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-
-            .session-state {
-                flex: none;
-                height: 22px;
-                padding: 0 8px;
-                border-radius: ${token.borderRadius}px;
-                color: rgba(255, 255, 255, 0.86);
-                background: rgba(255, 255, 255, 0.12);
-                font-size: 12px;
-                line-height: 22px;
-            }
-
-            .session-meta {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: ${isCompactMode ? 10 : 12}px ${isCompactMode ? 14 : 18}px;
-                min-width: 0;
-
-                ${responsive.mobile} {
-                    grid-template-columns: 1fr;
-                }
-            }
-
-            .session-meta-item {
-                min-width: 0;
-                display: flex;
-                align-items: flex-start;
-                gap: 10px;
-                padding: ${isCompactMode ? 6 : 8}px;
-                border-radius: ${token.borderRadius}px;
-                background: rgba(255, 255, 255, ${isDarkMode ? 0.05 : 0.07});
-            }
-
-            .session-meta-icon {
-                width: ${isCompactMode ? 26 : 28}px;
-                height: ${isCompactMode ? 26 : 28}px;
-                flex: none;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 50%;
-                background: rgba(255, 255, 255, 0.12);
-                color: rgba(255, 255, 255, 0.8);
-                font-size: 13px;
-            }
-
-            .session-meta-body {
-                min-width: 0;
-            }
-
-            .session-meta-label {
-                display: block;
-                margin-bottom: 2px;
-                color: rgba(255, 255, 255, 0.66);
+                gap: 6px;
+                margin-bottom: 4px;
+                color: ${token.colorTextTertiary};
                 font-size: 12px;
                 line-height: 18px;
             }
 
-            .session-meta-value {
+            .value {
                 display: block;
-                min-width: 0;
-                color: rgba(255, 255, 255, 0.94);
+                color: ${token.colorText};
                 font-size: 13px;
-                font-weight: 500;
+                line-height: 20px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            ${responsive.mobile} {
+                padding: 7px 8px;
+
+                .label {
+                    margin-bottom: 2px;
+                    font-size: ${isCompactMode ? 12 : 11}px;
+                }
+
+                .value {
+                    font-size: ${isCompactMode ? 13 : 12}px;
+                    line-height: ${isCompactMode ? 19 : 18}px;
+                }
+            }
+        `,
+        securityPanel: css`
+            width: 100%;
+            height: 100%;
+            min-height: 214px;
+            padding: ${panelPadding}px;
+            display: flex;
+            flex-direction: column;
+            gap: ${isCompactMode ? 12 : 14}px;
+            background: ${token.colorBgContainer};
+
+            .panel-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+            }
+
+            .title {
+                color: ${token.colorText};
+                font-size: 15px;
+                font-weight: 700;
+                line-height: 24px;
+            }
+
+            .desc {
+                margin-top: 2px;
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+                line-height: 18px;
+            }
+
+            .security-main {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+            }
+
+            .security-ring {
+                width: ${isCompactMode ? 66 : 72}px;
+                height: ${isCompactMode ? 66 : 72}px;
+                flex: none;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background: ${token.colorBgContainer};
+                box-shadow: 0 6px 16px rgba(15, 23, 42, ${isDarkMode ? 0.20 : 0.08});
+            }
+
+            .security-svg {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+            }
+
+            .security-track {
+                fill: none;
+                stroke: ${token.colorFillSecondary};
+                stroke-width: 8;
+            }
+
+            .security-progress {
+                fill: none;
+                stroke: ${token.colorPrimary};
+                stroke-width: 8;
+                stroke-linecap: round;
+                opacity: ${isDarkMode ? 0.78 : 0.58};
+                transform: rotate(-90deg);
+                transform-origin: 50% 50%;
+                transition: stroke-dashoffset 0.2s ease;
+            }
+
+            .ring-content {
+                position: relative;
+                z-index: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                line-height: 1;
+            }
+
+            .ring-value {
+                color: ${token.colorText};
+                font-size: ${isCompactMode ? 17 : 18}px;
+                font-weight: 700;
+                line-height: 20px;
+            }
+
+            .ring-label {
+                margin-top: 3px;
+                color: ${token.colorTextTertiary};
+                font-size: 11px;
+                line-height: 14px;
+            }
+
+            .security-list {
+                flex: 1;
+                min-width: 0;
+                display: grid;
+                gap: 8px;
+            }
+
+            .security-item {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                min-width: 0;
+                padding: 7px 9px;
+                border: none;
+                border-radius: ${token.borderRadius}px;
+                background: ${token.colorFillQuaternary};
+                cursor: pointer;
+                transition: background-color 0.2s ease, color 0.2s ease;
+                text-align: left;
+            }
+
+            .security-item:hover {
+                background: ${token.colorFillSecondary};
+            }
+
+            .security-item:focus-visible {
+                outline: 2px solid ${token.colorPrimaryBorder};
+                outline-offset: 2px;
+            }
+
+            .security-name {
+                min-width: 0;
+                color: ${token.colorTextSecondary};
+                font-size: 13px;
+            }
+
+            @media (max-width: 1199px) {
+                min-height: auto;
+            }
+
+            ${responsive.mobile} {
+                padding: ${isCompactMode ? 12 : 14}px;
+                gap: ${isCompactMode ? 12 : 14}px;
+
+                .panel-head {
+                    gap: 10px;
+                }
+
+                .security-main {
+                    gap: 12px;
+                }
+
+                .security-ring {
+                    width: ${isCompactMode ? 60 : 64}px;
+                    height: ${isCompactMode ? 60 : 64}px;
+                }
+
+                .security-list {
+                    gap: 6px;
+                }
+
+                .security-item {
+                    padding: 7px 9px;
+                }
+            }
+        `,
+        settingGrid: css`
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+
+            ${responsive.mobile} {
+                grid-template-columns: 1fr;
+            }
+        `,
+        flatCard: css`
+            overflow: hidden;
+
+            .ant-card-body {
+                overflow: hidden;
+                border-radius: 0 0 ${token.borderRadiusLG}px ${token.borderRadiusLG}px;
+            }
+        `,
+        settingItem: css`
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: ${isCompactMode ? 8 : 10}px;
+            min-height: ${isCompactMode ? 52 : 58}px;
+            padding: ${isCompactMode ? "8px 10px" : "10px 12px"};
+            border-radius: 0;
+            background: transparent;
+            transition: background-color 0.2s ease;
+
+            &:nth-child(2n - 1) {
+                box-shadow: inset -1px 0 0 ${token.colorBorderSecondary};
+            }
+
+            &:nth-child(n + 3) {
+                border-top: none;
+                box-shadow: inset 0 1px 0 ${token.colorBorderSecondary};
+            }
+
+            &:nth-child(2n - 1):nth-child(n + 3) {
+                box-shadow: inset -1px 0 0 ${token.colorBorderSecondary}, inset 0 1px 0 ${token.colorBorderSecondary};
+            }
+
+            &:hover {
+                background: ${token.colorFillTertiary};
+            }
+
+            .item-icon {
+                width: ${isCompactMode ? 28 : 30}px;
+                height: ${isCompactMode ? 28 : 30}px;
+                flex: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: ${token.borderRadius}px;
+                color: ${token.colorPrimary};
+                background: ${isDarkMode ? "rgba(255,255,255,0.045)" : token.colorPrimaryBg};
+                font-size: ${isCompactMode ? 14 : 15}px;
+            }
+
+            .item-main {
+                min-width: 0;
+                flex: 1;
+            }
+
+            .item-title {
+                min-width: 0;
+                color: ${token.colorText};
+                font-size: ${isCompactMode ? 12 : 13}px;
+                font-weight: 400;
+                line-height: ${isCompactMode ? 18 : 20}px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .item-value {
+                min-width: 76px;
+                max-width: 120px;
+                min-height: 24px;
+                flex: none;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                color: ${token.colorTextSecondary};
+                font-size: ${isCompactMode ? 12 : 12}px;
+                line-height: ${isCompactMode ? 18 : 20}px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .item-value .ant-typography {
+                color: inherit;
+                font-size: inherit;
+                line-height: inherit;
+            }
+
+            .item-desc {
+                color: ${token.colorTextTertiary};
+                font-size: ${isCompactMode ? 10 : 11}px;
+                line-height: ${isCompactMode ? 15 : 16}px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                max-width: 200px;
+            }
+
+            .edit-btn {
+                flex: none;
+                height: ${isCompactMode ? 20 : 22}px;
+                min-width: 34px;
+                padding-inline: 0;
+                font-size: ${isCompactMode ? 12 : 12}px;
+            }
+
+            ${responsive.mobile} {
+                gap: ${isCompactMode ? 8 : 9}px;
+
+                &:nth-child(2n - 1) {
+                    box-shadow: none;
+                }
+
+                &:nth-child(n + 2) {
+                    border-top: none;
+                    box-shadow: inset 0 1px 0 ${token.colorBorderSecondary};
+                }
+
+                .item-main {
+                    flex-basis: auto;
+                }
+
+                .item-desc {
+                    max-width: 150px;
+                }
+
+                .item-value {
+                    min-width: 58px;
+                    max-width: 104px;
+                    justify-content: flex-end;
+                    padding-left: 0;
+                }
+
+                .edit-btn {
+                    margin-left: 0;
+                }
+            }
+
+            @media (max-width: 430px) {
+                align-items: flex-start;
+                flex-wrap: wrap;
+
+                .item-main {
+                    flex-basis: calc(100% - ${isCompactMode ? 38 : 40}px);
+                }
+
+                .item-value {
+                    width: calc(100% - ${isCompactMode ? 38 : 40}px);
+                    max-width: none;
+                    margin-left: ${isCompactMode ? 38 : 40}px;
+                    justify-content: flex-start;
+                }
+
+                .edit-btn {
+                    margin-left: ${isCompactMode ? 38 : 40}px;
+                }
+            }
+        `,
+        sessionCard: css`
+            min-width: 0;
+
+            .session-link {
+                height: 22px;
+                padding-inline: 0;
+                font-size: ${isCompactMode ? 12 : 12}px;
+            }
+
+            .session-list {
+                display: grid;
+                overflow: hidden;
+            }
+
+            .session-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                min-width: 0;
+                padding: ${isCompactMode ? "10px 11px" : "11px 12px"};
+                background: transparent;
+                transition: background-color 0.2s ease;
+            }
+
+            .session-item + .session-item {
+                border-top: 1px solid ${token.colorBorderSecondary};
+                box-shadow: none;
+            }
+
+            .session-item:hover {
+                background: ${token.colorFillTertiary};
+            }
+
+            .session-icon {
+                width: 30px;
+                height: 30px;
+                flex: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: ${token.borderRadius}px;
+                color: ${token.colorPrimary};
+                background: ${isDarkMode ? "rgba(255,255,255,0.045)" : token.colorPrimaryBg};
+            }
+
+            .session-label {
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+                line-height: 18px;
+            }
+
+            .session-value {
+                display: block;
+                color: ${token.colorText};
+                font-size: 13px;
                 line-height: 20px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
             }
-        `,
-        settingItem: css`
-            padding: 12px;
-            background: ${token.colorBgContainer};
-            border-radius: ${token.borderRadius}px;
-            border: 1px solid ${token.colorBorderSecondary};
-            transition: all 0.2s ease;
-
-            &:hover {
-                border-color: ${token.colorPrimary};
-                box-shadow: 0 2px 8px ${token.boxShadowSecondary};
-            }
-
-            ${responsive.mobile} {
-                padding: 10px;
-            }
-
-            .item-content {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-
-                .item-left {
-                    display: flex;
-                    align-items: center;
-                    flex: 1;
-                    min-width: 0;
-
-                    .item-icon {
-                        font-size: 17px;
-                        color: ${token.colorPrimaryBorderHover};
-                        margin: 0 15px 0 7px;
-
-                        ${responsive.mobile} {
-                            font-size: 18px;
-                        }
-                    }
-
-                    .item-info {
-                        flex: 1;
-                        min-width: 0;
-
-                        .item-title {
-                            font-size: 14px;
-                            font-weight: 400;
-                            color: ${token.colorTextSecondary};
-                            margin-bottom: 2px;
-
-                            ${responsive.mobile} {
-                                font-size: 13px;
-                            }
-                        }
-
-                        .item-desc {
-                            font-size: 11px;
-                            color: ${token.colorTextTertiary};
-                            line-height: 1.3;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            max-width: 200px;
-
-                            ${responsive.mobile} {
-                                font-size: 10px;
-                                max-width: 150px;
-                            }
-                        }
-                    }
-                }
-
-                .item-right {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-
-                    .item-value {
-                        color: ${token.colorTextSecondary};
-                        font-size: 13px;
-                        max-width: 200px;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                        display: flex;
-                        align-items: center;
-                    }
-
-                    .edit-btn {
-                        color: ${token.colorPrimary};
-                        padding: 2px 6px;
-                        border-radius: ${token.borderRadius / 2}px;
-                        font-size: 13px;
-
-                        &:hover {
-                            background: ${token.colorPrimaryBg};
-                        }
-                    }
-                }
-            }
-        `,
-        topCard: css`
-            border-radius: ${token.borderRadius}px ${token.borderRadius}px 0 0;
-            border-bottom: none;
-            margin-bottom: 0;
-        `,
-        bottomCard: css`
-            border: 1px solid ${token.colorBorderSecondary};
-            border-radius: 0 0 ${token.borderRadius}px ${token.borderRadius}px;
-            border-top: none;
-            margin-top: 0;
-            background: ${token.colorBgContainer};
-            box-shadow: ${isDarkMode ? "none" : "0 12px 28px rgba(15, 23, 42, 0.05)"};
-
-            .ant-card-body {
-                padding: ${isCompactMode ? 12 : 16}px;
-            }
-        `,
-        settingSection: css`
-            padding: 0;
-        `,
-        avatarStyle: css`
-            cursor: pointer;
         `,
     };
 });
@@ -475,12 +747,8 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
 export default () => {
     const theme = useTheme();
     const isCompactMode = theme?.isCompactTheme?.() || false;
-    const {
-        styles: {
-            pageShell, userCard, settingItem, topCard, bottomCard, settingSection,
-            avatarStyle,
-        },
-    } = useStyles({isCompactMode});
+    const {styles} = useStyles({isCompactMode});
+    const pageGutter = isCompactMode ? 12 : 14;
     const user = useModel("user");
     const infoRef = useRef<InfoRef>({} as InfoRef);
     const accountRef = useRef<AccountRef>({} as AccountRef);
@@ -492,9 +760,6 @@ export default () => {
     const [person, setPerson] = useState<any>();
     const [loading, setLoading] = useState(true);
 
-    /**
-     * 拉取前台个人资料和当前会话信息。
-     */
     const refreshPerson = async () => {
         setLoading(true);
         await getPersonInfo({
@@ -507,226 +772,270 @@ export default () => {
         });
     };
 
-    /**
-     * 页面初始化时加载个人资料。
-     */
     useEffect(() => {
         refreshPerson();
     }, []);
 
-    /**
-     * 调用独立安全验证流程，供敏感操作前置确认。
-     */
     const ensureVerify = () => verifyRef.current?.ensure?.() || Promise.resolve(false);
     const currentPerson: any = person || user?.web || {};
     const currentSession = currentPerson?.session || {};
-    const profileContacts = [
-        {
-            icon: <Icon type="IdcardOutlined"/>,
-            value: currentPerson?.account,
-        },
-        {
-            icon: <Icon type="PhoneOutlined"/>,
-            value: currentPerson?.phone,
-        },
-        {
-            icon: <Icon type="MailOutlined"/>,
-            value: currentPerson?.email,
-        },
-    ].filter((item) => item.value !== undefined && item.value !== null && item.value !== "");
-    const sessionSummary = [
+    const displayName = currentPerson?.nick_name || currentPerson?.account || currentPerson?.phone || currentPerson?.email || "用户";
+    const hour = new Date().getHours();
+    const greeting = hour < 6 ? "夜深了" : hour < 12 ? "上午好" : hour < 18 ? "下午好" : "晚上好";
+    const completedSecurityCount = [currentPerson?.phone, currentPerson?.email, currentPerson?.password].filter(Boolean).length;
+    const securityPercent = Math.round((completedSecurityCount / 3) * 100);
+    const securityDesc = completedSecurityCount >= 3 ? "基础安全配置已完善" : `已完成 ${completedSecurityCount}/3 项基础配置`;
+    const securityRingRadius = 30;
+    const securityRingLength = Math.PI * 2 * securityRingRadius;
+    const securityRingOffset = securityRingLength * (1 - securityPercent / 100);
+
+    const metaItems = [
+        {label: "用户ID", value: currentPerson?.id || "-", icon: <Icon type="FieldNumberOutlined"/>},
+        {label: "登录账号", value: currentPerson?.account || "未设置", icon: <Icon type="IdcardOutlined"/>},
+        {label: "最近登录", value: currentSession?.login_time ? ago(currentSession.login_time) : "-", icon: <Icon type="ClockCircleOutlined"/>},
+    ];
+
+    const securityItems = [
+        {label: "安全手机", value: currentPerson?.phone ? "已绑定" : "未绑定", done: !!currentPerson?.phone, onClick: () => phoneRef.current?.show()},
+        {label: "安全邮箱", value: currentPerson?.email ? "已绑定" : "未绑定", done: !!currentPerson?.email, onClick: () => emailRef.current?.show()},
+        {label: "账户密码", value: currentPerson?.password ? "已设置" : "未设置", done: !!currentPerson?.password, onClick: () => passwordRef.current?.show()},
+    ];
+
+    const sessionItems = [
         {label: "登录设备", value: currentSession?.device || "-", icon: <Icon type="LaptopOutlined"/>},
         {label: "登录IP", value: currentSession?.ip || "-", icon: <Icon type="GlobalOutlined"/>},
         {label: "登录地点", value: currentSession?.location || "-", icon: <Icon type="EnvironmentOutlined"/>},
-        {
-            label: "登录时间",
-            value: currentSession?.login_time ? ago(currentSession.login_time) : "-",
-            icon: <Icon type="ClockCircleOutlined"/>,
-        },
     ];
 
-    /**
-     * 子组件保存成功后刷新页面资料。
-     */
     const handleSuccess = () => {
         refreshPerson();
     };
 
-    /**
-     * 账户设置项配置，集中维护展示内容和操作入口。
-     */
-    const settingItems = [
+    const profileSettings: SettingItem[] = [
         {
-            icon: <Icon type="CameraFilled"/>,
+            icon: <Icon type="CameraOutlined"/>,
             title: "账号头像",
             desc: "设置您的个人头像",
             value: <AvatarUpload
                 ref={avatarRef}
                 avatar={currentPerson?.avatar}
                 nickName={currentPerson?.nick_name}
+                size={36}
                 onSuccess={handleSuccess}
             />,
-            onEdit: () => avatarRef.current?.triggerUpload(),
+            actionText: "上传",
+            onClick: () => avatarRef.current?.triggerUpload(),
         },
         {
-            icon: <Icon type="EditFilled"/>,
+            icon: <Icon type="EditOutlined"/>,
             title: "账号昵称",
             desc: "设置您的显示昵称",
             value: currentPerson?.nick_name || "未设置",
-            onEdit: () => infoRef.current?.show(),
+            actionText: "修改",
+            onClick: () => infoRef.current?.show(),
         },
         {
-            icon: <Icon type="IdcardFilled"/>,
+            icon: <Icon type="IdcardOutlined"/>,
             title: "登录账号",
             desc: "账号仅支持设置一次",
             value: currentPerson?.account || "未设置",
-            onEdit: () => accountRef.current?.show(),
-        },
-        {
-            icon: <Icon type="PhoneFilled"/>,
-            title: "绑定手机",
-            desc: "用于登录和安全验证",
-            value: currentPerson?.phone || "未绑定",
-            onEdit: () => phoneRef.current?.show(),
-        },
-        {
-            icon: <Icon type="MailFilled"/>,
-            title: "绑定邮箱",
-            desc: "用于通知和安全验证",
-            value: currentPerson?.email || "未绑定",
-            onEdit: () => emailRef.current?.show(),
-        },
-        {
-            icon: <Icon type="SafetyCertificateFilled"/>,
-            title: "登录密码",
-            desc: "用于账户登录验证",
-            value: currentPerson?.password ? "已设置" : "未设置",
-            onEdit: () => passwordRef.current?.show(),
+            actionText: currentPerson?.account ? "已设置" : "设置",
+            disabled: !!currentPerson?.account,
+            onClick: () => accountRef.current?.show(),
         },
     ];
 
-    /**
-     * 渲染单个账户设置项。
-     */
-    const renderSettingItem = (
-        icon: React.ReactNode,
-        title: string,
-        desc: string,
-        value: string | React.ReactNode,
-        onEdit?: () => void,
-    ) => {
+    const securitySettings: SettingItem[] = [
+        {
+            icon: <Icon type="PhoneOutlined"/>,
+            title: "绑定手机",
+            desc: "用于登录和安全验证",
+            value: currentPerson?.phone || "未绑定",
+            actionText: currentPerson?.phone ? "换绑" : "绑定",
+            onClick: () => phoneRef.current?.show(),
+        },
+        {
+            icon: <Icon type="MailOutlined"/>,
+            title: "绑定邮箱",
+            desc: "用于通知和安全验证",
+            value: currentPerson?.email || "未绑定",
+            actionText: currentPerson?.email ? "换绑" : "绑定",
+            onClick: () => emailRef.current?.show(),
+        },
+        {
+            icon: <Icon type="SafetyCertificateOutlined"/>,
+            title: "登录密码",
+            desc: "用于账户登录验证",
+            value: currentPerson?.password ? "已设置" : "未设置",
+            actionText: "修改",
+            onClick: () => passwordRef.current?.show(),
+        },
+    ];
+
+    const renderText = (value: React.ReactNode) => {
+        if (typeof value !== "string" && typeof value !== "number") {
+            return value;
+        }
         return (
-            <div className={settingItem}>
-                <div className="item-content">
-                    <div className="item-left">
-                        <div className="item-icon">
-                            {icon}
-                        </div>
-                        <div className="item-info">
-                            <div className="item-title">{title}</div>
-                            <div className="item-desc">{desc}</div>
-                        </div>
-                    </div>
-                    <div className="item-right">
-                        <div className="item-value">
-                            {value}
-                        </div>
-                        <Button
-                            type="text"
-                            className="edit-btn"
-                            onClick={onEdit}
-                        >
-                            修改
-                        </Button>
-                    </div>
-                </div>
-            </div>
+            <Typography.Text ellipsis={{tooltip: String(value)}}>{value}</Typography.Text>
         );
     };
 
+    const renderSettingItem = (item: SettingItem) => (
+        <div className={styles.settingItem} key={item.title}>
+            <span className="item-icon">{item.icon}</span>
+            <div className="item-main">
+                <div className="item-title">{item.title}</div>
+                <div className="item-desc">{item.desc || "账户资料信息"}</div>
+            </div>
+            <div className="item-value">{renderText(item.value)}</div>
+            {!item.readonly && (
+                <Button
+                    className="edit-btn"
+                    type="link"
+                    size="small"
+                    disabled={item.disabled}
+                    onClick={item.onClick}
+                >
+                    {item.actionText || "修改"}
+                </Button>
+            )}
+        </div>
+    );
+
     return (
         <Body loading={loading}>
-            <div className={pageShell}>
-                <Row justify="center">
-                    <Col xs={24} sm={24} md={22} lg={20} xl={18} xxl={16} xxxl={14}>
-                        <Row gutter={[15, 0]}>
-                            <Col span={24}>
-                                <div className={`${userCard} ${topCard}`}>
-                                    <div className="profile-shell">
-                                        <div className="profile-grid">
-                                            <div className="profile-main">
-                                                <div className="profile-main-top">
-                                                    <div className="avatar-section">
-                                                        <Avatar
-                                                            size={85}
-                                                            src={currentPerson?.avatar}
-                                                            icon={<Icon type="UserOutlined"/>}
-                                                            className={`user-avatar ${avatarStyle}`}
-                                                            onClick={() => avatarRef.current?.triggerUpload()}
-                                                        />
-                                                    </div>
-                                                    <div className="user-content">
-                                                        <div className="user-title-line">
-                                                            {currentPerson?.nick_name && (
-                                                                <h2 className="user-name">{currentPerson.nick_name}</h2>
-                                                            )}
-                                                            <span className="user-id">UID {currentPerson?.id || "-"}</span>
-                                                        </div>
-                                                        {profileContacts.length > 0 && (
-                                                            <div className="user-contact">
-                                                                {profileContacts.map((item, index) => (
-                                                                    <span className="contact-item" key={index}>
-                                                                        {item.icon}
-                                                                        <span className="contact-value">{item.value}</span>
-                                                                    </span>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
+            <Row className={styles.pageRow} gutter={[0, pageGutter]}>
+                <Col span={24}>
+                    <div className={styles.overview}>
+                        <Row gutter={0}>
+                            <Col xs={24} xl={15}>
+                                <div className={styles.profilePanel}>
+                                    <span className="profile-ambient"/>
+                                    <span className="profile-shine"/>
+                                    <span className="profile-watermark">
+                                        <Icon type="UserOutlined"/>
+                                    </span>
+                                    <div className={styles.profileMain}>
+                                        <div className="avatar-wrap" onClick={() => avatarRef.current?.triggerUpload()}>
+                                            <Avatar
+                                                src={currentPerson?.avatar}
+                                                icon={<Icon type="UserOutlined"/>}
+                                                className="avatar"
+                                            />
+                                            <span className="camera">
+                                                <Icon type="CameraOutlined"/>
+                                            </span>
+                                        </div>
+                                        <div className="identity">
+                                            <div className="name-line">
+                                                <h1 className="name">{displayName}</h1>
                                             </div>
-                                            <div className="profile-session">
-                                                <div className="session-head">
-                                                    <div className="session-title-wrap">
-                                                        <span className="session-dot"/>
-                                                        <span className="session-title">当前会话</span>
-                                                    </div>
-                                                    <span className="session-state">在线</span>
-                                                </div>
-                                                <div className="session-meta">
-                                                    {sessionSummary.map((item) => (
-                                                        <div className="session-meta-item" key={item.label}>
-                                                            <span className="session-meta-icon">{item.icon}</span>
-                                                            <span className="session-meta-body">
-                                                                <span className="session-meta-label">{item.label}</span>
-                                                                <span className="session-meta-value">{item.value}</span>
-                                                            </span>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                            <div className="sub">{greeting}，{displayName}，欢迎回来</div>
+                                        </div>
+                                    </div>
+                                    <div className={styles.metaGrid}>
+                                        {metaItems.map((item) => (
+                                            <div className={styles.metaItem} key={item.label}>
+                                                <span className="label">{item.icon}{item.label}</span>
+                                                <Typography.Text className="value" ellipsis={{tooltip: String(item.value)}}>
+                                                    {item.value}
+                                                </Typography.Text>
                                             </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </Col>
+                            <Col xs={24} xl={9}>
+                                <div className={styles.securityPanel}>
+                                    <div className="panel-head">
+                                        <div>
+                                            <div className="title">账户安全</div>
+                                            <div className="desc">{securityDesc}</div>
+                                        </div>
+                                        <div className="security-ring">
+                                            <svg className="security-svg" viewBox="0 0 72 72" aria-hidden="true">
+                                                <circle className="security-track" cx="36" cy="36" r={securityRingRadius}/>
+                                                <circle
+                                                    className="security-progress"
+                                                    cx="36"
+                                                    cy="36"
+                                                    r={securityRingRadius}
+                                                    strokeDasharray={securityRingLength}
+                                                    strokeDashoffset={securityRingOffset}
+                                                />
+                                            </svg>
+                                            <span className="ring-content">
+                                                <span className="ring-value">{securityPercent}</span>
+                                                <span className="ring-label">安全</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="security-main">
+                                        <div className="security-list">
+                                            {securityItems.map((item) => (
+                                                <button className="security-item" key={item.label} type="button" onClick={item.onClick}>
+                                                    <span className="security-name">{item.label}</span>
+                                                    <Tag color={item.done ? "success" : "warning"}>{item.value}</Tag>
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
                             </Col>
-                            <Col span={24}>
-                                <Card className={bottomCard} variant="borderless">
-                                    <div className={settingSection}>
-                                        <Row gutter={[16, 16]}>
-                                            {settingItems.map((item, index) => (
-                                                <Col xs={24} sm={24} md={24} lg={12} xl={12} xxl={12} xxxl={12}
-                                                     key={index}>
-                                                    {renderSettingItem(item.icon, item.title, item.desc, item.value, item.onEdit)}
-                                                </Col>
-                                            ))}
-                                        </Row>
-                                    </div>
-                                </Card>
-                            </Col>
                         </Row>
-                    </Col>
-                </Row>
-            </div>
+                    </div>
+                </Col>
+                <Col span={24}>
+                    <Row gutter={[pageGutter, pageGutter]}>
+                        <Col xs={24} xl={15}>
+                            <Card
+                                className={styles.flatCard}
+                                title={<Title>账户设置</Title>}
+                                variant="borderless"
+                                styles={{body: {padding: 0}}}
+                            >
+                                <div className={styles.settingGrid}>
+                                    {[...profileSettings, ...securitySettings].map(renderSettingItem)}
+                                </div>
+                            </Card>
+                        </Col>
+                        <Col xs={24} xl={9}>
+                            <Card
+                                className={`${styles.flatCard} ${styles.sessionCard}`}
+                                title={<Title>当前会话</Title>}
+                                extra={(
+                                    <Button
+                                        className="session-link"
+                                        type="link"
+                                        size="small"
+                                        onClick={() => historyPush("user.person.session")}
+                                    >
+                                        会话列表
+                                    </Button>
+                                )}
+                                variant="borderless"
+                                styles={{body: {padding: 0}}}
+                            >
+                                <div className="session-list">
+                                    {sessionItems.map((item) => (
+                                        <div className="session-item" key={item.label}>
+                                            <span className="session-icon">{item.icon}</span>
+                                            <div>
+                                                <div className="session-label">{item.label}</div>
+                                                <Typography.Text className="session-value" ellipsis={{tooltip: String(item.value)}}>
+                                                    {item.value}
+                                                </Typography.Text>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+                        </Col>
+                    </Row>
+                </Col>
+            </Row>
+
             <Info ref={infoRef} nickName={currentPerson?.nick_name} onSuccess={handleSuccess}/>
             <Account ref={accountRef} account={currentPerson?.account} onSuccess={handleSuccess}/>
             <Password ref={passwordRef} ensureVerify={ensureVerify} onSuccess={handleSuccess}/>
