@@ -450,8 +450,10 @@ func (s *service) InitRealAuth(userId int64, authType int, cardName, cardNo, com
 	webConfig := s.config.GetSystemConfig(commonConstant.WebGroup, false)
 	returnUrl := strings.TrimRight(strings.TrimSpace(webConfig[commonConstant.WebUrl]), "/")
 	callbackUrl := strings.TrimPrefix(strings.TrimRight(strings.TrimSpace(webConfig[commonConstant.WebApi]), "/"), "http://")
-	if !strings.HasPrefix(callbackUrl, "https://") {
+	if !strings.HasPrefix(callbackUrl, "https://") && !strings.HasPrefix(callbackUrl, "http://") {
 		callbackUrl = "https://" + callbackUrl
+	} else {
+		callbackUrl = strings.Replace(callbackUrl, "http://", "https://", 1)
 	}
 	callbackUrl += "/api/callback/certificate"
 	outerOrderNo := strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10)
