@@ -43,7 +43,7 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
 
     return {
         page: css`
-            width: min(980px, 100%);
+            width: min(1120px, 100%);
             margin: 0 auto;
             display: grid;
             gap: ${isCompactMode ? 10 : 12}px;
@@ -204,16 +204,19 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
 
             .visual-icon {
                 position: relative;
-                width: ${isCompactMode ? 58 : 64}px;
-                height: ${isCompactMode ? 58 : 64}px;
+                width: ${isCompactMode ? 82 : 88}px;
+                height: ${isCompactMode ? 68 : 72}px;
                 flex: none;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                border-radius: 22px;
                 color: ${token.colorPrimary};
-                background: ${token.colorPrimaryBg};
-                font-size: ${isCompactMode ? 28 : 30}px;
+            }
+
+            .visual-icon svg {
+                width: 100%;
+                height: 100%;
+                display: block;
             }
 
             .visual-icon::before {
@@ -222,8 +225,8 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
                 inset: -34px;
                 border-radius: 50%;
                 background: radial-gradient(circle, ${token.colorPrimaryBgHover}, transparent 68%);
-                filter: blur(18px);
-                opacity: ${isDarkMode ? 0.28 : 0.6};
+                filter: blur(24px);
+                opacity: ${isDarkMode ? 0.18 : 0.32};
                 z-index: -1;
             }
 
@@ -234,10 +237,8 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
 
             @media (max-width: 560px) {
                 .visual-icon {
-                    width: ${isCompactMode ? 46 : 50}px;
-                    height: ${isCompactMode ? 46 : 50}px;
-                    border-radius: 18px;
-                    font-size: ${isCompactMode ? 22 : 24}px;
+                    width: ${isCompactMode ? 66 : 70}px;
+                    height: ${isCompactMode ? 54 : 58}px;
                 }
 
                 .visual-value {
@@ -1156,7 +1157,44 @@ export default (): React.ReactNode => {
                                 <div className="visual-desc">{isAuthed ? "实名信息已生效" : "按流程完成在线核验"}</div>
                             </div>
                             <div className="visual-icon">
-                                <Icon type="SafetyCertificateOutlined"/>
+                                <svg viewBox="0 0 96 76" fill="none" aria-hidden="true">
+                                    <defs>
+                                        <linearGradient id="realAuthCard" x1="14" y1="14" x2="74" y2="60" gradientUnits="userSpaceOnUse">
+                                            <stop stopColor="#FFFFFF"/>
+                                            <stop offset="1" stopColor="#EEF3FA"/>
+                                        </linearGradient>
+                                        <linearGradient id="realAuthStamp" x1="57" y1="24" x2="84" y2="56" gradientUnits="userSpaceOnUse">
+                                            <stop stopColor="#E2CC91"/>
+                                            <stop offset="1" stopColor="#B49355"/>
+                                        </linearGradient>
+                                        <filter id="realAuthShadow" x="4" y="8" width="86" height="62" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                                            <feDropShadow dx="0" dy="6" stdDeviation="5" floodColor="#172033" floodOpacity="0.12"/>
+                                        </filter>
+                                    </defs>
+                                    <g filter="url(#realAuthShadow)">
+                                        <rect x="10" y="13" width="62" height="48" rx="9" fill="url(#realAuthCard)" stroke="currentColor" strokeOpacity="0.42" strokeWidth="1.4"/>
+                                        <rect x="15" y="18" width="52" height="38" rx="6" stroke="currentColor" strokeOpacity="0.12"/>
+                                    </g>
+                                    <path d="M19 28H43" stroke="#42526A" strokeWidth="2" strokeLinecap="round" opacity="0.72"/>
+                                    <path d="M19 39H52" stroke="#42526A" strokeWidth="1.8" strokeLinecap="round" opacity="0.26"/>
+                                    <path d="M19 49H38" stroke="#42526A" strokeWidth="1.8" strokeLinecap="round" opacity="0.16"/>
+                                    <path
+                                        d="M49 22C54 28 54 36 49 42M56 20C62 28 62 38 56 46M43 24C47 29 47 35 43 40"
+                                        stroke="currentColor"
+                                        strokeOpacity="0.18"
+                                        strokeWidth="1.2"
+                                        strokeLinecap="round"
+                                    />
+                                    <path
+                                        d="M62 56L59 66L66 61L71 68L73 57"
+                                        fill="#9F7A3E"
+                                        opacity="0.12"
+                                    />
+                                    <circle cx="70" cy="40" r="17" fill="url(#realAuthStamp)" stroke="#A1844D" strokeWidth="1.2" opacity="0.86"/>
+                                    <circle cx="70" cy="40" r="12.5" fill="#FBF7EE" stroke="#C9AD70" strokeWidth="1.1" opacity="0.96"/>
+                                    <circle cx="70" cy="40" r="8" stroke="#A88A51" strokeWidth="1.5" strokeDasharray="2.2 2" opacity="0.78"/>
+                                    <path d="M64.5 40L68.4 43.7L76 35.8" stroke="#74582A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.9"/>
+                                </svg>
                             </div>
                         </div>
                     </div>
