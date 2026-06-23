@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
-import {App, Button, Card, Form, Input, QRCode} from "antd";
+import {App, Button, Card, Form, Input, QRCode, Row} from "antd";
 import {createStyles} from "antd-style";
 import {Body, Icon, useTheme} from "sinking-antd";
 import {certificate} from "@/service/user/person";
@@ -1141,7 +1141,7 @@ export default (): React.ReactNode => {
                 onLoad={() => setMetaReady(true)}
                 onError={() => setMetaReady(false)}
             />
-            <div className={styles.page}>
+            <Row className={styles.page}>
                 <Card className={styles.shell} variant="borderless" styles={{body: {padding: 0}}}>
                     <div className={styles.hero}>
                         <div className={styles.heroMain}>
@@ -1426,7 +1426,7 @@ export default (): React.ReactNode => {
                         </div>
                     </div>
                 </Card>
-            </div>
+            </Row>
         </Body>
     );
 };

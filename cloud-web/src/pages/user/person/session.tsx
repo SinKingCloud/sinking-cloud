@@ -1,23 +1,22 @@
-import React, {useEffect, useState} from "react";
+import React, {useRef, useState} from "react";
 import {useModel} from "umi";
-import {App, Button, Card, Empty, Pagination, Spin, Tag, Tooltip, Typography} from "antd";
+import {App, Button, Card, Empty, Row, Tooltip, Typography} from "antd";
 import {createStyles} from "antd-style";
-import {Body, Icon} from "sinking-antd";
+import {Body, Icon, ProTable, ProTableRef, Title} from "sinking-antd";
 import {getSessionList, logoutSession} from "@/service/user/person";
 import {ago} from "@/utils/time";
+import {getData} from "@/utils/page";
 
-const DEFAULT_PAGE_SIZE = 8;
+const DEFAULT_PAGE_SIZE = 10;
 
 const useStyles = createStyles(({token, css, isDarkMode}: any) => {
     const compact = token.sizeStep <= 3;
     const radius = token.borderRadiusLG;
-    const paginationColor = isDarkMode ? "rgba(255,255,255,0.65)" : "rgba(0,0,0,0.65)";
-    const paginationBg = isDarkMode ? "rgba(255, 255, 255, 0.1) !important" : "rgba(0, 0, 0, 0.05) !important";
-
     return {
         page: css`
             display: flex;
             flex-direction: column;
+            flex-wrap: nowrap;
             gap: ${compact ? 12 : 14}px;
             max-width: 1120px;
             margin: 0 auto;
@@ -338,98 +337,119 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 }
             }
         `,
-        listCard: css`
-            overflow: hidden;
-            border-radius: ${radius}px;
+        sessionTable: css`
+            white-space: normal !important;
 
-            .ant-card-head {
-                min-height: ${compact ? 46 : 50}px;
-                padding: 0 ${compact ? 14 : 16}px;
-                border-bottom-color: ${isDarkMode ? "rgba(255,255,255,0.07)" : "rgba(5,5,5,0.06)"};
-                background:
-                    radial-gradient(circle at 0% 0%, ${isDarkMode ? "rgba(255,255,255,0.05)" : `${token.colorPrimary}0d`} 0%, transparent 34%),
-                    ${token.colorBgContainer};
+            .ant-table,
+            .ant-table-container,
+            .ant-table-content {
+                display: block;
+                background: transparent;
             }
 
-            .ant-card-head-title {
-                padding: 0;
+            .ant-table-content {
+                overflow: visible !important;
             }
 
-            .ant-card-extra {
-                padding: 0;
+            .ant-table colgroup,
+            .ant-table-thead {
+                display: none;
             }
 
-            .ant-card-body {
-                padding: 0;
+            .ant-table-tbody {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: ${compact ? 7 : 8}px;
+                min-height: 180px;
+                padding: ${compact ? 8 : 10}px;
+                background: transparent;
             }
-        `,
-        panelTitle: css`
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: ${token.colorText};
-            font-size: ${compact ? 14 : 15}px;
-            font-weight: 600;
 
-            .anticon {
-                color: ${token.colorPrimary};
+            .ant-table-tbody > tr {
+                display: block;
+                background: transparent !important;
             }
-        `,
-        panelExtra: css`
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 10px;
-            color: ${token.colorTextTertiary};
-            font-size: 12px;
-        `,
-        listBody: css`
-            min-height: 180px;
-            padding: ${compact ? 10 : 12}px;
-            background: ${isDarkMode ? "rgba(255,255,255,0.012)" : token.colorFillQuaternary};
-        `,
-        sessionGrid: css`
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: ${compact ? 10 : 12}px;
+
+            .ant-table-tbody > tr.ant-table-measure-row,
+            .ant-table-tbody > tr[aria-hidden="true"],
+            .ant-table-tbody > tr.session-hidden-row {
+                display: none !important;
+            }
+
+            .ant-table-tbody > tr > td {
+                display: block;
+                padding: 0 !important;
+                border: 0 !important;
+                background: transparent !important;
+            }
+
+            .ant-table-tbody > tr:hover > td {
+                background: transparent !important;
+            }
+
+            .ant-table-placeholder {
+                grid-column: 1 / -1;
+            }
+
+            .ant-table-placeholder > td {
+                padding: 32px 12px !important;
+                border-radius: ${radius}px;
+                background: ${token.colorBgContainer} !important;
+            }
 
             @media (max-width: 900px) {
-                grid-template-columns: 1fr;
+                .ant-table-tbody {
+                    grid-template-columns: 1fr;
+                }
             }
         `,
         sessionCard: css`
             position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: ${compact ? 10 : 12}px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: minmax(190px, 1fr) minmax(360px, 1.5fr) auto;
+            align-items: center;
+            gap: ${compact ? 12 : 14}px;
             min-width: 0;
-            padding: ${compact ? "12px" : "14px"};
-            border: 1px solid ${token.colorBorderSecondary};
+            padding: ${compact ? "10px 12px" : "11px 14px"};
             border-radius: ${radius}px;
             background: ${token.colorBgContainer};
-            transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+            box-shadow:
+                inset 0 0 0 1px ${isDarkMode ? "rgba(255,255,255,0.065)" : "rgba(5,5,5,0.06)"},
+                ${isDarkMode ? "0 4px 12px rgba(0,0,0,0.10)" : "0 4px 14px rgba(15,23,42,0.025)"};
+            transition: box-shadow 0.18s ease, background-color 0.18s ease;
 
             &:hover {
-                border-color: ${token.colorPrimaryBorder};
                 background: ${isDarkMode ? "rgba(255,255,255,0.018)" : token.colorFillAlter};
-                box-shadow: ${isDarkMode ? "none" : "0 8px 18px rgba(15,23,42,0.04)"};
+                box-shadow: inset 0 0 0 1px ${isDarkMode ? "rgba(255,255,255,0.095)" : "rgba(5,5,5,0.085)"};
+            }
+
+            @media (max-width: 900px) {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+                gap: ${compact ? 8 : 10}px;
             }
         `,
         deviceMain: css`
             min-width: 0;
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: ${compact ? 10 : 12}px;
-            padding-bottom: ${compact ? 9 : 10}px;
-            border-bottom: 1px solid ${token.colorBorderSecondary};
+            align-items: center;
+            gap: 9px;
 
             .name-row {
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
                 min-width: 0;
-                gap: 6px;
+                gap: 8px;
+            }
+
+            .device-dot {
+                flex: none;
+                width: 6px;
+                height: 6px;
+                border-radius: 999px;
+                background: ${token.colorPrimary};
+                box-shadow: 0 0 0 3px ${token.colorPrimaryBg};
             }
 
             .device-content {
@@ -440,40 +460,43 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
         deviceName: css`
             min-width: 0;
             color: ${token.colorText};
-            font-size: 13px;
+            font-size: ${compact ? 13 : 14}px;
             font-weight: 600;
+            line-height: ${compact ? 20 : 21}px;
         `,
         deviceSub: css`
-            margin-top: 4px;
+            display: block;
+            margin-top: 2px;
             color: ${token.colorTextTertiary};
-            font-size: 12px;
+            font-size: ${compact ? 11 : 10}px;
+            line-height: 16px;
+
+            .ant-typography {
+                color: inherit;
+                font-size: ${compact ? 11 : 10}px;
+                line-height: 16px;
+            }
         `,
         sessionInfo: css`
             min-width: 0;
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 1px;
-            overflow: hidden;
-            border-radius: ${radius}px;
-            background: ${token.colorBorderSecondary};
+            gap: ${compact ? 10 : 12}px;
 
             @media (max-width: 620px) {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            @media (max-width: 430px) {
                 grid-template-columns: 1fr;
+                gap: ${compact ? 6 : 7}px;
             }
         `,
         sessionMeta: css`
             min-width: 0;
-            padding: ${compact ? "8px 9px" : "9px 10px"};
-            background: ${isDarkMode ? "rgba(255,255,255,0.018)" : token.colorFillQuaternary};
+            padding-left: ${compact ? 9 : 10}px;
+            border-left: 1px solid ${isDarkMode ? "rgba(255,255,255,0.065)" : "rgba(5,5,5,0.055)"};
 
             .label {
                 color: ${token.colorTextTertiary};
                 font-size: 11px;
-                line-height: 15px;
+                line-height: 14px;
             }
 
             .value {
@@ -481,103 +504,40 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 color: ${token.colorTextSecondary};
                 font-size: 12px;
                 line-height: 17px;
-                margin-top: 2px;
+                margin-top: 1px;
+            }
+
+            .ip-value {
+                overflow: visible;
+                white-space: normal;
+                word-break: break-all;
+            }
+
+            @media (max-width: 620px) {
+                display: grid;
+                grid-template-columns: 52px minmax(0, 1fr);
+                align-items: center;
+                gap: 8px;
+                padding-left: 0;
+                border-left: 0;
+
+                .value {
+                    margin-top: 0;
+                    text-align: right;
+                }
             }
         `,
         sessionOperate: css`
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: ${compact ? 8 : 10}px;
+            gap: ${compact ? 6 : 8}px;
             flex: none;
             white-space: nowrap;
-        `,
-        pagerCard: css`
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: ${compact ? 10 : 12}px;
-            border-radius: ${radius}px;
-            background: ${token.colorBgContainer};
 
-            .ant-card-body {
-                width: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: ${compact ? 12 : 15}px;
-            }
-
-            .ant-pagination {
-                color: ${paginationColor};
+            .ant-btn {
+                padding-inline: 4px;
                 font-size: 12px;
-            }
-
-            .ant-pagination-item,
-            .ant-pagination-item-active {
-                background-color: transparent !important;
-            }
-
-            .ant-pagination-item a {
-                color: ${paginationColor};
-            }
-
-            .ant-pagination-options {
-                display: block;
-
-                .ant-select {
-                    height: var(--ant-pagination-item-size-actual);
-                    line-height: calc(var(--ant-pagination-item-size-actual) - 2px);
-                }
-
-                .ant-select-selector {
-                    color: ${paginationColor} !important;
-                    border-color: transparent !important;
-                    border-radius: ${token.borderRadius}px !important;
-                    background-color: ${paginationBg};
-                }
-
-                .ant-select-selection-item {
-                    color: ${paginationColor};
-                    font-size: 12px;
-                    line-height: calc(var(--ant-pagination-item-size-actual) - 2px);
-                }
-
-                .ant-select-arrow {
-                    color: ${paginationColor};
-                }
-
-                .ant-select-content {
-                    color: ${paginationColor};
-                    font-size: 12px;
-                    transition: background-color 0.3s ease;
-                    border-color: transparent !important;
-                    border-radius: ${token.borderRadius}px !important;
-                }
-
-                .ant-pagination-options-quick-jumper input {
-                    color: ${paginationColor};
-                    font-size: 12px;
-                    border-color: transparent;
-                    border-radius: ${token.borderRadius}px !important;
-                    background-color: ${paginationBg};
-                }
-            }
-
-            @media (max-width: 620px) {
-                .ant-card-body {
-                    padding: ${compact ? 10 : 12}px;
-                }
-
-                .ant-pagination {
-                    width: 100%;
-                    justify-content: center;
-                }
-
-                .ant-pagination-total-text,
-                .ant-pagination-options-quick-jumper {
-                    display: none;
-                }
             }
         `,
         empty: css`
@@ -588,33 +548,17 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
         `,
         "@media (max-width: 620px)": {
             deviceMain: css`
-                align-items: stretch;
-                flex-direction: column;
+                align-items: flex-start;
 
                 .name-row {
-                    align-items: flex-start;
+                    align-items: center;
                 }
             `,
             sessionOperate: css`
-                justify-content: flex-start;
+                justify-content: flex-end;
             `,
             sessionInfo: css`
                 grid-template-columns: 1fr;
-            `,
-            pagerCard: css`
-                .ant-pagination {
-                    flex-wrap: wrap;
-                    row-gap: 6px;
-                }
-
-                .ant-pagination-options-quick-jumper {
-                    display: none;
-                }
-            `,
-            panelExtra: css`
-                .count {
-                    display: none;
-                }
             `,
         },
     };
@@ -624,48 +568,10 @@ export default function Index(): React.ReactNode {
     const {message, modal} = App.useApp();
     const user = useModel("user");
     const {styles} = useStyles();
-    const [loading, setLoading] = useState(false);
+    const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const [logoutLoading, setLogoutLoading] = useState(false);
-    const [list, setList] = useState<any[]>([]);
-    const [total, setTotal] = useState(0);
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
     const currentSession = user?.web?.session || {};
-
-    const isExpired = (expireTime?: string) => {
-        if (!expireTime) {
-            return false;
-        }
-        const time = new Date(expireTime.replace(/-/g, "/")).getTime();
-        return Number.isFinite(time) && time <= Date.now();
-    };
-
-    const fetchList = async (nextPage = page, nextPageSize = pageSize) => {
-        setLoading(true);
-        await getSessionList({
-            body: {
-                page: nextPage,
-                page_size: nextPageSize,
-                order_by_field: "create_time",
-                order_by_type: "desc",
-            },
-            onSuccess: (res: any) => {
-                const data = res?.data || {};
-                setList(data?.list || []);
-                setTotal(data?.total || 0);
-                setPage(data?.page || nextPage);
-                setPageSize(data?.page_size || nextPageSize);
-            },
-            onFail: (res: any) => message.error(res?.message || "获取会话列表失败"),
-        }).finally(() => {
-            setLoading(false);
-        });
-    };
-
-    useEffect(() => {
-        void fetchList(1, DEFAULT_PAGE_SIZE);
-    }, []);
 
     const handleLogout = (tokens: string[]) => {
         const nextTokens = Array.from(new Set((tokens || []).filter(Boolean)));
@@ -686,7 +592,7 @@ export default function Index(): React.ReactNode {
                     body: {tokens: nextTokens},
                     onSuccess: (res: any) => {
                         message.success(res?.message || "注销成功");
-                        void fetchList(page, pageSize);
+                        tableRef.current?.refreshTableData?.();
                     },
                     onFail: (res: any) => message.error(res?.message || "注销失败"),
                 }).finally(() => {
@@ -696,9 +602,63 @@ export default function Index(): React.ReactNode {
         });
     };
 
+    const renderSessionCard = (_: any, item: any) => {
+        const token = String(item?.token || "");
+        return (
+            <div className={styles.sessionCard}>
+                <div className={styles.deviceMain}>
+                    <div className="device-content">
+                        <div className="name-row">
+                            <span className="device-dot"/>
+                            <Typography.Text className={styles.deviceName} ellipsis={{tooltip: item?.device || "未知设备"}}>
+                                {item?.device || "未知设备"}
+                            </Typography.Text>
+                        </div>
+                        <div className={styles.deviceSub}>
+                            <Typography.Text type="secondary" ellipsis={{tooltip: item?.location || "-"}}>
+                                {item?.location || "-"}
+                            </Typography.Text>
+                        </div>
+                    </div>
+                </div>
+                <div className={styles.sessionInfo}>
+                    <div className={styles.sessionMeta}>
+                        <div className="label">IP 地址</div>
+                        <Typography.Text className="value ip-value" copyable={!!item?.ip}>
+                            {item?.ip || "-"}
+                        </Typography.Text>
+                    </div>
+                    <div className={styles.sessionMeta}>
+                        <div className="label">登录时间</div>
+                        <Typography.Text className="value" ellipsis={{tooltip: item?.create_time || "-"}}>
+                            {item?.create_time || "-"}
+                        </Typography.Text>
+                    </div>
+                    <div className={styles.sessionMeta}>
+                        <div className="label">过期时间</div>
+                        <Typography.Text className="value" ellipsis={{tooltip: item?.expire_time || "-"}}>
+                            {item?.expire_time || "-"}
+                        </Typography.Text>
+                    </div>
+                </div>
+                <div className={styles.sessionOperate}>
+                    <Button
+                        danger
+                        type="text"
+                        size="small"
+                        loading={logoutLoading}
+                        onClick={() => handleLogout([token])}
+                    >
+                        注销
+                    </Button>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <Body>
-            <div className={styles.page}>
+            <Row className={styles.page}>
                 <Card className={styles.hero} variant="borderless" styles={{body: {padding: 0}}}>
                     <Icon className="hero-watermark" type="LaptopOutlined"/>
                     <div className={styles.heroInner}>
@@ -742,107 +702,36 @@ export default function Index(): React.ReactNode {
                     </div>
                 </Card>
 
-                <Card
-                    className={styles.listCard}
-                    variant="borderless"
-                    title={(
-                        <div className={styles.panelTitle}>
-                            <Icon type="LaptopOutlined"/>
-                            <span>登录会话</span>
-                        </div>
-                    )}
-                    extra={<div className={styles.panelExtra}><span className="count">共 {total} 条</span></div>}
-                >
-                    <Spin spinning={loading}>
-                        <div className={styles.listBody}>
-                            {list.length ? (
-                                <div className={styles.sessionGrid}>
-                                    {list.map((item) => {
-                                        const token = String(item?.token || "");
-                                        const expired = isExpired(item?.expire_time);
-                                        return (
-                                            <div className={styles.sessionCard} key={token || item?.id}>
-                                                <div className={styles.deviceMain}>
-                                                    <div className="device-content">
-                                                        <div className="name-row">
-                                                            <Typography.Text className={styles.deviceName} ellipsis={{tooltip: item?.device || "未知设备"}}>
-                                                                {item?.device || "未知设备"}
-                                                            </Typography.Text>
-                                                            <Tag color={expired ? "default" : "success"}>{expired ? "已过期" : "有效"}</Tag>
-                                                        </div>
-                                                        <div className={styles.deviceSub}>
-                                                            <Typography.Text type="secondary" ellipsis={{tooltip: item?.location || "-"}}>
-                                                                {item?.location || "-"}
-                                                            </Typography.Text>
-                                                        </div>
-                                                    </div>
-                                                    <div className={styles.sessionOperate}>
-                                                        <Button
-                                                            danger
-                                                            type="text"
-                                                            size="small"
-                                                            loading={logoutLoading}
-                                                            onClick={() => handleLogout([token])}
-                                                        >
-                                                            注销
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                                <div className={styles.sessionInfo}>
-                                                    <div className={styles.sessionMeta}>
-                                                        <div className="label">IP 地址</div>
-                                                        <Typography.Text className="value" copyable={!!item?.ip} ellipsis={{tooltip: item?.ip || "-"}}>
-                                                            {item?.ip || "-"}
-                                                        </Typography.Text>
-                                                    </div>
-                                                    <div className={styles.sessionMeta}>
-                                                        <div className="label">登录时间</div>
-                                                        <Typography.Text className="value" ellipsis={{tooltip: item?.create_time || "-"}}>
-                                                            {item?.create_time || "-"}
-                                                        </Typography.Text>
-                                                    </div>
-                                                    <div className={styles.sessionMeta}>
-                                                        <div className="label">过期时间</div>
-                                                        <Typography.Text className="value" ellipsis={{tooltip: item?.expire_time || "-"}}>
-                                                            {item?.expire_time || "-"}
-                                                        </Typography.Text>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className={styles.empty}>
-                                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无会话"/>
-                                </div>
-                            )}
-                        </div>
-                    </Spin>
-                </Card>
-
-                {total > 0 && (
-                    <Card className={styles.pagerCard} variant="borderless">
-                        <Pagination
-                            align="center"
-                            size="small"
-                            current={page}
-                            pageSize={pageSize}
-                            total={total}
-                            showLessItems
-                            showQuickJumper
-                            pageSizeOptions={[10, 20, 50, 100]}
-                            showSizeChanger={{
-                                showSearch: false,
-                                variant: "filled",
-                                size: "small",
-                            }}
-                            showTotal={(count, range) => `第 ${range[0]}-${range[1]} 条 / 共 ${count} 条`}
-                            onChange={(nextPage, nextPageSize) => void fetchList(nextPage, nextPageSize)}
-                        />
-                    </Card>
-                )}
-            </div>
+                <ProTable
+                    ref={tableRef}
+                    rowKey="token"
+                    title={<Title>登录会话</Title>}
+                    extraRefreshBtn={true}
+                    search={false}
+                    defaultPage={1}
+                    defaultPageSize={DEFAULT_PAGE_SIZE}
+                    paginationAffix={true}
+                    columns={[
+                        {
+                            title: "登录会话",
+                            dataIndex: "token",
+                            hideInSearch: true,
+                            render: renderSessionCard,
+                        },
+                    ]}
+                    tableProps={{
+                        className: styles.sessionTable,
+                        showHeader: false,
+                        rowClassName: (record: any) => record?.token ? "" : "session-hidden-row",
+                        locale: {
+                            emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无会话"/>,
+                        },
+                    }}
+                    request={async (params: any, sort: any) => {
+                        return getData(params, sort, getSessionList);
+                    }}
+                />
+            </Row>
         </Body>
     );
 }
