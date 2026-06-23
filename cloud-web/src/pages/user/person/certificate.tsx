@@ -369,9 +369,9 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
             }
 
             &.done .step-icon {
-                color: ${token.colorPrimary};
-                border-color: ${token.colorPrimaryBorder};
-                background: ${token.colorPrimaryBg};
+                color: ${token.colorTextTertiary};
+                border-color: ${token.colorBorderSecondary};
+                background: ${token.colorBgContainer};
             }
 
             &.active .step-title {

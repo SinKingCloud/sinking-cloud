@@ -35,8 +35,8 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
             margin: 0 auto;
         `,
         overview: css`
+            width: 100%;
             overflow: hidden;
-            border: none;
             border-radius: ${token.borderRadiusLG}px;
             background: ${token.colorBgContainer};
             box-shadow: ${isDarkMode ? "none" : "0 10px 28px rgba(15, 23, 42, 0.04)"};
@@ -516,7 +516,7 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
         `,
         settingGrid: css`
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
             gap: ${isCompactMode ? 8 : 10}px;
             padding: ${isCompactMode ? 10 : 12}px;
 
@@ -534,9 +534,11 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
         `,
         settingItem: css`
             min-width: 0;
-            display: flex;
+            display: grid;
+            grid-template-columns: ${isCompactMode ? 24 : 24}px minmax(0, 1fr) minmax(100px, 38%);
             align-items: center;
-            gap: ${isCompactMode ? 10 : 10}px;
+            column-gap: ${isCompactMode ? 9 : 10}px;
+            row-gap: 2px;
             min-height: ${isCompactMode ? 56 : 58}px;
             padding: ${isCompactMode ? "10px 12px" : "10px 12px"};
             border-radius: ${token.borderRadius}px;
@@ -557,7 +559,6 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
             .item-icon {
                 width: ${isCompactMode ? 24 : 24}px;
                 height: ${isCompactMode ? 24 : 24}px;
-                flex: none;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -569,7 +570,16 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
 
             .item-main {
                 min-width: 0;
-                flex: 1;
+            }
+
+            .item-action {
+                min-width: 0;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: ${isCompactMode ? 6 : 8}px;
+                white-space: nowrap;
             }
 
             .item-title {
@@ -584,10 +594,10 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
             }
 
             .item-value {
-                min-width: 76px;
-                max-width: 120px;
+                min-width: 0;
+                flex: 1 1 auto;
+                width: auto;
                 min-height: 24px;
-                flex: none;
                 display: flex;
                 align-items: center;
                 justify-content: flex-end;
@@ -600,12 +610,16 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
             }
 
             .item-value .ant-typography {
+                min-width: 0;
+                max-width: 100%;
+                display: block;
                 color: inherit;
                 font-size: inherit;
                 line-height: inherit;
             }
 
             .item-desc {
+                min-width: 0;
                 color: ${token.colorTextTertiary};
                 font-size: ${isCompactMode ? 11 : 11}px;
                 line-height: ${isCompactMode ? 16 : 16}px;
@@ -621,48 +635,28 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
                 min-width: 34px;
                 padding-inline: 0;
                 font-size: ${isCompactMode ? 12 : 12}px;
+                white-space: nowrap;
             }
 
             ${responsive.mobile} {
-                gap: ${isCompactMode ? 9 : 9}px;
-
-                .item-main {
-                    flex-basis: auto;
-                }
+                grid-template-columns: ${isCompactMode ? 24 : 24}px minmax(0, 1fr) minmax(88px, 42%);
+                column-gap: ${isCompactMode ? 8 : 9}px;
 
                 .item-desc {
                     max-width: 150px;
                 }
 
-                .item-value {
-                    min-width: 58px;
-                    max-width: 104px;
-                    justify-content: flex-end;
-                    padding-left: 0;
-                }
-
-                .edit-btn {
-                    margin-left: 0;
+                .item-action {
+                    gap: ${isCompactMode ? 5 : 6}px;
                 }
             }
 
             @media (max-width: 430px) {
-                align-items: flex-start;
-                flex-wrap: wrap;
+                grid-template-columns: ${isCompactMode ? 24 : 24}px minmax(0, 1fr) minmax(80px, 44%);
+                column-gap: ${isCompactMode ? 7 : 8}px;
 
-                .item-main {
-                    flex-basis: calc(100% - ${isCompactMode ? 34 : 34}px);
-                }
-
-                .item-value {
-                    width: calc(100% - ${isCompactMode ? 34 : 34}px);
+                .item-desc {
                     max-width: none;
-                    margin-left: ${isCompactMode ? 34 : 34}px;
-                    justify-content: flex-start;
-                }
-
-                .edit-btn {
-                    margin-left: ${isCompactMode ? 34 : 34}px;
                 }
             }
         `,
@@ -878,18 +872,20 @@ export default () => {
                 <div className="item-title">{item.title}</div>
                 <div className="item-desc">{item.desc || "账户资料信息"}</div>
             </div>
-            <div className="item-value">{renderText(item.value)}</div>
-            {!item.readonly && (
-                <Button
-                    className="edit-btn"
-                    type="link"
-                    size="small"
-                    disabled={item.disabled}
-                    onClick={item.onClick}
-                >
-                    修改
-                </Button>
-            )}
+            <div className="item-action">
+                <div className="item-value">{renderText(item.value)}</div>
+                {!item.readonly && (
+                    <Button
+                        className="edit-btn"
+                        type="link"
+                        size="small"
+                        disabled={item.disabled}
+                        onClick={item.onClick}
+                    >
+                        修改
+                    </Button>
+                )}
+            </div>
         </div>
     );
 
@@ -897,7 +893,11 @@ export default () => {
         <Body loading={loading}>
             <Row className={styles.pageRow} gutter={[0, pageGutter]}>
                 <Col span={24}>
-                    <div className={styles.overview}>
+                    <Card
+                        className={styles.overview}
+                        variant="borderless"
+                        styles={{body: {padding: 0}}}
+                    >
                         <Row gutter={0}>
                             <Col xs={24} xl={15}>
                                 <div className={styles.profilePanel}>
@@ -974,7 +974,7 @@ export default () => {
                                 </div>
                             </Col>
                         </Row>
-                    </div>
+                    </Card>
                 </Col>
                 <Col span={24}>
                     <Row gutter={[pageGutter, pageGutter]}>
