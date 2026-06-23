@@ -159,7 +159,7 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
                 filter: blur(20px);
             }
 
-            @media (max-width: 1199px) {
+            @media (max-width: 991px) {
                 box-shadow: ${isDarkMode ? "none" : "inset 0 -1px 0 rgba(15,23,42,0.06)"};
                 min-height: auto;
 
@@ -484,7 +484,7 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
                 font-size: 13px;
             }
 
-            @media (max-width: 1199px) {
+            @media (max-width: 991px) {
                 min-height: auto;
             }
 
@@ -899,7 +899,7 @@ export default () => {
                         styles={{body: {padding: 0}}}
                     >
                         <Row gutter={0}>
-                            <Col xs={24} xl={15}>
+                            <Col xs={24} lg={15}>
                                 <div className={styles.profilePanel}>
                                     <span className="profile-ambient"/>
                                     <span className="profile-shine"/>
@@ -936,7 +936,7 @@ export default () => {
                                     </div>
                                 </div>
                             </Col>
-                            <Col xs={24} xl={9}>
+                            <Col xs={24} lg={9}>
                                 <div className={styles.securityPanel}>
                                     <div className="panel-head">
                                         <div>
@@ -978,7 +978,7 @@ export default () => {
                 </Col>
                 <Col span={24}>
                     <Row gutter={[pageGutter, pageGutter]}>
-                        <Col xs={24} xl={15}>
+                        <Col xs={24} lg={15}>
                             <Card
                                 className={styles.flatCard}
                                 title={<Title>账户设置</Title>}
@@ -990,7 +990,7 @@ export default () => {
                                 </div>
                             </Card>
                         </Col>
-                        <Col xs={24} xl={9}>
+                        <Col xs={24} lg={9}>
                             <Card
                                 className={`${styles.flatCard} ${styles.sessionCard}`}
                                 title={<Title>当前会话</Title>}
