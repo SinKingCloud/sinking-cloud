@@ -1160,12 +1160,17 @@ export default (): React.ReactNode => {
                                 <svg viewBox="0 0 96 76" fill="none" aria-hidden="true">
                                     <defs>
                                         <linearGradient id="realAuthCard" x1="14" y1="14" x2="74" y2="60" gradientUnits="userSpaceOnUse">
-                                            <stop stopColor="#FFFFFF"/>
-                                            <stop offset="1" stopColor="#EEF3FA"/>
+                                            <stop stopColor="currentColor" stopOpacity="0.12"/>
+                                            <stop offset="1" stopColor="currentColor" stopOpacity="0.035"/>
                                         </linearGradient>
-                                        <linearGradient id="realAuthStamp" x1="57" y1="24" x2="84" y2="56" gradientUnits="userSpaceOnUse">
-                                            <stop stopColor="#E2CC91"/>
-                                            <stop offset="1" stopColor="#B49355"/>
+                                        <linearGradient id="realAuthSecurityShield" x1="57" y1="22" x2="84" y2="58" gradientUnits="userSpaceOnUse">
+                                            <stop stopColor="currentColor" stopOpacity="0.28"/>
+                                            <stop offset="0.58" stopColor="currentColor" stopOpacity="0.13"/>
+                                            <stop offset="1" stopColor="currentColor" stopOpacity="0.05"/>
+                                        </linearGradient>
+                                        <linearGradient id="realAuthSecurityCore" x1="61" y1="28" x2="80" y2="54" gradientUnits="userSpaceOnUse">
+                                            <stop stopColor="currentColor" stopOpacity="0.08"/>
+                                            <stop offset="1" stopColor="currentColor" stopOpacity="0.02"/>
                                         </linearGradient>
                                         <filter id="realAuthShadow" x="4" y="8" width="86" height="62" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
                                             <feDropShadow dx="0" dy="6" stdDeviation="5" floodColor="#172033" floodOpacity="0.12"/>
@@ -1175,9 +1180,9 @@ export default (): React.ReactNode => {
                                         <rect x="10" y="13" width="62" height="48" rx="9" fill="url(#realAuthCard)" stroke="currentColor" strokeOpacity="0.42" strokeWidth="1.4"/>
                                         <rect x="15" y="18" width="52" height="38" rx="6" stroke="currentColor" strokeOpacity="0.12"/>
                                     </g>
-                                    <path d="M19 28H43" stroke="#42526A" strokeWidth="2" strokeLinecap="round" opacity="0.72"/>
-                                    <path d="M19 39H52" stroke="#42526A" strokeWidth="1.8" strokeLinecap="round" opacity="0.26"/>
-                                    <path d="M19 49H38" stroke="#42526A" strokeWidth="1.8" strokeLinecap="round" opacity="0.16"/>
+                                    <path d="M19 28H43" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.45"/>
+                                    <path d="M19 39H52" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" opacity="0.22"/>
+                                    <path d="M19 49H38" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" opacity="0.14"/>
                                     <path
                                         d="M49 22C54 28 54 36 49 42M56 20C62 28 62 38 56 46M43 24C47 29 47 35 43 40"
                                         stroke="currentColor"
@@ -1185,15 +1190,30 @@ export default (): React.ReactNode => {
                                         strokeWidth="1.2"
                                         strokeLinecap="round"
                                     />
-                                    <path
-                                        d="M62 56L59 66L66 61L71 68L73 57"
-                                        fill="#9F7A3E"
-                                        opacity="0.12"
-                                    />
-                                    <circle cx="70" cy="40" r="17" fill="url(#realAuthStamp)" stroke="#A1844D" strokeWidth="1.2" opacity="0.86"/>
-                                    <circle cx="70" cy="40" r="12.5" fill="#FBF7EE" stroke="#C9AD70" strokeWidth="1.1" opacity="0.96"/>
-                                    <circle cx="70" cy="40" r="8" stroke="#A88A51" strokeWidth="1.5" strokeDasharray="2.2 2" opacity="0.78"/>
-                                    <path d="M64.5 40L68.4 43.7L76 35.8" stroke="#74582A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.9"/>
+                                    <g>
+                                        <path
+                                            d="M70 20.5L84 26.2V37.4C84 48.6 78.2 56.1 70 59.5C61.8 56.1 56 48.6 56 37.4V26.2L70 20.5Z"
+                                            fill="url(#realAuthSecurityShield)"
+                                            stroke="currentColor"
+                                            strokeOpacity="0.46"
+                                            strokeWidth="1.6"
+                                            strokeLinejoin="round"
+                                        />
+                                        <path
+                                            d="M70 26.8L78.2 30.4V38.1C78.2 45.1 75.2 49.8 70 52.4C64.8 49.8 61.8 45.1 61.8 38.1V30.4L70 26.8Z"
+                                            fill="url(#realAuthSecurityCore)"
+                                            stroke="currentColor"
+                                            strokeOpacity="0.16"
+                                            strokeWidth="1"
+                                            strokeLinejoin="round"
+                                        />
+                                        <path d="M64.2 39.8C64.2 36.2 66.6 33.7 70 33.7C73.4 33.7 75.8 36.2 75.8 39.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.58"/>
+                                        <path d="M66.7 40.2C66.7 38.1 68 36.7 70 36.7C72 36.7 73.3 38.1 73.3 40.2" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" opacity="0.5"/>
+                                        <path d="M69.9 39.8C68 41.7 68.2 44.8 70.8 46.5" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" opacity="0.64"/>
+                                        <path d="M73.7 43.3C72.9 46.4 70.8 48.4 68.1 49.3" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" opacity="0.42"/>
+                                        <path d="M65.2 44.3C66 47.4 68.1 49.4 70.9 50.5" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" opacity="0.32"/>
+                                        <circle cx="70" cy="40" r="1.7" fill="currentColor" opacity="0.64"/>
+                                    </g>
                                 </svg>
                             </div>
                         </div>
