@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import {App, Button, Card, Form, Input, QRCode} from "antd";
 import {createStyles} from "antd-style";
 import {Body, Icon, useTheme} from "sinking-antd";
@@ -12,6 +12,8 @@ const REAL_AUTH_TYPE = {
 };
 
 const CERTIFY_CACHE_KEY = "user.real.auth.certify";
+const CERTIFY_POLL_INTERVAL = 3000;
+const CERTIFY_POLL_MAX_COUNT = 60;
 const ALIYUN_META_SCRIPT = getPath("/aliyun/face.js");
 
 const AUTH_TYPE_OPTIONS = [
@@ -78,12 +80,11 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
                 content: '';
                 position: absolute;
                 inset: -120px -160px;
-                background:
-                    radial-gradient(circle at 16% 20%, ${token.colorPrimaryBgHover} 0%, transparent 34%),
-                    radial-gradient(circle at 82% 28%, ${token.colorPrimaryBg} 0%, transparent 32%),
-                    radial-gradient(circle at 70% 92%, ${token.colorPrimaryBorder} 0%, transparent 36%),
-                    linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.035)" : "rgba(255,255,255,0.55)"} 1px, transparent 1px),
-                    linear-gradient(0deg, ${isDarkMode ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.55)"} 1px, transparent 1px);
+                background: radial-gradient(circle at 16% 20%, ${token.colorPrimaryBgHover} 0%, transparent 34%),
+                radial-gradient(circle at 82% 28%, ${token.colorPrimaryBg} 0%, transparent 32%),
+                radial-gradient(circle at 70% 92%, ${token.colorPrimaryBorder} 0%, transparent 36%),
+                linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.035)" : "rgba(255,255,255,0.55)"} 1px, transparent 1px),
+                linear-gradient(0deg, ${isDarkMode ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.55)"} 1px, transparent 1px);
                 background-size: 100% 100%, 100% 100%, 100% 100%, 34px 34px, 34px 34px;
                 opacity: ${isDarkMode ? 0.32 : 0.68};
                 filter: blur(2px);
@@ -99,9 +100,8 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
                 width: 560px;
                 height: 560px;
                 border-radius: 50%;
-                background:
-                    radial-gradient(circle, ${token.colorPrimaryBgHover} 0%, transparent 48%),
-                    conic-gradient(from 36deg, transparent 0 14%, ${token.colorPrimaryBorder} 22%, transparent 38%, ${token.colorPrimaryBgHover} 56%, transparent 76%, ${token.colorPrimaryBg} 88%, transparent 100%);
+                background: radial-gradient(circle, ${token.colorPrimaryBgHover} 0%, transparent 48%),
+                conic-gradient(from 36deg, transparent 0 14%, ${token.colorPrimaryBorder} 22%, transparent 38%, ${token.colorPrimaryBgHover} 56%, transparent 76%, ${token.colorPrimaryBg} 88%, transparent 100%);
                 filter: blur(58px);
                 opacity: ${isDarkMode ? 0.16 : 0.36};
                 z-index: -1;
@@ -677,15 +677,34 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
             background: ${token.colorBgContainer};
         `,
         verifyActions: css`
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            display: grid;
+            gap: ${isCompactMode ? 7 : 8}px;
             margin-top: 2px;
+            width: 100%;
 
-            ${responsive.mobile} {
+            .verify-extra {
+                min-width: 0;
+                display: flex;
+                align-items: center;
                 justify-content: space-between;
-                width: 100%;
+                gap: 8px;
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+                line-height: 18px;
+            }
+
+            .verify-extra .ant-btn {
+                height: 20px;
+                padding: 0;
+                font-size: 12px;
+            }
+
+            @media (max-width: 430px) {
+                .verify-extra {
+                    justify-content: center;
+                    flex-direction: column;
+                    gap: 3px;
+                }
             }
         `,
         pending: css`
@@ -829,9 +848,13 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
 });
 
 export default (): React.ReactNode => {
-    const {message} = App.useApp();
+    const {message, modal} = App.useApp();
     const theme = useTheme();
     const [form] = Form.useForm();
+    const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pollCountRef = useRef(0);
+    const pollStoppedRef = useRef(false);
+    const pollVersionRef = useRef(0);
     const [loading, setLoading] = useState(true);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [verifyLoading, setVerifyLoading] = useState(false);
@@ -861,36 +884,152 @@ export default (): React.ReactNode => {
         return items;
     }, [info, currentAuthTypeName]);
 
-    const loadInfo = async () => {
-        setLoading(true);
-        await certificate({
-            body: {action: "info"},
-            onSuccess: (res: any) => {
-                const data = res?.data || {};
-                setInfo(data);
-                if (data?.status) {
-                    localStorage.removeItem(CERTIFY_CACHE_KEY);
-                }
-            },
-            onFail: (res: any) => {
-                message?.error(res?.message || "获取实名信息失败");
-            },
-            onFinally: () => {
-                setLoading(false);
-            },
+    const stopCertifyPoll = () => {
+        pollStoppedRef.current = true;
+        pollVersionRef.current += 1;
+        if (pollTimerRef.current) {
+            clearTimeout(pollTimerRef.current);
+            pollTimerRef.current = null;
+        }
+    };
+
+    const requestInfo = async (options: { showLoading?: boolean; silent?: boolean } = {}) => {
+        if (options?.showLoading) {
+            setLoading(true);
+        }
+        return new Promise<any>((resolve, reject) => {
+            void certificate({
+                body: {action: "info"},
+                onSuccess: (res: any) => {
+                    const data = res?.data || {};
+                    setInfo(data);
+                    if (data?.status) {
+                        localStorage.removeItem(CERTIFY_CACHE_KEY);
+                    }
+                    resolve(data);
+                },
+                onFail: (res: any) => {
+                    if (!options?.silent) {
+                        message?.error(res?.message || "获取实名信息失败");
+                    }
+                    reject(res);
+                },
+                onFinally: () => {
+                    if (options?.showLoading) {
+                        setLoading(false);
+                    }
+                },
+            });
         });
+    };
+
+    const requestVerify = async (certifyId?: string) => {
+        if (!certifyId) {
+            return Promise.reject({message: "认证ID不能为空"});
+        }
+        return new Promise<any>((resolve, reject) => {
+            void certificate({
+                body: {
+                    action: "verify",
+                    id: certifyId,
+                },
+                onSuccess: (res: any) => resolve(res?.data || {}),
+                onFail: (res: any) => reject(res),
+            });
+        });
+    };
+
+    const loadInfo = async () => {
+        try {
+            const data = await requestInfo({showLoading: true});
+            if (data?.status) {
+                stopCertifyPoll();
+                setCertify(undefined);
+            }
+        } catch (_) {
+        }
+    };
+
+    const rollbackCertify = (content: string) => {
+        stopCertifyPoll();
+        setCertify(undefined);
+        setFormStep(1);
+        localStorage.removeItem(CERTIFY_CACHE_KEY);
+        message?.error(content);
+    };
+
+    const startCertifyPoll = (certifyId?: string) => {
+        if (!certifyId) {
+            return;
+        }
+        stopCertifyPoll();
+        const version = pollVersionRef.current + 1;
+        pollVersionRef.current = version;
+        pollStoppedRef.current = false;
+        pollCountRef.current = 0;
+
+        const poll = async () => {
+            if (pollStoppedRef.current || pollVersionRef.current !== version) {
+                return;
+            }
+            pollCountRef.current += 1;
+            try {
+                const data = await requestVerify(certifyId);
+                if (pollStoppedRef.current || pollVersionRef.current !== version) {
+                    return;
+                }
+                if (!data?.status) {
+                    if (pollCountRef.current >= CERTIFY_POLL_MAX_COUNT) {
+                        stopCertifyPoll();
+                        message?.warning("认证状态查询已暂停，可稍后重新进入页面查看结果");
+                        return;
+                    }
+                    if (data?.break === false) {
+                        pollTimerRef.current = setTimeout(poll, CERTIFY_POLL_INTERVAL);
+                        return;
+                    }
+                    rollbackCertify(data?.message || "认证状态查询失败");
+                    return;
+                }
+                stopCertifyPoll();
+                setCertify(undefined);
+                localStorage.removeItem(CERTIFY_CACHE_KEY);
+                try {
+                    await requestInfo({silent: true});
+                } catch (_) {
+                }
+                return;
+            } catch (res: any) {
+                if (pollStoppedRef.current || pollVersionRef.current !== version) {
+                    return;
+                }
+                if (pollCountRef.current >= CERTIFY_POLL_MAX_COUNT) {
+                    stopCertifyPoll();
+                    message?.warning("认证状态查询已暂停，可稍后重新进入页面查看结果");
+                    return;
+                }
+                rollbackCertify(res?.message || "认证状态查询失败");
+            }
+        };
+
+        pollTimerRef.current = setTimeout(poll, CERTIFY_POLL_INTERVAL);
     };
 
     useEffect(() => {
         const cache = localStorage.getItem(CERTIFY_CACHE_KEY);
         if (cache) {
             try {
-                setCertify(JSON.parse(cache));
+                const data = JSON.parse(cache);
+                setCertify(data);
+                if (data?.id) {
+                    startCertifyPoll(data?.id);
+                }
             } catch (_) {
                 localStorage.removeItem(CERTIFY_CACHE_KEY);
             }
         }
         void loadInfo();
+        return () => stopCertifyPoll();
     }, []);
 
     const openAuthUrl = (url?: string) => {
@@ -924,7 +1063,19 @@ export default (): React.ReactNode => {
                 const data = res?.data || {};
                 setCertify(data);
                 localStorage.setItem(CERTIFY_CACHE_KEY, JSON.stringify(data));
-                message?.success(res?.message || "发起实名成功");
+                if (data?.id) {
+                    startCertifyPoll(data?.id);
+                }
+                if (data?.url) {
+                    modal.confirm({
+                        title: "继续实名认证",
+                        content: "是否打开认证页面完成核验？",
+                        okText: "确认",
+                        cancelText: "取消",
+                        mask: {closable: true},
+                        onOk: () => openAuthUrl(data?.url),
+                    } as any);
+                }
             },
             onFail: (res: any) => {
                 message?.error(res?.message || "发起实名失败");
@@ -941,31 +1092,41 @@ export default (): React.ReactNode => {
             return;
         }
         setVerifyLoading(true);
-        await certificate({
-            body: {
-                action: "verify",
-                id: certify?.id,
-            },
-            onSuccess: async (res: any) => {
-                message?.success(res?.message || "实名验证成功");
-                setCertify(undefined);
-                localStorage.removeItem(CERTIFY_CACHE_KEY);
-                await loadInfo();
-            },
-            onFail: (res: any) => {
-                message?.error(res?.message || "实名验证失败");
-            },
-            onFinally: () => {
-                setVerifyLoading(false);
-            },
-        });
+        try {
+            const data = await requestVerify(certify?.id);
+            if (!data?.status) {
+                if (data?.break === false) {
+                    message?.warning(data?.message || "认证未完成");
+                    return;
+                }
+                rollbackCertify(data?.message || "实名验证失败");
+                return;
+            }
+            message?.success(data?.message || "实名验证成功");
+            stopCertifyPoll();
+            setCertify(undefined);
+            localStorage.removeItem(CERTIFY_CACHE_KEY);
+            await loadInfo();
+        } catch (res: any) {
+            rollbackCertify(res?.message || "实名验证失败");
+        } finally {
+            setVerifyLoading(false);
+        }
     };
 
     const resetCertify = () => {
+        stopCertifyPoll();
         setCertify(undefined);
         setFormStep(0);
         form.resetFields();
         form.setFieldsValue({type: authType});
+        localStorage.removeItem(CERTIFY_CACHE_KEY);
+    };
+
+    const backToCertifyForm = () => {
+        stopCertifyPoll();
+        setCertify(undefined);
+        setFormStep(1);
         localStorage.removeItem(CERTIFY_CACHE_KEY);
     };
 
@@ -1056,7 +1217,9 @@ export default (): React.ReactNode => {
                                                     <div className={styles.sectionHead}>
                                                         <div>
                                                             <div className="section-title">选择认证类型</div>
-                                                            <div className="section-desc">请选择本次需要核验的主体类型。</div>
+                                                            <div
+                                                                className="section-desc">请选择本次需要核验的主体类型。
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div className={styles.typeGrid}>
@@ -1113,7 +1276,8 @@ export default (): React.ReactNode => {
                                                                 label="企业编码"
                                                                 rules={[{required: true, message: "请输入企业编码"}]}
                                                             >
-                                                                <Input placeholder="请输入统一社会信用代码" maxLength={50}/>
+                                                                <Input placeholder="请输入统一社会信用代码"
+                                                                       maxLength={50}/>
                                                             </Form.Item>
                                                         </>
                                                     )}
@@ -1138,7 +1302,8 @@ export default (): React.ReactNode => {
                                                         <Button onClick={() => setFormStep(0)}>
                                                             上一步
                                                         </Button>
-                                                        <Button type="primary" loading={submitLoading} onClick={handleSubmit}>
+                                                        <Button type="primary" loading={submitLoading}
+                                                                onClick={handleSubmit}>
                                                             下一步
                                                         </Button>
                                                     </div>
@@ -1152,7 +1317,7 @@ export default (): React.ReactNode => {
                                                     <div className={styles.verifyHead}>
                                                         <div className="title">手机扫码认证</div>
                                                         <div className="desc">
-                                                            使用手机扫描二维码完成实名核验，完成后返回当前页面查询结果。
+                                                            扫码完成核验，结果将自动同步。
                                                         </div>
                                                     </div>
                                                     <div className={styles.qrCard}>
@@ -1163,13 +1328,17 @@ export default (): React.ReactNode => {
                                                         />
                                                     </div>
                                                     <div className={styles.verifyActions}>
-                                                        <Button onClick={resetCertify}>重新填写</Button>
-                                                        <Button icon={<Icon type="ExportOutlined"/>} onClick={() => openAuthUrl(certify?.url)}>
-                                                            打开链接
+                                                        <Button block type="primary"
+                                                                icon={<Icon type="ExportOutlined"/>}
+                                                                onClick={() => openAuthUrl(certify?.url)}>
+                                                            打开认证页面
                                                         </Button>
-                                                        <Button type="primary" onClick={handleVerify} loading={verifyLoading}>
-                                                            查询结果
-                                                        </Button>
+                                                        <div className="verify-extra">
+                                                            <span>认证完成后将自动同步结果</span>
+                                                            <Button type="link" onClick={backToCertifyForm}>
+                                                                返回上一步
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ) : (
@@ -1186,7 +1355,8 @@ export default (): React.ReactNode => {
                                             {!certify?.url && (
                                                 <div className={styles.actionBar}>
                                                     <Button onClick={resetCertify}>重新填写</Button>
-                                                    <Button type="primary" onClick={handleVerify} loading={verifyLoading}>
+                                                    <Button type="primary" onClick={handleVerify}
+                                                            loading={verifyLoading}>
                                                         查询结果
                                                     </Button>
                                                 </div>
