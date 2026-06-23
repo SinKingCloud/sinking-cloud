@@ -486,39 +486,39 @@ func (s *service) InitRealAuth(userId int64, authType int, cardName, cardNo, com
 }
 
 // VerifyRealAuth 查询实名认证状态，认证通过后写入实名记录。
-func (s *service) VerifyRealAuth(certifyId string) (*RealAuthInfo, error) {
+func (s *service) VerifyRealAuth(certifyId string) (*RealAuthInfo, *aliyun.FaceQueryResult, error) {
 	certifyId = strings.TrimSpace(certifyId)
 	if certifyId == "" {
-		return nil, errors.New("认证ID不能为空")
+		return nil, nil, errors.New("认证ID不能为空")
 	}
 	cacheKey := constant.CacheNameWithRealAuthProcess + certifyId
 	data, exists := s.cache.Get(cacheKey)
 	if !exists || data == "" {
-		return nil, errors.New("未查询到实名认证流程,请重新发起认证")
+		return nil, nil, errors.New("未查询到实名认证流程,请重新发起认证")
 	}
 	var process realAuthProcess
 	if err := json.Unmarshal([]byte(data), &process); err != nil {
 		s.cache.Delete(cacheKey)
-		return nil, errors.New("未查询到实名认证流程,请重新发起认证")
+		return nil, nil, errors.New("未查询到实名认证流程,请重新发起认证")
 	}
 	if process.UserId <= 0 || process.SceneId <= 0 || process.AccessKey == "" || process.AccessSecret == "" {
 		s.cache.Delete(cacheKey)
-		return nil, errors.New("未查询到实名认证流程,请重新发起认证")
+		return nil, nil, errors.New("未查询到实名认证流程,请重新发起认证")
 	}
 	userId := process.UserId
 	lockKey := constant.LockRealAuth + strconv.FormatInt(userId, 10)
 	if !s.cache.Lock(lockKey, constant.LockTimeRealAuth) {
-		return nil, errors.New("系统繁忙,请稍候重试")
+		return nil, nil, errors.New("系统繁忙,请稍候重试")
 	}
 	defer s.cache.UnLock(lockKey)
 
 	userInfo, err := s.GetInfo(userId, false)
 	if err != nil {
-		return nil, errors.Join(errors.New("获取用户信息失败"), err)
+		return nil, nil, errors.Join(errors.New("获取用户信息失败"), err)
 	}
 	authInfo, err := s.repositoryRealAuth.FindOrCreateByUserId(userId)
 	if err != nil {
-		return nil, errors.Join(errors.New("获取实名信息失败"), err)
+		return nil, nil, errors.Join(errors.New("获取实名信息失败"), err)
 	}
 	if authInfo != nil && authInfo.Status == real_auth_status.Authed {
 		if userInfo.RealAuthStatus != real_auth_status.Authed {
@@ -526,7 +526,7 @@ func (s *service) VerifyRealAuth(certifyId string) (*RealAuthInfo, error) {
 				RealAuthType:   authInfo.Type,
 				RealAuthStatus: real_auth_status.Authed,
 			}); err != nil {
-				return nil, errors.Join(errors.New("更新用户实名状态失败"), err)
+				return nil, nil, errors.Join(errors.New("更新用户实名状态失败"), err)
 			}
 		}
 		s.cache.Delete(
@@ -534,18 +534,19 @@ func (s *service) VerifyRealAuth(certifyId string) (*RealAuthInfo, error) {
 			constant.CacheNameWithRealAuthInfo+strconv.FormatInt(userId, 10),
 			cacheKey,
 		)
-		return s.GetRealAuthInfo(userId, true)
+		info, err := s.GetRealAuthInfo(userId, true)
+		return info, nil, err
 	}
 	ali, err := aliyun.New(process.AccessKey, process.AccessSecret)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	result, err := ali.Face.Query(process.CertifyId, process.SceneId)
 	if err != nil {
-		return nil, err
+		return nil, result, err
 	}
 	if result == nil || !result.Passed {
-		return nil, errors.New("实名认证未通过")
+		return nil, result, errors.New("实名认证未通过")
 	}
 	files := &RealAuthFiles{
 		Bucket:    result.Bucket,
@@ -554,7 +555,7 @@ func (s *service) VerifyRealAuth(certifyId string) (*RealAuthInfo, error) {
 	}
 	filesData, err := json.Marshal(files)
 	if err != nil {
-		return nil, errors.Join(errors.New("生成实名资料失败"), err)
+		return nil, result, errors.Join(errors.New("生成实名资料失败"), err)
 	}
 	err = s.database.Transaction(func(tx *gorm.DB) error {
 		authInfo, err = s.repositoryRealAuth.FindOrCreateByUserId(userId, tx)
@@ -588,12 +589,13 @@ func (s *service) VerifyRealAuth(certifyId string) (*RealAuthInfo, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, result, err
 	}
 	s.cache.Delete(
 		constant.CacheNameWithUserInfo+strconv.FormatInt(userId, 10),
 		constant.CacheNameWithRealAuthInfo+strconv.FormatInt(userId, 10),
 		cacheKey,
 	)
-	return s.GetRealAuthInfo(userId, true)
+	info, err := s.GetRealAuthInfo(userId, true)
+	return info, result, err
 }

@@ -15,7 +15,7 @@ func (Controller) Certificate(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	_, err := service.User.VerifyRealAuth(form.CertifyId)
+	_, _, err := service.User.VerifyRealAuth(form.CertifyId)
 	if err != nil {
 		c.Error(err.Error())
 		return

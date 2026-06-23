@@ -68,12 +68,27 @@ func (Controller) Certificate(c *context.Context) {
 			"url": certifyUrl,
 		})
 	case "verify":
-		info, err := service.User.VerifyRealAuth(form.Id)
-		if err != nil {
-			c.Error(err.Error())
-			return
+		data, result, err := service.User.VerifyRealAuth(form.Id)
+		status := false
+		breakLoop := true
+		message := "实名认证成功"
+		if data != nil {
+			status = data.Status == real_auth_status.Authed
 		}
-		c.SuccessWithData("实名验证成功", info)
+		if err != nil {
+			message = err.Error()
+			if result != nil {
+				breakLoop = result.Code != "403" && result.Code != "424"
+				if result.Reason != "" {
+					message = result.Reason
+				}
+			}
+		}
+		c.SuccessWithData("获取实名状态成功", sinking_web.H{
+			"status":  status,
+			"break":   breakLoop,
+			"message": message,
+		})
 	default:
 		c.Error("步骤不合法")
 	}

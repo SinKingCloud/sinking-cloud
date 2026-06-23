@@ -24,6 +24,7 @@ type FaceInitResult struct {
 
 // FaceQueryResult 是人脸实名认证查询结果。
 type FaceQueryResult struct {
+	Code      string   `json:"code"`        // 阿里云返回Code
 	Passed    bool     `json:"passed"`      // 是否认证通过
 	Reason    string   `json:"reason"`      // 认证结果说明
 	Bucket    string   `json:"bucket_name"` // 资料储存bucket名称
@@ -143,15 +144,22 @@ func (ins *Face) Query(certifyId string, sceneId int64) (*FaceQueryResult, error
 		SceneId:   tea.Int64(sceneId),
 	}
 	resp, err := client.DescribeFaceVerify(request)
-	if err != nil {
-		return nil, ins.formatSdkError("查询人脸实名认证结果失败", err)
-	}
 	if resp == nil || resp.Body == nil {
+		if err != nil {
+			return nil, ins.formatSdkError("查询人脸实名认证结果失败", err)
+		}
 		return nil, errors.New("查询人脸实名认证结果失败:响应为空")
 	}
 	body := resp.Body
-	if tea.StringValue(body.Code) != "200" {
-		return nil, fmt.Errorf("查询人脸实名认证结果失败:%s", ins.joinMessage(tea.StringValue(body.Code), tea.StringValue(body.Message), tea.StringValue(body.RequestId)))
+	code := tea.StringValue(body.Code)
+	message := tea.StringValue(body.Message)
+	if code != "200" {
+		result := &FaceQueryResult{
+			Code:   code,
+			Passed: false,
+			Reason: message,
+		}
+		return result, nil
 	}
 	if body.ResultObject == nil {
 		return nil, errors.New("查询人脸实名认证结果失败:认证结果为空")
@@ -160,6 +168,7 @@ func (ins *Face) Query(certifyId string, sceneId int64) (*FaceQueryResult, error
 	subCode := tea.StringValue(resultObject.SubCode)
 	passedFlag := tea.StringValue(resultObject.Passed)
 	result := &FaceQueryResult{
+		Code:   code,
 		Passed: passedFlag == "T" || subCode == "200",
 		Reason: ins.subCodeText(subCode),
 	}
