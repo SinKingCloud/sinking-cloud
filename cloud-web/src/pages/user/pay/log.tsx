@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import {App, Card, Col, Empty, Row, Spin, Tag, Typography} from "antd";
+import {App, Card, Col, Empty, Row, Tag, Typography} from "antd";
 import {createStyles} from "antd-style";
 import {Body, Icon, ProTable, ProTableRef, Title} from "sinking-antd";
 import useEnum from "@/utils/enum";
@@ -122,20 +122,6 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 transform: rotate(18deg) scale(1.02);
             }
 
-            .watermark {
-                position: absolute;
-                right: -82px;
-                bottom: -112px;
-                z-index: 1;
-                color: ${token.colorPrimary};
-                font-size: ${compact ? 270 : 320}px;
-                line-height: 1;
-                opacity: ${isDarkMode ? 0.15 : 0.12};
-                transform: rotate(-24deg);
-                filter: blur(20px);
-                pointer-events: none;
-            }
-
             @media (max-width: 991px) {
                 min-height: auto;
                 box-shadow: ${isDarkMode ? "none" : "inset 0 -1px 0 rgba(15,23,42,0.06)"};
@@ -158,12 +144,6 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                     filter: blur(36px);
                 }
 
-                .watermark {
-                    right: -48px;
-                    bottom: -68px;
-                    font-size: 210px;
-                    filter: blur(18px);
-                }
             }
         `,
         balanceMain: css`
@@ -192,24 +172,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 line-height: 20px;
             }
 
-            .icon-wrap {
-                flex: none;
-                width: ${compact ? 56 : 60}px;
-                height: ${compact ? 56 : 60}px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 50%;
-                color: ${token.colorPrimary};
-                font-size: ${compact ? 26 : 28}px;
-                background: ${isDarkMode ? "rgba(255,255,255,0.045)" : "rgba(255,255,255,0.62)"};
-                box-shadow: 0 10px 24px rgba(15, 23, 42, ${isDarkMode ? 0.22 : 0.08});
-            }
-
             .balance-card {
-                display: flex;
-                align-items: center;
-                gap: ${compact ? 12 : 14}px;
                 min-width: 0;
                 padding: ${compact ? "13px 14px" : "15px 16px"};
                 border-radius: ${token.borderRadius}px;
@@ -252,12 +215,6 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                     line-height: ${compact ? 30 : 31}px;
                 }
 
-                .icon-wrap {
-                    width: ${compact ? 54 : 58}px;
-                    height: ${compact ? 54 : 58}px;
-                    font-size: ${compact ? 26 : 28}px;
-                }
-
                 .money {
                     font-size: ${compact ? 26 : 28}px;
                     line-height: ${compact ? 34 : 36}px;
@@ -272,7 +229,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
             gap: 8px;
 
             @media (max-width: 920px) {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
             @media (max-width: 620px) {
@@ -308,6 +265,10 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
+            }
+
+            .money {
+                color: ${token.colorSuccess};
             }
 
             .frozen {
@@ -675,36 +636,33 @@ export default (): React.ReactNode => {
     };
 
     const balanceItems = [
+        {label: "可用余额", value: info?.money, className: "money"},
         {label: "冻结金额", value: info?.frozen, className: "frozen"},
         {label: "累计充值", value: info?.total_recharge, className: "recharge"},
         {label: "累计消费", value: info?.total_consume, className: "consume"},
     ];
+    const totalMoney = Number(info?.money || 0) + Number(info?.frozen || 0);
+    const loading = enumLoading || infoLoading;
 
     return (
-        <Body loading={enumLoading}>
-            <Row className={styles.layout} gutter={[0, 14]}>
-                <Col className={styles.overviewCol} span={24}>
-                    <Card className={styles.overview} variant="borderless" styles={{body: {padding: 0}}}>
-                        <Spin spinning={infoLoading}>
+        <Body loading={loading}>
+            {!loading && (
+                <Row className={styles.layout} gutter={[0, 14]}>
+                    <Col className={styles.overviewCol} span={24}>
+                        <Card className={styles.overview} variant="borderless" styles={{body: {padding: 0}}}>
                             <div className={styles.balancePanel}>
-                                <span className="watermark">
-                                    <Icon type="WalletOutlined"/>
-                                </span>
                                 <div className={styles.balanceMain}>
                                     <div className="head">
                                         <h1 className="title">财务明细</h1>
                                         <div className="subtitle">聚合账户余额、冻结资金和资金流水，便于快速核对账户变化。</div>
                                     </div>
                                     <div className="balance-card">
-                                        <span className="icon-wrap">
-                                            <Icon type="WalletOutlined"/>
-                                        </span>
                                         <div className="balance-content">
-                                            <div className="label">账户可用余额</div>
-                                            <Typography.Text className="money" ellipsis={{tooltip: formatMoney(info?.money)}}>
-                                                {formatMoney(info?.money)}
+                                            <div className="label">账户共计余额</div>
+                                            <Typography.Text className="money" ellipsis={{tooltip: formatMoney(totalMoney)}}>
+                                                {formatMoney(totalMoney)}
                                             </Typography.Text>
-                                            <div className="desc">可用于支付、充值和业务结算。</div>
+                                            <div className="desc">该余额包含可用余额和冻结余额。</div>
                                         </div>
                                     </div>
                                 </div>
@@ -727,39 +685,39 @@ export default (): React.ReactNode => {
                                     </div>
                                 </div>
                             </div>
-                        </Spin>
-                    </Card>
-                </Col>
-                <Col className={styles.recordCol} span={24}>
-                    <ProTable
-                        ref={tableRef}
-                        rowKey="id"
-                        title={<Title>资金记录</Title>}
-                        extraRefreshBtn={true}
-                        search={true}
-                        defaultPage={1}
-                        defaultPageSize={10}
-                        paginationAffix={true}
-                        columns={[
-                            {title: "资金类型", dataIndex: "type", valueEnum: buildValueEnum(typeEnum, typeColors), hideInTable: true},
-                            {title: "创建时间", dataIndex: "create_time", valueType: "dateRange", transform: dateRangeTransform("create_time"), hideInTable: true},
-                            {title: "资金记录", dataIndex: "id", hideInSearch: true, render: renderLog},
-                        ]}
-                        request={(params: any, sort: any) => getData({
-                            order_by_field: "id",
-                            order_by_type: "desc",
-                            ...params,
-                        }, sort, getBalanceLogList)}
-                        {...({
-                            tableProps: {
-                                className: styles.table,
-                                showHeader: false,
-                                rowClassName: (record: any) => record?.id ? "" : "hidden-row",
-                            },
-                        } as any)}
-                    />
-                </Col>
-            </Row>
+                        </Card>
+                    </Col>
+                    <Col className={styles.recordCol} span={24}>
+                        <ProTable
+                            ref={tableRef}
+                            rowKey="id"
+                            title={<Title>资金记录</Title>}
+                            extraRefreshBtn={true}
+                            search={true}
+                            defaultPage={1}
+                            defaultPageSize={10}
+                            paginationAffix={true}
+                            columns={[
+                                {title: "资金类型", dataIndex: "type", valueEnum: buildValueEnum(typeEnum, typeColors), hideInTable: true},
+                                {title: "创建时间", dataIndex: "create_time", valueType: "dateRange", transform: dateRangeTransform("create_time"), hideInTable: true},
+                                {title: "资金记录", dataIndex: "id", hideInSearch: true, render: renderLog},
+                            ]}
+                            request={(params: any, sort: any) => getData({
+                                order_by_field: "id",
+                                order_by_type: "desc",
+                                ...params,
+                            }, sort, getBalanceLogList)}
+                            {...({
+                                tableProps: {
+                                    className: styles.table,
+                                    showHeader: false,
+                                    rowClassName: (record: any) => record?.id ? "" : "hidden-row",
+                                },
+                            } as any)}
+                        />
+                    </Col>
+                </Row>
+            )}
         </Body>
     );
 };
