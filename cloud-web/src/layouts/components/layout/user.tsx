@@ -243,6 +243,18 @@ const RightTop: React.FC = () => {
                              </div>
                              <Icon type="RightOutlined"/>
                          </li>
+                         <li className={menuItem} onClick={() => historyPush("user.pay.order")}>
+                             <div className={menuItemLabel}><Icon type="ShoppingCartOutlined"
+                                                                  className={menuItemLeadIcon}/>我的订单
+                             </div>
+                             <Icon type="RightOutlined"/>
+                         </li>
+                         <li className={menuItem} onClick={() => historyPush("user.pay.log")}>
+                             <div className={menuItemLabel}><Icon type="WalletOutlined"
+                                                                  className={menuItemLeadIcon}/>财务明细
+                             </div>
+                             <Icon type="RightOutlined"/>
+                         </li>
                          <li className={menuItem} onClick={confirmOutLogin}>
                              <div className={menuItemLabel}><Icon type="LogoutOutlined" className={menuItemLeadIcon}/>退出登录
                              </div>

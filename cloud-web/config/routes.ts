@@ -14,6 +14,29 @@ export const user = [
         component: "@/pages/user/index",
     },
     {
+        path: "pay",
+        title: "财务管理",
+        name: "user.pay",
+        icon: 'icon-order',
+        hideInMenu: false,
+        routes: [
+            {
+                path: "order",
+                component: "@/pages/user/pay/order",
+                title: "我的订单",
+                name: "user.pay.order",
+                icon: '•',
+            },
+            {
+                path: "log",
+                component: "@/pages/user/pay/log",
+                title: "财务明细",
+                name: "user.pay.log",
+                icon: '•',
+            },
+        ]
+    },
+    {
         path: "person",
         title: "账户管理",
         name: "user.person",
