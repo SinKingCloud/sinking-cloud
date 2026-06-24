@@ -75,6 +75,9 @@ export function historyPush(name: any, params = {}) {
  */
 export function getMenuItems(routes: any, parentPath = '/', hideMenu = true) {
     return (routes || []).map((route: any) => {
+        if (route?.path === "") {
+            return undefined;
+        }
         if (hideMenu && route?.hideInMenu) {
             return undefined;
         }

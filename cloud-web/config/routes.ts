@@ -34,6 +34,10 @@ export const user = [
                 name: "user.pay.log",
                 icon: '•',
             },
+            {
+                path: "",
+                redirect: "order",
+            },
         ]
     },
     {
@@ -64,6 +68,10 @@ export const user = [
                 name: "user.person.session",
                 icon: '•',
             },
+            {
+                path: "",
+                redirect: "info",
+            },
         ]
     },
 ];
@@ -92,6 +100,10 @@ export const admin = [
                 component: "@/pages/admin/order",
                 title: "订单管理",
                 name: AdminPageCode.WEB_ORDER,
+            },
+            {
+                path: "",
+                redirect: "user",
             },
         ]
     },
@@ -148,6 +160,10 @@ export const admin = [
                 title: "系统设置",
                 name: AdminPageCode.SYSTEM_CONFIG,
             },
+            {
+                path: "",
+                redirect: "master",
+            },
         ]
     },
     {
@@ -166,6 +182,10 @@ export const admin = [
                 component: "@/pages/admin/person/session",
                 title: "会话管理",
                 name: "admin.person.session",
+            },
+            {
+                path: "",
+                redirect: "info",
             },
         ]
     },
@@ -229,31 +249,31 @@ export default [
      * 用户路由
      */
     {
-        path: "/" + userPath,
-        name: "redirect." + userPath,
-        redirect: '/' + userPath + '/' + (user[0]?.path || 'index'),
-        hideInMenu: true,
-    },
-    {
         path: userPath,
         name: userPath,
         title: "用户系统",
-        routes: user,
+        routes: [
+            ...user,
+            {
+                path: "",
+                redirect: user[0]?.path || "index",
+            },
+        ],
     },
     /**
      * admin路由
      */
     {
-        path: "/" + adminPath,
-        name: "redirect." + adminPath,
-        redirect: '/' + adminPath + '/' + (admin[0]?.path || 'index'),
-        hideInMenu: true,
-    },
-    {
         path: adminPath,
         name: adminPath,
         title: "后台网站",
-        routes: admin,
+        routes: [
+            ...admin,
+            {
+                path: "",
+                redirect: admin[0]?.path || "index",
+            },
+        ],
     },
     /**
      * 500
