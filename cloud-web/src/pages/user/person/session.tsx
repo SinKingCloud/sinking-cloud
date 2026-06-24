@@ -719,17 +719,16 @@ export default function Index(): React.ReactNode {
                             render: renderSessionCard,
                         },
                     ]}
-                    tableProps={{
-                        className: styles.sessionTable,
-                        showHeader: false,
-                        rowClassName: (record: any) => record?.token ? "" : "session-hidden-row",
-                        locale: {
-                            emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无会话"/>,
-                        },
-                    }}
                     request={async (params: any, sort: any) => {
                         return getData(params, sort, getSessionList);
                     }}
+                    {...({
+                        tableProps: {
+                            className: styles.sessionTable,
+                            showHeader: false,
+                            rowClassName: (record: any) => record?.token ? "" : "session-hidden-row",
+                        },
+                    } as any)}
                 />
             </Row>
         </Body>
