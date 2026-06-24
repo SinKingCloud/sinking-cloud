@@ -1,12 +1,19 @@
 import React, {useEffect, useRef, useState} from "react";
-import {App, Card, Col, Empty, Row, Tag, Typography} from "antd";
+import {App, Button, Card, Col, DatePicker, Popover, Row, Segmented, Tag, Typography} from "antd";
 import {createStyles} from "antd-style";
 import {Body, Icon, ProTable, ProTableRef, Title} from "sinking-antd";
 import useEnum from "@/utils/enum";
-import {buildValueEnum, dateRangeTransform, getData} from "@/utils/page";
+import {getData} from "@/utils/page";
 import {formatMoney} from "@/utils/string";
 import {getBalanceInfo, getBalanceLogList} from "@/service/user/pay";
 
+type LogTimeRange = "all" | "three_days" | "week" | "month" | "custom";
+type SelectOption<T = string> = {
+    label: React.ReactNode;
+    value: T;
+};
+
+const ALL_VALUE = "all";
 const typeColors: Record<string, string> = {
     "0": "blue",
     "1": "green",
@@ -14,10 +21,13 @@ const typeColors: Record<string, string> = {
     "3": "gold",
     "4": "purple",
 };
-
-const enumText = (data: any, value: any) => (
-    data?.[String(value)] || data?.[value] || (value === undefined || value === null || value === "" ? "-" : String(value))
-);
+const timeOptions: SelectOption<LogTimeRange>[] = [
+    {label: "全部", value: "all"},
+    {label: "最近3天", value: "three_days"},
+    {label: "最近7天", value: "week"},
+    {label: "最近一个月", value: "month"},
+    {label: "自定义", value: "custom"},
+];
 
 const useStyles = createStyles(({token, css, isDarkMode}: any) => {
     const compact = token.sizeStep <= 3;
@@ -359,7 +369,6 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 display: grid;
                 grid-template-columns: 1fr;
                 gap: ${compact ? 8 : 10}px;
-                min-height: 180px;
                 padding: ${compact ? 8 : 10}px;
                 background: transparent;
             }
@@ -394,6 +403,141 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 padding: 32px 12px !important;
                 border-radius: ${radius}px;
                 background: ${token.colorBgContainer} !important;
+            }
+        `,
+        recordFilter: css`
+            margin-bottom: ${compact ? 8 : 10}px;
+            border-radius: ${radius}px;
+
+            .ant-card-body {
+                padding: ${compact ? "8px 10px" : "12px 14px"};
+            }
+
+            .filter-row {
+                position: relative;
+                min-width: 0;
+            }
+
+            .filter-row + .filter-row {
+                margin-top: ${compact ? 5 : 9}px;
+            }
+
+            .filter-options {
+                min-width: 0;
+                padding: 1px 0;
+                overflow-x: auto;
+                scrollbar-width: none;
+            }
+
+            .filter-options::-webkit-scrollbar {
+                display: none;
+            }
+
+            .filter-scroll-button {
+                position: absolute;
+                top: 50%;
+                z-index: 2;
+                width: ${compact ? 22 : 26}px;
+                height: ${compact ? 22 : 26}px;
+                min-width: ${compact ? 22 : 26}px;
+                padding: 0;
+                color: ${token.colorTextQuaternary};
+                border: none;
+                background: transparent;
+                box-shadow: none;
+                opacity: 0;
+                pointer-events: none;
+                transform: translateY(-50%);
+                transition: none;
+            }
+
+            .filter-row:hover .filter-scroll-button,
+            .filter-scroll-button:hover {
+                opacity: 1;
+                pointer-events: auto;
+                color: ${token.colorTextSecondary};
+                background: transparent !important;
+            }
+
+            .filter-scroll-button.left {
+                left: ${compact ? -14 : -16}px;
+            }
+
+            .filter-scroll-button.right {
+                right: ${compact ? -14 : -16}px;
+            }
+
+            .ant-segmented {
+                max-width: 100%;
+                padding: ${compact ? 1 : 2}px;
+                background: ${token.colorFillQuaternary};
+                border-radius: ${token.borderRadius}px;
+            }
+
+            .ant-segmented-group {
+                flex-wrap: nowrap;
+                gap: ${compact ? 1 : 2}px;
+            }
+
+            .ant-segmented-item {
+                border-radius: ${token.borderRadiusSM}px;
+                color: ${token.colorTextSecondary};
+                font-size: ${compact ? 12 : 13}px;
+                min-height: ${compact ? 22 : 31}px;
+                line-height: ${compact ? "22px" : "31px"};
+            }
+
+            .ant-segmented-item-label {
+                min-height: ${compact ? 22 : 31}px;
+                line-height: ${compact ? "22px" : "31px"};
+                padding: 0 ${compact ? 7 : 13}px;
+            }
+
+            .ant-segmented-item-selected {
+                color: ${token.colorPrimary};
+                background: ${isDarkMode ? "rgba(255,255,255,0.08)" : token.colorBgContainer};
+            }
+
+            .custom-filter-label {
+                display: inline-flex;
+            }
+
+            .custom-picker-panel {
+                position: relative;
+                display: block;
+                width: ${compact ? 276 : 300}px;
+            }
+
+            .custom-picker-group {
+                display: flex;
+                gap: ${compact ? 7 : 8}px;
+            }
+
+            .custom-picker-panel .ant-picker {
+                flex: 1;
+                min-width: 0;
+                width: 100%;
+            }
+
+            @media (max-width: 575px) {
+                .ant-card-body {
+                    padding: ${compact ? "7px 9px" : "10px 11px"};
+                }
+
+                .filter-scroll-button {
+                    display: none;
+                }
+
+                .ant-segmented-item {
+                    min-height: ${compact ? 22 : 30}px;
+                    line-height: ${compact ? "22px" : "30px"};
+                }
+
+                .ant-segmented-item-label {
+                    min-height: ${compact ? 22 : 30}px;
+                    line-height: ${compact ? "22px" : "30px"};
+                    padding: 0 ${compact ? 6 : 11}px;
+                }
             }
         `,
         logCard: css`
@@ -575,10 +719,22 @@ export default (): React.ReactNode => {
     const {message} = App.useApp();
     const {styles} = useStyles();
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
+    const typeScrollRef = useRef<HTMLDivElement | null>(null);
+    const timeScrollRef = useRef<HTMLDivElement | null>(null);
+    const filtersRef = useRef<any>({});
+    const customRangeRef = useRef<any>({});
     const [enumData, enumLoading] = useEnum(["pay.balance_log"]) as any;
     const [info, setInfo] = useState<any>();
     const [infoLoading, setInfoLoading] = useState(true);
+    const [filterType, setFilterType] = useState(ALL_VALUE);
+    const [timeRange, setTimeRange] = useState<LogTimeRange>("all");
+    const [customOpen, setCustomOpen] = useState(false);
+    const [customRange, setCustomRange] = useState<any>();
     const typeEnum = enumData?.["pay.balance_log"]?.type || {};
+    const typeOptions: SelectOption[] = [
+        {label: "全部", value: ALL_VALUE},
+        ...Object.entries(typeEnum || {}).map(([value, label]) => ({value, label: String(label)})),
+    ];
 
     const loadInfo = async () => {
         setInfoLoading(true);
@@ -594,6 +750,97 @@ export default (): React.ReactNode => {
         void loadInfo();
     }, []);
 
+    const getFilters = (type: string, range: LogTimeRange, custom: any = customRange) => {
+        const next: any = type === ALL_VALUE ? {} : {type};
+        if (range === "all") {
+            return next;
+        }
+        if (range === "custom") {
+            if (!custom?.[0] && !custom?.[1]) {
+                return next;
+            }
+            if (custom?.[0]) {
+                next.create_time_start = custom[0]?.startOf
+                    ? custom[0].startOf("day").format("YYYY-MM-DD HH:mm:ss")
+                    : custom[0];
+            }
+            if (custom?.[1]) {
+                next.create_time_end = custom[1]?.endOf
+                    ? custom[1].endOf("day").format("YYYY-MM-DD HH:mm:ss")
+                    : custom[1];
+            }
+            return next;
+        }
+        const days = range === "three_days" ? 3 : range === "week" ? 7 : 30;
+        const end = new Date();
+        const start = new Date(end.getTime());
+        start.setDate(start.getDate() - days + 1);
+        const startMonth = String(start.getMonth() + 1).padStart(2, "0");
+        const startDay = String(start.getDate()).padStart(2, "0");
+        const endMonth = String(end.getMonth() + 1).padStart(2, "0");
+        const endDay = String(end.getDate()).padStart(2, "0");
+        return {
+            ...next,
+            create_time_start: `${start.getFullYear()}-${startMonth}-${startDay} 00:00:00`,
+            create_time_end: `${end.getFullYear()}-${endMonth}-${endDay} 23:59:59`,
+        };
+    };
+
+    const updateFilters = (next: any) => {
+        filtersRef.current = next;
+        tableRef.current?.refreshTableData?.();
+    };
+
+    const changeType = (value: string) => {
+        setFilterType(value);
+        updateFilters(getFilters(value, timeRange));
+    };
+
+    const changeTimeRange = (value: LogTimeRange) => {
+        if (value === "custom") {
+            setCustomOpen(true);
+            return;
+        }
+        setTimeRange(value);
+        customRangeRef.current = undefined;
+        setCustomRange(undefined);
+        setCustomOpen(false);
+        updateFilters(getFilters(filterType, value, undefined));
+    };
+
+    const applyCustomTime = (value: any, index: 0 | 1) => {
+        const next = [...(customRangeRef.current || [])];
+        if (!value) {
+            next[index] = undefined;
+            customRangeRef.current = next;
+            setCustomRange(next);
+            if (next?.[0] || next?.[1]) {
+                setTimeRange("custom");
+                updateFilters(getFilters(filterType, "custom", next));
+            } else {
+                setTimeRange("all");
+                updateFilters(getFilters(filterType, "all", undefined));
+            }
+            return;
+        }
+        next[index] = value;
+        const range = next?.[0] && next?.[1] && next[0]?.isAfter?.(next[1])
+            ? [next[1], next[0]]
+            : next;
+        customRangeRef.current = range;
+        setCustomRange(range);
+        setTimeRange("custom");
+        updateFilters(getFilters(filterType, "custom", range));
+        if (range?.[0] && range?.[1]) {
+            setCustomOpen(false);
+        }
+    };
+
+    const scrollFilter = (target: "type" | "time", distance: number) => {
+        const ref = target === "type" ? typeScrollRef : timeScrollRef;
+        ref.current?.scrollBy({left: distance});
+    };
+
     const renderChange = (label: string, before: any, after: any) => (
         <div className={styles.changeItem}>
             <div className="label">{label}</div>
@@ -606,13 +853,16 @@ export default (): React.ReactNode => {
     const renderLog = (_: any, record: any) => {
         const money = Number(record?.money || 0);
         const amountClassName = money > 0 ? "income" : money < 0 ? "outcome" : "";
+        const typeText = typeEnum?.[String(record?.type)] || typeEnum?.[record?.type] || (
+            record?.type === undefined || record?.type === null || record?.type === "" ? "-" : String(record?.type)
+        );
         return (
             <div className={styles.logCard}>
                 <div className={styles.logMain}>
                     <div className="type">
                         <span className="dot"/>
                         <Tag color={typeColors?.[String(record?.type)] || "default"}>
-                            {enumText(typeEnum, record?.type)}
+                            {typeText}
                         </Tag>
                     </div>
                     <Typography.Text className="desc" ellipsis={{tooltip: record?.describe || "暂无描述"}}>
@@ -643,6 +893,42 @@ export default (): React.ReactNode => {
     ];
     const totalMoney = Number(info?.money || 0) + Number(info?.frozen || 0);
     const loading = enumLoading || infoLoading;
+    const customPickerPanel = (
+        <div className="custom-picker-panel">
+            <div className="custom-picker-group">
+                <DatePicker
+                    inputReadOnly
+                    placeholder="开始日期"
+                    value={customRange?.[0]}
+                    getPopupContainer={() => document.body}
+                    onChange={(value: any) => applyCustomTime(value, 0)}
+                />
+                <DatePicker
+                    inputReadOnly
+                    placeholder="结束日期"
+                    value={customRange?.[1]}
+                    getPopupContainer={() => document.body}
+                    onChange={(value: any) => applyCustomTime(value, 1)}
+                />
+            </div>
+        </div>
+    );
+    const customTimeOptions = timeOptions.map((item) => item.value === "custom" ? {
+        ...item,
+        label: (
+            <Popover
+                arrow
+                content={customPickerPanel}
+                open={customOpen}
+                placement="bottomLeft"
+                trigger="click"
+                onOpenChange={(open) => {
+                    setCustomOpen(open);
+                }}>
+                <span className="custom-filter-label">自定义</span>
+            </Popover>
+        ),
+    } : item);
 
     return (
         <Body loading={loading}>
@@ -688,23 +974,74 @@ export default (): React.ReactNode => {
                         </Card>
                     </Col>
                     <Col className={styles.recordCol} span={24}>
+                        <Card className={styles.recordFilter} variant="borderless">
+                            <div className="filter-row">
+                                <Button
+                                    className="filter-scroll-button left"
+                                    htmlType="button"
+                                    icon={<Icon type="CaretLeftFilled"/>}
+                                    size="small"
+                                    type="text"
+                                    onClick={() => scrollFilter("type", -180)}
+                                />
+                                <div ref={typeScrollRef} className="filter-options">
+                                    <Segmented
+                                        options={typeOptions}
+                                        value={filterType}
+                                        onChange={(value) => changeType(String(value))}
+                                    />
+                                </div>
+                                <Button
+                                    className="filter-scroll-button right"
+                                    htmlType="button"
+                                    icon={<Icon type="CaretRightFilled"/>}
+                                    size="small"
+                                    type="text"
+                                    onClick={() => scrollFilter("type", 180)}
+                                />
+                            </div>
+                            <div className="filter-row">
+                                <Button
+                                    className="filter-scroll-button left"
+                                    htmlType="button"
+                                    icon={<Icon type="CaretLeftFilled"/>}
+                                    size="small"
+                                    type="text"
+                                    onClick={() => scrollFilter("time", -180)}
+                                />
+                                <div ref={timeScrollRef} className="filter-options">
+                                    <Segmented
+                                        options={customTimeOptions}
+                                        value={timeRange}
+                                        onChange={(value) => changeTimeRange(value as LogTimeRange)}
+                                    />
+                                </div>
+                                <Button
+                                    className="filter-scroll-button right"
+                                    htmlType="button"
+                                    icon={<Icon type="CaretRightFilled"/>}
+                                    size="small"
+                                    type="text"
+                                    onClick={() => scrollFilter("time", 180)}
+                                />
+                            </div>
+                        </Card>
                         <ProTable
                             ref={tableRef}
                             rowKey="id"
                             title={<Title>资金记录</Title>}
                             extraRefreshBtn={true}
-                            search={true}
+                            search={false}
                             defaultPage={1}
                             defaultPageSize={10}
                             paginationAffix={true}
                             columns={[
-                                {title: "资金类型", dataIndex: "type", valueEnum: buildValueEnum(typeEnum, typeColors), hideInTable: true},
-                                {title: "创建时间", dataIndex: "create_time", valueType: "dateRange", transform: dateRangeTransform("create_time"), hideInTable: true},
                                 {title: "资金记录", dataIndex: "id", hideInSearch: true, render: renderLog},
                             ]}
                             request={(params: any, sort: any) => getData({
                                 order_by_field: "id",
                                 order_by_type: "desc",
+                                ...filtersRef.current,
                                 ...params,
                             }, sort, getBalanceLogList)}
                             {...({

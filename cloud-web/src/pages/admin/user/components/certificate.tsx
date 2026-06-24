@@ -378,8 +378,6 @@ const Certificate = forwardRef<CertificateRef, CertificateProps>(({control}, ref
                 destroyOnHidden: false,
                 styles: {
                     body: {
-                        maxHeight: isCompactMode ? "calc(100vh - 128px)" : "calc(100vh - 160px)",
-                        overflowY: "auto",
                         padding: isCompactMode ? 6 : undefined,
                     },
                 },

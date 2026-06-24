@@ -8,6 +8,7 @@ import {
     Input,
     InputNumber,
     Pagination,
+    Popover,
     Segmented,
     Spin,
 } from "antd";
@@ -398,18 +399,20 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
             flexDirection: "column",
             minHeight: 0,
         },
-        customRangeTrigger: {
+        customPickerPanel: {
             position: "relative",
-            display: "inline-flex",
-            flex: "none",
-            "& .customRangePicker": {
-                position: "absolute",
-                top: 0,
-                left: 0,
+            display: "block",
+            width: isCompactMode ? 276 : 300,
+            "& .ant-picker": {
                 width: "100%",
-                height: isCompactMode ? 25 : 24,
-                opacity: 0,
-                pointerEvents: "none",
+            },
+        },
+        customPickerGroup: {
+            display: "flex",
+            gap: isCompactMode ? 7 : 8,
+            "& .ant-picker": {
+                flex: 1,
+                minWidth: 0,
             },
         },
         filterRow: {
@@ -690,7 +693,41 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
 
 // ==================== 工具函数 ====================
 
-const getTypeFilter = (value: string) => value === ALL_VALUE ? {} : {type: value};
+const getLogFilters = (type: string, range: LogTimeRange, custom?: any) => {
+    const next: any = type === ALL_VALUE ? {} : {type};
+    if (range === "all") {
+        return next;
+    }
+    if (range === "custom") {
+        if (!custom?.[0] && !custom?.[1]) {
+            return next;
+        }
+        if (custom?.[0]) {
+            next.create_time_start = custom[0]?.startOf
+                ? custom[0].startOf("day").format("YYYY-MM-DD HH:mm:ss")
+                : custom[0];
+        }
+        if (custom?.[1]) {
+            next.create_time_end = custom[1]?.endOf
+                ? custom[1].endOf("day").format("YYYY-MM-DD HH:mm:ss")
+                : custom[1];
+        }
+        return next;
+    }
+    const days = range === "three_days" ? 3 : range === "week" ? 7 : 30;
+    const end = new Date();
+    const start = new Date(end.getTime());
+    start.setDate(start.getDate() - days + 1);
+    const startMonth = String(start.getMonth() + 1).padStart(2, "0");
+    const startDay = String(start.getDate()).padStart(2, "0");
+    const endMonth = String(end.getMonth() + 1).padStart(2, "0");
+    const endDay = String(end.getDate()).padStart(2, "0");
+    return {
+        ...next,
+        create_time_start: `${start.getFullYear()}-${startMonth}-${startDay} 00:00:00`,
+        create_time_end: `${end.getFullYear()}-${endMonth}-${endDay} 23:59:59`,
+    };
+};
 
 // ==================== 通用筛选条 ====================
 
@@ -1102,6 +1139,7 @@ const BalanceLog = ({userId, hasControl, typeEnum, styles, message}: BalanceLogP
     const [timeRange, setTimeRange] = useState<LogTimeRange>("all");
     const [customOpen, setCustomOpen] = useState(false);
     const [customRange, setCustomRange] = useState<any>();
+    const customRangeRef = useRef<any>({});
     const [list, setList] = useState<any[]>([]);
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
@@ -1114,62 +1152,49 @@ const BalanceLog = ({userId, hasControl, typeEnum, styles, message}: BalanceLogP
     const changeType = (value: string) => {
         setType(value);
         setPage(1);
-        setFilters((prev: any) => {
-            const next = {...prev};
-            if (value === ALL_VALUE) {
-                delete next.type;
-            } else {
-                next.type = value;
-            }
-            return next;
-        });
+        setFilters(getLogFilters(value, timeRange, customRangeRef.current));
     };
 
     const changeTimeRange = (value: LogTimeRange) => {
-        setTimeRange(value);
         setPage(1);
         if (value === "custom") {
             setCustomOpen(true);
             return;
         }
+        setTimeRange(value);
         setCustomOpen(false);
+        customRangeRef.current = undefined;
         setCustomRange(undefined);
-        if (value === "all") {
-            setFilters(getTypeFilter(type));
-            return;
-        }
-        const days = value === "three_days" ? 3 : value === "week" ? 7 : 30;
-        const end = new Date();
-        const start = new Date(end.getTime());
-        start.setDate(start.getDate() - days + 1);
-        const startMonth = String(start.getMonth() + 1).padStart(2, "0");
-        const startDay = String(start.getDate()).padStart(2, "0");
-        const endMonth = String(end.getMonth() + 1).padStart(2, "0");
-        const endDay = String(end.getDate()).padStart(2, "0");
-        setFilters({
-            ...getTypeFilter(type),
-            create_time_start: `${start.getFullYear()}-${startMonth}-${startDay} 00:00:00`,
-            create_time_end: `${end.getFullYear()}-${endMonth}-${endDay} 23:59:59`,
-        });
+        setFilters(getLogFilters(type, value, undefined));
     };
 
-    const applyCustomTime = (range: any) => {
-        setCustomRange(range);
-        if (!range?.[0] || !range?.[1]) {
+    const applyCustomTime = (value: any, index: 0 | 1) => {
+        const next = [...(customRangeRef.current || [])];
+        setPage(1);
+        if (!value) {
+            next[index] = undefined;
+            customRangeRef.current = next;
+            setCustomRange(next);
+            if (next?.[0] || next?.[1]) {
+                setTimeRange("custom");
+                setFilters(getLogFilters(type, "custom", next));
+            } else {
+                setTimeRange("all");
+                setFilters(getLogFilters(type, "all", undefined));
+            }
             return;
         }
+        next[index] = value;
+        const range = next?.[0] && next?.[1] && next[0]?.isAfter?.(next[1])
+            ? [next[1], next[0]]
+            : next;
+        customRangeRef.current = range;
+        setCustomRange(range);
         setTimeRange("custom");
-        setCustomOpen(false);
-        setPage(1);
-        setFilters({
-            ...getTypeFilter(type),
-            create_time_start: range[0]?.startOf
-                ? range[0].startOf("day").format("YYYY-MM-DD HH:mm:ss")
-                : range[0],
-            create_time_end: range[1]?.endOf
-                ? range[1].endOf("day").format("YYYY-MM-DD HH:mm:ss")
-                : range[1],
-        });
+        setFilters(getLogFilters(type, "custom", range));
+        if (range?.[0] && range?.[1]) {
+            setCustomOpen(false);
+        }
     };
 
     useEffect(() => {
@@ -1205,6 +1230,27 @@ const BalanceLog = ({userId, hasControl, typeEnum, styles, message}: BalanceLogP
         };
     }, [filters, hasControl, message, page, userId]);
 
+    const customPickerPanel = (
+        <div className={styles.customPickerPanel}>
+            <div className={styles.customPickerGroup}>
+                <DatePicker
+                    inputReadOnly
+                    placeholder="开始日期"
+                    value={customRange?.[0]}
+                    getPopupContainer={() => document.body}
+                    onChange={(value: any) => applyCustomTime(value, 0)}
+                />
+                <DatePicker
+                    inputReadOnly
+                    placeholder="结束日期"
+                    value={customRange?.[1]}
+                    getPopupContainer={() => document.body}
+                    onChange={(value: any) => applyCustomTime(value, 1)}
+                />
+            </div>
+        </div>
+    );
+
     return (
         <div className={`${styles.logPanel} ${list.length > 0 ? "" : "empty"}`}>
             <div className={styles.logFilter}>
@@ -1215,19 +1261,15 @@ const BalanceLog = ({userId, hasControl, typeEnum, styles, message}: BalanceLogP
                     styles={styles}
                     onChange={(value: string) => changeTimeRange(value as LogTimeRange)}
                     renderItem={(_: any, itemValue: string, node: React.ReactNode) => itemValue === "custom" ? (
-                        <span className={styles.customRangeTrigger}>
+                        <Popover
+                            arrow
+                            content={customPickerPanel}
+                            open={customOpen}
+                            placement="bottomLeft"
+                            trigger="click"
+                            onOpenChange={(open) => setCustomOpen(open)}>
                             {node}
-                            <DatePicker.RangePicker
-                                allowClear={false}
-                                className="customRangePicker"
-                                inputReadOnly
-                                open={customOpen}
-                                value={customRange}
-                                getPopupContainer={() => document.body}
-                                onChange={(value: any) => applyCustomTime(value)}
-                                onOpenChange={(open: boolean) => setCustomOpen(open)}
-                            />
-                        </span>
+                        </Popover>
                     ) : node}
                 />
             </div>
