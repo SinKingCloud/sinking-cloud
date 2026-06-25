@@ -16,10 +16,12 @@ type SelectOption<T = string> = {
 const ALL_VALUE = "all";
 const typeColors: Record<string, string> = {
     "0": "blue",
-    "1": "green",
-    "2": "red",
-    "3": "gold",
+    "1": "volcano",
+    "2": "orange",
+    "3": "green",
     "4": "purple",
+    "5": "cyan",
+    "6": "magenta",
 };
 const timeOptions: SelectOption<LogTimeRange>[] = [
     {label: "全部", value: "all"},

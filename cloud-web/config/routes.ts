@@ -35,8 +35,15 @@ export const user = [
                 icon: '•',
             },
             {
+                path: "recharge",
+                component: "@/pages/user/pay/recharge",
+                title: "在线充值",
+                name: "user.pay.recharge",
+                icon: '•',
+            },
+            {
                 path: "",
-                redirect: "order",
+                redirect: "recharge",
             },
         ]
     },
@@ -274,6 +281,16 @@ export default [
                 redirect: admin[0]?.path || "index",
             },
         ],
+    },
+    /**
+     * 支付结果
+     */
+    {
+        path: "pay",
+        component: "@/pages/pay.tsx",
+        name: "pay",
+        title: "支付结果",
+        hideInMenu: true,
     },
     /**
      * 500

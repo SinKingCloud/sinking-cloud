@@ -7,8 +7,6 @@ import {getSessionList, logoutSession} from "@/service/user/person";
 import {ago} from "@/utils/time";
 import {getData} from "@/utils/page";
 
-const DEFAULT_PAGE_SIZE = 10;
-
 const useStyles = createStyles(({token, css, isDarkMode}: any) => {
     const compact = token.sizeStep <= 3;
     const radius = token.borderRadiusLG;
@@ -33,11 +31,10 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
             min-height: ${compact ? 120 : 130}px;
             border-radius: ${radius}px;
             padding: ${compact ? "16px 20px" : "18px 24px"};
-            background:
-                radial-gradient(circle at 18% 16%, ${primaryGlow} 0%, transparent 34%),
-                radial-gradient(circle at 82% 42%, ${cyanGlow} 0%, transparent 36%),
-                radial-gradient(circle at 64% 100%, ${violetGlow} 0%, transparent 32%),
-                linear-gradient(135deg, ${token.colorBgContainer} 0%, ${primaryMist} 100%);
+            background: radial-gradient(circle at 18% 16%, ${primaryGlow} 0%, transparent 34%),
+            radial-gradient(circle at 82% 42%, ${cyanGlow} 0%, transparent 36%),
+            radial-gradient(circle at 64% 100%, ${violetGlow} 0%, transparent 32%),
+            linear-gradient(135deg, ${token.colorBgContainer} 0%, ${primaryMist} 100%);
             box-shadow: ${isDarkMode ? "0 14px 38px rgba(0,0,0,0.24)" : "0 16px 36px rgba(15,23,42,0.065)"};
 
             &::before {
@@ -48,9 +45,8 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 width: 460px;
                 height: 360px;
                 border-radius: 50%;
-                background:
-                    radial-gradient(circle, ${token.colorPrimaryBgHover} 0%, transparent 46%),
-                    conic-gradient(from 20deg, transparent 0 14%, ${token.colorPrimaryBorder} 22%, transparent 38%, ${token.colorPrimaryBgHover} 56%, transparent 76%, ${token.colorPrimaryBg} 90%, transparent 100%);
+                background: radial-gradient(circle, ${token.colorPrimaryBgHover} 0%, transparent 46%),
+                conic-gradient(from 20deg, transparent 0 14%, ${token.colorPrimaryBorder} 22%, transparent 38%, ${token.colorPrimaryBgHover} 56%, transparent 76%, ${token.colorPrimaryBg} 90%, transparent 100%);
                 filter: blur(52px);
                 opacity: ${isDarkMode ? 0.16 : 0.36};
                 pointer-events: none;
@@ -64,9 +60,8 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 z-index: 0;
                 opacity: ${isDarkMode ? 0.16 : 0.26};
                 pointer-events: none;
-                background:
-                    linear-gradient(90deg, ${gridGlow} 1px, transparent 1px),
-                    linear-gradient(0deg, ${gridGlow} 1px, transparent 1px);
+                background: linear-gradient(90deg, ${gridGlow} 1px, transparent 1px),
+                linear-gradient(0deg, ${gridGlow} 1px, transparent 1px);
                 background-size: 34px 34px;
                 mask-image: linear-gradient(110deg, transparent 0%, #000 18%, #000 52%, transparent 88%);
             }
@@ -178,11 +173,9 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
             width: 100%;
             padding: ${compact ? 10 : 11}px ${compact ? 12 : 14}px;
             border-radius: ${radius}px;
-            background:
-                linear-gradient(135deg, ${isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 12%, rgba(255,255,255,0.05))` : "rgba(255,255,255,0.76)"} 0%, ${isDarkMode ? "rgba(34,211,238,0.035)" : "rgba(255,255,255,0.54)"} 100%);
-            box-shadow:
-                inset 0 0 0 1px ${isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 22%, rgba(255,255,255,0.05))` : "rgba(22,119,255,0.105)"},
-                ${isDarkMode ? "0 10px 22px rgba(0,0,0,0.16)" : "0 12px 24px rgba(22,119,255,0.08)"};
+            background: linear-gradient(135deg, ${isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 12%, rgba(255,255,255,0.05))` : "rgba(255,255,255,0.76)"} 0%, ${isDarkMode ? "rgba(34,211,238,0.035)" : "rgba(255,255,255,0.54)"} 100%);
+            box-shadow: inset 0 0 0 1px ${isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 22%, rgba(255,255,255,0.05))` : "rgba(22,119,255,0.105)"},
+            ${isDarkMode ? "0 10px 22px rgba(0,0,0,0.16)" : "0 12px 24px rgba(22,119,255,0.08)"};
             backdrop-filter: blur(14px);
 
             &::before {
@@ -419,9 +412,8 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
             padding: ${compact ? "10px 12px" : "11px 14px"};
             border-radius: ${radius}px;
             background: ${token.colorBgContainer};
-            box-shadow:
-                inset 0 0 0 1px ${isDarkMode ? "rgba(255,255,255,0.065)" : "rgba(5,5,5,0.06)"},
-                ${isDarkMode ? "0 4px 12px rgba(0,0,0,0.10)" : "0 4px 14px rgba(15,23,42,0.025)"};
+            box-shadow: inset 0 0 0 1px ${isDarkMode ? "rgba(255,255,255,0.065)" : "rgba(5,5,5,0.06)"},
+            ${isDarkMode ? "0 4px 12px rgba(0,0,0,0.10)" : "0 4px 14px rgba(15,23,42,0.025)"};
             transition: box-shadow 0.18s ease, background-color 0.18s ease;
 
             &:hover {
@@ -615,7 +607,8 @@ export default function Index(): React.ReactNode {
                     <div className="device-content">
                         <div className="name-row">
                             <span className="device-dot"/>
-                            <Typography.Text className={styles.deviceName} ellipsis={{tooltip: item?.device || "未知设备"}}>
+                            <Typography.Text className={styles.deviceName}
+                                             ellipsis={{tooltip: item?.device || "未知设备"}}>
                                 {item?.device || "未知设备"}
                             </Typography.Text>
                         </div>
@@ -677,19 +670,22 @@ export default function Index(): React.ReactNode {
                                     <span className="visual-title">当前会话</span>
                                     <span className="visual-status">在线</span>
                                 </div>
-                                <Typography.Text className="visual-device" ellipsis={{tooltip: currentSession?.device || "未知设备"}}>
+                                <Typography.Text className="visual-device"
+                                                 ellipsis={{tooltip: currentSession?.device || "未知设备"}}>
                                     {currentSession?.device || "未知设备"}
                                 </Typography.Text>
                                 <div className="visual-list">
                                     <div className="visual-row">
                                         <span>IP</span>
-                                        <Typography.Text className="value" ellipsis={{tooltip: currentSession?.ip || "-"}}>
+                                        <Typography.Text className="value"
+                                                         ellipsis={{tooltip: currentSession?.ip || "-"}}>
                                             {currentSession?.ip || "-"}
                                         </Typography.Text>
                                     </div>
                                     <div className="visual-row">
                                         <span>地点</span>
-                                        <Typography.Text className="value" ellipsis={{tooltip: currentSession?.location || "-"}}>
+                                        <Typography.Text className="value"
+                                                         ellipsis={{tooltip: currentSession?.location || "-"}}>
                                             {currentSession?.location || "-"}
                                         </Typography.Text>
                                     </div>
@@ -714,7 +710,7 @@ export default function Index(): React.ReactNode {
                     extraRefreshBtn={true}
                     search={false}
                     defaultPage={1}
-                    defaultPageSize={DEFAULT_PAGE_SIZE}
+                    defaultPageSize={5}
                     paginationAffix={true}
                     columns={[
                         {

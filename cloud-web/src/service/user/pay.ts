@@ -1,6 +1,16 @@
 import {API} from "../../../typings";
 import {get, post} from "@/utils/request";
 
+/** 支付配置 */
+export async function getPayConfig(params: API.RequestParams = {}) {
+    return get("/pay/config", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
+}
+
+/** 获取支付链接 */
+export async function submitPay(params: API.RequestParams = {}) {
+    return post("/pay/submit", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
+}
+
 /** 用户余额详情 */
 export async function getBalanceInfo(params: API.RequestParams = {}) {
     return get("/user/pay/balance/info", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);

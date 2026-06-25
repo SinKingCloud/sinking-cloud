@@ -25,6 +25,7 @@ func (Controller) Config(c *context.Context) {
 	c.SuccessWithData("获取数据成功", sinking_web.H{
 		"min":            config.Min,
 		"max":            config.Max,
+		"expire":         config.Expire,
 		pay_type.Balance: config.Balance > 0,
 		pay_type.Alipay:  config.Alipay > 0,
 		pay_type.Wxpay:   config.Wxpay > 0,
