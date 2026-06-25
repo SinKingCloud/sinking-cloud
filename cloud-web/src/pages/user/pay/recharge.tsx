@@ -31,7 +31,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
     return {
         page: css`
             width: 100%;
-            max-width: 1120px;
+            max-width: 1440px;
             margin: 0 auto;
         `,
         hero: css`

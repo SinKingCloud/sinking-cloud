@@ -21,10 +21,10 @@ export const user = [
         hideInMenu: false,
         routes: [
             {
-                path: "order",
-                component: "@/pages/user/pay/order",
-                title: "订单管理",
-                name: "user.pay.order",
+                path: "recharge",
+                component: "@/pages/user/pay/recharge",
+                title: "在线充值",
+                name: "user.pay.recharge",
                 icon: '•',
             },
             {
@@ -35,10 +35,10 @@ export const user = [
                 icon: '•',
             },
             {
-                path: "recharge",
-                component: "@/pages/user/pay/recharge",
-                title: "在线充值",
-                name: "user.pay.recharge",
+                path: "order",
+                component: "@/pages/user/pay/order",
+                title: "订单管理",
+                name: "user.pay.order",
                 icon: '•',
             },
             {

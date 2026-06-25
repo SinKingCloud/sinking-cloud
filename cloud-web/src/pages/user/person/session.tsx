@@ -20,7 +20,8 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
             flex-direction: column;
             flex-wrap: nowrap;
             gap: ${compact ? 12 : 14}px;
-            max-width: 1120px;
+            width: 100%;
+            max-width: 1440px;
             margin: 0 auto;
         `,
         hero: css`

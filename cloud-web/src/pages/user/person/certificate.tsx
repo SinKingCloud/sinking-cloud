@@ -46,7 +46,8 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
 
     return {
         page: css`
-            width: min(1120px, 100%);
+            width: 100%;
+            max-width: 1440px;
             margin: 0 auto;
             display: grid;
             gap: ${isCompactMode ? 10 : 12}px;
@@ -249,7 +250,7 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
         `,
         workspace: css`
             display: grid;
-            grid-template-columns: 280px minmax(0, 1fr);
+            grid-template-columns: 320px minmax(0, 1fr);
 
             ${responsive.mobile} {
                 grid-template-columns: 1fr;
@@ -510,7 +511,7 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
             }
         `,
         formContent: css`
-            width: min(350px, 100%);
+            width: min(370px, 100%);
             margin: 0 auto;
 
             ${responsive.mobile} {
@@ -606,7 +607,7 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
             }
         `,
         formActionBar: css`
-            width: min(350px, 100%);
+            width: min(370px, 100%);
             margin: ${isCompactMode ? 14 : 16}px auto 0;
             padding-top: 0;
             display: flex;
@@ -628,7 +629,7 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
         `,
         verifyPanel: css`
             position: relative;
-            width: min(350px, 100%);
+            width: min(370px, 100%);
             margin: 0 auto;
             display: grid;
             justify-items: center;
@@ -651,8 +652,9 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
         verifyHead: css`
             display: flex;
             flex-direction: column;
-            align-items: center;
-            text-align: center;
+            align-items: flex-start;
+            width: 100%;
+            text-align: left;
             gap: 4px;
 
             .title {
