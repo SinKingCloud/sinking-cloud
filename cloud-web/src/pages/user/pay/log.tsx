@@ -97,12 +97,11 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 position: absolute;
                 inset: -78px;
                 z-index: 0;
-                background:
-                    radial-gradient(circle at 18% 12%, ${isDarkMode ? "rgba(255,255,255,0.12)" : token.colorPrimaryBgHover} 0%, transparent 38%),
-                    radial-gradient(circle at 82% 78%, ${isDarkMode ? "rgba(255,255,255,0.10)" : token.colorPrimaryBg} 0%, transparent 42%),
-                    radial-gradient(circle at 64% 24%, ${isDarkMode ? "rgba(255,255,255,0.08)" : token.colorPrimaryBorder} 0%, transparent 34%),
-                    linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.03)" : token.colorPrimaryBg} 1px, transparent 1px),
-                    linear-gradient(0deg, ${isDarkMode ? "rgba(255,255,255,0.026)" : token.colorPrimaryBg} 1px, transparent 1px);
+                background: radial-gradient(circle at 18% 12%, ${isDarkMode ? "rgba(255,255,255,0.12)" : token.colorPrimaryBgHover} 0%, transparent 38%),
+                radial-gradient(circle at 82% 78%, ${isDarkMode ? "rgba(255,255,255,0.10)" : token.colorPrimaryBg} 0%, transparent 42%),
+                radial-gradient(circle at 64% 24%, ${isDarkMode ? "rgba(255,255,255,0.08)" : token.colorPrimaryBorder} 0%, transparent 34%),
+                linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.03)" : token.colorPrimaryBg} 1px, transparent 1px),
+                linear-gradient(0deg, ${isDarkMode ? "rgba(255,255,255,0.026)" : token.colorPrimaryBg} 1px, transparent 1px);
                 background-size: 100% 100%, 100% 100%, 100% 100%, 34px 34px, 34px 34px;
                 opacity: ${isDarkMode ? 0.42 : 0.58};
                 filter: blur(3px);
@@ -119,9 +118,8 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 width: 500px;
                 height: 500px;
                 border-radius: 50%;
-                background:
-                    radial-gradient(circle, ${isDarkMode ? "rgba(255,255,255,0.10)" : token.colorPrimaryBgHover} 0%, transparent 46%),
-                    conic-gradient(from 0deg, transparent 0 12%, ${isDarkMode ? "rgba(255,255,255,0.12)" : token.colorPrimaryBgHover} 20%, transparent 34%, ${isDarkMode ? "rgba(255,255,255,0.10)" : token.colorPrimaryBg} 52%, transparent 72%, ${isDarkMode ? "rgba(255,255,255,0.09)" : token.colorPrimaryBorder} 86%, transparent 100%);
+                background: radial-gradient(circle, ${isDarkMode ? "rgba(255,255,255,0.10)" : token.colorPrimaryBgHover} 0%, transparent 46%),
+                conic-gradient(from 0deg, transparent 0 12%, ${isDarkMode ? "rgba(255,255,255,0.12)" : token.colorPrimaryBgHover} 20%, transparent 34%, ${isDarkMode ? "rgba(255,255,255,0.10)" : token.colorPrimaryBg} 52%, transparent 72%, ${isDarkMode ? "rgba(255,255,255,0.09)" : token.colorPrimaryBorder} 86%, transparent 100%);
                 filter: blur(42px);
                 opacity: ${isDarkMode ? 0.20 : 0.30};
                 transform: rotate(18deg) scale(1.02);
@@ -399,6 +397,10 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 border-radius: ${radius}px;
                 background: ${token.colorBgContainer} !important;
             }
+
+            .ant-table-pagination {
+                justify-content: center !important;
+            }
         `,
         recordCard: css`
             min-width: 0;
@@ -574,9 +576,8 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             padding: ${compact ? "11px 12px" : "12px 14px"};
             border-radius: ${radius}px;
             background: ${token.colorBgContainer};
-            box-shadow:
-                inset 0 0 0 1px ${isDarkMode ? "rgba(255,255,255,0.065)" : "rgba(5,5,5,0.06)"},
-                ${isDarkMode ? "0 4px 12px rgba(0,0,0,0.10)" : "0 4px 14px rgba(15,23,42,0.025)"};
+            box-shadow: inset 0 0 0 1px ${isDarkMode ? "rgba(255,255,255,0.065)" : "rgba(5,5,5,0.06)"},
+            ${isDarkMode ? "0 4px 12px rgba(0,0,0,0.10)" : "0 4px 14px rgba(15,23,42,0.025)"};
             transition: background-color 0.18s ease, box-shadow 0.18s ease;
 
             &:hover {
@@ -991,12 +992,15 @@ export default (): React.ReactNode => {
                                 <div className={styles.balanceMain}>
                                     <div className="head">
                                         <h1 className="title">财务明细</h1>
-                                        <div className="subtitle">聚合账户余额、冻结资金和资金流水，便于快速核对账户变化。</div>
+                                        <div
+                                            className="subtitle">聚合账户余额、冻结资金和资金流水，便于快速核对账户变化。
+                                        </div>
                                     </div>
                                     <div className="balance-card">
                                         <div className="balance-content">
                                             <div className="label">账户共计余额</div>
-                                            <Typography.Text className="money" ellipsis={{tooltip: formatMoney(totalMoney)}}>
+                                            <Typography.Text className="money"
+                                                             ellipsis={{tooltip: formatMoney(totalMoney)}}>
                                                 {formatMoney(totalMoney)}
                                             </Typography.Text>
                                             <div className="desc">该余额包含可用余额和冻结余额。</div>
@@ -1007,7 +1011,8 @@ export default (): React.ReactNode => {
                                     {balanceItems.map((item) => (
                                         <div className={styles.balanceItem} key={item.label}>
                                             <div className="label">{item.label}</div>
-                                            <Typography.Text className={`value ${item.className}`} ellipsis={{tooltip: formatMoney(item.value)}}>
+                                            <Typography.Text className={`value ${item.className}`}
+                                                             ellipsis={{tooltip: formatMoney(item.value)}}>
                                                 {formatMoney(item.value)}
                                             </Typography.Text>
                                         </div>
@@ -1098,7 +1103,7 @@ export default (): React.ReactNode => {
                                 defaultPage={1}
                                 defaultPageSize={10}
                                 pageInTable={true}
-                                paginationProps={{position: ["bottomCenter"]} as any}
+                                paginationProps={{placement: ["bottomCenter"]} as any}
                                 columns={[
                                     {title: "资金记录", dataIndex: "id", hideInSearch: true, render: renderLog},
                                 ]}
