@@ -1005,8 +1005,7 @@ export default (): React.ReactNode => {
                                     <div className="balance-card">
                                         <div className="balance-content">
                                             <div className="label">账户共计余额</div>
-                                            <Typography.Text className="money"
-                                                             ellipsis={{tooltip: formatMoney(totalMoney)}}>
+                                            <Typography.Text className="money">
                                                 {formatMoney(totalMoney)}
                                             </Typography.Text>
                                             <div className="desc">该余额包含可用余额和冻结余额。</div>
@@ -1017,8 +1016,7 @@ export default (): React.ReactNode => {
                                     {balanceItems.map((item) => (
                                         <div className={styles.balanceItem} key={item.label}>
                                             <div className="label">{item.label}</div>
-                                            <Typography.Text className={`value ${item.className}`}
-                                                             ellipsis={{tooltip: formatMoney(item.value)}}>
+                                            <Typography.Text className={`value ${item.className}`}>
                                                 {formatMoney(item.value)}
                                             </Typography.Text>
                                         </div>
