@@ -43,7 +43,6 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
     const panelBg = isDarkMode
         ? `linear-gradient(135deg, color-mix(in srgb, ${token.colorPrimary} 8%, ${token.colorBgContainer}) 0%, ${token.colorBgContainer} 100%)`
         : token.colorFillAlter;
-    const gridGlow = isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 18%, transparent)` : "rgba(255,255,255,0.55)";
 
     return {
         page: css`
@@ -86,10 +85,7 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
                 inset: -120px -160px;
                 background: radial-gradient(circle at 16% 20%, ${token.colorPrimaryBgHover} 0%, transparent 34%),
                 radial-gradient(circle at 82% 28%, ${token.colorPrimaryBg} 0%, transparent 32%),
-                radial-gradient(circle at 70% 92%, ${token.colorPrimaryBorder} 0%, transparent 36%),
-                linear-gradient(90deg, ${gridGlow} 1px, transparent 1px),
-                linear-gradient(0deg, ${gridGlow} 1px, transparent 1px);
-                background-size: 100% 100%, 100% 100%, 100% 100%, 34px 34px, 34px 34px;
+                radial-gradient(circle at 70% 92%, ${token.colorPrimaryBorder} 0%, transparent 36%);
                 opacity: ${isDarkMode ? 0.32 : 0.68};
                 filter: blur(2px);
                 transform: rotate(-6deg);

@@ -41,7 +41,6 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
     const primaryMist = isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 22%, transparent)` : token.colorPrimaryBg;
     const cyanGlow = isDarkMode ? "rgba(34, 211, 238, 0.16)" : token.colorPrimaryBg;
     const violetGlow = isDarkMode ? "rgba(139, 92, 246, 0.14)" : token.colorPrimaryBorder;
-    const gridGlow = isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 18%, transparent)` : token.colorPrimaryBg;
     return {
         layout: css`
             width: 100%;
@@ -109,10 +108,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 z-index: 0;
                 background: radial-gradient(circle at 18% 12%, ${primaryGlow} 0%, transparent 38%),
                 radial-gradient(circle at 82% 78%, ${cyanGlow} 0%, transparent 42%),
-                radial-gradient(circle at 64% 24%, ${violetGlow} 0%, transparent 34%),
-                linear-gradient(90deg, ${gridGlow} 1px, transparent 1px),
-                linear-gradient(0deg, ${gridGlow} 1px, transparent 1px);
-                background-size: 100% 100%, 100% 100%, 100% 100%, 34px 34px, 34px 34px;
+                radial-gradient(circle at 64% 24%, ${violetGlow} 0%, transparent 34%);
                 opacity: ${isDarkMode ? 0.42 : 0.58};
                 filter: blur(3px);
                 transform: rotate(-7deg) translate3d(-18px, -12px, 0);
@@ -146,7 +142,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
 
                 &::before {
                     inset: -54px;
-                    background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+                    background-size: 100% 100%, 100% 100%, 100% 100%;
                 }
 
                 &::after {

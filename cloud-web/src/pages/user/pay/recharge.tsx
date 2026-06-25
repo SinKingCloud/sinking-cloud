@@ -27,7 +27,6 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
     const heroBg = isDarkMode
         ? `linear-gradient(135deg, color-mix(in srgb, ${token.colorPrimary} 12%, ${token.colorBgContainer}) 0%, ${token.colorBgContainer} 100%)`
         : `linear-gradient(135deg, ${token.colorPrimaryBg} 0%, ${token.colorBgContainer} 58%, ${token.colorPrimaryBgHover} 100%)`;
-    const gridGlow = isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 18%, transparent)` : token.colorPrimaryBg;
 
     return {
         page: css`
@@ -42,7 +41,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             position: relative;
             overflow: hidden;
             isolation: isolate;
-            min-height: ${compact ? 112 : 122}px;
+            min-height: ${compact ? 120 : 130}px;
             border-radius: ${radius}px;
             padding: ${compact ? "16px 18px" : "18px 22px"};
             background: ${heroBg};
@@ -74,10 +73,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 opacity: ${isDarkMode ? 0.34 : 0.50};
                 background:
                     radial-gradient(circle at 18% 16%, ${glow} 0%, transparent 38%),
-                    radial-gradient(circle at 82% 78%, ${isDarkMode ? "rgba(34,211,238,0.12)" : token.colorPrimaryBgHover} 0%, transparent 42%),
-                    linear-gradient(90deg, ${gridGlow} 1px, transparent 1px),
-                    linear-gradient(0deg, ${gridGlow} 1px, transparent 1px);
-                background-size: 100% 100%, 100% 100%, 34px 34px, 34px 34px;
+                    radial-gradient(circle at 82% 78%, ${isDarkMode ? "rgba(34,211,238,0.12)" : token.colorPrimaryBgHover} 0%, transparent 42%);
                 filter: blur(3px);
                 transform: rotate(-7deg) translate3d(-18px, -12px, 0);
                 mask-image: linear-gradient(120deg, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.34) 58%, transparent 100%);
@@ -155,6 +151,47 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 line-height: 20px;
             }
 
+            .wallet-refresh {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 22px;
+                height: 22px;
+                margin: -2px;
+                padding: 0;
+                border: 0;
+                border-radius: ${token.borderRadiusSM}px;
+                background: transparent;
+                color: ${token.colorTextTertiary};
+                cursor: pointer;
+                transition: color 0.18s ease, background-color 0.18s ease;
+            }
+
+            .wallet-refresh:hover {
+                color: ${token.colorPrimary};
+                background: ${isDarkMode ? "rgba(255,255,255,0.045)" : token.colorFillQuaternary};
+            }
+
+            .wallet-refresh:disabled {
+                cursor: not-allowed;
+                color: ${token.colorTextDisabled};
+                background: transparent;
+            }
+
+            .wallet-refresh.loading {
+                color: ${token.colorPrimary};
+            }
+
+            .wallet-refresh.loading .refresh-icon {
+                animation: walletRefreshSpin 0.8s linear infinite;
+            }
+
+            @keyframes walletRefreshSpin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
             .money {
                 display: block;
                 margin-top: 4px;
@@ -205,17 +242,6 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             border-radius: ${radius}px;
             background:
                 linear-gradient(180deg, ${token.colorBgContainer} 0%, ${isDarkMode ? "rgba(255,255,255,0.025)" : "rgba(255,255,255,0.86)"} 100%);
-
-            > .ant-card-head {
-                min-height: ${compact ? 40 : 44}px;
-                padding: 0 ${cardPadding}px;
-                border-bottom-color: ${token.colorBorderSecondary};
-                background: ${isDarkMode ? "rgba(255,255,255,0.018)" : "rgba(250,252,255,0.62)"};
-            }
-
-            > .ant-card-head .ant-card-head-title {
-                padding: ${compact ? "9px 0" : "11px 0"};
-            }
 
             > .ant-card-body {
                 padding: ${cardPadding}px;
@@ -282,8 +308,8 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
         amountItem: css`
             position: relative;
             width: 100%;
-            height: ${compact ? 62 : 68}px;
-            padding: ${compact ? "9px 11px" : "10px 12px"};
+            height: ${compact ? 58 : 62}px;
+            padding: ${compact ? "8px 10px" : "9px 11px"};
             border: 1px solid ${token.colorBorderSecondary};
             border-radius: ${token.borderRadius}px;
             background: ${token.colorBgContainer};
@@ -298,8 +324,8 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 align-items: center;
                 height: 100%;
                 color: ${token.colorText};
-                font-size: ${compact ? 18 : 20}px;
-                line-height: ${compact ? "24px" : "26px"};
+                font-size: ${compact ? 17 : 19}px;
+                line-height: ${compact ? "23px" : "25px"};
                 font-weight: 700;
                 letter-spacing: 0;
                 font-variant-numeric: tabular-nums;
@@ -339,8 +365,8 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
         `,
         customAmountItem: css`
             position: relative;
-            height: ${compact ? 62 : 68}px;
-            padding: ${compact ? "8px 10px" : "9px 11px"};
+            height: ${compact ? 58 : 62}px;
+            padding: ${compact ? "7px 9px" : "8px 10px"};
             border: 1px solid ${token.colorBorderSecondary};
             border-radius: ${token.borderRadius}px;
             background: ${token.colorBgContainer};
@@ -377,10 +403,10 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             }
 
             .ant-input-number-input {
-                height: ${compact ? 42 : 48}px;
+                height: ${compact ? 40 : 44}px;
                 padding: 0;
                 color: ${token.colorText};
-                font-size: ${compact ? 18 : 20}px;
+                font-size: ${compact ? 17 : 19}px;
                 font-weight: 700;
                 text-align: left;
                 font-variant-numeric: tabular-nums;
@@ -432,9 +458,9 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             position: relative;
             display: flex;
             align-items: center;
-            gap: 10px;
-            height: ${compact ? 62 : 68}px;
-            padding: ${compact ? "9px 11px" : "10px 12px"};
+            gap: 9px;
+            height: ${compact ? 58 : 62}px;
+            padding: ${compact ? "8px 10px" : "9px 11px"};
             border: 1px solid ${token.colorBorderSecondary};
             border-radius: ${token.borderRadius}px;
             background: ${token.colorBgContainer};
@@ -445,9 +471,9 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 align-items: center;
                 justify-content: center;
                 flex: 0 0 auto;
-                width: 22px;
-                height: 22px;
-                font-size: 17px;
+                width: 20px;
+                height: 20px;
+                font-size: 16px;
                 color: ${token.colorTextTertiary};
                 transition: color 0.18s ease;
             }
@@ -503,31 +529,6 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 padding: 0;
             }
         `,
-        checkoutHeader: css`
-            padding: ${cardPadding}px ${cardPadding}px ${compact ? 12 : 14}px;
-            border-bottom: 1px solid ${token.colorBorderSecondary};
-            background:
-                radial-gradient(circle at 92% 8%, ${glow} 0%, transparent 40%),
-                ${isDarkMode ? "rgba(255,255,255,0.025)" : "rgba(250,252,255,0.72)"};
-
-            .head {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 12px;
-                color: ${token.colorText};
-                font-size: ${compact ? 15 : 16}px;
-                line-height: 22px;
-                font-weight: 650;
-            }
-
-            .desc {
-                margin-top: 4px;
-                color: ${token.colorTextTertiary};
-                font-size: 12px;
-                line-height: 20px;
-            }
-        `,
         checkoutBody: css`
             padding: ${cardPadding}px;
         `,
@@ -545,8 +546,8 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
 
             .amount {
                 color: ${token.colorPrimary};
-                font-size: ${compact ? 31 : 35}px;
-                line-height: ${compact ? "39px" : "43px"};
+                font-size: ${compact ? 29 : 32}px;
+                line-height: ${compact ? "37px" : "40px"};
                 font-weight: 760;
                 letter-spacing: 0;
                 font-variant-numeric: tabular-nums;
@@ -625,6 +626,7 @@ export default (): React.ReactNode => {
     const [config, setConfig] = useState<any>({});
     const [balance, setBalance] = useState<any>({});
     const [loading, setLoading] = useState(true);
+    const [balanceLoading, setBalanceLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [money, setMoney] = useState<number>(quickAmounts[1]);
     const [customMoney, setCustomMoney] = useState<number>();
@@ -650,6 +652,20 @@ export default (): React.ReactNode => {
         return "不限制";
     }, [config]);
     const currentPayText = enabledPayOptions.find((item) => item.value === payType)?.label || "-";
+
+    const refreshBalance = async () => {
+        setBalanceLoading(true);
+        try {
+            const res = await getBalanceInfo({
+                onFail: (failRes: any) => message?.error(failRes?.message || "获取余额信息失败"),
+            });
+            if (res?.code === 200) {
+                setBalance(res?.data || {});
+            }
+        } finally {
+            setBalanceLoading(false);
+        }
+    };
 
     const loadData = async () => {
         setLoading(true);
@@ -771,6 +787,13 @@ export default (): React.ReactNode => {
                         <div className={styles.wallet}>
                             <div className="wallet-label">
                                 <span>账户可用余额</span>
+                                <button
+                                    type="button"
+                                    className={`wallet-refresh ${balanceLoading ? "loading" : ""}`}
+                                    disabled={loading || balanceLoading}
+                                    onClick={refreshBalance}>
+                                    <Icon type="ReloadOutlined" className="refresh-icon"/>
+                                </button>
                             </div>
                             <Typography.Text className="money" ellipsis={{tooltip: formatMoney(balance?.money)}}>
                                 {formatMoney(balance?.money)}
@@ -784,7 +807,7 @@ export default (): React.ReactNode => {
                 </Card>
                 <Spin spinning={loading || enumLoading}>
                     <div className={styles.workspace}>
-                        <Card className={styles.panel} title={<Title>充值配置</Title>} variant="borderless">
+                        <Card className={styles.panel} title={<Title>在线充值</Title>} variant="borderless">
                             <Form form={form} layout="vertical" onFinish={handleSubmit}>
                                 <div className={styles.block}>
                                     <div className={styles.blockHead}>
@@ -853,14 +876,7 @@ export default (): React.ReactNode => {
                                 </div>
                             </Form>
                         </Card>
-                        <Card className={styles.checkout} variant="borderless">
-                            <div className={styles.checkoutHeader}>
-                                <div className="head">
-                                    <span>订单确认</span>
-                                    <Icon type="FileTextOutlined"/>
-                                </div>
-                                <div className="desc">确认金额和支付渠道后创建充值订单。</div>
-                            </div>
+                        <Card className={styles.checkout} title={<Title>订单确认</Title>} variant="borderless">
                             <div className={styles.checkoutBody}>
                                 <div className={styles.totalPanel}>
                                     <span className="label">应付金额</span>

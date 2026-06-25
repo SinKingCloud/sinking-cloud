@@ -14,7 +14,6 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
     const primaryMist = isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 18%, transparent)` : token.colorFillQuaternary;
     const cyanGlow = isDarkMode ? "rgba(34, 211, 238, 0.16)" : "rgba(19,194,194,0.20)";
     const violetGlow = isDarkMode ? "rgba(139, 92, 246, 0.14)" : "rgba(114,46,209,0.13)";
-    const gridGlow = isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 18%, transparent)` : "rgba(22,119,255,0.040)";
     return {
         page: css`
             display: flex;
@@ -51,19 +50,6 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 opacity: ${isDarkMode ? 0.16 : 0.36};
                 pointer-events: none;
                 z-index: 0;
-            }
-
-            &::after {
-                content: "";
-                position: absolute;
-                inset: 0;
-                z-index: 0;
-                opacity: ${isDarkMode ? 0.16 : 0.26};
-                pointer-events: none;
-                background: linear-gradient(90deg, ${gridGlow} 1px, transparent 1px),
-                linear-gradient(0deg, ${gridGlow} 1px, transparent 1px);
-                background-size: 34px 34px;
-                mask-image: linear-gradient(110deg, transparent 0%, #000 18%, #000 52%, transparent 88%);
             }
 
             .hero-watermark {
