@@ -548,8 +548,8 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
         `,
         totalPanel: css`
             display: grid;
-            gap: 4px;
-            padding-bottom: ${compact ? 14 : 16}px;
+            gap: 0;
+            padding-bottom: ${compact ? 9 : 11}px;
             border-bottom: 1px solid ${token.colorBorderSecondary};
 
             .label {
@@ -560,10 +560,11 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
 
             .amount {
                 color: ${token.colorPrimary};
-                font-size: ${compact ? 29 : 32}px;
-                line-height: ${compact ? "37px" : "40px"};
+                font-size: ${compact ? 32 : 36}px;
+                line-height: ${compact ? "36px" : "40px"};
                 font-weight: 760;
                 letter-spacing: 0;
+                text-align: right;
                 font-variant-numeric: tabular-nums;
             }
         `,
@@ -642,7 +643,7 @@ export default (): React.ReactNode => {
     const [loading, setLoading] = useState(true);
     const [balanceLoading, setBalanceLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-    const [money, setMoney] = useState<number>(quickAmounts[1]);
+    const [money, setMoney] = useState<number>(quickAmounts[0]);
     const [customMoney, setCustomMoney] = useState<number>();
     const [payType, setPayType] = useState<string>();
     const payTypes = enumData?.["pay.pay"]?.type || {};
@@ -921,7 +922,7 @@ export default (): React.ReactNode => {
                                 <div className={styles.checkoutBody}>
                                     <div className={styles.totalPanel}>
                                         <span className="label">应付金额</span>
-                                        <Typography.Text className="amount" ellipsis={{tooltip: formatMoney(money)}}>
+                                        <Typography.Text className="amount" ellipsis>
                                             {formatMoney(money)}
                                         </Typography.Text>
                                     </div>
