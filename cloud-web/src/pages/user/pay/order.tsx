@@ -20,6 +20,9 @@ const enumText = (data: any, value: any) => (
 const useStyles = createStyles(({token, css, isDarkMode}: any) => {
     const compact = token.sizeStep <= 3;
     const radius = token.borderRadiusLG;
+    const primaryGlow = isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 42%, transparent)` : `${token.colorPrimary}26`;
+    const primaryMist = isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 18%, transparent)` : token.colorFillQuaternary;
+    const cyanGlow = isDarkMode ? "rgba(34, 211, 238, 0.16)" : "rgba(19,194,194,0.18)";
     return {
         page: css`
             display: flex;
@@ -36,9 +39,9 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
             border-radius: ${radius}px;
             padding: ${compact ? "16px 20px" : "18px 24px"};
             background:
-                radial-gradient(circle at 18% 16%, ${isDarkMode ? "rgba(255,255,255,0.11)" : `${token.colorPrimary}26`} 0%, transparent 34%),
-                radial-gradient(circle at 82% 42%, ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(19,194,194,0.18)"} 0%, transparent 36%),
-                linear-gradient(135deg, ${token.colorBgContainer} 0%, ${isDarkMode ? "rgba(255,255,255,0.018)" : token.colorFillQuaternary} 100%);
+                radial-gradient(circle at 18% 16%, ${primaryGlow} 0%, transparent 34%),
+                radial-gradient(circle at 82% 42%, ${cyanGlow} 0%, transparent 36%),
+                linear-gradient(135deg, ${token.colorBgContainer} 0%, ${primaryMist} 100%);
             box-shadow: ${isDarkMode ? "0 14px 38px rgba(0,0,0,0.24)" : "0 16px 36px rgba(15,23,42,0.065)"};
 
             &::before {

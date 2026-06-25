@@ -40,6 +40,10 @@ const STEP_ITEMS = [
 
 const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props: any = {}) => {
     const isCompactMode = props?.isCompactMode || false;
+    const panelBg = isDarkMode
+        ? `linear-gradient(135deg, color-mix(in srgb, ${token.colorPrimary} 8%, ${token.colorBgContainer}) 0%, ${token.colorBgContainer} 100%)`
+        : token.colorFillAlter;
+    const gridGlow = isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 18%, transparent)` : "rgba(255,255,255,0.55)";
 
     return {
         page: css`
@@ -73,7 +77,7 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
             padding: ${isCompactMode ? "20px" : "26px"};
             overflow: hidden;
             border-bottom: 1px solid ${token.colorBorderSecondary};
-            background: ${isDarkMode ? "rgba(255,255,255,0.012)" : token.colorFillAlter};
+            background: ${panelBg};
             isolation: isolate;
 
             &::before {
@@ -83,8 +87,8 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
                 background: radial-gradient(circle at 16% 20%, ${token.colorPrimaryBgHover} 0%, transparent 34%),
                 radial-gradient(circle at 82% 28%, ${token.colorPrimaryBg} 0%, transparent 32%),
                 radial-gradient(circle at 70% 92%, ${token.colorPrimaryBorder} 0%, transparent 36%),
-                linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.035)" : "rgba(255,255,255,0.55)"} 1px, transparent 1px),
-                linear-gradient(0deg, ${isDarkMode ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.55)"} 1px, transparent 1px);
+                linear-gradient(90deg, ${gridGlow} 1px, transparent 1px),
+                linear-gradient(0deg, ${gridGlow} 1px, transparent 1px);
                 background-size: 100% 100%, 100% 100%, 100% 100%, 34px 34px, 34px 34px;
                 opacity: ${isDarkMode ? 0.32 : 0.68};
                 filter: blur(2px);

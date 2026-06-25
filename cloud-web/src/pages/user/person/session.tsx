@@ -12,6 +12,11 @@ const DEFAULT_PAGE_SIZE = 10;
 const useStyles = createStyles(({token, css, isDarkMode}: any) => {
     const compact = token.sizeStep <= 3;
     const radius = token.borderRadiusLG;
+    const primaryGlow = isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 42%, transparent)` : `${token.colorPrimary}26`;
+    const primaryMist = isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 18%, transparent)` : token.colorFillQuaternary;
+    const cyanGlow = isDarkMode ? "rgba(34, 211, 238, 0.16)" : "rgba(19,194,194,0.20)";
+    const violetGlow = isDarkMode ? "rgba(139, 92, 246, 0.14)" : "rgba(114,46,209,0.13)";
+    const gridGlow = isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 18%, transparent)` : "rgba(22,119,255,0.040)";
     return {
         page: css`
             display: flex;
@@ -29,10 +34,10 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
             border-radius: ${radius}px;
             padding: ${compact ? "16px 20px" : "18px 24px"};
             background:
-                radial-gradient(circle at 18% 16%, ${isDarkMode ? "rgba(255,255,255,0.11)" : `${token.colorPrimary}26`} 0%, transparent 34%),
-                radial-gradient(circle at 82% 42%, ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(19,194,194,0.20)"} 0%, transparent 36%),
-                radial-gradient(circle at 64% 100%, ${isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(114,46,209,0.13)"} 0%, transparent 32%),
-                linear-gradient(135deg, ${token.colorBgContainer} 0%, ${isDarkMode ? "rgba(255,255,255,0.018)" : token.colorFillQuaternary} 100%);
+                radial-gradient(circle at 18% 16%, ${primaryGlow} 0%, transparent 34%),
+                radial-gradient(circle at 82% 42%, ${cyanGlow} 0%, transparent 36%),
+                radial-gradient(circle at 64% 100%, ${violetGlow} 0%, transparent 32%),
+                linear-gradient(135deg, ${token.colorBgContainer} 0%, ${primaryMist} 100%);
             box-shadow: ${isDarkMode ? "0 14px 38px rgba(0,0,0,0.24)" : "0 16px 36px rgba(15,23,42,0.065)"};
 
             &::before {
@@ -60,8 +65,8 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 opacity: ${isDarkMode ? 0.16 : 0.26};
                 pointer-events: none;
                 background:
-                    linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.034)" : "rgba(22,119,255,0.040)"} 1px, transparent 1px),
-                    linear-gradient(0deg, ${isDarkMode ? "rgba(255,255,255,0.026)" : "rgba(19,194,194,0.032)"} 1px, transparent 1px);
+                    linear-gradient(90deg, ${gridGlow} 1px, transparent 1px),
+                    linear-gradient(0deg, ${gridGlow} 1px, transparent 1px);
                 background-size: 34px 34px;
                 mask-image: linear-gradient(110deg, transparent 0%, #000 18%, #000 52%, transparent 88%);
             }
@@ -174,9 +179,9 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
             padding: ${compact ? 10 : 11}px ${compact ? 12 : 14}px;
             border-radius: ${radius}px;
             background:
-                linear-gradient(135deg, ${isDarkMode ? "rgba(255,255,255,0.052)" : "rgba(255,255,255,0.76)"} 0%, ${isDarkMode ? "rgba(255,255,255,0.026)" : "rgba(255,255,255,0.54)"} 100%);
+                linear-gradient(135deg, ${isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 12%, rgba(255,255,255,0.05))` : "rgba(255,255,255,0.76)"} 0%, ${isDarkMode ? "rgba(34,211,238,0.035)" : "rgba(255,255,255,0.54)"} 100%);
             box-shadow:
-                inset 0 0 0 1px ${isDarkMode ? "rgba(255,255,255,0.070)" : "rgba(22,119,255,0.105)"},
+                inset 0 0 0 1px ${isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 22%, rgba(255,255,255,0.05))` : "rgba(22,119,255,0.105)"},
                 ${isDarkMode ? "0 10px 22px rgba(0,0,0,0.16)" : "0 12px 24px rgba(22,119,255,0.08)"};
             backdrop-filter: blur(14px);
 
