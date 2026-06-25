@@ -722,7 +722,7 @@ export default (): React.ReactNode => {
     const typeScrollRef = useRef<HTMLDivElement | null>(null);
     const timeScrollRef = useRef<HTMLDivElement | null>(null);
     const filtersRef = useRef<any>({});
-    const customRangeRef = useRef<any>({});
+    const customRangeRef = useRef<any[]>([]);
     const [enumData, enumLoading] = useEnum(["pay.balance_log"]) as any;
     const [info, setInfo] = useState<any>();
     const [infoLoading, setInfoLoading] = useState(true);
@@ -802,7 +802,7 @@ export default (): React.ReactNode => {
             return;
         }
         setTimeRange(value);
-        customRangeRef.current = undefined;
+        customRangeRef.current = [];
         setCustomRange(undefined);
         setCustomOpen(false);
         updateFilters(getFilters(filterType, value, undefined));

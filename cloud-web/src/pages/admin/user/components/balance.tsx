@@ -1139,7 +1139,7 @@ const BalanceLog = ({userId, hasControl, typeEnum, styles, message}: BalanceLogP
     const [timeRange, setTimeRange] = useState<LogTimeRange>("all");
     const [customOpen, setCustomOpen] = useState(false);
     const [customRange, setCustomRange] = useState<any>();
-    const customRangeRef = useRef<any>({});
+    const customRangeRef = useRef<any[]>([]);
     const [list, setList] = useState<any[]>([]);
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
@@ -1163,7 +1163,7 @@ const BalanceLog = ({userId, hasControl, typeEnum, styles, message}: BalanceLogP
         }
         setTimeRange(value);
         setCustomOpen(false);
-        customRangeRef.current = undefined;
+        customRangeRef.current = [];
         setCustomRange(undefined);
         setFilters(getLogFilters(type, value, undefined));
     };
