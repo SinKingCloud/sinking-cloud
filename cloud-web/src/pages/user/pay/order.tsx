@@ -460,7 +460,7 @@ export default (): React.ReactNode => {
                     <Icon className="hero-watermark" type="ShoppingCartOutlined"/>
                     <div className={styles.heroInner}>
                         <div>
-                            <h1 className={styles.heroTitle}>我的订单</h1>
+                            <h1 className={styles.heroTitle}>订单管理</h1>
                             <div className={styles.heroDesc}>集中查看账户下的支付订单、到账状态和操作记录。</div>
                         </div>
                         <div className={styles.heroStats}>

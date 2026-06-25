@@ -949,7 +949,7 @@ export default (): React.ReactNode => {
                                         </div>
                                     </div>
                                     <div className={styles.checkoutNotice}>
-                                        提交后将在新标签页打开支付页面，充值状态可在我的订单和财务明细中查看。
+                                        提交后将在新标签页打开支付页面，充值状态可在订单管理和财务明细中查看。
                                     </div>
                                     <div className={styles.actionBar}>
                                         <Button className={styles.payButton} type="primary" block loading={submitting} disabled={disabled} onClick={() => form.submit()}>

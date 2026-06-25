@@ -23,7 +23,7 @@ export const user = [
             {
                 path: "order",
                 component: "@/pages/user/pay/order",
-                title: "我的订单",
+                title: "订单管理",
                 name: "user.pay.order",
                 icon: '•',
             },
