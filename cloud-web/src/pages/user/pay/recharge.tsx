@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from "react";
-import {App, Button, Card, Form, InputNumber, Radio, Spin, Typography} from "antd";
+import {App, Button, Card, Col, Form, InputNumber, Radio, Row, Typography} from "antd";
 import {createStyles} from "antd-style";
 import {Body, Icon, Title, useTheme} from "sinking-antd";
 import useEnum from "@/utils/enum";
@@ -33,9 +33,6 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             width: 100%;
             max-width: 1120px;
             margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: ${gap}px;
         `,
         hero: css`
             position: relative;
@@ -223,17 +220,20 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             }
         `,
         workspace: css`
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 350px;
-            gap: ${gap}px;
-            align-items: start;
+            width: 100%;
 
-            @media (max-width: 1040px) {
-                grid-template-columns: minmax(0, 1fr) 330px;
+            .ant-col {
+                min-width: 0;
             }
-
-            @media (max-width: 930px) {
-                grid-template-columns: 1fr;
+        `,
+        workspaceLeft: css`
+            @media (min-width: 992px) {
+                padding-right: ${gap / 2}px;
+            }
+        `,
+        workspaceRight: css`
+            @media (min-width: 992px) {
+                padding-left: ${gap / 2}px;
             }
         `,
         panel: css`
@@ -451,6 +451,11 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             @media (max-width: 620px) {
                 max-width: none;
                 margin: 0;
+                gap: ${compact ? 7 : 8}px;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            @media (max-width: 360px) {
                 grid-template-columns: 1fr;
             }
         `,
@@ -484,6 +489,9 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 font-size: 13px;
                 line-height: 20px;
                 font-weight: 600;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
                 transition: color 0.18s ease;
             }
 
@@ -510,6 +518,12 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
 
             &.active .check {
                 display: inline-flex;
+            }
+
+            @media (max-width: 620px) {
+                gap: 7px;
+                height: ${compact ? 52 : 54}px;
+                padding: ${compact ? "7px 9px" : "8px 10px"};
             }
         `,
         checkout: css`
@@ -669,21 +683,24 @@ export default (): React.ReactNode => {
 
     const loadData = async () => {
         setLoading(true);
-        const [configRes, balanceRes] = await Promise.all([
-            getPayConfig({
-                onFail: (res: any) => message?.error(res?.message || "获取支付配置失败"),
-            }),
-            getBalanceInfo({
-                onFail: (res: any) => message?.error(res?.message || "获取余额信息失败"),
-            }),
-        ]);
-        if (configRes?.code === 200) {
-            setConfig(configRes?.data || {});
+        try {
+            const [configRes, balanceRes] = await Promise.all([
+                getPayConfig({
+                    onFail: (res: any) => message?.error(res?.message || "获取支付配置失败"),
+                }),
+                getBalanceInfo({
+                    onFail: (res: any) => message?.error(res?.message || "获取余额信息失败"),
+                }),
+            ]);
+            if (configRes?.code === 200) {
+                setConfig(configRes?.data || {});
+            }
+            if (balanceRes?.code === 200) {
+                setBalance(balanceRes?.data || {});
+            }
+        } finally {
+            setLoading(false);
         }
-        if (balanceRes?.code === 200) {
-            setBalance(balanceRes?.data || {});
-        }
-        setLoading(false);
     };
 
     useEffect(() => {
@@ -719,206 +736,231 @@ export default (): React.ReactNode => {
             message?.warning("请选择支付方式");
             return;
         }
+        const openInCurrentPage = typeof navigator !== "undefined" && /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
         let payWindow: Window | null = null;
-        if (typeof window !== "undefined") {
+        if (!openInCurrentPage && typeof window !== "undefined") {
             payWindow = window.open("about:blank", "_blank");
         }
+        const closePayWindow = () => {
+            if (payWindow && !payWindow.closed) {
+                payWindow.close();
+            }
+        };
         setSubmitting(true);
-        const createRes = await rechargeBalance({
-            body: {
-                money: amount,
-                type,
-            },
-            onFail: (res: any) => message?.error(res?.message || "创建充值订单失败"),
-        });
-        if (createRes?.code !== 200) {
-            if (payWindow && !payWindow.closed) {
-                payWindow.close();
+        try {
+            const createRes = await rechargeBalance({
+                body: {
+                    money: amount,
+                    type,
+                },
+                onFail: (res: any) => message?.error(res?.message || "创建充值订单失败"),
+            });
+            if (createRes?.code !== 200) {
+                closePayWindow();
+                return;
             }
+            const submitRes = await submitPay({
+                body: {id: Number(createRes?.data)},
+                onFail: (res: any) => message?.error(res?.message || "获取支付链接失败"),
+            });
+            if (submitRes?.code !== 200) {
+                closePayWindow();
+                return;
+            }
+            const payUrl = submitRes?.data;
+            if (!payUrl) {
+                closePayWindow();
+                message?.error("获取支付链接失败");
+                return;
+            }
+            setPayJumpUrl(window.location.href);
+            if (payWindow && !payWindow.closed) {
+                payWindow.location.href = payUrl;
+            } else if (openInCurrentPage) {
+                window.location.href = payUrl;
+                return;
+            } else {
+                window.open(payUrl, "_blank");
+            }
+            modal.confirm({
+                title: "支付确认",
+                content: "支付完成后可刷新余额信息，支付窗口关闭后也可以重新打开支付页面。",
+                okText: "我已支付",
+                cancelText: "重新支付",
+                mask: {
+                    closable: true,
+                },
+                onOk: refreshBalance,
+                onCancel: () => {
+                    if (typeof window !== "undefined" && payUrl) {
+                        window.open(payUrl, "_blank");
+                    }
+                },
+            } as any);
+        } finally {
             setSubmitting(false);
-            return;
         }
-        const submitRes = await submitPay({
-            body: {id: Number(createRes?.data)},
-            onFail: (res: any) => message?.error(res?.message || "获取支付链接失败"),
-        });
-        setSubmitting(false);
-        if (submitRes?.code !== 200) {
-            if (payWindow && !payWindow.closed) {
-                payWindow.close();
-            }
-            return;
-        }
-        setPayJumpUrl(window.location.href);
-        if (payWindow && !payWindow.closed) {
-            payWindow.location.href = submitRes?.data;
-        } else {
-            window.location.href = submitRes?.data;
-        }
-        modal.confirm({
-            title: "支付确认",
-            content: "支付完成后请点击已支付按钮刷新",
-            okText: "我已支付",
-            cancelText: "继续等待",
-            mask: {
-                closable: true,
-            },
-            onOk: () => window.location.reload(),
-        } as any);
     };
 
-    const disabled = loading || enumLoading || enabledPayOptions.length <= 0;
+    const pageLoading = loading || enumLoading;
+    const disabled = pageLoading || enabledPayOptions.length <= 0;
 
     return (
-        <Body>
-            <div className={styles.page}>
-                <Card className={styles.hero} variant="borderless" styles={{body: {padding: 0}}}>
-                    <span className="hero-ambient"/>
-                    <span className="hero-watermark">
-                        <Icon type="CreditCardOutlined"/>
-                    </span>
-                    <div className={styles.heroInner}>
-                        <div>
-                            <h1 className={styles.heroTitle}>在线充值</h1>
-                            <div className={styles.heroDesc}>
-                                选择充值金额与支付渠道，系统将创建充值订单并引导至支付页面完成付款。
+        <Body loading={pageLoading}>
+            <Row className={styles.page} gutter={[0, isCompactMode ? 12 : 14]}>
+                <Col span={24}>
+                    <Card className={styles.hero} variant="borderless" styles={{body: {padding: 0}}}>
+                        <span className="hero-ambient"/>
+                        <span className="hero-watermark">
+                            <Icon type="CreditCardOutlined"/>
+                        </span>
+                        <div className={styles.heroInner}>
+                            <div>
+                                <h1 className={styles.heroTitle}>在线充值</h1>
+                                <div className={styles.heroDesc}>
+                                    选择充值金额与支付渠道，系统将创建充值订单并引导至支付页面完成付款。
+                                </div>
+                            </div>
+                            <div className={styles.wallet}>
+                                <div className="wallet-label">
+                                    <span>账户可用余额</span>
+                                    <button
+                                        type="button"
+                                        className={`wallet-refresh ${balanceLoading ? "loading" : ""}`}
+                                        disabled={loading || balanceLoading}
+                                        onClick={refreshBalance}>
+                                        <Icon type="ReloadOutlined" className="refresh-icon"/>
+                                    </button>
+                                </div>
+                                <Typography.Text className="money" ellipsis={{tooltip: formatMoney(balance?.money)}}>
+                                    {formatMoney(balance?.money)}
+                                </Typography.Text>
+                                <div className="wallet-meta">
+                                    <span>冻结金额</span>
+                                    <strong>{formatMoney(balance?.frozen)}</strong>
+                                </div>
                             </div>
                         </div>
-                        <div className={styles.wallet}>
-                            <div className="wallet-label">
-                                <span>账户可用余额</span>
-                                <button
-                                    type="button"
-                                    className={`wallet-refresh ${balanceLoading ? "loading" : ""}`}
-                                    disabled={loading || balanceLoading}
-                                    onClick={refreshBalance}>
-                                    <Icon type="ReloadOutlined" className="refresh-icon"/>
-                                </button>
-                            </div>
-                            <Typography.Text className="money" ellipsis={{tooltip: formatMoney(balance?.money)}}>
-                                {formatMoney(balance?.money)}
-                            </Typography.Text>
-                            <div className="wallet-meta">
-                                <span>冻结金额</span>
-                                <strong>{formatMoney(balance?.frozen)}</strong>
-                            </div>
-                        </div>
-                    </div>
-                </Card>
-                <Spin spinning={loading || enumLoading}>
-                    <div className={styles.workspace}>
-                        <Card className={styles.panel} title={<Title>在线充值</Title>} variant="borderless">
-                            <Form form={form} layout="vertical" onFinish={handleSubmit}>
-                                <div className={styles.block}>
-                                    <div className={styles.blockHead}>
-                                        <span className="title">充值金额</span>
-                                        <span className="desc">选择本次充值额度</span>
-                                    </div>
-                                    <div className={styles.amountGrid}>
-                                        {quickAmounts.map((item) => (
-                                            <button
-                                                key={item}
-                                                type="button"
-                                                className={`${styles.amountItem} ${customMoney === undefined && Number(money) === item ? "active" : ""}`}
-                                                disabled={disabled}
-                                                onClick={() => {
-                                                    setCustomMoney(undefined);
-                                                    setMoney(item);
-                                                }}>
-                                                <span className="amount-main">{item} 元</span>
-                                            </button>
-                                        ))}
-                                        <div className={`${styles.customAmountItem} ${customMoney !== undefined ? "active" : ""}`}>
-                                            <InputNumber
-                                                value={customMoney}
-                                                min={1}
-                                                precision={0}
-                                                step={1}
-                                                placeholder="自定义"
-                                                disabled={disabled}
-                                                onChange={(value) => {
-                                                    const nextMoney = Number(value || 0);
-                                                    setCustomMoney(value === null ? undefined : nextMoney);
-                                                    setMoney(nextMoney);
-                                                }}
-                                            />
+                    </Card>
+                </Col>
+                <Col span={24}>
+                    <Row className={styles.workspace} gutter={[0, isCompactMode ? 12 : 14]} align="top">
+                        <Col className={styles.workspaceLeft} xs={24} md={24} lg={16} xl={17}>
+                            <Card className={styles.panel} title={<Title>在线充值</Title>} variant="borderless">
+                                <Form form={form} layout="vertical" onFinish={handleSubmit}>
+                                    <div className={styles.block}>
+                                        <div className={styles.blockHead}>
+                                            <span className="title">充值金额</span>
+                                            <span className="desc">选择本次充值额度</span>
+                                        </div>
+                                        <div className={styles.amountGrid}>
+                                            {quickAmounts.map((item) => (
+                                                <button
+                                                    key={item}
+                                                    type="button"
+                                                    className={`${styles.amountItem} ${customMoney === undefined && Number(money) === item ? "active" : ""}`}
+                                                    disabled={disabled}
+                                                    onClick={() => {
+                                                        setCustomMoney(undefined);
+                                                        setMoney(item);
+                                                    }}>
+                                                    <span className="amount-main">{item} 元</span>
+                                                </button>
+                                            ))}
+                                            <div className={`${styles.customAmountItem} ${customMoney !== undefined ? "active" : ""}`}>
+                                                <InputNumber
+                                                    value={customMoney}
+                                                    min={1}
+                                                    precision={0}
+                                                    step={1}
+                                                    placeholder="自定义"
+                                                    disabled={disabled}
+                                                    onChange={(value) => {
+                                                        const nextMoney = Number(value || 0);
+                                                        setCustomMoney(value === null ? undefined : nextMoney);
+                                                        setMoney(nextMoney);
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className={styles.block}>
-                                    <div className={styles.blockHead}>
-                                        <span className="title">支付方式</span>
-                                        <span className="desc">支付成功后自动同步到账</span>
+                                    <div className={styles.block}>
+                                        <div className={styles.blockHead}>
+                                            <span className="title">支付方式</span>
+                                            <span className="desc">支付成功后自动同步到账</span>
+                                        </div>
+                                        <Form.Item name="type" rules={[{required: true, message: "请选择支付方式"}]}>
+                                            <Radio.Group
+                                                style={{width: "100%"}}
+                                                disabled={disabled}
+                                                value={payType}
+                                                onChange={(event) => setPayType(event?.target?.value)}>
+                                                <div className={styles.payOptions}>
+                                                    {enabledPayOptions.map((item) => (
+                                                        <Radio key={item.value} value={item.value}>
+                                                            <PayOption
+                                                                className={styles.payOption}
+                                                                value={item.value}
+                                                                label={item.label}
+                                                                active={payType === item.value}
+                                                            />
+                                                        </Radio>
+                                                    ))}
+                                                </div>
+                                            </Radio.Group>
+                                        </Form.Item>
+                                        {enabledPayOptions.length <= 0 && !pageLoading && (
+                                            <Typography.Text type="secondary">暂未开启可用支付方式，请稍后再试。</Typography.Text>
+                                        )}
                                     </div>
-                                    <Form.Item name="type" rules={[{required: true, message: "请选择支付方式"}]}>
-                                        <Radio.Group
-                                            style={{width: "100%"}}
-                                            disabled={disabled}
-                                            value={payType}
-                                            onChange={(event) => setPayType(event?.target?.value)}>
-                                            <div className={styles.payOptions}>
-                                                {enabledPayOptions.map((item) => (
-                                                    <Radio key={item.value} value={item.value}>
-                                                        <PayOption
-                                                            className={styles.payOption}
-                                                            value={item.value}
-                                                            label={item.label}
-                                                            active={payType === item.value}
-                                                        />
-                                                    </Radio>
-                                                ))}
-                                            </div>
-                                        </Radio.Group>
-                                    </Form.Item>
-                                    {enabledPayOptions.length <= 0 && !loading && !enumLoading && (
-                                        <Typography.Text type="secondary">暂未开启可用支付方式，请稍后再试。</Typography.Text>
-                                    )}
-                                </div>
-                            </Form>
-                        </Card>
-                        <Card className={styles.checkout} title={<Title>订单确认</Title>} variant="borderless">
-                            <div className={styles.checkoutBody}>
-                                <div className={styles.totalPanel}>
-                                    <span className="label">应付金额</span>
-                                    <Typography.Text className="amount" ellipsis={{tooltip: formatMoney(money)}}>
-                                        {formatMoney(money)}
-                                    </Typography.Text>
-                                </div>
-                                <div className={styles.checkoutRows}>
-                                    <div className={styles.checkoutRow}>
-                                        <span className="label">支付方式</span>
-                                        <Typography.Text className="value" ellipsis={{tooltip: currentPayText}}>
-                                            {currentPayText}
+                                </Form>
+                            </Card>
+                        </Col>
+                        <Col className={styles.workspaceRight} xs={24} md={24} lg={8} xl={7}>
+                            <Card className={styles.checkout} title={<Title>订单确认</Title>} variant="borderless">
+                                <div className={styles.checkoutBody}>
+                                    <div className={styles.totalPanel}>
+                                        <span className="label">应付金额</span>
+                                        <Typography.Text className="amount" ellipsis={{tooltip: formatMoney(money)}}>
+                                            {formatMoney(money)}
                                         </Typography.Text>
                                     </div>
-                                    <div className={styles.checkoutRow}>
-                                        <span className="label">充值范围</span>
-                                        <Typography.Text className="value" ellipsis={{tooltip: amountRange}}>
-                                            {amountRange}
-                                        </Typography.Text>
+                                    <div className={styles.checkoutRows}>
+                                        <div className={styles.checkoutRow}>
+                                            <span className="label">支付方式</span>
+                                            <Typography.Text className="value" ellipsis={{tooltip: currentPayText}}>
+                                                {currentPayText}
+                                            </Typography.Text>
+                                        </div>
+                                        <div className={styles.checkoutRow}>
+                                            <span className="label">充值范围</span>
+                                            <Typography.Text className="value" ellipsis={{tooltip: amountRange}}>
+                                                {amountRange}
+                                            </Typography.Text>
+                                        </div>
+                                        <div className={styles.checkoutRow}>
+                                            <span className="label">有效时间</span>
+                                            <span className="value">{Number(config?.expire || 0) || 5} 分钟</span>
+                                        </div>
+                                        <div className={styles.checkoutRow}>
+                                            <span className="label">到账方式</span>
+                                            <span className="value">支付完成后自动入账</span>
+                                        </div>
                                     </div>
-                                    <div className={styles.checkoutRow}>
-                                        <span className="label">有效时间</span>
-                                        <span className="value">{Number(config?.expire || 0) || 5} 分钟</span>
+                                    <div className={styles.checkoutNotice}>
+                                        提交后将在新标签页打开支付页面，充值状态可在我的订单和财务明细中查看。
                                     </div>
-                                    <div className={styles.checkoutRow}>
-                                        <span className="label">到账方式</span>
-                                        <span className="value">支付完成后自动入账</span>
+                                    <div className={styles.actionBar}>
+                                        <Button className={styles.payButton} type="primary" block loading={submitting} disabled={disabled} onClick={() => form.submit()}>
+                                            确认支付
+                                        </Button>
                                     </div>
                                 </div>
-                                <div className={styles.checkoutNotice}>
-                                    提交后将在新标签页打开支付页面，充值状态可在我的订单和财务明细中查看。
-                                </div>
-                                <div className={styles.actionBar}>
-                                    <Button className={styles.payButton} type="primary" block loading={submitting} disabled={disabled} onClick={() => form.submit()}>
-                                        确认支付
-                                    </Button>
-                                </div>
-                            </div>
-                        </Card>
-                    </div>
-                </Spin>
-            </div>
+                            </Card>
+                        </Col>
+                    </Row>
+                </Col>
+            </Row>
         </Body>
     );
 };
