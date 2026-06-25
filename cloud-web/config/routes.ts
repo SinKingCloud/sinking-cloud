@@ -7,7 +7,7 @@ export const userPath = "user";
 export const user = [
     {
         path: "index",
-        title: "数据概览",
+        title: "系统概览",
         name: "user.index",
         icon: 'icon-home',
         hideInMenu: false,
