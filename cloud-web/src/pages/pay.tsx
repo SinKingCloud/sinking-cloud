@@ -1,15 +1,27 @@
 import React from "react";
 import {Button, Col, Result, Row} from "antd";
+import {createStyles} from "antd-style";
 import {Body} from "sinking-antd";
 import {getPayJumpUrl} from "@/utils/pay";
 
+const useStyles = createStyles(() => ({
+    page: {
+        minHeight: "100vh",
+    },
+    result: {
+        marginTop: "20vh",
+    },
+}));
+
 export default (): React.ReactNode => {
+    const {styles} = useStyles();
+
     return (
         <Body>
-            <Row justify="center" align="top" style={{minHeight: "100vh"}}>
+            <Row justify="center" align="top" className={styles.page}>
                 <Col>
                     <Result
-                        style={{marginTop: "20vh"}}
+                        className={styles.result}
                         status="success"
                         title="您的订单已支付成功!"
                         subTitle="商品到账可能会有1-10分钟延迟, 如超时未到账请联系客服。"
