@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
 import {App, Button, Card, Col, DatePicker, Popover, Row, Segmented, Tag, Typography} from "antd";
 import {createStyles} from "antd-style";
-import {Body, Icon, ProTable, ProTableRef, Title} from "sinking-antd";
+import {Body, Icon, ProTable, ProTableRef, Title, useTheme} from "sinking-antd";
 import useEnum from "@/utils/enum";
 import {getData} from "@/utils/page";
 import {formatMoney} from "@/utils/string";
@@ -29,8 +29,8 @@ const timeOptions: SelectOption<LogTimeRange>[] = [
     {label: "自定义", value: "custom"},
 ];
 
-const useStyles = createStyles(({token, css, isDarkMode}: any) => {
-    const compact = token.sizeStep <= 3;
+const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) => {
+    const compact = props?.isCompactMode || false;
     const radius = token.borderRadiusLG;
     return {
         layout: css`
@@ -42,8 +42,8 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
             min-width: 0;
 
             @media (min-width: 992px) {
-                flex: 0 0 380px;
-                max-width: 380px;
+                flex: 0 0 360px;
+                max-width: 360px;
                 padding-right: ${compact ? 12 : 14}px;
             }
 
@@ -60,15 +60,10 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
         `,
         recordCol: css`
             min-width: 0;
-            overflow: hidden;
 
             @media (min-width: 992px) {
                 flex: 1 1 0;
-                max-width: calc(100% - 380px);
-            }
-
-            @media (min-width: 1200px) {
-                max-width: calc(100% - 400px);
+                max-width: none;
             }
 
             @media (max-width: 991px) {
@@ -369,7 +364,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 display: grid;
                 grid-template-columns: 1fr;
                 gap: ${compact ? 8 : 10}px;
-                padding: ${compact ? 8 : 10}px;
+                padding: ${compact ? "8px 0" : "10px 0"};
                 background: transparent;
             }
 
@@ -405,13 +400,47 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 background: ${token.colorBgContainer} !important;
             }
         `,
-        recordFilter: css`
-            margin-bottom: ${compact ? 8 : 10}px;
+        recordCard: css`
+            min-width: 0;
             border-radius: ${radius}px;
 
-            .ant-card-body {
-                padding: ${compact ? "8px 10px" : "12px 14px"};
+            > .ant-card-body {
+                padding: ${compact ? "10px" : "12px"};
             }
+
+            > .ant-card-head {
+                min-height: ${compact ? 38 : 42}px;
+                padding: 0 ${compact ? 10 : 12}px;
+            }
+
+            > .ant-card-head .ant-card-head-title {
+                padding: ${compact ? "8px 0" : "10px 0"};
+            }
+
+            .ant-row {
+                margin: 0 !important;
+            }
+
+            .ant-row > .ant-col:nth-child(2) {
+                padding: 0 !important;
+            }
+
+            .ant-row > .ant-col:nth-child(2) .ant-card {
+                background: transparent;
+                box-shadow: none;
+            }
+
+            .ant-row > .ant-col:nth-child(2) .ant-card-head {
+                display: none;
+            }
+
+            .ant-row > .ant-col:nth-child(2) .ant-card-body {
+                padding: 0 !important;
+            }
+        `,
+        recordFilter: css`
+            min-width: 0;
+            margin-bottom: ${compact ? 8 : 10}px;
 
             .filter-row {
                 position: relative;
@@ -469,28 +498,28 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
 
             .ant-segmented {
                 max-width: 100%;
-                padding: ${compact ? 1 : 2}px;
+                padding: ${compact ? 0 : 2}px;
                 background: ${token.colorFillQuaternary};
                 border-radius: ${token.borderRadius}px;
             }
 
             .ant-segmented-group {
                 flex-wrap: nowrap;
-                gap: ${compact ? 1 : 2}px;
+                gap: ${compact ? 0 : 2}px;
             }
 
             .ant-segmented-item {
                 border-radius: ${token.borderRadiusSM}px;
                 color: ${token.colorTextSecondary};
                 font-size: ${compact ? 12 : 13}px;
-                min-height: ${compact ? 22 : 31}px;
-                line-height: ${compact ? "22px" : "31px"};
+                min-height: ${compact ? 25 : 31}px;
+                line-height: ${compact ? "25px" : "31px"};
             }
 
             .ant-segmented-item-label {
-                min-height: ${compact ? 22 : 31}px;
-                line-height: ${compact ? "22px" : "31px"};
-                padding: 0 ${compact ? 7 : 13}px;
+                min-height: ${compact ? 25 : 31}px;
+                line-height: ${compact ? "25px" : "31px"};
+                padding: 0 ${compact ? 10 : 13}px;
             }
 
             .ant-segmented-item-selected {
@@ -510,7 +539,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
 
             .custom-picker-group {
                 display: flex;
-                gap: ${compact ? 7 : 8}px;
+                gap: ${compact ? 9 : 10}px;
             }
 
             .custom-picker-panel .ant-picker {
@@ -520,23 +549,19 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
             }
 
             @media (max-width: 575px) {
-                .ant-card-body {
-                    padding: ${compact ? "7px 9px" : "10px 11px"};
-                }
-
                 .filter-scroll-button {
                     display: none;
                 }
 
                 .ant-segmented-item {
-                    min-height: ${compact ? 22 : 30}px;
-                    line-height: ${compact ? "22px" : "30px"};
+                    min-height: ${compact ? 25 : 30}px;
+                    line-height: ${compact ? "25px" : "30px"};
                 }
 
                 .ant-segmented-item-label {
-                    min-height: ${compact ? 22 : 30}px;
-                    line-height: ${compact ? "22px" : "30px"};
-                    padding: 0 ${compact ? 6 : 11}px;
+                    min-height: ${compact ? 25 : 30}px;
+                    line-height: ${compact ? "25px" : "30px"};
+                    padding: 0 ${compact ? 8 : 11}px;
                 }
             }
         `,
@@ -559,23 +584,24 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 box-shadow: inset 0 0 0 1px ${isDarkMode ? "rgba(255,255,255,0.095)" : "rgba(5,5,5,0.085)"};
             }
 
-            @media (max-width: 1250px) and (min-width: 901px) {
-                grid-template-columns: minmax(0, 1fr) auto;
-                align-items: start;
-                gap: ${compact ? 9 : 10}px ${compact ? 12 : 14}px;
+            @media (max-width: 1320px) and (min-width: 901px) {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+                gap: ${compact ? 8 : 9}px;
             }
 
             @media (max-width: 900px) {
                 grid-template-columns: 1fr;
                 align-items: stretch;
                 gap: ${compact ? 9 : 11}px;
+                min-width: 0;
             }
         `,
         logMain: css`
             min-width: 0;
 
-            @media (max-width: 1250px) and (min-width: 901px) {
-                grid-column: 1;
+            @media (max-width: 1320px) and (min-width: 901px) {
+                grid-column: 1 / -1;
                 grid-row: 1;
             }
 
@@ -609,10 +635,12 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: ${compact ? 10 : 12}px;
 
-            @media (max-width: 1250px) and (min-width: 901px) {
+            @media (max-width: 1320px) and (min-width: 901px) {
                 grid-column: 1 / -1;
                 grid-row: 2;
-                padding-top: ${compact ? 2 : 4}px;
+                padding-top: 0;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: ${compact ? 8 : 10}px;
             }
 
             @media (max-width: 620px) {
@@ -661,17 +689,38 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
             text-align: right;
             font-variant-numeric: tabular-nums;
 
-            @media (max-width: 1250px) and (min-width: 901px) {
-                grid-column: 2;
-                grid-row: 1;
-                min-width: 108px;
+            @media (max-width: 1320px) and (min-width: 901px) {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                align-items: end;
+                gap: 8px;
+                grid-column: 1 / -1;
+                grid-row: 3;
+                padding-top: ${compact ? 2 : 3}px;
+                text-align: left;
+
+                .amount {
+                    grid-column: 2;
+                    text-align: right;
+                }
+
+                .time {
+                    grid-column: 1;
+                    grid-row: 1;
+                    margin-top: 0;
+                    text-align: left;
+                }
             }
 
             .amount {
+                min-width: 0;
                 color: ${token.colorText};
                 font-size: ${compact ? 15 : 16}px;
                 font-weight: 600;
                 line-height: 24px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
 
             .amount.income {
@@ -717,7 +766,9 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
 
 export default (): React.ReactNode => {
     const {message} = App.useApp();
-    const {styles} = useStyles();
+    const theme = useTheme();
+    const isCompactMode = theme?.isCompactTheme?.() || false;
+    const {styles} = useStyles({isCompactMode});
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const typeScrollRef = useRef<HTMLDivElement | null>(null);
     const timeScrollRef = useRef<HTMLDivElement | null>(null);
@@ -974,84 +1025,98 @@ export default (): React.ReactNode => {
                         </Card>
                     </Col>
                     <Col className={styles.recordCol} span={24}>
-                        <Card className={styles.recordFilter} variant="borderless">
-                            <div className="filter-row">
-                                <Button
-                                    className="filter-scroll-button left"
-                                    htmlType="button"
-                                    icon={<Icon type="CaretLeftFilled"/>}
-                                    size="small"
-                                    type="text"
-                                    onClick={() => scrollFilter("type", -180)}
-                                />
-                                <div ref={typeScrollRef} className="filter-options">
-                                    <Segmented
-                                        options={typeOptions}
-                                        value={filterType}
-                                        onChange={(value) => changeType(String(value))}
-                                    />
-                                </div>
-                                <Button
-                                    className="filter-scroll-button right"
-                                    htmlType="button"
-                                    icon={<Icon type="CaretRightFilled"/>}
-                                    size="small"
-                                    type="text"
-                                    onClick={() => scrollFilter("type", 180)}
-                                />
-                            </div>
-                            <div className="filter-row">
-                                <Button
-                                    className="filter-scroll-button left"
-                                    htmlType="button"
-                                    icon={<Icon type="CaretLeftFilled"/>}
-                                    size="small"
-                                    type="text"
-                                    onClick={() => scrollFilter("time", -180)}
-                                />
-                                <div ref={timeScrollRef} className="filter-options">
-                                    <Segmented
-                                        options={customTimeOptions}
-                                        value={timeRange}
-                                        onChange={(value) => changeTimeRange(value as LogTimeRange)}
-                                    />
-                                </div>
-                                <Button
-                                    className="filter-scroll-button right"
-                                    htmlType="button"
-                                    icon={<Icon type="CaretRightFilled"/>}
-                                    size="small"
-                                    type="text"
-                                    onClick={() => scrollFilter("time", 180)}
-                                />
-                            </div>
-                        </Card>
-                        <ProTable
-                            ref={tableRef}
-                            rowKey="id"
+                        <Card
+                            className={styles.recordCard}
                             title={<Title>资金记录</Title>}
-                            extraRefreshBtn={true}
-                            search={false}
-                            defaultPage={1}
-                            defaultPageSize={10}
-                            paginationAffix={true}
-                            columns={[
-                                {title: "资金记录", dataIndex: "id", hideInSearch: true, render: renderLog},
-                            ]}
-                            request={(params: any, sort: any) => getData({
-                                order_by_field: "id",
-                                order_by_type: "desc",
-                                ...filtersRef.current,
-                                ...params,
-                            }, sort, getBalanceLogList)}
-                            {...({
-                                tableProps: {
-                                    className: styles.table,
-                                    showHeader: false,
-                                    rowClassName: (record: any) => record?.id ? "" : "hidden-row",
-                                },
-                            } as any)}
-                        />
+                            extra={(
+                                <Button
+                                    color="default"
+                                    icon={<Icon type="RedoOutlined" style={{transform: "rotate(260deg)"}}/>}
+                                    variant="link"
+                                    onClick={() => tableRef.current?.refreshTableData?.()}
+                                />
+                            )}
+                            variant="borderless">
+                            <div className={styles.recordFilter}>
+                                <div className="filter-row">
+                                    <Button
+                                        className="filter-scroll-button left"
+                                        htmlType="button"
+                                        icon={<Icon type="CaretLeftFilled"/>}
+                                        size="small"
+                                        type="text"
+                                        onClick={() => scrollFilter("type", -180)}
+                                    />
+                                    <div ref={typeScrollRef} className="filter-options">
+                                        <Segmented
+                                            options={typeOptions}
+                                            value={filterType}
+                                            onChange={(value) => changeType(String(value))}
+                                        />
+                                    </div>
+                                    <Button
+                                        className="filter-scroll-button right"
+                                        htmlType="button"
+                                        icon={<Icon type="CaretRightFilled"/>}
+                                        size="small"
+                                        type="text"
+                                        onClick={() => scrollFilter("type", 180)}
+                                    />
+                                </div>
+                                <div className="filter-row">
+                                    <Button
+                                        className="filter-scroll-button left"
+                                        htmlType="button"
+                                        icon={<Icon type="CaretLeftFilled"/>}
+                                        size="small"
+                                        type="text"
+                                        onClick={() => scrollFilter("time", -180)}
+                                    />
+                                    <div ref={timeScrollRef} className="filter-options">
+                                        <Segmented
+                                            options={customTimeOptions}
+                                            value={timeRange}
+                                            onChange={(value) => changeTimeRange(value as LogTimeRange)}
+                                        />
+                                    </div>
+                                    <Button
+                                        className="filter-scroll-button right"
+                                        htmlType="button"
+                                        icon={<Icon type="CaretRightFilled"/>}
+                                        size="small"
+                                        type="text"
+                                        onClick={() => scrollFilter("time", 180)}
+                                    />
+                                </div>
+                            </div>
+                            <ProTable
+                                ref={tableRef}
+                                rowKey="id"
+                                title={false}
+                                extraRefreshBtn={false}
+                                search={false}
+                                defaultPage={1}
+                                defaultPageSize={10}
+                                pageInTable={true}
+                                paginationProps={{position: ["bottomCenter"]} as any}
+                                columns={[
+                                    {title: "资金记录", dataIndex: "id", hideInSearch: true, render: renderLog},
+                                ]}
+                                request={(params: any, sort: any) => getData({
+                                    order_by_field: "id",
+                                    order_by_type: "desc",
+                                    ...filtersRef.current,
+                                    ...params,
+                                }, sort, getBalanceLogList)}
+                                {...({
+                                    tableProps: {
+                                        className: styles.table,
+                                        showHeader: false,
+                                        rowClassName: (record: any) => record?.id ? "" : "hidden-row",
+                                    },
+                                } as any)}
+                            />
+                        </Card>
                     </Col>
                 </Row>
             )}

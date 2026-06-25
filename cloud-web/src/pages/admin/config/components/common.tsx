@@ -231,10 +231,10 @@ const UploadField = ({
                                 src={previewImage}
                                 style={{display: "none"}}
                                 preview={{
-                                    visible: !!previewImage,
+                                    open: !!previewImage,
                                     src: previewImage,
-                                    onVisibleChange: (visible: boolean) => {
-                                        if (!visible) {
+                                    onOpenChange: (open: boolean) => {
+                                        if (!open) {
                                             setPreviewImage("");
                                         }
                                     },

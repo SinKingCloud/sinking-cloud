@@ -9,24 +9,26 @@ type PayTypeProps = {
     value: any;
 };
 
-const useStyles: any = createStyles((): any => ({
-    text: {
-        fontSize: 12,
-        lineHeight: "18px",
-    },
-    walletIcon: {
-        color: "#faad14",
-        fontSize: 14,
-    },
-    alipayIcon: {
-        color: "#1677ff",
-        fontSize: 14,
-    },
-    wechatIcon: {
-        color: "#07c160",
-        fontSize: 14,
-    },
-}));
+const useStyles: any = createStyles((): any => {
+    return {
+        text: {
+            fontSize: 12,
+            lineHeight: "18px",
+        },
+        walletIcon: {
+            color: "#faad14",
+            fontSize: 14,
+        },
+        alipayIcon: {
+            color: "#1677ff",
+            fontSize: 14,
+        },
+        wechatIcon: {
+            color: "#07c160",
+            fontSize: 14,
+        },
+    }
+});
 
 const enumText = (data: any, value: any) => (
     data?.[String(value)] || data?.[value] || (value === undefined || value === null || value === "" ? "-" : String(value))
