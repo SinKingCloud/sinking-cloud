@@ -1073,6 +1073,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
             setPage(1);
             setTotal(0);
             setLogs([]);
+            setLogLoading(panel === "log");
             modalRef.current?.show();
             loadInfo(id);
         },
@@ -1194,9 +1195,16 @@ const Info = forwardRef<InfoRef, InfoProps>(({
         );
     };
 
-    const renderLog = () => (
-        <div className={styles.logPanel}>
-            <Spin spinning={logLoading}>
+    const renderLog = () => {
+        if (logLoading) {
+            return (
+                <div className={styles.loading}>
+                    <Spin/>
+                </div>
+            );
+        }
+        return (
+            <div className={styles.logPanel}>
                 <div className={styles.timelineShell}>
                     {logs.length > 0 ? (
                         <div className={styles.timeline}>
@@ -1253,24 +1261,24 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                         </div>
                     )}
                 </div>
-            </Spin>
-            {total > 0 && (
-                <div className={styles.pagination}>
-                    <span>共 {total} 条</span>
-                    <Pagination
-                        size="small"
-                        current={page}
-                        pageSize={PAGE_SIZE}
-                        total={total}
-                        showSizeChanger={false}
-                        onChange={(nextPage) => {
-                            setPage(nextPage);
-                        }}
-                    />
-                </div>
-            )}
-        </div>
-    );
+                {total > 0 && (
+                    <div className={styles.pagination}>
+                        <span>共 {total} 条</span>
+                        <Pagination
+                            size="small"
+                            current={page}
+                            pageSize={PAGE_SIZE}
+                            total={total}
+                            showSizeChanger={false}
+                            onChange={(nextPage) => {
+                                setPage(nextPage);
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     return (
         <ProModal

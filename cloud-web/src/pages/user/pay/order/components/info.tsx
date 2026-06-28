@@ -329,6 +329,8 @@ const useStyles: any = createStyles(({token}: any): any => ({
             minHeight: 80,
         },
         ".loading-wrap": {
+            display: "grid",
+            placeItems: "center",
             minHeight: 80,
         },
         "@media (max-width: 575px)": {
@@ -631,24 +633,30 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref): React.ReactNode => {
                 <div className={styles.panelContent}>
                     {activePanel === "log" ? (
                         <div className={styles.logModal}>
-                            <Spin spinning={logLoading}>
-                                <div className="timeline-shell">
-                                    {logLoading ? <div className="loading-wrap"/> : renderLogList()}
+                            {logLoading ? (
+                                <div className="loading-wrap">
+                                    <Spin/>
                                 </div>
-                                {logTotal > LOG_PAGE_SIZE ? (
-                                    <div className="log-pagination">
-                                        <span>共 {logTotal} 条</span>
-                                        <Pagination
-                                            size="small"
-                                            current={logPage}
-                                            pageSize={LOG_PAGE_SIZE}
-                                            total={logTotal}
-                                            showSizeChanger={false}
-                                            onChange={(page) => void loadLogs(page)}
-                                        />
+                            ) : (
+                                <>
+                                    <div className="timeline-shell">
+                                        {renderLogList()}
                                     </div>
-                                ) : null}
-                            </Spin>
+                                    {logTotal > LOG_PAGE_SIZE ? (
+                                        <div className="log-pagination">
+                                            <span>共 {logTotal} 条</span>
+                                            <Pagination
+                                                size="small"
+                                                current={logPage}
+                                                pageSize={LOG_PAGE_SIZE}
+                                                total={logTotal}
+                                                showSizeChanger={false}
+                                                onChange={(page) => void loadLogs(page)}
+                                            />
+                                        </div>
+                                    ) : null}
+                                </>
+                            )}
                         </div>
                     ) : renderInfo()}
                 </div>
