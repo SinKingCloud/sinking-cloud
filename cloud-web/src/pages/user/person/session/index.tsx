@@ -697,7 +697,7 @@ export default function Index(): React.ReactNode {
                     extraRefreshBtn={true}
                     search={false}
                     defaultPage={1}
-                    defaultPageSize={5}
+                    defaultPageSize={10}
                     paginationAffix={true}
                     columns={[
                         {
