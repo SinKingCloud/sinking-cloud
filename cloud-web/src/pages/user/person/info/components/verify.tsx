@@ -196,43 +196,29 @@ const useStyles: any = createStyles(({token, responsive}: any): any => ({
     targetBox: {
         display: "flex",
         alignItems: "center",
-        justifyContent: "space-between",
-        gap: 16,
-        padding: "12px",
+        gap: 9,
+        minHeight: 40,
+        padding: "8px 12px",
         borderRadius: token.borderRadius,
         background: token.colorFillQuaternary,
-
-        [responsive.mobile]: {
-            display: "block",
-        },
     },
     targetLabel: {
-        color: token.colorTextTertiary,
-        fontSize: 12,
-        lineHeight: "18px",
+        flex: "none",
+        color: token.colorTextSecondary,
+        fontSize: 13,
+        lineHeight: "20px",
     },
     targetValue: {
+        display: "block",
+        minWidth: 0,
+        maxWidth: "100%",
         color: token.colorText,
         fontSize: 13,
-        fontWeight: 500,
+        fontWeight: 600,
         lineHeight: "20px",
         overflow: "hidden",
         textOverflow: "ellipsis",
         whiteSpace: "nowrap",
-    },
-    targetRight: {
-        minWidth: 0,
-        textAlign: "right",
-
-        [responsive.mobile]: {
-            marginTop: 8,
-            textAlign: "left",
-        },
-    },
-    changeMethod: {
-        height: "auto",
-        padding: 0,
-        fontSize: 12,
     },
     form: {
         ".ant-form-item": {
@@ -293,16 +279,6 @@ const getTargetValue = (info: VerifyInfo, type: string) => {
         return info?.password ? "账户密码" : "";
     }
     return type === "mail" ? info?.mail : info?.phone;
-};
-
-/**
- * 将验证方式转换为界面展示名称。
- */
-const getTypeName = (type: string) => {
-    if (type === "password") {
-        return "密码";
-    }
-    return type === "mail" ? "邮箱" : "手机";
 };
 
 const Verify = forwardRef<VerifyRef>((_, ref) => {
@@ -599,27 +575,10 @@ const Verify = forwardRef<VerifyRef>((_, ref) => {
                         {currentStep === 1 && (
                             <div className={styles.panel}>
                                 {!isPasswordVerify && <div className={styles.targetBox}>
-                                    <div>
-                                        <div className={styles.targetLabel}>验证码已发送至</div>
-                                        <div className={styles.targetValue}>{getTypeName(verifyType)}验证</div>
-                                    </div>
-                                    <div className={styles.targetRight}>
-                                        <Typography.Text type="secondary" ellipsis>
-                                            {targetValue || "-"}
-                                        </Typography.Text>
-                                        <div>
-                                            <Button
-                                                type="link"
-                                                className={styles.changeMethod}
-                                                onClick={() => {
-                                                    clearCountdown();
-                                                    form.resetFields(["code"] as any);
-                                                    setCurrentStep(0);
-                                                }}>
-                                                更换方式
-                                            </Button>
-                                        </div>
-                                    </div>
+                                    <div className={styles.targetLabel}>验证码已发送至</div>
+                                    <Typography.Text className={styles.targetValue} ellipsis={{tooltip: targetValue || "-"}}>
+                                        {targetValue || "-"}
+                                    </Typography.Text>
                                 </div>}
                                 <div className={styles.codeRow}>
                                     <div className={styles.codeInputWrap}>
