@@ -260,13 +260,58 @@ const useStyles: any = createStyles(({token}: any): any => ({
             flex: 1,
             minWidth: 0,
             overflow: "hidden",
-            textOverflow: "ellipsis",
             whiteSpace: "nowrap",
         },
-        ".log-operator .ant-typography": {
+        ".operator-type": {
+            flex: "none",
+            lineHeight: "18px",
+            whiteSpace: "nowrap",
+        },
+        ".operator-id": {
+            position: "relative",
+            display: "inline-block",
+            flex: "none",
+            paddingRight: 20,
+            height: 18,
+            lineHeight: "18px",
+            whiteSpace: "nowrap",
+        },
+        ".operator-id-text": {
             color: token.colorTextTertiary,
             fontSize: 12,
+            height: 18,
             lineHeight: "18px",
+            whiteSpace: "nowrap",
+        },
+        ".operator-copy": {
+            position: "absolute",
+            top: 1,
+            right: 0,
+            width: 16,
+            height: 16,
+            overflow: "hidden",
+            color: token.colorTextTertiary,
+            fontSize: 12,
+            lineHeight: 1,
+        },
+        ".operator-copy .ant-typography-copy": {
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "absolute",
+            inset: 0,
+            width: 16,
+            height: 16,
+            marginInlineStart: 0,
+            lineHeight: 1,
+        },
+        ".operator-copy .ant-typography-copy svg": {
+            display: "block",
+        },
+        ".operator-copy .ant-typography-actions": {
+            display: "block",
+            width: 16,
+            height: 16,
         },
         ".log-pagination": {
             display: "flex",
@@ -310,7 +355,7 @@ const useStyles: any = createStyles(({token}: any): any => ({
 }));
 
 export type InfoRef = {
-    open: (record: any) => void;
+    open: (record: any, panel?: ActivePanel) => void;
 };
 
 type InfoProps = {
@@ -349,10 +394,14 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref): React.ReactNode => {
     };
 
     useImperativeHandle(ref, () => ({
-        open: (record: any) => {
+        open: (record: any, panel: ActivePanel = "info") => {
             reset();
             setData(record);
+            setActivePanel(panel);
             modalRef.current?.show();
+            if (panel === "log") {
+                void loadLogs(1, record);
+            }
         },
     }));
 
@@ -361,15 +410,15 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref): React.ReactNode => {
         return !text || text.startsWith("0001-01-01") ? "-" : text;
     };
 
-    const loadLogs = async (page = 1) => {
-        if (!data?.id) {
+    const loadLogs = async (page = 1, record: any = data) => {
+        if (!record?.id) {
             return;
         }
         setLogPage(page);
         setLogLoading(true);
         await getOrderLogList({
             body: {
-                order_id: Number(data.id),
+                order_id: Number(record.id),
                 page,
                 page_size: LOG_PAGE_SIZE,
                 order_by_field: "id",
@@ -502,12 +551,16 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref): React.ReactNode => {
             <div className="log-extra">
                 <span className="log-operator">
                     {hasValue(item?.operator_type) ? (
-                        <span>操作人：{getEnumText(props.operatorTypes, item?.operator_type)}</span>
+                        <span className="operator-type">操作人：{getEnumText(props.operatorTypes, item?.operator_type)}</span>
                     ) : null}
                     {hasValue(item?.operator_id) ? (
-                        <Typography.Text copyable={{text: String(item.operator_id)}}>
-                            账号ID：{item.operator_id}
-                        </Typography.Text>
+                        <span className="operator-id">
+                            <span className="operator-id-text">账号ID：{item.operator_id}</span>
+                            <Typography.Text
+                                className="operator-copy"
+                                copyable={{text: String(item.operator_id), tooltips: ["复制", "复制成功"]}}
+                            />
+                        </span>
                     ) : null}
                 </span>
             </div>

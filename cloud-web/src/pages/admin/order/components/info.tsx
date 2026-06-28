@@ -256,7 +256,6 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
             min-height: 0;
         `,
         timelineShell: css`
-            min-height: ${isCompactMode ? 220 : 240}px;
         `,
         timeline: css`
             display: flex;
@@ -397,14 +396,65 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
                 flex: 1;
                 min-width: 0;
                 overflow: hidden;
-                text-overflow: ellipsis;
                 white-space: nowrap;
             }
 
-            .operator .ant-typography {
+            .operator-type {
+                flex: none;
+                line-height: 18px;
+                white-space: nowrap;
+            }
+
+            .operator-id {
+                position: relative;
+                display: inline-block;
+                flex: none;
+                padding-right: 20px;
+                height: 18px;
+                line-height: 18px;
+                white-space: nowrap;
+            }
+
+            .operator-id-text {
                 color: ${token.colorTextTertiary};
                 font-size: 12px;
+                height: 18px;
                 line-height: 18px;
+                white-space: nowrap;
+            }
+
+            .operator-copy {
+                position: absolute;
+                top: 1px;
+                right: 0;
+                width: 16px;
+                height: 16px;
+                overflow: hidden;
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+                line-height: 1;
+            }
+
+            .operator-copy .ant-typography-copy {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                position: absolute;
+                inset: 0;
+                width: 16px;
+                height: 16px;
+                margin-inline-start: 0;
+                line-height: 1;
+            }
+
+            .operator-copy .ant-typography-copy svg {
+                display: block;
+            }
+
+            .operator-copy .ant-typography-actions {
+                display: block;
+                width: 16px;
+                height: 16px;
             }
 
             .detail {
@@ -434,10 +484,10 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
             }
         `,
         empty: css`
-            min-height: 240px;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: ${isCompactMode ? "24px 0" : "28px 0"};
         `,
         logDetail: css`
             border: 1px solid ${token.colorBorderSecondary};
@@ -468,10 +518,13 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
             }
 
             .headMeta {
+                display: inline-flex;
+                align-items: center;
                 flex: none;
                 color: ${token.colorTextTertiary};
                 font-size: 12px;
                 line-height: 18px;
+                white-space: nowrap;
             }
 
             .content {
@@ -511,8 +564,29 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
             }
 
             .value .ant-typography {
+                display: inline-flex;
+                align-items: center;
+                max-width: 100%;
                 font-size: 12px;
                 line-height: 20px;
+                white-space: nowrap;
+            }
+
+            .headMeta .ant-typography-copy,
+            .value .ant-typography-copy {
+                flex: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                height: 16px;
+                margin-inline-start: 4px;
+                line-height: 1;
+                vertical-align: top;
+            }
+
+            .headMeta .ant-typography-copy svg,
+            .value .ant-typography-copy svg {
+                display: block;
             }
 
             .changeHeader,
@@ -1147,13 +1221,15 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                                         <div className="text">{item?.content || "-"}</div>
                                         <div className="extra">
                                             <span className="operator">
-                                                <span>操作人：{enumText(operatorTypes, item?.operator_type)}</span>
+                                                <span className="operator-type">操作人：{enumText(operatorTypes, item?.operator_type)}</span>
                                                 {item?.operator_id ? (
-                                                    <Typography.Text
-                                                        copyable={{text: String(item.operator_id)}}
-                                                        onClick={(event) => event.stopPropagation()}>
-                                                        账号ID：{item.operator_id}
-                                                    </Typography.Text>
+                                                    <span className="operator-id" onClick={(event) => event.stopPropagation()}>
+                                                        <span className="operator-id-text">账号ID：{item.operator_id}</span>
+                                                        <Typography.Text
+                                                            className="operator-copy"
+                                                            copyable={{text: String(item.operator_id), tooltips: ["复制", "复制成功"]}}
+                                                        />
+                                                    </span>
                                                 ) : null}
                                             </span>
                                             <Button

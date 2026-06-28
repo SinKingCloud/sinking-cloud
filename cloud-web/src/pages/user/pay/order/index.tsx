@@ -1,5 +1,5 @@
 import React, {useRef} from "react";
-import {Button, Space, Tag, Typography} from "antd";
+import {Button, Dropdown, Space, Tag, Typography} from "antd";
 import {createStyles} from "antd-style";
 import {Body, ProTable, Title} from "sinking-antd";
 import useEnum from "@/utils/enum";
@@ -266,14 +266,28 @@ export default (): React.ReactNode => {
             title: "操作",
             valueType: "option",
             key: "option",
-            width: 80,
+            width: 88,
             fixed: "right",
             hideInSearch: true,
-            render: (_: any, record: any) => (
-                <Button size="small" onClick={() => infoRef.current?.open(record)}>
-                    详情
-                </Button>
-            ),
+            render: (_: any, record: any) => {
+                const items = [
+                    {
+                        key: "info",
+                        label: "详情",
+                        onClick: () => infoRef.current?.open(record, "info"),
+                    },
+                    {
+                        key: "log",
+                        label: "日志",
+                        onClick: () => infoRef.current?.open(record, "log"),
+                    },
+                ];
+                return (
+                    <Dropdown menu={{items}} trigger={["click"]} placement="bottom" arrow>
+                        <Button size="small">操作</Button>
+                    </Dropdown>
+                );
+            },
         },
     ];
 
