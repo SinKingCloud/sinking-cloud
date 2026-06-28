@@ -285,7 +285,7 @@ export default (): React.ReactNode => {
                     rowKey="id"
                     columns={columns}
                     defaultPage={1}
-                    defaultPageSize={20}
+                    defaultPageSize={10}
                     extra={hasCreateControl ? (
                         <Button type="primary" onClick={() => infoRef.current?.openCreate()}>
                             新增
