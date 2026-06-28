@@ -418,7 +418,7 @@ export default (): React.ReactNode => {
                     rowKey="id"
                     columns={columns}
                     defaultPage={1}
-                    defaultPageSize={20}
+                    defaultPageSize={10}
                     extra={hasClearControl ? (
                         <Button type="primary" onClick={openClear}>
                             清理

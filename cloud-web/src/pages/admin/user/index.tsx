@@ -386,7 +386,7 @@ export default (): React.ReactNode => {
                     rowKey="id"
                     columns={columns}
                     defaultPage={1}
-                    defaultPageSize={20}
+                    defaultPageSize={10}
                     request={(params, sort) => {
                         if (!hasListControl) {
                             return Promise.resolve(emptyTableData);
