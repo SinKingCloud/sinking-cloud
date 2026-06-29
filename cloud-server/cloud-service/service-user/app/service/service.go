@@ -40,5 +40,5 @@ func Init() {
 	Auth = auth.NewService(authService, sessionRepository, userRepository, database, cache)
 	User = user.NewService(userRepository, realAuthRepository, systemConfig, global.App.Database, cache)
 	Socket = socket.NewService(Auth, sessionRepository, socketService, cache)
-	Message = message.NewService(messageRepository)
+	Message = message.NewService(messageRepository, Socket)
 }

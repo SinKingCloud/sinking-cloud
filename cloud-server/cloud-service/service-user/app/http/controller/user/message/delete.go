@@ -15,7 +15,8 @@ func (Controller) Delete(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	if err := service.Message.Delete(c.GetUserInfo().Id, form.Ids); err != nil {
+	u := c.GetUserInfo()
+	if err := service.Message.Delete(u.Id, form.Ids, u.Token); err != nil {
 		c.Error(err.Error())
 		return
 	}

@@ -1,5 +1,10 @@
 package socket
 
+const (
+	// MessageRefresh 刷新消息列表
+	MessageRefresh = "message.refresh"
+)
+
 // GenConnectionTokenParam 生成连接token
 type GenConnectionTokenParam struct {
 	Group string
@@ -31,7 +36,9 @@ type Message struct {
 
 // SendToUserParam 给前台用户发送消息
 type SendToUserParam struct {
-	Message  *Message
-	UserIds  []int64
-	Sessions []string
+	Message         *Message
+	UserIds         []int64
+	Sessions        []string
+	ExcludeUserIds  []int64
+	ExcludeSessions []string
 }

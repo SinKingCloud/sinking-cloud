@@ -37,6 +37,19 @@ func (s *socketService) SendToUser(params json.RawMessage) (interface{}, error) 
 	for _, session := range param.Sessions {
 		to = append(to, session)
 	}
+	if len(param.ExcludeUserIds) > 0 || len(param.ExcludeSessions) > 0 {
+		exclude := make([]interface{}, 0, len(param.ExcludeUserIds)+len(param.ExcludeSessions))
+		for _, id := range param.ExcludeUserIds {
+			exclude = append(exclude, id)
+		}
+		for _, session := range param.ExcludeSessions {
+			exclude = append(exclude, session)
+		}
+		if err := service.Socket.SendMessageExcludeSessions(param.Message, exclude, to...); err != nil {
+			return false, err
+		}
+		return true, nil
+	}
 	if err := service.Socket.SendMessage(param.Message, to...); err != nil {
 		return false, err
 	}

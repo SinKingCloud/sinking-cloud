@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/socket"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
@@ -21,13 +22,17 @@ func (s *service) Create(userId int64, title string, content string) error {
 	if title == "" {
 		return errors.New("消息标题不能为空")
 	}
-	return s.repositoryMessage.Create(&model.Message{
+	if err := s.repositoryMessage.Create(&model.Message{
 		Id:      str.GetSnowWorkIns().GetId(),
 		UserId:  userId,
 		Title:   title,
 		Content: content,
 		Status:  message_status.Unread,
-	})
+	}); err != nil {
+		return err
+	}
+	s.notifyMessageRefresh([]int64{userId})
+	return nil
 }
 
 // Creates 批量创建用户消息
@@ -40,6 +45,7 @@ func (s *service) Creates(userIds []int64, title string, content string) error {
 		return errors.New("消息标题不能为空")
 	}
 	messages := make([]*model.Message, 0, len(userIds))
+	notifyUserIds := make([]int64, 0, len(userIds))
 	userMap := make(map[int64]struct{}, len(userIds))
 	for _, userId := range userIds {
 		if userId <= 0 {
@@ -49,6 +55,7 @@ func (s *service) Creates(userIds []int64, title string, content string) error {
 			continue
 		}
 		userMap[userId] = struct{}{}
+		notifyUserIds = append(notifyUserIds, userId)
 		messages = append(messages, &model.Message{
 			Id:      str.GetSnowWorkIns().GetId(),
 			UserId:  userId,
@@ -60,11 +67,15 @@ func (s *service) Creates(userIds []int64, title string, content string) error {
 	if len(messages) == 0 {
 		return errors.New("用户列表不能为空")
 	}
-	return s.repositoryMessage.Creates(messages)
+	if err := s.repositoryMessage.Creates(messages); err != nil {
+		return err
+	}
+	s.notifyMessageRefresh(notifyUserIds)
+	return nil
 }
 
 // Read 设置用户消息为已读
-func (s *service) Read(userId int64, ids []int64) error {
+func (s *service) Read(userId int64, ids []int64, excludeSessions ...string) error {
 	if userId <= 0 {
 		return errors.New("用户信息错误")
 	}
@@ -86,11 +97,15 @@ func (s *service) Read(userId int64, ids []int64) error {
 	if len(readIds) == 0 {
 		return errors.New("消息列表不能为空")
 	}
-	return s.repositoryMessage.ReadByIdsAndUserId(readIds, userId, str.DateTime(time.Now()))
+	if err := s.repositoryMessage.ReadByIdsAndUserId(readIds, userId, str.DateTime(time.Now())); err != nil {
+		return err
+	}
+	s.notifyMessageRefresh([]int64{userId}, excludeSessions...)
+	return nil
 }
 
 // Delete 删除用户消息
-func (s *service) Delete(userId int64, ids []int64) error {
+func (s *service) Delete(userId int64, ids []int64, excludeSessions ...string) error {
 	if userId <= 0 {
 		return errors.New("用户信息错误")
 	}
@@ -112,15 +127,23 @@ func (s *service) Delete(userId int64, ids []int64) error {
 	if len(deleteIds) == 0 {
 		return errors.New("消息列表不能为空")
 	}
-	return s.repositoryMessage.DeleteByIdsAndUserId(deleteIds, userId)
+	if err := s.repositoryMessage.DeleteByIdsAndUserId(deleteIds, userId); err != nil {
+		return err
+	}
+	s.notifyMessageRefresh([]int64{userId}, excludeSessions...)
+	return nil
 }
 
 // Clear 清空用户消息
-func (s *service) Clear(userId int64) error {
+func (s *service) Clear(userId int64, excludeSessions ...string) error {
 	if userId <= 0 {
 		return errors.New("用户信息错误")
 	}
-	return s.repositoryMessage.DeleteByUserId(userId)
+	if err := s.repositoryMessage.DeleteByUserId(userId); err != nil {
+		return err
+	}
+	s.notifyMessageRefresh([]int64{userId}, excludeSessions...)
+	return nil
 }
 
 // SelectByUserId 查询用户消息列表
@@ -163,7 +186,7 @@ func (s *service) SelectByUserId(userId int64, where *repositoryMessage.SelectMe
 }
 
 // GetInfoByUserId 查询用户消息详情，未读消息会自动标记为已读。
-func (s *service) GetInfoByUserId(userId int64, id int64) (*Message, error) {
+func (s *service) GetInfoByUserId(userId int64, id int64, excludeSessions ...string) (*Message, error) {
 	if userId <= 0 || id <= 0 {
 		return nil, errors.New("参数错误")
 	}
@@ -186,6 +209,7 @@ func (s *service) GetInfoByUserId(userId int64, id int64) (*Message, error) {
 		info.Status = message_status.Read
 		info.ReadTime = readTime
 		info.UpdateTime = readTime
+		s.notifyMessageRefresh([]int64{userId}, excludeSessions...)
 	}
 	return &Message{
 		Id:         info.Id,
@@ -196,4 +220,39 @@ func (s *service) GetInfoByUserId(userId int64, id int64) (*Message, error) {
 		CreateTime: info.CreateTime,
 		UpdateTime: info.UpdateTime,
 	}, nil
+}
+
+// notifyMessageRefresh 通知前端重新拉取消息列表；提醒失败不影响主业务。
+func (s *service) notifyMessageRefresh(userIds []int64, excludeSessions ...string) {
+	if s.socketService == nil || len(userIds) == 0 {
+		return
+	}
+	ids := make([]int64, 0, len(userIds))
+	idMap := make(map[int64]struct{}, len(userIds))
+	for _, userId := range userIds {
+		if userId <= 0 {
+			continue
+		}
+		if _, ok := idMap[userId]; ok {
+			continue
+		}
+		idMap[userId] = struct{}{}
+		ids = append(ids, userId)
+	}
+	if len(ids) == 0 {
+		return
+	}
+	message := &socket.Message{
+		Id:   strconv.FormatInt(str.GetSnowWorkIns().GetId(), 10),
+		Type: socket.MessageRefresh,
+		Data: map[string]interface{}{
+			"refresh": true,
+		},
+		Time: time.Now().UnixMilli(),
+	}
+	if len(excludeSessions) > 0 {
+		_ = s.socketService.SendMessageExcludeSessions(message, excludeSessions, ids)
+		return
+	}
+	_ = s.socketService.SendMessage(message, ids)
 }

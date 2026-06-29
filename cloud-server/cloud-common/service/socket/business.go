@@ -77,31 +77,92 @@ func (s *Service) BatchSendToAll(list []*SendToAllParam, batch int) {
 }
 
 // SendToUser 给前台用户发送消息；to 支持 int/int64/[]int/[]int64/string/[]string，不传则广播给全部前台用户连接。
-func (*Service) SendToUser(message *Message, to ...interface{}) error {
+func (s *Service) SendToUser(message *Message, to ...interface{}) error {
 	if message == nil {
 		return errors.New("消息不能为空")
 	}
 	param := &SendToUserParam{Message: message}
+	if err := s.fillSendToUserParam(param, false, to...); err != nil {
+		return err
+	}
+	return s.sendToUser(param)
+}
+
+// SendToUserExcludeSessions 给指定前台用户或会话发送消息，并排除指定会话或用户；exclude 支持 int/int64/[]int/[]int64/string/[]string。
+func (s *Service) SendToUserExcludeSessions(message *Message, exclude interface{}, to ...interface{}) error {
+	if message == nil {
+		return errors.New("消息不能为空")
+	}
+	param := &SendToUserParam{Message: message}
+	if err := s.fillSendToUserParam(param, false, to...); err != nil {
+		return err
+	}
+	if len(param.UserIds) == 0 && len(param.Sessions) == 0 {
+		return errors.New("排除发送必须指定接收对象")
+	}
+	if err := s.fillSendToUserParam(param, true, exclude); err != nil {
+		return err
+	}
+	return s.sendToUser(param)
+}
+
+func (s *Service) fillSendToUserParam(param *SendToUserParam, exclude bool, to ...interface{}) error {
 	for _, item := range to {
 		switch v := item.(type) {
+		case nil:
+			continue
 		case int:
-			param.UserIds = append(param.UserIds, int64(v))
+			if exclude {
+				param.ExcludeUserIds = append(param.ExcludeUserIds, int64(v))
+			} else {
+				param.UserIds = append(param.UserIds, int64(v))
+			}
 		case []int:
 			for _, id := range v {
-				param.UserIds = append(param.UserIds, int64(id))
+				if exclude {
+					param.ExcludeUserIds = append(param.ExcludeUserIds, int64(id))
+				} else {
+					param.UserIds = append(param.UserIds, int64(id))
+				}
 			}
 		case int64:
-			param.UserIds = append(param.UserIds, v)
+			if exclude {
+				param.ExcludeUserIds = append(param.ExcludeUserIds, v)
+			} else {
+				param.UserIds = append(param.UserIds, v)
+			}
 		case []int64:
-			param.UserIds = append(param.UserIds, v...)
+			if exclude {
+				param.ExcludeUserIds = append(param.ExcludeUserIds, v...)
+			} else {
+				param.UserIds = append(param.UserIds, v...)
+			}
 		case string:
-			param.Sessions = append(param.Sessions, v)
+			if exclude {
+				param.ExcludeSessions = append(param.ExcludeSessions, v)
+			} else {
+				param.Sessions = append(param.Sessions, v)
+			}
 		case []string:
-			param.Sessions = append(param.Sessions, v...)
+			if exclude {
+				param.ExcludeSessions = append(param.ExcludeSessions, v...)
+			} else {
+				param.Sessions = append(param.Sessions, v...)
+			}
+		case []interface{}:
+			for _, value := range v {
+				if err := s.fillSendToUserParam(param, exclude, value); err != nil {
+					return err
+				}
+			}
 		default:
 			return fmt.Errorf("接收对象类型不支持: %T", item)
 		}
 	}
+	return nil
+}
+
+func (s *Service) sendToUser(param *SendToUserParam) error {
 	var result bool
 	err := rpc.InvokeFunc(constant.ServiceUser, "SendToUser", param, &result)
 	if err != nil {

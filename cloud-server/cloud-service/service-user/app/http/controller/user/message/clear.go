@@ -8,7 +8,8 @@ import (
 
 // Clear 清空消息
 func (Controller) Clear(c *context.Context) {
-	if err := service.Message.Clear(c.GetUserInfo().Id); err != nil {
+	u := c.GetUserInfo()
+	if err := service.Message.Clear(u.Id, u.Token); err != nil {
 		c.Error(err.Error())
 		return
 	}
