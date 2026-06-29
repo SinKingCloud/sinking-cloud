@@ -9,7 +9,7 @@ import (
 
 func Socket(c *context.Context) {
 	token := c.Request.Header.Get("Sec-Websocket-Protocol")
-	if token == "" || len(token) != 32 {
+	if token == "" {
 		c.Error("token验证失败")
 		return
 	}

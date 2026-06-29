@@ -52,9 +52,20 @@ function clearReconnectTimer() {
 }
 
 function getSocketUrl(path: string = DEFAULT_SOCKET_PATH) {
-    const base = defaultSettings?.gateway || (typeof window !== "undefined" ? window.location.origin : "");
-    const target = new URL(path, base.endsWith("/") ? base : `${base}/`);
-    target.protocol = target.protocol === "https:" ? "wss:" : "ws:";
+    const gateway = defaultSettings?.gateway || "";
+    const browserOrigin = typeof window !== "undefined" ? window.location.origin : "http://localhost";
+    const target = new URL(gateway || "/", browserOrigin);
+    const socketPath = path.startsWith("/") ? path.slice(1) : path;
+    const gatewayPath = target.pathname.endsWith("/") ? target.pathname : `${target.pathname}/`;
+
+    target.pathname = `${gatewayPath}${socketPath}`.replace(/\/{2,}/g, "/");
+    target.search = "";
+    target.hash = "";
+    if (target.protocol === "https:") {
+        target.protocol = "wss:";
+    } else if (target.protocol === "http:") {
+        target.protocol = "ws:";
+    }
     return target.toString();
 }
 
@@ -137,13 +148,14 @@ async function connectSocket() {
         if (connectVersion !== version || activeCount <= 0) {
             return;
         }
-        if (res?.code !== 200 || token.length !== 32) {
+        if (res?.code != 200 || !token) {
             emit("onError", new Error(res?.message || "WebSocket token 无效"));
             scheduleReconnect(connectVersion);
             return;
         }
 
-        const ws: any = new WebSocket(getSocketUrl(), token);
+        const socketUrl = getSocketUrl();
+        const ws: any = new WebSocket(socketUrl, token);
         ws.binaryType = "arraybuffer";
         sharedSocket = ws;
 
