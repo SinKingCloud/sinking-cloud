@@ -1,6 +1,7 @@
 package enum
 
 import (
+	"service-user/app/enum/message_status"
 	"service-user/app/enum/real_auth_status"
 	"service-user/app/enum/real_auth_type"
 	"service-user/app/enum/user_status"
@@ -14,5 +15,8 @@ var Data = map[string]interface{}{
 	"real_auth": map[string]interface{}{
 		"status": real_auth_status.Map(), //实名状态
 		"type":   real_auth_type.Map(),   //实名类型
+	},
+	"message": map[string]interface{}{
+		"status": message_status.Map(), //消息状态
 	},
 }

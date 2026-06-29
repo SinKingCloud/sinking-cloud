@@ -48,6 +48,9 @@ func (t DateTime) Value() (driver.Value, error) {
 // Scan 实现数据库读取接口（保持指针接收器，需要修改接收者）
 func (t *DateTime) Scan(v interface{}) error {
 	switch vt := v.(type) {
+	case nil:
+		*t = DateTime(time.Time{})
+		return nil
 	case time.Time:
 		*t = DateTime(vt)
 		return nil

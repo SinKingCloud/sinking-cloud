@@ -28,4 +28,12 @@ func loadUser(s *sinking_web.Engine) {
 		security.ANY("/phone", context.HandleFunc(controller.User.Security.Phone))             //修改手机
 		security.ANY("/account", context.HandleFunc(controller.User.Security.Account))         //修改账号
 	}
+	message := g.Group("/message")
+	{
+		message.ANY("/list", context.HandleFunc(controller.User.Message.List))     //消息列表
+		message.ANY("/info", context.HandleFunc(controller.User.Message.Info))     //消息详情
+		message.ANY("/read", context.HandleFunc(controller.User.Message.Read))     //消息已读
+		message.ANY("/delete", context.HandleFunc(controller.User.Message.Delete)) //删除消息
+		message.ANY("/clear", context.HandleFunc(controller.User.Message.Clear))   //清空消息
+	}
 }
