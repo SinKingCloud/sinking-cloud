@@ -1,6 +1,9 @@
 package socket
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 )
@@ -71,4 +74,41 @@ func (s *Service) BatchSendToAll(list []*SendToAllParam, batch int) {
 		batchList := list[i:end]
 		s.SendToAll(batchList)
 	}
+}
+
+// SendToUser 给前台用户发送消息；to 支持 int/int64/[]int/[]int64/string/[]string，不传则广播给全部前台用户连接。
+func (*Service) SendToUser(message *Message, to ...interface{}) error {
+	if message == nil {
+		return errors.New("消息不能为空")
+	}
+	param := &SendToUserParam{Message: message}
+	for _, item := range to {
+		switch v := item.(type) {
+		case int:
+			param.UserIds = append(param.UserIds, int64(v))
+		case []int:
+			for _, id := range v {
+				param.UserIds = append(param.UserIds, int64(id))
+			}
+		case int64:
+			param.UserIds = append(param.UserIds, v)
+		case []int64:
+			param.UserIds = append(param.UserIds, v...)
+		case string:
+			param.Sessions = append(param.Sessions, v)
+		case []string:
+			param.Sessions = append(param.Sessions, v...)
+		default:
+			return fmt.Errorf("接收对象类型不支持: %T", item)
+		}
+	}
+	var result bool
+	err := rpc.InvokeFunc(constant.ServiceUser, "SendToUser", param, &result)
+	if err != nil {
+		return err
+	}
+	if !result {
+		return errors.New("发送消息失败")
+	}
+	return nil
 }

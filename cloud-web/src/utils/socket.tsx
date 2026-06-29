@@ -8,7 +8,6 @@ export type SocketMessage<T = any> = {
     type?: string;
     data?: T;
     time?: number;
-    raw?: any;
 };
 
 export type SocketListener<T = any> = (message: SocketMessage<T>) => void;
@@ -82,18 +81,18 @@ async function readMessageData(data: any) {
     return data;
 }
 
-function normalizeMessage(raw: any): SocketMessage {
-    if (typeof raw !== "string") {
-        return {type: "message", data: raw, time: Date.now(), raw};
+function normalizeMessage(payload: any): SocketMessage {
+    if (typeof payload !== "string") {
+        return {type: "message", data: payload, time: Date.now()};
     }
     try {
-        const parsed = JSON.parse(raw);
+        const parsed = JSON.parse(payload);
         if (parsed && typeof parsed === "object") {
-            return {...parsed, raw};
+            return parsed;
         }
-        return {type: "message", data: parsed, time: Date.now(), raw};
+        return {type: "message", data: parsed, time: Date.now()};
     } catch {
-        return {type: "message", data: raw, time: Date.now(), raw};
+        return {type: "message", data: payload, time: Date.now()};
     }
 }
 
@@ -171,8 +170,8 @@ async function connectSocket() {
         };
 
         ws.onmessage = (event) => {
-            void readMessageData(event.data).then((raw) => {
-                emit("onMessage", normalizeMessage(raw));
+            void readMessageData(event.data).then((payload) => {
+                emit("onMessage", normalizeMessage(payload));
             });
         };
 

@@ -9,8 +9,8 @@ import (
 )
 
 type Service interface {
-	GenToken(token string) (string, error)                 //生成连接token
-	SendMessage(message *Message, to ...interface{}) error //发送消息
+	GenToken(token string) (string, error)                        //生成连接token
+	SendMessage(message *socket.Message, to ...interface{}) error //发送消息
 }
 
 // Session服务

@@ -22,7 +22,7 @@ func (s *service) GenToken(session string) (string, error) {
 }
 
 // SendMessage 发送消息
-func (s *service) SendMessage(message *Message, to ...interface{}) error {
+func (s *service) SendMessage(message *socket.Message, to ...interface{}) error {
 	if message == nil {
 		return errors.New("消息不能为空")
 	}

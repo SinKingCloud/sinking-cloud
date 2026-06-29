@@ -20,3 +20,18 @@ type SendToAllParam struct {
 	IsText bool
 	Data   []byte
 }
+
+// Message 前台 WebSocket 消息格式
+type Message struct {
+	Id   string      `json:"id"`
+	Type string      `json:"type"`
+	Data interface{} `json:"data"`
+	Time int64       `json:"time"`
+}
+
+// SendToUserParam 给前台用户发送消息
+type SendToUserParam struct {
+	Message  *Message
+	UserIds  []int64
+	Sessions []string
+}
