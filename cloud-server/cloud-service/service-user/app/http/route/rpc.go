@@ -20,6 +20,8 @@ func loadRpc(s *sinking_web.Engine) {
 	rpc.RegisterFunc("SetUserConfigs", rpc2.Config.SetUserConfigs)                            //批量更新用户配置
 	rpc.RegisterFunc("GenSocketToken", rpc2.Socket.GenToken)                                  //生成socket连接token
 	rpc.RegisterFunc("SendToUser", rpc2.Socket.SendToUser)                                    //给前台用户发送socket消息
+	rpc.RegisterFunc("CreateMessage", rpc2.Message.Create)                                    //创建消息
+	rpc.RegisterFunc("CreateMessages", rpc2.Message.Creates)                                  //批量创建消息
 	rpc.RegisterFunc("Login", rpc2.Auth.Login)                                                //账号登录
 	rpc.RegisterFunc("Logout", rpc2.Auth.Logout)                                              //登陆注销
 	rpc.RegisterFunc("ClearExpireSessions", rpc2.Auth.ClearExpireSessions)                    //清理过期会话

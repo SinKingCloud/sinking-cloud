@@ -1,8 +1,9 @@
 package rpc
 
 var (
-	Config = &configService{}
-	Auth   = &authService{}
-	User   = &userService{}
-	Socket = &socketService{}
+	Config  = &configService{}
+	Auth    = &authService{}
+	User    = &userService{}
+	Socket  = &socketService{}
+	Message = &messageService{}
 )

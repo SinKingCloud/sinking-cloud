@@ -24,12 +24,3 @@ func (*Service) CreateOrder(userId int64, name string, describe string, amount f
 	}
 	return orderId, nil
 }
-
-// CleanExpiredUnPayOrder 清理过期未支付订单
-func (*Service) CleanExpiredUnPayOrder(day int) (successNum int64, err error) {
-	err = rpc.InvokeFunc(constant.ServicePay, "CleanExpiredUnPayOrder", day, &successNum)
-	if err != nil {
-		return 0, errors.Join(errors.New("清理过期未支付订单失败"), err)
-	}
-	return successNum, nil
-}
