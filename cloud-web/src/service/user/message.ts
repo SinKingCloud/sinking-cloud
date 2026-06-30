@@ -16,6 +16,11 @@ export async function readMessage(params: API.RequestParams = {}) {
     return post("/user/message/read", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
 }
 
+/** 用户全部消息已读 */
+export async function readAllMessage(params: API.RequestParams = {}) {
+    return post("/user/message/read", {...params?.body, all: true}, params?.onSuccess, params?.onFail, params?.onFinally);
+}
+
 /** 删除用户消息 */
 export async function deleteMessage(params: API.RequestParams = {}) {
     return post("/user/message/delete", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);

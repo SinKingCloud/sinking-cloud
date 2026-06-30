@@ -97,7 +97,27 @@ func (s *service) Read(userId int64, ids []int64) error {
 	if len(readIds) == 0 {
 		return errors.New("消息列表不能为空")
 	}
-	if err := s.repositoryMessage.ReadByIdsAndUserId(readIds, userId, str.DateTime(time.Now())); err != nil {
+	readTime := str.DateTime(time.Now())
+	if err := s.repositoryMessage.UpdateByIdsAndUserId(readIds, userId, &repositoryMessage.UpdateMessage{
+		Status:   message_status.Read,
+		ReadTime: readTime,
+	}); err != nil {
+		return err
+	}
+	s.notifyMessageRefresh([]int64{userId})
+	return nil
+}
+
+// ReadAll 设置用户全部消息为已读
+func (s *service) ReadAll(userId int64) error {
+	if userId <= 0 {
+		return errors.New("用户信息错误")
+	}
+	readTime := str.DateTime(time.Now())
+	if err := s.repositoryMessage.UpdateByIdsAndUserId(nil, userId, &repositoryMessage.UpdateMessage{
+		Status:   message_status.Read,
+		ReadTime: readTime,
+	}); err != nil {
 		return err
 	}
 	s.notifyMessageRefresh([]int64{userId})
