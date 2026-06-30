@@ -68,7 +68,7 @@ func NewService(
 	cache cache.Interface,
 	permissionQueue *queue.UnicastClient[*queuePermission.Task],
 ) *service {
-	return &service{
+	ins := &service{
 		repositoryRole:           repositoryRole,
 		repositoryPermission:     repositoryPermission,
 		repositoryUserRole:       repositoryUserRole,
@@ -79,4 +79,8 @@ func NewService(
 		cache:                    cache,
 		permissionQueue:          permissionQueue,
 	}
+	if permissionQueue != nil {
+		permissionQueue.SetConsumer(ins.consumePermissionTask)
+	}
+	return ins
 }

@@ -28,10 +28,7 @@ type Service interface {
 	UpdateById(id int64, data *task.UpdateTask) error
 	Run(id int64) error
 	ReloadAll() error
-	TaskQueueHandle(message *task2.Message) error
-	ReloadQueueHandle(message *reload.Message) error
-	LogQueueHandle(message *log2.Message) error
-	RegisterQueueHandle(message *register2.Message) error
+	CheckReload() error
 	Register(id int64, Type int, name string, spec string, script string, concurrent int, status int) error
 }
 
@@ -78,6 +75,18 @@ func NewService(
 		cron:           cron.New(),
 		closeChan:      make(chan struct{}),
 		dispatchNode:   "cron-" + str.NewStringTool(str.GetSnowWorkIns().GetUuid()).Md5(true),
+	}
+	if taskQueue != nil {
+		taskQueue.SetConsumer(ins.consumeTaskMessage)
+	}
+	if reloadQueue != nil {
+		reloadQueue.SetConsumer(ins.consumeReloadMessage)
+	}
+	if logQueue != nil {
+		logQueue.SetConsumer(ins.consumeLogMessage)
+	}
+	if registerQueue != nil {
+		registerQueue.SetConsumer(ins.consumeRegisterMessage)
 	}
 	ins.start()
 	return ins

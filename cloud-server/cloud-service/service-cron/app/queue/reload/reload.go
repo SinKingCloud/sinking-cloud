@@ -24,10 +24,10 @@ type Message struct {
 }
 
 // Register 注册任务队列
-func Register(consumer func(param *Message) error) *queue.BroadcastClient[*Message] {
+func Register() *queue.BroadcastClient[*Message] {
 	producerThreadNum := 1
 	consumerThreadNum := 1
-	ins, err := queue.RegisterNatsBroadcast[*Message](TopicName, producerThreadNum, consumerThreadNum, consumer, global.App.GetNatsUrl())
+	ins, err := queue.RegisterNatsBroadcast[*Message](TopicName, producerThreadNum, consumerThreadNum, nil, global.App.GetNatsUrl())
 	if err != nil {
 		global.App.Log.Println(TopicName+" queue初始化失败", err)
 		panic(err)

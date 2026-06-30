@@ -14,8 +14,8 @@ type Task struct {
 	Path string
 }
 
-func Register(consumer func(*Task) error) *queue.UnicastClient[*Task] {
-	ins, err := queue.RegisterNatsUnicast[*Task](TopicName, 1, 1, consumer, global.App.GetNatsUrl())
+func Register() *queue.UnicastClient[*Task] {
+	ins, err := queue.RegisterNatsUnicast[*Task](TopicName, 1, 1, nil, global.App.GetNatsUrl())
 	if err != nil {
 		global.App.Log.Println(TopicName+" queue初始化失败", err)
 		panic(err)

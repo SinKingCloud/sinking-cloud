@@ -62,16 +62,23 @@ func (s *service) log(taskId int64, contents ...string) {
 	})
 }
 
-// LogQueueHandle 记录日志
-func (s *service) LogQueueHandle(message *log.Message) error {
+// CheckReload 检查并重载任务。
+func (s *service) CheckReload() error {
+	return s.consumeReloadMessage(&reload.Message{
+		Action: reload.Check,
+	})
+}
+
+// consumeLogMessage 消费任务日志消息。
+func (s *service) consumeLogMessage(message *log.Message) error {
 	if message == nil {
 		return errors.New("消息不能为空")
 	}
 	return s.repositoryLog.Create(message.Log)
 }
 
-// RegisterQueueHandle 注册任务handle
-func (s *service) RegisterQueueHandle(message *register.Message) error {
+// consumeRegisterMessage 消费任务注册消息。
+func (s *service) consumeRegisterMessage(message *register.Message) error {
 	if message == nil {
 		return errors.New("注册任务消息不能为空")
 	}
@@ -82,8 +89,8 @@ func (s *service) RegisterQueueHandle(message *register.Message) error {
 	return err
 }
 
-// ReloadQueueHandle 执行重载handle
-func (s *service) ReloadQueueHandle(message *reload.Message) error {
+// consumeReloadMessage 消费任务重载消息。
+func (s *service) consumeReloadMessage(message *reload.Message) error {
 	if message == nil {
 		return errors.New("消息不能为空")
 	}
@@ -117,8 +124,8 @@ func (s *service) ReloadQueueHandle(message *reload.Message) error {
 	return nil
 }
 
-// TaskQueueHandle 执行任务handle
-func (s *service) TaskQueueHandle(message *task.Message) error {
+// consumeTaskMessage 消费任务执行消息。
+func (s *service) consumeTaskMessage(message *task.Message) error {
 	if message == nil || message.Id <= 0 {
 		return errors.New("任务消息不能为空")
 	}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/rand"
 	"sync"
+	"time"
 )
 
 type MemoryQueue struct {
@@ -27,11 +28,20 @@ func (r *MemoryQueue) ListenReceiveUnicast(topic string, receiveDo func(mqMsg Mq
 
 	go func(taskChan chan string, topic string) {
 		for value := range taskChan {
-			receiveDo(MqMsg{
+			if receiveDo(MqMsg{
 				RunType: ReceiveUnicast,
 				Topic:   topic,
 				Body:    value,
-			})
+			}) {
+				continue
+			}
+			time.Sleep(time.Second)
+			func() {
+				defer func() {
+					_ = recover()
+				}()
+				taskChan <- value
+			}()
 		}
 	}(ch, topic)
 	return nil
@@ -51,11 +61,20 @@ func (r *MemoryQueue) ListenReceiveBroadcast(topic string, receiveDo func(mqMsg 
 
 	go func(taskChan chan string, topic string) {
 		for value := range taskChan {
-			receiveDo(MqMsg{
+			if receiveDo(MqMsg{
 				RunType: ReceiveBroadcast,
 				Topic:   topic,
 				Body:    value,
-			})
+			}) {
+				continue
+			}
+			time.Sleep(time.Second)
+			func() {
+				defer func() {
+					_ = recover()
+				}()
+				taskChan <- value
+			}()
 		}
 	}(ch, topic)
 	return nil

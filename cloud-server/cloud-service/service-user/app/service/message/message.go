@@ -1,9 +1,11 @@
 package message
 
 import (
+	queueMessage "service-user/app/queue/message"
 	repositoryMessage "service-user/app/repository/message"
 	"service-user/app/service/socket"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
@@ -34,12 +36,18 @@ type Service interface {
 type service struct {
 	repositoryMessage repositoryMessage.Interface
 	socketService     socket.Service
+	messageQueue      *queue.UnicastClient[*queueMessage.Task]
 }
 
 // NewService 实例化service
-func NewService(repositoryMessage repositoryMessage.Interface, socketService socket.Service) *service {
-	return &service{
+func NewService(repositoryMessage repositoryMessage.Interface, socketService socket.Service, messageQueue *queue.UnicastClient[*queueMessage.Task]) *service {
+	ins := &service{
 		repositoryMessage: repositoryMessage,
 		socketService:     socketService,
+		messageQueue:      messageQueue,
 	}
+	if messageQueue != nil {
+		messageQueue.SetConsumer(ins.consumeCreateTask)
+	}
+	return ins
 }

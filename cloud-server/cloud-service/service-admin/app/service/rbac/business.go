@@ -211,6 +211,14 @@ func (s *service) RegisterPermissionAsync(name string, code string, path string)
 	})
 }
 
+// consumePermissionTask 消费权限注册任务。
+func (s *service) consumePermissionTask(task *queuePermission.Task) error {
+	if task == nil {
+		return nil
+	}
+	return s.RegisterPermission(task.Name, task.Code, task.Path)
+}
+
 // CheckUserHasPermission 判断用户是否含有权限
 func (s *service) CheckUserHasPermission(userId int64, path string) error {
 	if userId == constant.SuperAdminUserId {

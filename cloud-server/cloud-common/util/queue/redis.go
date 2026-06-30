@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -65,14 +66,39 @@ func (r *RedisQueue) ListenReceiveUnicast(topic string, receiveDo func(mqMsg MqM
 			case <-ctx.Done():
 				return
 			default:
-				// 读取 Stream 消息
-				streams, err := client.XReadGroup(ctx, &redis.XReadGroupArgs{
+				var streams []redis.XStream
+
+				// 优先接管长时间未ACK的pending消息，再读取当前consumer的pending消息和新消息。
+				messages, _, err := client.XAutoClaim(ctx, &redis.XAutoClaimArgs{
+					Stream:   streamKey,
 					Group:    groupName,
 					Consumer: consumerName,
-					Streams:  []string{streamKey, ">"},
+					MinIdle:  time.Minute,
+					Start:    "0-0",
 					Count:    1,
-					Block:    2 * 1e9, // 2秒阻塞
 				}).Result()
+				if err == nil && len(messages) > 0 {
+					streams = []redis.XStream{{
+						Stream:   streamKey,
+						Messages: messages,
+					}}
+				} else {
+					streams, err = client.XReadGroup(ctx, &redis.XReadGroupArgs{
+						Group:    groupName,
+						Consumer: consumerName,
+						Streams:  []string{streamKey, "0"},
+						Count:    1,
+					}).Result()
+					if err == redis.Nil || len(streams) == 0 || len(streams[0].Messages) == 0 {
+						streams, err = client.XReadGroup(ctx, &redis.XReadGroupArgs{
+							Group:    groupName,
+							Consumer: consumerName,
+							Streams:  []string{streamKey, ">"},
+							Count:    1,
+							Block:    2 * time.Second,
+						}).Result()
+					}
+				}
 
 				if err != nil {
 					if err == redis.Nil {

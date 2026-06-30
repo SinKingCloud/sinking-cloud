@@ -48,11 +48,19 @@ func NewService(name string, cache cache.Interface, queue *socketQueue.Queue) *s
 		return shards
 	}
 	shardCount := defaultShards()
-	return &service{
+	ins := &service{
 		name:        name,
 		cache:       cache,
 		queue:       queue,
 		groupSeed:   maphash.MakeSeed(),
 		groupShards: make([]sync.Map, shardCount),
 	}
+	if queue != nil {
+		queue.SetHandler(&socketQueue.Handler{
+			GetConnectionIdAddr: ins.GetConnectionIdAddr,
+			SendToLocalId:       ins.SendToLocalId,
+			SendToLocalAll:      ins.SendToLocalAll,
+		})
+	}
+	return ins
 }

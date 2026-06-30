@@ -4,6 +4,7 @@ import (
 	"errors"
 	"service-user/app/enum/message_status"
 	"service-user/app/model"
+	queueMessage "service-user/app/queue/message"
 	repositoryMessage "service-user/app/repository/message"
 	"strconv"
 	"strings"
@@ -18,21 +19,7 @@ func (s *service) Create(userId int64, title string, content string) error {
 	if userId <= 0 {
 		return errors.New("用户信息错误")
 	}
-	title = strings.TrimSpace(title)
-	if title == "" {
-		return errors.New("消息标题不能为空")
-	}
-	if err := s.repositoryMessage.Create(&model.Message{
-		Id:      str.GetSnowWorkIns().GetId(),
-		UserId:  userId,
-		Title:   title,
-		Content: content,
-		Status:  message_status.Unread,
-	}); err != nil {
-		return err
-	}
-	s.notifyMessageRefresh([]int64{userId})
-	return nil
+	return s.Creates([]int64{userId}, title, content)
 }
 
 // Creates 批量创建用户消息
@@ -44,8 +31,7 @@ func (s *service) Creates(userIds []int64, title string, content string) error {
 	if title == "" {
 		return errors.New("消息标题不能为空")
 	}
-	messages := make([]*model.Message, 0, len(userIds))
-	notifyUserIds := make([]int64, 0, len(userIds))
+	ids := make([]int64, 0, len(userIds))
 	userMap := make(map[int64]struct{}, len(userIds))
 	for _, userId := range userIds {
 		if userId <= 0 {
@@ -55,12 +41,65 @@ func (s *service) Creates(userIds []int64, title string, content string) error {
 			continue
 		}
 		userMap[userId] = struct{}{}
-		notifyUserIds = append(notifyUserIds, userId)
+		ids = append(ids, userId)
+	}
+	if len(ids) == 0 {
+		return errors.New("用户列表不能为空")
+	}
+	if s.messageQueue == nil {
+		return errors.New("消息队列未初始化")
+	}
+	const createQueueBatchSize = 1000
+	for start := 0; start < len(ids); start += createQueueBatchSize {
+		end := start + createQueueBatchSize
+		if end > len(ids) {
+			end = len(ids)
+		}
+		if err := s.messageQueue.SendUnicastTask(&queueMessage.Task{
+			UserIds: ids[start:end],
+			Title:   title,
+			Content: content,
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// consumeCreateTask 消费创建消息任务。
+func (s *service) consumeCreateTask(task *queueMessage.Task) error {
+	if task == nil {
+		return errors.New("消息任务不能为空")
+	}
+	if len(task.UserIds) == 0 {
+		return errors.New("用户列表不能为空")
+	}
+	title := strings.TrimSpace(task.Title)
+	if title == "" {
+		return errors.New("消息标题不能为空")
+	}
+	ids := make([]int64, 0, len(task.UserIds))
+	userMap := make(map[int64]struct{}, len(task.UserIds))
+	for _, userId := range task.UserIds {
+		if userId <= 0 {
+			continue
+		}
+		if _, ok := userMap[userId]; ok {
+			continue
+		}
+		userMap[userId] = struct{}{}
+		ids = append(ids, userId)
+	}
+	if len(ids) == 0 {
+		return errors.New("用户列表不能为空")
+	}
+	messages := make([]*model.Message, 0, len(ids))
+	for _, userId := range ids {
 		messages = append(messages, &model.Message{
 			Id:      str.GetSnowWorkIns().GetId(),
 			UserId:  userId,
 			Title:   title,
-			Content: content,
+			Content: task.Content,
 			Status:  message_status.Unread,
 		})
 	}
@@ -70,7 +109,7 @@ func (s *service) Creates(userIds []int64, title string, content string) error {
 	if err := s.repositoryMessage.Creates(messages); err != nil {
 		return err
 	}
-	s.notifyMessageRefresh(notifyUserIds)
+	s.notifyMessageRefresh(ids)
 	return nil
 }
 
