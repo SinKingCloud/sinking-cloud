@@ -20,8 +20,6 @@ import (
 
 // Service service接口
 type Service interface {
-	SetQueue(taskQueue *queue.UnicastClient[*task2.Message], reloadQueue *queue.BroadcastClient[*reload.Message], logQueue *queue.UnicastClient[*log2.Message], registerQueue *queue.UnicastClient[*register2.Message])
-	Start()
 	Close()
 	FindById(id int64, refresh bool) (*model.Task, error)
 	Select(where *task.SelectTask, orderByField string, orderByType string, page int, pageSize int) (list []*task.Task, total int64, err error)
@@ -37,7 +35,7 @@ type Service interface {
 	Register(id int64, Type int, name string, spec string, script string, concurrent int, status int) error
 }
 
-// Session服务
+// 任务服务
 type service struct {
 	repositoryLog  log.Interface
 	repositoryTask task.Interface
@@ -57,24 +55,30 @@ type service struct {
 	closeChan      chan struct{}
 }
 
-// SetQueue 设置队列实例
-func (s *service) SetQueue(taskQueue *queue.UnicastClient[*task2.Message], reloadQueue *queue.BroadcastClient[*reload.Message], logQueue *queue.UnicastClient[*log2.Message], registerQueue *queue.UnicastClient[*register2.Message]) {
-	s.taskQueue = taskQueue
-	s.reloadQueue = reloadQueue
-	s.logQueue = logQueue
-	s.registerQueue = registerQueue
-}
-
 // NewService 实例化service
-func NewService(repositoryLog log.Interface, repositoryTask task.Interface, cache cache.Interface, database *database.Database) *service {
+func NewService(
+	repositoryLog log.Interface,
+	repositoryTask task.Interface,
+	cache cache.Interface,
+	database *database.Database,
+	taskQueue *queue.UnicastClient[*task2.Message],
+	reloadQueue *queue.BroadcastClient[*reload.Message],
+	logQueue *queue.UnicastClient[*log2.Message],
+	registerQueue *queue.UnicastClient[*register2.Message],
+) *service {
 	ins := &service{
 		repositoryLog:  repositoryLog,
 		repositoryTask: repositoryTask,
 		database:       database,
 		cache:          cache,
+		taskQueue:      taskQueue,
+		reloadQueue:    reloadQueue,
+		logQueue:       logQueue,
+		registerQueue:  registerQueue,
 		cron:           cron.New(),
 		closeChan:      make(chan struct{}),
 		dispatchNode:   "cron-" + str.NewStringTool(str.GetSnowWorkIns().GetUuid()).Md5(true),
 	}
+	ins.start()
 	return ins
 }

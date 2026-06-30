@@ -8,6 +8,7 @@ import (
 	"service-admin/app/enum/menu_type"
 	"service-admin/app/enum/role_status"
 	"service-admin/app/model"
+	queuePermission "service-admin/app/queue/permission"
 	menu2 "service-admin/app/repository/menu"
 	"service-admin/app/repository/permission"
 	"service-admin/app/repository/role"
@@ -196,6 +197,18 @@ func (s *service) RegisterPermission(name string, code string, path string) erro
 	s.clearCacheWithPermissions(clearPaths)
 	s.clearCacheWithEnums([]string{"permission"})
 	return nil
+}
+
+// RegisterPermissionAsync 异步注册权限
+func (s *service) RegisterPermissionAsync(name string, code string, path string) {
+	if s.permissionQueue == nil {
+		return
+	}
+	s.permissionQueue.SendUnicastTask(&queuePermission.Task{
+		Name: name,
+		Code: code,
+		Path: path,
+	})
 }
 
 // CheckUserHasPermission 判断用户是否含有权限

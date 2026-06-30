@@ -24,3 +24,19 @@ func (s *service) SendToLocalAll(group string, messageType int, payload []byte) 
 	}
 	return result.Queued, result.Dropped, result.Closed, nil
 }
+
+// SendToId 给指定group指定id发送消息
+func (s *service) SendToId(group string, id string, isText bool, data []byte) {
+	if s.queue == nil {
+		return
+	}
+	s.queue.SendToId(group, id, isText, data)
+}
+
+// SendToAll 给指定group所有id发送消息
+func (s *service) SendToAll(group string, isText bool, data []byte) {
+	if s.queue == nil {
+		return
+	}
+	s.queue.SendToAll(group, isText, data)
+}

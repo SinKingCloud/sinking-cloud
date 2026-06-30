@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+	queuePermission "service-admin/app/queue/permission"
 	config2 "service-admin/app/repository/config"
 	"service-admin/app/repository/menu"
 	"service-admin/app/repository/menu_permission"
@@ -45,7 +47,18 @@ func Init() {
 
 	Config = config.NewService(configRepository, cache)
 	Auth = auth.NewService(authService, sessionRepository, userRepository, database, cache)
-	Rbac = rbac.NewService(roleRepository, permissionRepository, userRoleRepository, roleMenuRepository, menuRepository, menuPermRepository, database, cache)
+	var rbacService rbac.Service
+	permissionQueue := queuePermission.Register(func(task *queuePermission.Task) error {
+		if rbacService == nil {
+			return errors.New("rbac服务未初始化")
+		}
+		if task != nil {
+			_ = rbacService.RegisterPermission(task.Name, task.Code, task.Path)
+		}
+		return nil
+	})
+	rbacService = rbac.NewService(roleRepository, permissionRepository, userRoleRepository, roleMenuRepository, menuRepository, menuPermRepository, database, cache, permissionQueue)
+	Rbac = rbacService
 	User = user.NewService(userRepository, sessionRepository, userRoleRepository, configRepository, Rbac, database, cache)
 	Dashboard = dashboard.NewService(consul, cache)
 }

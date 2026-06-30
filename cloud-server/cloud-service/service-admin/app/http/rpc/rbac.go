@@ -2,8 +2,7 @@ package rpc
 
 import (
 	"encoding/json"
-	"service-admin/app/queue"
-	"service-admin/app/queue/permission"
+	"service-admin/app/service"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/rbac"
 )
@@ -20,11 +19,7 @@ func (*rbacService) RegisterPermissions(params json.RawMessage) (interface{}, er
 	}
 	if list != nil && len(list) > 0 {
 		for _, v := range list {
-			queue.Permission.SendUnicastTask(&permission.Task{
-				Name: v.Name,
-				Code: v.Code,
-				Path: v.Path,
-			})
+			service.Rbac.RegisterPermissionAsync(v.Name, v.Code, v.Path)
 		}
 	}
 	return true, nil

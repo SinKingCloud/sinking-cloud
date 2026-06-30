@@ -2,6 +2,7 @@ package rbac
 
 import (
 	"service-admin/app/model"
+	queuePermission "service-admin/app/queue/permission"
 	"service-admin/app/repository/menu"
 	"service-admin/app/repository/menu_permission"
 	"service-admin/app/repository/permission"
@@ -11,11 +12,13 @@ import (
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/queue"
 )
 
 // Service service接口
 type Service interface {
 	RegisterPermission(name string, code string, path string) error                                                                                           //注册权限
+	RegisterPermissionAsync(name string, code string, path string)                                                                                            //异步注册权限
 	CheckUserHasPermission(userId int64, path string) error                                                                                                   //判断用户是否含有权限
 	GetPermissionEnum(refresh bool) (map[string]string, error)                                                                                                //获取权限枚举
 	GetRoleNameEnum(refresh bool) (map[int64]string, error)                                                                                                   //获取角色名称枚举
@@ -50,6 +53,7 @@ type service struct {
 	repositoryMenuPermission menu_permission.Interface
 	database                 *database.Database
 	cache                    cache.Interface
+	permissionQueue          *queue.UnicastClient[*queuePermission.Task]
 }
 
 // NewService 实例化service
@@ -62,6 +66,7 @@ func NewService(
 	repositoryMenuPermission menu_permission.Interface,
 	database *database.Database,
 	cache cache.Interface,
+	permissionQueue *queue.UnicastClient[*queuePermission.Task],
 ) *service {
 	return &service{
 		repositoryRole:           repositoryRole,
@@ -72,5 +77,6 @@ func NewService(
 		repositoryMenuPermission: repositoryMenuPermission,
 		database:                 database,
 		cache:                    cache,
+		permissionQueue:          permissionQueue,
 	}
 }

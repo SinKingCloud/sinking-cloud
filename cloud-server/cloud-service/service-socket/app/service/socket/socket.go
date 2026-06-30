@@ -3,6 +3,7 @@ package socket
 import (
 	"hash/maphash"
 	"runtime"
+	socketQueue "service-socket/app/queue/socket"
 	"sync"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
@@ -17,18 +18,21 @@ type Service interface {
 	GetConnectionIdAddr(group string, id string) (string, error)                                                   //获取连接地址
 	SendToLocalId(group string, id string, messageType int, payload []byte) error                                  //给ID发送消息(本机)
 	SendToLocalAll(group string, messageType int, payload []byte) (queued int, dropped int, closed int, err error) //给全体发送消息(本机)
+	SendToId(group string, id string, isText bool, data []byte)                                                    //给ID发送消息
+	SendToAll(group string, isText bool, data []byte)                                                              //给全体发送消息
 }
 
 // Session服务
 type service struct {
 	name        string
 	cache       cache.Interface
+	queue       *socketQueue.Queue
 	groupSeed   maphash.Seed
 	groupShards []sync.Map
 }
 
 // NewService 实例化service
-func NewService(name string, cache cache.Interface) *service {
+func NewService(name string, cache cache.Interface, queue *socketQueue.Queue) *service {
 	defaultShards := func() int {
 		target := runtime.GOMAXPROCS(0) * 4
 		if target <= 0 {
@@ -47,6 +51,7 @@ func NewService(name string, cache cache.Interface) *service {
 	return &service{
 		name:        name,
 		cache:       cache,
+		queue:       queue,
 		groupSeed:   maphash.MakeSeed(),
 		groupShards: make([]sync.Map, shardCount),
 	}

@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"encoding/json"
-	"service-socket/app/queue"
 	"service-socket/app/service"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/socket"
@@ -34,7 +33,7 @@ func (*socketService) SendToId(params json.RawMessage) (interface{}, error) {
 	}
 	for _, v := range param {
 		if v != nil && v.Group != "" && v.Id != "" {
-			queue.Socket.SendToId(v.Group, v.Id, v.IsText, v.Data)
+			service.Socket.SendToId(v.Group, v.Id, v.IsText, v.Data)
 		}
 	}
 	return true, nil
@@ -49,7 +48,7 @@ func (*socketService) SendToAll(params json.RawMessage) (interface{}, error) {
 	}
 	for _, v := range param {
 		if v != nil && v.Group != "" {
-			queue.Socket.SendToAll(v.Group, v.IsText, v.Data)
+			service.Socket.SendToAll(v.Group, v.IsText, v.Data)
 		}
 	}
 	return true, nil

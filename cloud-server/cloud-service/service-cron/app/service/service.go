@@ -1,6 +1,10 @@
 package service
 
 import (
+	queueLog "service-cron/app/queue/log"
+	queueRegister "service-cron/app/queue/register"
+	queueReload "service-cron/app/queue/reload"
+	queueTask "service-cron/app/queue/task"
 	log2 "service-cron/app/repository/log"
 	task2 "service-cron/app/repository/task"
 	"service-cron/app/service/log"
@@ -22,5 +26,19 @@ func Init() {
 	taskRepository := task2.NewRepository(database)
 
 	Log = log.NewService(logRepository)
-	Task = task.NewService(logRepository, taskRepository, cache, database)
+	var taskService task.Service
+	logQueue := queueLog.Register(func(message *queueLog.Message) error {
+		return taskService.LogQueueHandle(message)
+	})
+	reloadQueue := queueReload.Register(func(message *queueReload.Message) error {
+		return taskService.ReloadQueueHandle(message)
+	})
+	taskQueue := queueTask.Register(func(message *queueTask.Message) error {
+		return taskService.TaskQueueHandle(message)
+	})
+	registerQueue := queueRegister.Register(func(message *queueRegister.Message) error {
+		return taskService.RegisterQueueHandle(message)
+	})
+	taskService = task.NewService(logRepository, taskRepository, cache, database, taskQueue, reloadQueue, logQueue, registerQueue)
+	Task = taskService
 }
