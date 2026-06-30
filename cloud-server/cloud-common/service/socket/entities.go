@@ -36,9 +36,7 @@ type Message struct {
 
 // SendToUserParam 给前台用户发送消息
 type SendToUserParam struct {
-	Message         *Message
-	UserIds         []int64
-	Sessions        []string
-	ExcludeUserIds  []int64
-	ExcludeSessions []string
+	Message  *Message
+	UserIds  []int64
+	Sessions []string
 }

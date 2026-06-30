@@ -9,7 +9,7 @@ import (
 // Clear 清空消息
 func (Controller) Clear(c *context.Context) {
 	u := c.GetUserInfo()
-	if err := service.Message.Clear(u.Id, u.Token); err != nil {
+	if err := service.Message.Clear(u.Id); err != nil {
 		c.Error(err.Error())
 		return
 	}

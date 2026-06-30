@@ -75,7 +75,7 @@ func (s *service) Creates(userIds []int64, title string, content string) error {
 }
 
 // Read 设置用户消息为已读
-func (s *service) Read(userId int64, ids []int64, excludeSessions ...string) error {
+func (s *service) Read(userId int64, ids []int64) error {
 	if userId <= 0 {
 		return errors.New("用户信息错误")
 	}
@@ -100,12 +100,12 @@ func (s *service) Read(userId int64, ids []int64, excludeSessions ...string) err
 	if err := s.repositoryMessage.ReadByIdsAndUserId(readIds, userId, str.DateTime(time.Now())); err != nil {
 		return err
 	}
-	s.notifyMessageRefresh([]int64{userId}, excludeSessions...)
+	s.notifyMessageRefresh([]int64{userId})
 	return nil
 }
 
 // Delete 删除用户消息
-func (s *service) Delete(userId int64, ids []int64, excludeSessions ...string) error {
+func (s *service) Delete(userId int64, ids []int64) error {
 	if userId <= 0 {
 		return errors.New("用户信息错误")
 	}
@@ -130,19 +130,19 @@ func (s *service) Delete(userId int64, ids []int64, excludeSessions ...string) e
 	if err := s.repositoryMessage.DeleteByIdsAndUserId(deleteIds, userId); err != nil {
 		return err
 	}
-	s.notifyMessageRefresh([]int64{userId}, excludeSessions...)
+	s.notifyMessageRefresh([]int64{userId})
 	return nil
 }
 
 // Clear 清空用户消息
-func (s *service) Clear(userId int64, excludeSessions ...string) error {
+func (s *service) Clear(userId int64) error {
 	if userId <= 0 {
 		return errors.New("用户信息错误")
 	}
 	if err := s.repositoryMessage.DeleteByUserId(userId); err != nil {
 		return err
 	}
-	s.notifyMessageRefresh([]int64{userId}, excludeSessions...)
+	s.notifyMessageRefresh([]int64{userId})
 	return nil
 }
 
@@ -186,7 +186,7 @@ func (s *service) SelectByUserId(userId int64, where *repositoryMessage.SelectMe
 }
 
 // GetInfoByUserId 查询用户消息详情，未读消息会自动标记为已读。
-func (s *service) GetInfoByUserId(userId int64, id int64, excludeSessions ...string) (*Message, error) {
+func (s *service) GetInfoByUserId(userId int64, id int64) (*Message, error) {
 	if userId <= 0 || id <= 0 {
 		return nil, errors.New("参数错误")
 	}
@@ -209,7 +209,7 @@ func (s *service) GetInfoByUserId(userId int64, id int64, excludeSessions ...str
 		info.Status = message_status.Read
 		info.ReadTime = readTime
 		info.UpdateTime = readTime
-		s.notifyMessageRefresh([]int64{userId}, excludeSessions...)
+		s.notifyMessageRefresh([]int64{userId})
 	}
 	return &Message{
 		Id:         info.Id,
@@ -223,7 +223,7 @@ func (s *service) GetInfoByUserId(userId int64, id int64, excludeSessions ...str
 }
 
 // notifyMessageRefresh 通知前端重新拉取消息列表；提醒失败不影响主业务。
-func (s *service) notifyMessageRefresh(userIds []int64, excludeSessions ...string) {
+func (s *service) notifyMessageRefresh(userIds []int64) {
 	if s.socketService == nil || len(userIds) == 0 {
 		return
 	}
@@ -249,10 +249,6 @@ func (s *service) notifyMessageRefresh(userIds []int64, excludeSessions ...strin
 			"refresh": true,
 		},
 		Time: time.Now().UnixMilli(),
-	}
-	if len(excludeSessions) > 0 {
-		_ = s.socketService.SendMessageExcludeSessions(message, excludeSessions, ids)
-		return
 	}
 	_ = s.socketService.SendMessage(message, ids)
 }

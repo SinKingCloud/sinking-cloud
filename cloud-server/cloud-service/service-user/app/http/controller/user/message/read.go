@@ -16,7 +16,7 @@ func (Controller) Read(c *context.Context) {
 		return
 	}
 	u := c.GetUserInfo()
-	if err := service.Message.Read(u.Id, form.Ids, u.Token); err != nil {
+	if err := service.Message.Read(u.Id, form.Ids); err != nil {
 		c.Error(err.Error())
 		return
 	}

@@ -16,7 +16,7 @@ func (Controller) Info(c *context.Context) {
 		return
 	}
 	u := c.GetUserInfo()
-	data, err := service.Message.GetInfoByUserId(u.Id, form.Id, u.Token)
+	data, err := service.Message.GetInfoByUserId(u.Id, form.Id)
 	if err != nil {
 		c.Error(err.Error())
 		return

@@ -23,23 +23,6 @@ func (s *service) GenToken(session string) (string, error) {
 
 // SendMessage 发送消息
 func (s *service) SendMessage(message *socket.Message, to ...interface{}) error {
-	return s.sendMessage(message, nil, to...)
-}
-
-// SendMessageExcludeSessions 排除会话或用户发送消息
-func (s *service) SendMessageExcludeSessions(message *socket.Message, exclude interface{}, to ...interface{}) error {
-	excludeSessions, err := s.parseSessions(exclude)
-	if err != nil {
-		return err
-	}
-	if excludeSessions == nil {
-		excludeSessions = []string{}
-	}
-	return s.sendMessage(message, excludeSessions, to...)
-}
-
-// sendMessage 发送消息；普通发送 to 为空时广播，排除发送必须指定目标。
-func (s *service) sendMessage(message *socket.Message, excludeSessions []string, to ...interface{}) error {
 	if message == nil {
 		return errors.New("消息不能为空")
 	}
@@ -48,9 +31,6 @@ func (s *service) sendMessage(message *socket.Message, excludeSessions []string,
 		return errors.New("处理消息失败")
 	}
 	if len(to) <= 0 {
-		if excludeSessions != nil {
-			return errors.New("排除发送必须指定接收对象")
-		}
 		s.socketService.BatchSendToAll([]*socket.SendToAllParam{{
 			Group:  constant.ServiceUser,
 			IsText: true,
@@ -62,24 +42,15 @@ func (s *service) sendMessage(message *socket.Message, excludeSessions []string,
 	if err != nil {
 		return err
 	}
-	return s.sendToSessions(bytes, sessions, excludeSessions)
+	return s.sendToSessions(bytes, sessions)
 }
 
-// sendToSessions 向指定会话发送消息，并去重、过滤排除会话。
-func (s *service) sendToSessions(bytes []byte, sessions []string, excludeSessions []string) error {
+// sendToSessions 向指定会话发送消息，并对会话去重。
+func (s *service) sendToSessions(bytes []byte, sessions []string) error {
 	var list []*socket.SendToIdParam
 	sessionMap := make(map[string]struct{}, len(sessions))
-	excludeSessionMap := make(map[string]struct{}, len(excludeSessions))
-	for _, session := range excludeSessions {
-		if session != "" {
-			excludeSessionMap[session] = struct{}{}
-		}
-	}
 	for _, session := range sessions {
 		if session == "" {
-			continue
-		}
-		if _, ok := excludeSessionMap[session]; ok {
 			continue
 		}
 		if _, ok := sessionMap[session]; ok {
