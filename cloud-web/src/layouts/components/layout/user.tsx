@@ -515,6 +515,13 @@ const RightTop: React.FC = () => {
     }
 
     return <>
+        <Tooltip title={theme?.getModeName(theme?.mode as any)}>
+            <Icon type={theme?.isDarkMode() ? 'icon-dark' : (theme?.isAutoMode() ? 'icon-auto' : 'icon-light')}
+                  className={icon}
+                  onClick={() => {
+                      theme?.toggle?.();
+                  }}/>
+        </Tooltip>
         <Popover
             rootClassName={messageBox}
             placement="bottomRight"
@@ -604,13 +611,6 @@ const RightTop: React.FC = () => {
                 </div>
             )}
         </ProModal>
-        <Tooltip title={theme?.getModeName(theme?.mode as any)}>
-            <Icon type={theme?.isDarkMode() ? 'icon-dark' : (theme?.isAutoMode() ? 'icon-auto' : 'icon-light')}
-                  className={icon}
-                  onClick={() => {
-                      theme?.toggle?.();
-                  }}/>
-        </Tooltip>
         <Popover rootClassName={box} autoAdjustOverflow={false}
                  placement="bottomRight"
                  content={<>
