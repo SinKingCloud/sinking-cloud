@@ -25,6 +25,8 @@ type SocketOptionsRef = {
 
 const DEFAULT_SOCKET_PATH = "/socket";
 
+export const MESSAGE_REFRESH = "message.refresh";
+
 // 模块级单例状态：多个 useSocket 调用共享同一个真实 WebSocket 连接。
 let sharedSocket: WebSocket | undefined;
 let connecting = false;
@@ -169,7 +171,7 @@ async function connectSocket() {
             emit("onOpen");
         };
 
-        ws.onmessage = (event) => {
+        ws.onmessage = (event: MessageEvent) => {
             void readMessageData(event.data).then((payload) => {
                 emit("onMessage", normalizeMessage(payload));
             });

@@ -1,14 +1,17 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useLocation, useModel, Outlet, history, useSelectedRoutes} from "umi";
 import {historyPush, getCurrentMenus, getFirstMenuWithoutChildren, getParentList} from "@/utils/route";
 import {createStyles} from 'antd-style';
 import Settings from "@/../config/defaultSettings";
 import defaultSettings from "@/../config/defaultSettings";
-import {Icon, Layout, ProModal, useTheme} from "sinking-antd";
+import {Icon, Layout, ProModal, ProModalRef, Title, useTheme} from "sinking-antd";
 import {getPath} from "@/utils/assets";
 import {deleteHeader} from "@/utils/auth";
 import {logout} from "@/service/common/login";
-import {App, Avatar, Button, Col, Popover, Row, Tooltip, Typography} from "antd";
+import {getMessageInfo, getMessageList} from "@/service/user/message";
+import useSocket, {MESSAGE_REFRESH} from "@/utils/socket";
+import {App, Avatar, Button, Col, Empty, Grid, Popover, Row, Spin, Tooltip, Typography} from "antd";
+import {ago} from "@/utils/time";
 
 /**
  * 样式
@@ -135,6 +138,239 @@ const useRightTopStyles = createStyles(({css, token, isDarkMode}: any): any => {
             color: isDarkMode ? token.colorTextSecondary : "rgb(150,150,150)"
 
         },
+        messageTrigger: css`
+            position: relative;
+            color: ${token.colorPrimaryHover} !important;
+
+            &:hover {
+                color: ${token.colorPrimaryHover} !important;
+            }
+
+            &[data-count]:after {
+                content: attr(data-count);
+                position: absolute;
+                top: 4px;
+                right: 3px;
+                min-width: 13px;
+                height: 13px;
+                padding: 0 3px;
+                border: 1px solid ${isDarkMode ? token.colorBgContainer : "#fff"};
+                border-radius: 999px;
+                background: ${token.colorError};
+                color: #fff;
+                font-size: 9px;
+                font-weight: 500;
+                line-height: 11px;
+                text-align: center;
+                transform: translate(42%, -42%);
+                pointer-events: none;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+            }
+        `,
+        messageBox: css`
+            &.ant-popover {
+                max-width: calc(100vw - 24px);
+            }
+
+            .ant-popover-content,
+            .ant-popover-inner,
+            .ant-popover-container,
+            .ant-spin-nested-loading,
+            .ant-spin-container {
+                max-width: 100%;
+            }
+
+            .ant-popover-container {
+                width: 310px;
+                max-width: calc(100vw - 24px);
+                overflow: hidden;
+                border-radius: ${token.borderRadiusLG}px;
+                box-shadow: ${token.boxShadowSecondary};
+            }
+
+            .ant-popover-inner,
+            .ant-popover-container {
+                padding: 0 !important;
+            }
+
+            .ant-popover-arrow:before {
+                background: ${isDarkMode ? token.colorBgElevated : token.colorBgContainer} !important;
+            }
+
+            @media (max-width: 575px) {
+                &.ant-popover {
+                    left: 12px !important;
+                    right: 12px !important;
+                    width: auto !important;
+                    max-width: none;
+                }
+
+                .ant-popover-content,
+                .ant-popover-inner,
+                .ant-popover-container,
+                .ant-spin-nested-loading,
+                .ant-spin-container {
+                    width: 100%;
+                }
+
+                .ant-popover-container {
+                    max-width: none;
+                }
+
+                .ant-popover-arrow {
+                    display: none;
+                }
+            }
+        `,
+        messageList: css`
+            background: ${isDarkMode ? token.colorBgElevated : token.colorBgContainer};
+
+            .message-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                padding: 13px 14px 11px;
+                border-bottom: 1px solid ${isDarkMode ? "rgba(255,255,255,0.07)" : token.colorBorderSecondary};
+            }
+
+            .message-head-title {
+                color: ${token.colorTextHeading};
+                font-size: 14px;
+                font-weight: 700;
+                line-height: 22px;
+            }
+
+            .message-head-link {
+                color: ${token.colorPrimary};
+                font-size: 12px;
+                line-height: 18px;
+                white-space: nowrap;
+                cursor: pointer;
+            }
+
+            .message-head-link:hover {
+                color: ${token.colorPrimaryHover};
+            }
+
+            .message-body {
+                max-height: 348px;
+                overflow: auto;
+            }
+
+            .ant-empty {
+                margin: 34px 0;
+            }
+
+        `,
+        messageItem: css`
+            padding: 10px 14px;
+            border-radius: 0;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s ease;
+
+            &:hover {
+                background: ${isDarkMode ? "rgba(255,255,255,0.035)" : token.colorFillQuaternary};
+            }
+
+            .item-title {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                min-width: 0;
+                color: ${token.colorText};
+                font-size: 13px;
+                font-weight: 400;
+                line-height: 20px;
+            }
+
+            .item-title span:last-child {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                flex: 1;
+            }
+
+            .unread-dot {
+                width: 5px;
+                height: 5px;
+                border-radius: 50%;
+                flex: 0 0 auto;
+                background: ${token.colorPrimary};
+            }
+
+            .item-time {
+                margin-top: 5px;
+                padding-left: 13px;
+                font-size: 12px;
+                line-height: 17px;
+                color: ${token.colorTextTertiary};
+            }
+        `,
+        messageDetail: css`
+            padding: 0 4px;
+
+            .detail-header {
+                text-align: center;
+                padding: 16px 0 12px;
+                margin-bottom: 20px;
+                border-bottom: 1px solid ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"};
+            }
+
+            .detail-header h2 {
+                margin: 0;
+                color: ${token.colorTextHeading};
+                font-size: 20px;
+                font-weight: 600;
+                line-height: 1.4;
+            }
+
+            .detail-header .meta {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 8px 18px;
+                margin-top: 10px;
+                color: ${token.colorTextTertiary};
+                font-size: 12px;
+            }
+
+            .detail-content {
+                padding: 0 4px 12px;
+                color: ${token.colorText};
+                font-size: 14px;
+                line-height: 1.8;
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+
+            .detail-content p {
+                margin: 0 0 12px;
+            }
+
+            .detail-content p:last-child {
+                margin-bottom: 0;
+            }
+
+            .detail-content img {
+                display: block;
+                max-width: 100%;
+                margin: 12px 0;
+                border-radius: ${token.borderRadius}px;
+            }
+
+            .detail-content a {
+                color: ${token.colorPrimary};
+            }
+        `,
+        messageDetailSpin: css`
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
+        `,
     };
 });
 
@@ -149,6 +385,8 @@ const RightTop: React.FC = () => {
     const user = useModel("user");//用户信息
     const web = useModel("web");//站点信息
     const theme = useTheme();//主题信息
+    const screens = Grid.useBreakpoint();
+    const isMobile = Boolean((screens.xs || screens.sm) && !screens.md);
     const {message, modal} = App.useApp();
     const {
         styles: {
@@ -164,32 +402,89 @@ const RightTop: React.FC = () => {
             menu,
             menuItem,
             icon,
+            messageTrigger,
+            messageBox,
+            messageList,
+            messageItem,
+            messageDetail,
+            messageDetailSpin,
             menuItemLabel,
             menuItemLeadIcon
         }
     } = useRightTopStyles();
 
     /**
-     * 退出登录
+     * 消息部分
      */
-    const outLogin = async () => {
-        message?.loading({content: '正在退出登录', duration: 600000, key: "outLogin"});
-        await logout({
-            onSuccess: (r) => {
-                message?.success(r?.message || "退出登录成功")
-                deleteHeader()
-                user?.setWeb(undefined);
-                message?.destroy("outLogin")
-                historyPush("/");
-            },
-            onFail: (r) => {
-                message?.error(r?.message || "退出登录失败")
+    const detailModalRef = useRef<ProModalRef>({} as ProModalRef);
+    const [notice, setNotice] = useState<{ open: boolean; loading: boolean; list: any[]; total: number }>({
+        open: false,
+        loading: false,
+        list: [],
+        total: 0,
+    });
+    const [detailLoading, setDetailLoading] = useState(false);
+    const [detail, setDetail] = useState<any>();
+    const noticeCount = notice.total > 99 ? "99+" : String(notice.total);
+    const refreshNotice = useCallback(async (showLoading = false) => {
+        if (showLoading) {
+            setNotice((data) => ({...data, loading: true}));
+        }
+        try {
+            const resp = await getMessageList({
+                body: {page: 1, page_size: 5, status: "0"},
+            });
+            if (resp?.code == 200) {
+                setNotice((data) => ({
+                    ...data,
+                    list: resp?.data?.list || [],
+                    total: resp?.data?.total || 0,
+                }));
             }
-        })
-    }
+        } finally {
+            if (showLoading) {
+                setNotice((data) => ({...data, loading: false}));
+            }
+        }
+    }, []);
+    const closeNoticePanel = () => setNotice((data) => ({...data, open: false}));
+    const openNoticePage = () => {
+        closeNoticePanel();
+        historyPush("user.person.message");
+    };
+    const openNotice = async (item: any) => {
+        closeNoticePanel();
+        setDetail(item);
+        detailModalRef.current?.show();
+        setDetailLoading(true);
+        const resp = await getMessageInfo({body: {id: item.id}});
+        setDetailLoading(false);
+        if (resp?.code != 200) {
+            message.error(resp?.message || "获取消息失败");
+            detailModalRef.current?.hide();
+            return;
+        }
+        const info = resp?.data || item;
+        setDetail(info);
+        setNotice((data) => ({
+            ...data,
+            total: Math.max(0, data.total - 1),
+            list: data.list.filter((x) => x.id != item.id),
+        }));
+    };
+    useEffect(() => {
+        void refreshNotice(true);
+    }, [refreshNotice]);
+    useSocket({
+        onMessage: (data) => {
+            if (data?.type == MESSAGE_REFRESH) {
+                void refreshNotice();
+            }
+        },
+    });
 
     /**
-     * 退出登录确认
+     * 退出登录
      */
     const confirmOutLogin = () => {
         modal.confirm({
@@ -201,11 +496,114 @@ const RightTop: React.FC = () => {
             mask: {
                 closable: true,
             },
-            onOk: outLogin,
+            onOk: async () => {
+                message?.loading({content: '正在退出登录', duration: 600000, key: "outLogin"});
+                await logout({
+                    onSuccess: (r) => {
+                        message?.success(r?.message || "退出登录成功")
+                        deleteHeader()
+                        user?.setWeb(undefined);
+                        message?.destroy("outLogin")
+                        historyPush("/");
+                    },
+                    onFail: (r) => {
+                        message?.error(r?.message || "退出登录失败")
+                    }
+                })
+            },
         } as any);
     }
 
     return <>
+        <Popover
+            rootClassName={messageBox}
+            placement="bottomRight"
+            trigger={["hover", "click"]}
+            open={isMobile ? false : notice.open}
+            onOpenChange={(open) => {
+                if (isMobile) {
+                    return;
+                }
+                setNotice((data) => ({...data, open}));
+            }}
+            autoAdjustOverflow={true}
+            content={(
+                <Spin spinning={notice.loading}>
+                    <div className={messageList}>
+                        <div className="message-head">
+                            <span className="message-head-title">站内消息</span>
+                            <span className="message-head-link" onClick={openNoticePage}>
+                                查看全部
+                            </span>
+                        </div>
+                        <div className="message-body">
+                            {notice.list.length <= 0 ? (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无消息"/>
+                            ) : notice.list.map((item) => (
+                                <div key={item.id} className={messageItem} onClick={() => openNotice(item)}>
+                                    <div className="item-title">
+                                        <span className="unread-dot"/>
+                                        <span>{item.title || "未命名消息"}</span>
+                                    </div>
+                                    <div className="item-time">
+                                        <Tooltip title={item.create_time || "-"}>
+                                            <span>
+                                                {item.create_time ? (ago(item.create_time) || item.create_time) : "-"}
+                                            </span>
+                                        </Tooltip>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </Spin>
+            )}
+        >
+            <span onClick={(event) => {
+                if (!isMobile) {
+                    return;
+                }
+                event.preventDefault();
+                event.stopPropagation();
+                openNoticePage();
+            }}>
+                <Icon
+                    type="icon-notice"
+                    className={`${icon} ${messageTrigger}`}
+                    data-count={notice.total > 0 ? noticeCount : undefined}
+                />
+            </span>
+        </Popover>
+        <ProModal
+            ref={detailModalRef}
+            title={<Title>消息详情</Title>}
+            width={560}
+            onCancel={() => detailModalRef.current?.hide()}
+            afterClose={() => setDetail(undefined)}
+            modalProps={{
+                footer: null,
+                destroyOnHidden: true,
+            } as any}
+        >
+            {detailLoading ? (
+                <div className={messageDetailSpin}>
+                    <Spin/>
+                </div>
+            ) : (
+                <div className={messageDetail}>
+                    <div className="detail-header">
+                        <h2>{detail?.title || "消息详情"}</h2>
+                        <div className="meta">
+                            <span>创建时间：{detail?.create_time || "-"}</span>
+                        </div>
+                    </div>
+                    <div
+                        className="detail-content"
+                        dangerouslySetInnerHTML={{__html: detail?.content || "暂无消息内容"}}
+                    />
+                </div>
+            )}
+        </ProModal>
         <Tooltip title={theme?.getModeName(theme?.mode as any)}>
             <Icon type={theme?.isDarkMode() ? 'icon-dark' : (theme?.isAutoMode() ? 'icon-auto' : 'icon-light')}
                   className={icon}
@@ -636,49 +1034,49 @@ const SKLayout: React.FC = () => {
             contact={web?.info?.contact}
         />
         <Layout loading={loading || !user?.web}
-                   pathname={location?.pathname}
-                   matchedRoutes={match || []}
-                   onNavigate={(path) => history.push(path)}
-                   breadCrumbItems={breadCrumbItems}
-                   hideBreadCrumb={match?.at(-1)?.route?.hideBreadCrumb}
-                   waterMark={web?.info?.ui?.user?.watermark ? [user?.web?.nick_name, user?.web?.email] : ""}
-                   menus={getCurrentMenus(location?.pathname, true)}
-                   menuClassNames={menuColor}
-                   layout={web?.info?.ui?.user?.layout != "left" ? "horizontal" : "inline"}
-                   flowLayout={web?.info?.ui?.user?.layout != "left"}
-                   menuTheme={web?.info?.ui?.user?.theme == "dark" ? "dark" : "light"}
-                   footer={<>©{new Date().getFullYear()} All Right
-                       Revered {web?.info?.name || Settings?.title}</>}
-                   headerHidden={false}
-                   headerFixed={false}
-                   headerRight={<RightTop/>}
-                   menuCollapsedWidth={60}
-                   menuUnCollapsedWidth={210}
-                   menuBottomBtnIcon={web?.info?.contact ? <Icon type="CustomerServiceOutlined"/> : false}
-                   menuBottomBtnText={web?.info?.contact ? <>&nbsp;&nbsp;客户服务</> : false}
-                   onMenuBottomBtnClick={() => {
-                       setCustomerVisible(true);
-                   }}
-                   collapsedLogo={() => {
-                       return web?.info?.logo ? <img
-                               src={web?.info?.logo || getPath("logo.svg")}
-                               alt={web?.info?.name} className={collapsedImg}/> :
-                           <Icon type="icon-logo" style={{color: web?.info?.ui?.user?.color || defaultSettings?.color}}
-                                 className={collapsedLogo}/>
-                   }}
-                   unCollapsedLogo={() => {
-                       return <div className={unCollapsed}>
-                           {web?.info?.logo ? <img
-                                   src={web?.info?.logo || getPath("logo.svg")}
-                                   alt={web?.info?.name || Settings?.title}/> :
-                               <Icon type="icon-logo"
-                                     style={{color: web?.info?.ui?.user?.color || defaultSettings?.color}}/>}
-                           <div
-                               style={{color: web?.info?.ui?.user?.color ? web?.info?.ui?.user?.color : defaultSettings?.color}}>
-                               {web?.info?.name || Settings?.title}
-                           </div>
-                       </div>
-                   }}>
+                pathname={location?.pathname}
+                matchedRoutes={match || []}
+                onNavigate={(path) => history.push(path)}
+                breadCrumbItems={breadCrumbItems}
+                hideBreadCrumb={match?.at(-1)?.route?.hideBreadCrumb}
+                waterMark={web?.info?.ui?.user?.watermark ? [user?.web?.nick_name, user?.web?.email] : ""}
+                menus={getCurrentMenus(location?.pathname, true)}
+                menuClassNames={menuColor}
+                layout={web?.info?.ui?.user?.layout != "left" ? "horizontal" : "inline"}
+                flowLayout={web?.info?.ui?.user?.layout != "left"}
+                menuTheme={web?.info?.ui?.user?.theme == "dark" ? "dark" : "light"}
+                footer={<>©{new Date().getFullYear()} All Right
+                    Revered {web?.info?.name || Settings?.title}</>}
+                headerHidden={false}
+                headerFixed={false}
+                headerRight={<RightTop/>}
+                menuCollapsedWidth={60}
+                menuUnCollapsedWidth={210}
+                menuBottomBtnIcon={web?.info?.contact ? <Icon type="CustomerServiceOutlined"/> : false}
+                menuBottomBtnText={web?.info?.contact ? <>&nbsp;&nbsp;客户服务</> : false}
+                onMenuBottomBtnClick={() => {
+                    setCustomerVisible(true);
+                }}
+                collapsedLogo={() => {
+                    return web?.info?.logo ? <img
+                            src={web?.info?.logo || getPath("logo.svg")}
+                            alt={web?.info?.name} className={collapsedImg}/> :
+                        <Icon type="icon-logo" style={{color: web?.info?.ui?.user?.color || defaultSettings?.color}}
+                              className={collapsedLogo}/>
+                }}
+                unCollapsedLogo={() => {
+                    return <div className={unCollapsed}>
+                        {web?.info?.logo ? <img
+                                src={web?.info?.logo || getPath("logo.svg")}
+                                alt={web?.info?.name || Settings?.title}/> :
+                            <Icon type="icon-logo"
+                                  style={{color: web?.info?.ui?.user?.color || defaultSettings?.color}}/>}
+                        <div
+                            style={{color: web?.info?.ui?.user?.color ? web?.info?.ui?.user?.color : defaultSettings?.color}}>
+                            {web?.info?.name || Settings?.title}
+                        </div>
+                    </div>
+                }}>
             <Outlet/>
         </Layout>
     </>;

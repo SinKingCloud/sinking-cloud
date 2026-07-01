@@ -804,7 +804,8 @@ export default (): React.ReactNode => {
     };
 
     const pageLoading = loading || enumLoading;
-    const disabled = pageLoading || enabledPayOptions.length <= 0;
+    const formDisabled = pageLoading;
+    const payDisabled = pageLoading || enabledPayOptions.length <= 0;
 
     return (
         <Body loading={pageLoading}>
@@ -860,7 +861,7 @@ export default (): React.ReactNode => {
                                                     key={item}
                                                     type="button"
                                                     className={`${styles.amountItem} ${customMoney === undefined && Number(money) === item ? "active" : ""}`}
-                                                    disabled={disabled}
+                                                    disabled={formDisabled}
                                                     onClick={() => {
                                                         setCustomMoney(undefined);
                                                         setMoney(item);
@@ -875,7 +876,7 @@ export default (): React.ReactNode => {
                                                     precision={0}
                                                     step={1}
                                                     placeholder="自定义"
-                                                    disabled={disabled}
+                                                    disabled={formDisabled}
                                                     onChange={(value) => {
                                                         const nextMoney = Number(value || 0);
                                                         setCustomMoney(value === null ? undefined : nextMoney);
@@ -893,7 +894,7 @@ export default (): React.ReactNode => {
                                         <Form.Item name="type" rules={[{required: true, message: "请选择支付方式"}]}>
                                             <Radio.Group
                                                 style={{width: "100%"}}
-                                                disabled={disabled}
+                                                disabled={formDisabled}
                                                 value={payType}
                                                 onChange={(event) => setPayType(event?.target?.value)}>
                                                 <div className={styles.payOptions}>
@@ -952,7 +953,7 @@ export default (): React.ReactNode => {
                                         提交后将在新标签页打开支付页面，充值状态可在订单管理和财务明细中查看。
                                     </div>
                                     <div className={styles.actionBar}>
-                                        <Button className={styles.payButton} type="primary" block loading={submitting} disabled={disabled} onClick={() => form.submit()}>
+                                        <Button className={styles.payButton} type="primary" block loading={submitting} disabled={payDisabled} onClick={() => form.submit()}>
                                             确认支付
                                         </Button>
                                     </div>

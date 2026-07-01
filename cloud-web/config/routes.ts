@@ -76,6 +76,13 @@ export const user = [
                 icon: '•',
             },
             {
+                path: "message",
+                component: "@/pages/user/person/message",
+                title: "站内消息",
+                name: "user.person.message",
+                icon: '•',
+            },
+            {
                 path: "",
                 redirect: "info",
             },
