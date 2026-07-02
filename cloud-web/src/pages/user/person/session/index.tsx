@@ -1,6 +1,6 @@
 import React, {useRef, useState} from "react";
 import {useModel} from "umi";
-import {App, Button, Card, Empty, Row, Tooltip, Typography} from "antd";
+import {App, Button, Card, Row, Tooltip, Typography} from "antd";
 import {createStyles} from "antd-style";
 import {Body, Icon, ProTable, ProTableRef, Title} from "sinking-antd";
 import {getSessionList, logoutSession} from "@/service/user/person";
@@ -345,7 +345,6 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 display: grid;
                 grid-template-columns: 1fr;
                 gap: ${compact ? 7 : 8}px;
-                min-height: 180px;
                 padding: ${compact ? 8 : 10}px;
                 background: transparent;
             }
@@ -523,12 +522,6 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
                 padding-inline: 4px;
                 font-size: 12px;
             }
-        `,
-        empty: css`
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 240px;
         `,
         "@media (max-width: 620px)": {
             deviceMain: css`
