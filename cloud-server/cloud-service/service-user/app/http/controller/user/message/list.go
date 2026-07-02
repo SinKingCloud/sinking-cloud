@@ -11,7 +11,7 @@ import (
 // List 消息列表
 func (Controller) List(c *context.Context) {
 	pageNum, pageSize := c.ValidatePage()
-	orderByField, orderByType := c.ValidateOrderBy("create_time", "desc", "id,status,read_time,create_time,update_time")
+	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,status,read_time,create_time,update_time")
 	var form struct {
 		Title           string `json:"title" default:"" validate:"omitempty,max=100" label:"消息标题"`
 		Status          string `json:"status" default:"" validate:"omitempty,numeric" label:"消息状态"`

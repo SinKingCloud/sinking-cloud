@@ -96,19 +96,6 @@ const MasterSession = forwardRef<MasterSessionRef, MasterSessionProps>(({control
         } as any);
     };
 
-    const renderTimeRows = (record: any) => (
-        <Space orientation="vertical" size={2} className={styles.timeColumn}>
-            <div className={styles.timeRow}>
-                <Typography.Text type="secondary" className={styles.labelText}>登录:</Typography.Text>
-                <Typography.Text className={styles.smallText}>{record?.create_time || "-"}</Typography.Text>
-            </div>
-            <div className={styles.timeRow}>
-                <Typography.Text type="secondary" className={styles.labelText}>过期:</Typography.Text>
-                <Typography.Text className={styles.smallText}>{record?.expire_time || "-"}</Typography.Text>
-            </div>
-        </Space>
-    );
-
     const columns: any[] = [
         {
             title: "登录设备",
@@ -154,7 +141,18 @@ const MasterSession = forwardRef<MasterSessionRef, MasterSessionProps>(({control
             dataIndex: "time_info",
             tip: "登录时间/过期时间",
             hideInSearch: true,
-            render: (_: any, record: any) => renderTimeRows(record),
+            render: (_: any, record: any) => (
+                <Space orientation="vertical" size={2} className={styles.timeColumn}>
+                    <div className={styles.timeRow}>
+                        <Typography.Text type="secondary" className={styles.labelText}>登录:</Typography.Text>
+                        <Typography.Text className={styles.smallText}>{record?.create_time || "-"}</Typography.Text>
+                    </div>
+                    <div className={styles.timeRow}>
+                        <Typography.Text type="secondary" className={styles.labelText}>过期:</Typography.Text>
+                        <Typography.Text className={styles.smallText}>{record?.expire_time || "-"}</Typography.Text>
+                    </div>
+                </Space>
+            ),
         },
         ...(hasLogoutControl ? [{
             title: "操作",

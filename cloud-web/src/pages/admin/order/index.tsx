@@ -162,61 +162,6 @@ export default (): React.ReactNode => {
         </Space>
     );
 
-    const renderOrderCell = (record: any) => renderRows([
-        {label: "订单名称:", value: record?.name, className: styles.strongText},
-        {label: "订单类型:", value: <Tag color={typeColor(record?.type)}>{enumText(orderType, record?.type)}</Tag>},
-        {label: "所属用户:", value: record?.user_id, copy: record?.user_id},
-    ]);
-
-    const renderNoCell = (record: any) => renderRows([
-        {label: "订单:", value: record?.id ? `${record.id}` : "-", copy: record?.id, className: styles.strongText},
-        {label: "外部:", value: record?.trade_no, copy: record?.trade_no},
-    ]);
-
-    const renderPayCell = (record: any) => renderRows([
-        {label: "支付方式:", value: <PayType data={payTypes} value={record?.pay_type}/>},
-        {label: "支付通道:", value: hasValue(record?.channel_id) ? enumText(channelNames, record?.channel_id) : "-"},
-        {label: "通道ID:", value: record?.channel_id, copy: record?.channel_id},
-    ]);
-
-    const renderStatusCell = (record: any) => renderRows([
-        {
-            label: "订单状态:",
-            value: <Tag color={statusColor(record?.status)}>{enumText(orderStatus, record?.status)}</Tag>
-        },
-        {
-            label: "支付状态:",
-            value: <Tag color={payStatusColor(record?.pay_status)}>{enumText(payStatus, record?.pay_status)}</Tag>
-        },
-    ]);
-
-    const renderMoneyCell = (record: any) => renderRows([
-        {
-            label: "订单金额:",
-            value: formatMoney(record?.amount),
-            className: styles.moneyText,
-            style: {color: "#1677ff"}
-        },
-        {
-            label: "实付金额:",
-            value: formatMoney(record?.pay_amount),
-            className: styles.moneyText,
-            style: {color: "#52c41a"}
-        },
-        {
-            label: "退款金额:",
-            value: formatMoney(record?.refund_amount),
-            className: styles.moneyText,
-            style: {color: "#ff4d4f"}
-        },
-    ]);
-
-    const renderTimeCell = (record: any) => renderRows([
-        {label: "创建:", value: record?.create_time},
-        {label: "支付:", value: record?.pay_time},
-        {label: "完成:", value: record?.complete_time},
-    ]);
-
     const columns: any[] = [
         {
             title: "编号信息",
@@ -224,7 +169,10 @@ export default (): React.ReactNode => {
             tip: "订单编号/外部编号",
             width: 250,
             hideInSearch: true,
-            render: (_: any, record: any) => renderNoCell(record),
+            render: (_: any, record: any) => renderRows([
+                {label: "订单:", value: record?.id ? `${record.id}` : "-", copy: record?.id, className: styles.strongText},
+                {label: "外部:", value: record?.trade_no, copy: record?.trade_no},
+            ]),
         },
         {
             title: "订单ID",
@@ -247,7 +195,11 @@ export default (): React.ReactNode => {
             sorter: true,
             width: 240,
             hideInSearch: true,
-            render: (_: any, record: any) => renderOrderCell(record),
+            render: (_: any, record: any) => renderRows([
+                {label: "订单名称:", value: record?.name, className: styles.strongText},
+                {label: "订单类型:", value: <Tag color={typeColor(record?.type)}>{enumText(orderType, record?.type)}</Tag>},
+                {label: "所属用户:", value: record?.user_id, copy: record?.user_id},
+            ]),
         },
         {
             title: "支付信息",
@@ -255,7 +207,11 @@ export default (): React.ReactNode => {
             tip: "支付方式/支付通道/通道ID",
             width: 220,
             hideInSearch: true,
-            render: (_: any, record: any) => renderPayCell(record),
+            render: (_: any, record: any) => renderRows([
+                {label: "支付方式:", value: <PayType data={payTypes} value={record?.pay_type}/>},
+                {label: "支付通道:", value: hasValue(record?.channel_id) ? enumText(channelNames, record?.channel_id) : "-"},
+                {label: "通道ID:", value: record?.channel_id, copy: record?.channel_id},
+            ]),
         },
         {
             title: "用户ID",
@@ -277,7 +233,16 @@ export default (): React.ReactNode => {
             tip: "订单状态/支付状态",
             width: 210,
             hideInSearch: true,
-            render: (_: any, record: any) => renderStatusCell(record),
+            render: (_: any, record: any) => renderRows([
+                {
+                    label: "订单状态:",
+                    value: <Tag color={statusColor(record?.status)}>{enumText(orderStatus, record?.status)}</Tag>
+                },
+                {
+                    label: "支付状态:",
+                    value: <Tag color={payStatusColor(record?.pay_status)}>{enumText(payStatus, record?.pay_status)}</Tag>
+                },
+            ]),
         },
         {
             title: "订单类型",
@@ -313,7 +278,26 @@ export default (): React.ReactNode => {
             tip: "订单/支付/退款金额",
             width: 190,
             hideInSearch: true,
-            render: (_: any, record: any) => renderMoneyCell(record),
+            render: (_: any, record: any) => renderRows([
+                {
+                    label: "订单金额:",
+                    value: formatMoney(record?.amount),
+                    className: styles.moneyText,
+                    style: {color: "#1677ff"}
+                },
+                {
+                    label: "实付金额:",
+                    value: formatMoney(record?.pay_amount),
+                    className: styles.moneyText,
+                    style: {color: "#52c41a"}
+                },
+                {
+                    label: "退款金额:",
+                    value: formatMoney(record?.refund_amount),
+                    className: styles.moneyText,
+                    style: {color: "#ff4d4f"}
+                },
+            ]),
         },
         {
             title: "支付时间",
@@ -357,7 +341,11 @@ export default (): React.ReactNode => {
             tip: "创建/支付/完成时间",
             width: 220,
             hideInSearch: true,
-            render: (_: any, record: any) => renderTimeCell(record),
+            render: (_: any, record: any) => renderRows([
+                {label: "创建:", value: record?.create_time},
+                {label: "支付:", value: record?.pay_time},
+                {label: "完成:", value: record?.complete_time},
+            ]),
         },
         ...(hasActionControl ? [{
             title: "操作",

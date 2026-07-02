@@ -233,10 +233,6 @@ const formatAgoTime = (value: any) => {
     if (!time) {
         return "-";
     }
-    const date = parseDateTime(time);
-    if (date && date.getTime() > Date.now()) {
-        return "刚刚";
-    }
     return ago(time) || time;
 };
 
@@ -358,13 +354,6 @@ export default (): React.ReactNode => {
         } as any);
     };
 
-    const onStatusChange = (value: string) => {
-        if (value === activeStatus) {
-            return;
-        }
-        setActiveStatus(value);
-    };
-
     useEffect(() => {
         if (!statusReadyRef.current) {
             statusReadyRef.current = true;
@@ -373,71 +362,43 @@ export default (): React.ReactNode => {
         refreshTable(true);
     }, [activeStatus]);
 
-    const getStatusParam = () => {
-        if (activeStatus === MESSAGE_TAB_UNREAD) {
-            return String(MESSAGE_STATUS_UNREAD);
-        }
-        if (activeStatus === MESSAGE_TAB_READ) {
-            return String(MESSAGE_STATUS_READ);
-        }
-        return undefined;
-    };
-
-    const renderPageAction = () => {
-        const items = [
-            {
-                key: "read-all",
-                label: "一键已读",
-                onClick: markAllRead,
-            },
-            {
-                key: "clear",
-                danger: true,
-                label: "清空消息",
-                onClick: clearAllMessages,
-            },
-        ];
-        return (
-            <Dropdown menu={{items}} trigger={["click"]} placement="bottom" arrow>
-                <Button size="small" type="primary">操作</Button>
-            </Dropdown>
-        );
-    };
-
-    const renderMessage = (_: any, record: UserMessage) => (
-        <div className={styles.messageTitle} onClick={() => openDetail(record)}>
-            <span className={`unread-dot ${isUnread(record?.status) ? "unread" : ""}`}/>
-            <span>{record?.title || "未命名消息"}</span>
-        </div>
-    );
-
-    const renderTime = (value?: any) => {
-        const time = normalizeTime(value);
-        return (
-            <Tooltip title={time || "-"}>
-                <span className={styles.timeText}>{formatAgoTime(time)}</span>
-            </Tooltip>
-        );
-    };
-
     const columns = [
         {
             title: "标题",
             dataIndex: "title",
             width: 220,
-            render: renderMessage,
+            render: (_: any, record: UserMessage) => (
+                <div className={styles.messageTitle} onClick={() => openDetail(record)}>
+                    <span className={`unread-dot ${isUnread(record?.status) ? "unread" : ""}`}/>
+                    <span>{record?.title || "未命名消息"}</span>
+                </div>
+            ),
         },
         {
             title: "创建于",
             dataIndex: "create_time",
             width: 120,
-            render: renderTime,
+            render: (value: any, record: UserMessage) => {
+                const time = normalizeTime(record?.create_time || value);
+                return (
+                    <Tooltip title={time || "-"}>
+                        <span className={styles.timeText}>{formatAgoTime(time)}</span>
+                    </Tooltip>
+                );
+            },
         },
         {
             title: "阅读于",
             dataIndex: "read_time",
             width: 120,
-            render: renderTime,
+            render: (value: any, record: UserMessage) => {
+                const time = normalizeTime(record?.read_time || value);
+                return (
+                    <Tooltip title={time || "-"}>
+                        <span className={styles.timeText}>{formatAgoTime(time)}</span>
+                    </Tooltip>
+                );
+            },
         },
         {
             title: "状态",
@@ -485,7 +446,11 @@ export default (): React.ReactNode => {
                         <Tabs
                             className={styles.tabs}
                             activeKey={activeStatus}
-                            onChange={onStatusChange}
+                            onChange={(value) => {
+                                if (value !== activeStatus) {
+                                    setActiveStatus(value);
+                                }
+                            }}
                             items={messageTabs as any}
                         />
                     </div>
@@ -494,7 +459,30 @@ export default (): React.ReactNode => {
                     ref={tableRef}
                     rowKey="id"
                     title={<Title>站内消息</Title>}
-                    extra={renderPageAction()}
+                    extra={(
+                        <Dropdown
+                            trigger={["click"]}
+                            placement="bottom"
+                            arrow
+                            menu={{
+                                items: [
+                                    {
+                                        key: "read-all",
+                                        label: "一键已读",
+                                        onClick: markAllRead,
+                                    },
+                                    {
+                                        key: "clear",
+                                        danger: true,
+                                        label: "清空消息",
+                                        onClick: clearAllMessages,
+                                    },
+                                ],
+                            }}
+                        >
+                            <Button size="small" type="primary">操作</Button>
+                        </Dropdown>
+                    )}
                     extraRefreshBtn={true}
                     search={false}
                     columns={columns}
@@ -524,14 +512,16 @@ export default (): React.ReactNode => {
                             </Space>
                         ),
                     }}
-                    request={(params: any, sort: any) => {
-                        const status = getStatusParam();
+                    request={(params: any) => {
+                        const status = activeStatus === MESSAGE_TAB_UNREAD
+                            ? String(MESSAGE_STATUS_UNREAD)
+                            : activeStatus === MESSAGE_TAB_READ
+                                ? String(MESSAGE_STATUS_READ)
+                                : undefined;
                         return getData({
-                            order_by_field: "create_time",
-                            order_by_type: "desc",
                             ...(status !== undefined ? {status} : {}),
                             ...params,
-                        }, sort, getMessageList);
+                        }, {}, getMessageList);
                     }}
                     paginationAffix={true}
                     selectionAffix={true}

@@ -579,61 +579,6 @@ export default function Index(): React.ReactNode {
         });
     };
 
-    const renderSessionCard = (_: any, item: any) => {
-        const token = String(item?.token || "");
-        return (
-            <div className={styles.sessionCard}>
-                <div className={styles.deviceMain}>
-                    <div className="device-content">
-                        <div className="name-row">
-                            <span className="device-dot"/>
-                            <Typography.Text className={styles.deviceName}
-                                             ellipsis={{tooltip: item?.device || "未知设备"}}>
-                                {item?.device || "未知设备"}
-                            </Typography.Text>
-                        </div>
-                        <div className={styles.deviceSub}>
-                            <Typography.Text type="secondary" ellipsis={{tooltip: item?.location || "-"}}>
-                                {item?.location || "-"}
-                            </Typography.Text>
-                        </div>
-                    </div>
-                </div>
-                <div className={styles.sessionInfo}>
-                    <div className={styles.sessionMeta}>
-                        <div className="label">IP 地址</div>
-                        <Typography.Text className="value ip-value" copyable={!!item?.ip}>
-                            {item?.ip || "-"}
-                        </Typography.Text>
-                    </div>
-                    <div className={styles.sessionMeta}>
-                        <div className="label">登录时间</div>
-                        <Typography.Text className="value" ellipsis={{tooltip: item?.create_time || "-"}}>
-                            {item?.create_time || "-"}
-                        </Typography.Text>
-                    </div>
-                    <div className={styles.sessionMeta}>
-                        <div className="label">过期时间</div>
-                        <Typography.Text className="value" ellipsis={{tooltip: item?.expire_time || "-"}}>
-                            {item?.expire_time || "-"}
-                        </Typography.Text>
-                    </div>
-                </div>
-                <div className={styles.sessionOperate}>
-                    <Button
-                        danger
-                        type="text"
-                        size="small"
-                        loading={logoutLoading}
-                        onClick={() => handleLogout([token])}
-                    >
-                        注销
-                    </Button>
-                </div>
-            </div>
-        );
-    };
-
     return (
         <Body>
             <Row className={styles.page}>
@@ -697,7 +642,63 @@ export default function Index(): React.ReactNode {
                             title: "登录会话",
                             dataIndex: "token",
                             hideInSearch: true,
-                            render: renderSessionCard,
+                            render: (_: any, item: any) => {
+                                const token = String(item?.token || "");
+                                return (
+                                    <div className={styles.sessionCard}>
+                                        <div className={styles.deviceMain}>
+                                            <div className="device-content">
+                                                <div className="name-row">
+                                                    <span className="device-dot"/>
+                                                    <Typography.Text className={styles.deviceName}
+                                                                     ellipsis={{tooltip: item?.device || "未知设备"}}>
+                                                        {item?.device || "未知设备"}
+                                                    </Typography.Text>
+                                                </div>
+                                                <div className={styles.deviceSub}>
+                                                    <Typography.Text type="secondary"
+                                                                     ellipsis={{tooltip: item?.location || "-"}}>
+                                                        {item?.location || "-"}
+                                                    </Typography.Text>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className={styles.sessionInfo}>
+                                            <div className={styles.sessionMeta}>
+                                                <div className="label">IP 地址</div>
+                                                <Typography.Text className="value ip-value" copyable={!!item?.ip}>
+                                                    {item?.ip || "-"}
+                                                </Typography.Text>
+                                            </div>
+                                            <div className={styles.sessionMeta}>
+                                                <div className="label">登录时间</div>
+                                                <Typography.Text className="value"
+                                                                 ellipsis={{tooltip: item?.create_time || "-"}}>
+                                                    {item?.create_time || "-"}
+                                                </Typography.Text>
+                                            </div>
+                                            <div className={styles.sessionMeta}>
+                                                <div className="label">过期时间</div>
+                                                <Typography.Text className="value"
+                                                                 ellipsis={{tooltip: item?.expire_time || "-"}}>
+                                                    {item?.expire_time || "-"}
+                                                </Typography.Text>
+                                            </div>
+                                        </div>
+                                        <div className={styles.sessionOperate}>
+                                            <Button
+                                                danger
+                                                type="text"
+                                                size="small"
+                                                loading={logoutLoading}
+                                                onClick={() => handleLogout([token])}
+                                            >
+                                                注销
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            },
                         },
                     ]}
                     request={async (params: any, sort: any) => {

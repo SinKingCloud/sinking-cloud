@@ -908,41 +908,6 @@ export default (): React.ReactNode => {
         </div>
     );
 
-    const renderLog = (_: any, record: any) => {
-        const money = Number(record?.money || 0);
-        const amountClassName = money > 0 ? "income" : money < 0 ? "outcome" : "";
-        const typeText = typeEnum?.[String(record?.type)] || typeEnum?.[record?.type] || (
-            record?.type === undefined || record?.type === null || record?.type === "" ? "-" : String(record?.type)
-        );
-        return (
-            <div className={styles.logCard}>
-                <div className={styles.logMain}>
-                    <div className="type">
-                        <span className="dot"/>
-                        <Tag color={typeColors?.[String(record?.type)] || "default"}>
-                            {typeText}
-                        </Tag>
-                    </div>
-                    <Typography.Text className="desc" ellipsis={{tooltip: record?.describe || "暂无描述"}}>
-                        {record?.describe || "暂无描述"}
-                    </Typography.Text>
-                </div>
-                <div className={styles.changeGrid}>
-                    {renderChange("可用余额", record?.money_before, record?.money_after)}
-                    {renderChange("冻结金额", record?.frozen_before, record?.frozen_after)}
-                </div>
-                <div className={styles.amountBox}>
-                    <div className={`amount ${amountClassName}`}>
-                        {money > 0 ? "+" : ""}{formatMoney(money)}
-                    </div>
-                    <Typography.Text className="time" ellipsis={{tooltip: record?.create_time || "-"}}>
-                        {record?.create_time || "-"}
-                    </Typography.Text>
-                </div>
-            </div>
-        );
-    };
-
     const balanceItems = [
         {label: "可用余额", value: info?.money, className: "money"},
         {label: "冻结金额", value: info?.frozen, className: "frozen"},
@@ -1109,7 +1074,47 @@ export default (): React.ReactNode => {
                                 pageInTable={true}
                                 paginationProps={{placement: ["bottomCenter"]} as any}
                                 columns={[
-                                    {title: "资金记录", dataIndex: "id", hideInSearch: true, render: renderLog},
+                                    {
+                                        title: "资金记录",
+                                        dataIndex: "id",
+                                        hideInSearch: true,
+                                        render: (_: any, record: any) => {
+                                            const money = Number(record?.money || 0);
+                                            const amountClassName = money > 0 ? "income" : money < 0 ? "outcome" : "";
+                                            const typeText = typeEnum?.[String(record?.type)] || typeEnum?.[record?.type] || (
+                                                record?.type === undefined || record?.type === null || record?.type === "" ? "-" : String(record?.type)
+                                            );
+                                            return (
+                                                <div className={styles.logCard}>
+                                                    <div className={styles.logMain}>
+                                                        <div className="type">
+                                                            <span className="dot"/>
+                                                            <Tag color={typeColors?.[String(record?.type)] || "default"}>
+                                                                {typeText}
+                                                            </Tag>
+                                                        </div>
+                                                        <Typography.Text className="desc"
+                                                                         ellipsis={{tooltip: record?.describe || "暂无描述"}}>
+                                                            {record?.describe || "暂无描述"}
+                                                        </Typography.Text>
+                                                    </div>
+                                                    <div className={styles.changeGrid}>
+                                                        {renderChange("可用余额", record?.money_before, record?.money_after)}
+                                                        {renderChange("冻结金额", record?.frozen_before, record?.frozen_after)}
+                                                    </div>
+                                                    <div className={styles.amountBox}>
+                                                        <div className={`amount ${amountClassName}`}>
+                                                            {money > 0 ? "+" : ""}{formatMoney(money)}
+                                                        </div>
+                                                        <Typography.Text className="time"
+                                                                         ellipsis={{tooltip: record?.create_time || "-"}}>
+                                                            {record?.create_time || "-"}
+                                                        </Typography.Text>
+                                                    </div>
+                                                </div>
+                                            );
+                                        },
+                                    },
                                 ]}
                                 request={(params: any, sort: any) => getData({
                                     order_by_field: "id",

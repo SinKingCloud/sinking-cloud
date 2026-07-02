@@ -163,21 +163,6 @@ export default (): React.ReactNode => {
         );
     };
 
-    const renderUserInfo = (record: any) => (
-        <div className={styles.userCell}>
-            <Avatar
-                size={40}
-                src={record?.avatar || undefined}
-                icon={<Icon type="UserOutlined"/>}
-                className={styles.userAvatar}
-            />
-            <div className={styles.userMeta}>
-                {renderUserLine("昵称", record?.nick_name)}
-                {renderUserLine("编号", record?.id, true)}
-            </div>
-        </div>
-    );
-
     const openSession = (record: any) => {
         if (!hasSessionControl) {
             message?.warning("暂无会话查看权限");
@@ -222,14 +207,6 @@ export default (): React.ReactNode => {
         tableRef.current?.refreshTableData?.();
     };
 
-    const renderRealAuthInfo = (record: any) => {
-        const realAuthStatusValue = Number(record?.real_auth_status);
-        if (realAuthStatusValue <= 0) {
-            return realAuthStatus?.[record?.real_auth_status] || realAuthType?.["0"] || "未实名";
-        }
-        return realAuthType?.[record?.real_auth_type] || realAuthStatus?.[record?.real_auth_status] || "-";
-    };
-
     const columns: any[] = [
         {
             title: "用户信息",
@@ -237,7 +214,20 @@ export default (): React.ReactNode => {
             tip: "头像/ID/昵称",
             sorter: true,
             hideInSearch: true,
-            render: (_: any, record: any) => renderUserInfo(record),
+            render: (_: any, record: any) => (
+                <div className={styles.userCell}>
+                    <Avatar
+                        size={40}
+                        src={record?.avatar || undefined}
+                        icon={<Icon type="UserOutlined"/>}
+                        className={styles.userAvatar}
+                    />
+                    <div className={styles.userMeta}>
+                        {renderUserLine("昵称", record?.nick_name)}
+                        {renderUserLine("编号", record?.id, true)}
+                    </div>
+                </div>
+            ),
         },
         {
             title: "账号信息",
@@ -283,7 +273,13 @@ export default (): React.ReactNode => {
             dataIndex: "real_auth_info",
             tip: "用户实名信息",
             valueEnum: realAuthInfoValueEnum,
-            render: (_: any, record: any) => renderRealAuthInfo(record),
+            render: (_: any, record: any) => {
+                const realAuthStatusValue = Number(record?.real_auth_status);
+                if (realAuthStatusValue <= 0) {
+                    return realAuthStatus?.[record?.real_auth_status] || realAuthType?.["0"] || "未实名";
+                }
+                return realAuthType?.[record?.real_auth_type] || realAuthStatus?.[record?.real_auth_status] || "-";
+            },
             transform: (value: any) => {
                 if (value === undefined || value === null || value === "") {
                     return {};
