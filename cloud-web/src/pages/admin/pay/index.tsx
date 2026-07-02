@@ -177,7 +177,7 @@ export default (): React.ReactNode => {
             title: "删除支付通道",
             content: `确定删除该支付通道吗？`,
             okText: "确 定",
-            okType: "danger",
+            okButtonProps: {danger: true, type: "default"},
             cancelText: "取 消",
             maskClosable: true,
             onOk: async () => {

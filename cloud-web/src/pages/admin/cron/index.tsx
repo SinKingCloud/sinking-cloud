@@ -214,7 +214,7 @@ export default (): React.ReactNode => {
             title: "删除任务",
             content: `确定删除选中的 ${nextIds.length} 个任务吗？`,
             okText: "确 定",
-            okType: "danger",
+            okButtonProps: {danger: true, type: "default"},
             cancelText: "取 消",
             maskClosable: true,
             onOk: () => deleteCron({

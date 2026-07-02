@@ -135,7 +135,7 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
                 </Space>
             ),
             okText: "确 定",
-            okType: "danger",
+            okButtonProps: {danger: true, type: "default"},
             cancelText: "取 消",
             mask: {
                 closable: true,

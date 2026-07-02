@@ -72,7 +72,7 @@ const MasterSession = forwardRef<MasterSessionRef, MasterSessionProps>(({control
             title: "注销会话",
             content: `确定注销选中的 ${nextTokens.length} 个会话吗？`,
             okText: "确 定",
-            okType: "danger",
+            okButtonProps: {danger: true, type: "default"},
             cancelText: "取 消",
             mask: {
                 closable: true,

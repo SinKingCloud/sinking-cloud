@@ -560,7 +560,7 @@ export default function Index(): React.ReactNode {
             title: "注销会话",
             content: nextTokens.length > 1 ? `确定注销选中的 ${nextTokens.length} 个会话吗？` : "确定注销该会话吗？",
             okText: "注销",
-            okButtonProps: {danger: true},
+            okButtonProps: {danger: true, type: "default"},
             cancelText: "取消",
             mask: {closable: true},
             onOk: async () => {

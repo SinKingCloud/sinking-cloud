@@ -120,7 +120,7 @@ export default (): React.ReactNode => {
             title: "删除权限",
             content: `确定删除选中的 ${nextIds.length} 条权限吗？`,
             okText: "确 定",
-            okType: "danger",
+            okButtonProps: {danger: true, type: "default"},
             cancelText: "取 消",
             onOk: async () => {
                 await deletePermission({

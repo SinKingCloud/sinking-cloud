@@ -108,7 +108,7 @@ const SceneManage: React.FC<SceneManageProps> = ({control}) => {
             title: "删除场景",
             content: "确定删除该场景吗？",
             okText: "确 定",
-            okType: "danger",
+            okButtonProps: {danger: true, type: "default"},
             cancelText: "取 消",
             mask: {
                 closable: true,

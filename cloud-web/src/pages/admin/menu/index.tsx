@@ -672,7 +672,7 @@ export default (): React.ReactNode => {
             title: "确认删除",
             icon: <Icon type="ExclamationCircleOutlined"/>,
             content: "删除后数据不可恢复，确定要删除吗？",
-            okType: "danger",
+            okButtonProps: {danger: true, type: "default"},
             onOk: async () => {
                 await deleteMenu({
                     body: {

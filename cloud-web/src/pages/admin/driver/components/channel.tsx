@@ -123,7 +123,7 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
             title: "删除通道",
             content: "确定删除该存储通道吗？",
             okText: "确 定",
-            okType: "danger",
+            okButtonProps: {danger: true, type: "default"},
             cancelText: "取 消",
             mask: {
                 closable: true,

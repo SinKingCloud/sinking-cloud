@@ -321,7 +321,7 @@ export default (): React.ReactNode => {
             title: "删除站内消息",
             content: `确定删除选中的 ${targetIds.length} 条站内消息吗？`,
             okText: "删除",
-            okType: "danger",
+            okButtonProps: {danger: true, type: "default"},
             cancelText: "取消",
             onOk: async () => {
                 const resp = await deleteMessage({body: {ids: targetIds}});
@@ -340,7 +340,7 @@ export default (): React.ReactNode => {
             title: "清空站内消息",
             content: "确定清空所有站内消息吗？",
             okText: "清空",
-            okType: "danger",
+            okButtonProps: {danger: true, type: "default"},
             cancelText: "取消",
             onOk: async () => {
                 const resp = await clearMessage();

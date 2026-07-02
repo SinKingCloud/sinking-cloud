@@ -80,7 +80,7 @@ export default (): React.ReactNode => {
             title: "删除员工",
             content: "确定删除该员工吗？",
             okText: "确 定",
-            okType: "danger",
+            okButtonProps: {danger: true, type: "default"},
             cancelText: "取 消",
             mask: {
                 closable: true,
