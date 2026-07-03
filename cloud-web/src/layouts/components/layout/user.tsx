@@ -566,20 +566,19 @@ const RightTop: React.FC = () => {
                 </Spin>
             )}
         >
-            <span onClick={(event) => {
-                if (!isMobile) {
-                    return;
-                }
-                event.preventDefault();
-                event.stopPropagation();
-                openNoticePage();
-            }}>
-                <Icon
-                    type="icon-notice"
-                    className={`${icon} ${messageTrigger}`}
-                    data-count={notice.total > 0 ? noticeCount : undefined}
-                />
-            </span>
+            <Icon
+                type="icon-notice"
+                className={`${icon} ${messageTrigger}`}
+                data-count={notice.total > 0 ? noticeCount : undefined}
+                onClick={(event) => {
+                    if (!isMobile) {
+                        return;
+                    }
+                    event.preventDefault();
+                    event.stopPropagation();
+                    openNoticePage();
+                }}
+            />
         </Popover>
         <ProModal
             ref={detailModalRef}
