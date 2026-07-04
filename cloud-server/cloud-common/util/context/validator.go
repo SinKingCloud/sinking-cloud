@@ -51,43 +51,91 @@ func (c *Context) ValidatorPath(data interface{}) (bool, string) {
 	return validator.Check(data)
 }
 
-// ValidatePage 分页参数验证
-func (c *Context) ValidatePage() (page int, pageSize int) {
+// ValidatePage 验证分页和排序参数，并返回页码、每页数量、排序字段、排序方式。
+// 可选参数按类型匹配：int 参数依次表示 defaultPage、defaultPageSize；string 参数依次表示 defaultField、defaultType、allowField。
+// 例如 ValidatePage("id", "desc", "id,create_time") 表示默认按 id 倒序，并且只允许 id、create_time 排序。
+// defaultField 和 defaultType 默认为空；allowField 为空字符串或 "*" 时不限制排序字段；请求中的排序字段不在 allowField 内时，会回退到 defaultField。
+func (c *Context) ValidatePage(args ...interface{}) (page int, pageSize int, field string, sort string) {
+	defaultPage := 1
+	defaultPageSize := 20
+	defaultField := ""
+	defaultType := ""
+	allowField := defaultField
+	intIndex := 0
+	stringIndex := 0
+	for _, arg := range args {
+		switch value := arg.(type) {
+		case int:
+			if intIndex == 0 {
+				defaultPage = value
+			}
+			if intIndex == 1 {
+				defaultPageSize = value
+			}
+			intIndex++
+		case string:
+			if value == "" {
+				continue
+			}
+			if stringIndex == 0 {
+				defaultField = value
+				allowField = value
+			}
+			if stringIndex == 1 {
+				defaultType = strings.ToLower(value)
+			}
+			if stringIndex == 2 {
+				allowField = value
+			}
+			stringIndex++
+		}
+	}
+	if defaultPage <= 0 {
+		defaultPage = 1
+	}
+	if defaultPageSize <= 0 || defaultPageSize > 1000 {
+		defaultPageSize = 20
+	}
+	if defaultType != "" && defaultType != "desc" && defaultType != "asc" {
+		defaultType = "desc"
+	}
 	var pageInfo struct {
-		Page     int `json:"page" default:"1" validate:"required,gte=1" label:"页码编号"`
-		PageSize int `json:"page_size" default:"20" validate:"required,lte=1000" label:"每页数量"`
+		Page     int    `json:"page" label:"页码编号"`
+		PageSize int    `json:"page_size" label:"每页数量"`
+		Field    string `json:"order_by_field" label:"排序字段"`
+		Type     string `json:"order_by_type" label:"排序类型"`
 	}
-	if ok, _ := c.ValidatorAll(&pageInfo); !ok {
-		pageInfo.Page = 1
-		pageInfo.PageSize = 20
+	if c.BindAll(&pageInfo) != nil {
+		return defaultPage, defaultPageSize, defaultField, defaultType
 	}
-	return pageInfo.Page, pageInfo.PageSize
-}
-
-// ValidateOrderBy 排序参数验证
-func (c *Context) ValidateOrderBy(defaultField string, defaultType string, allowField string) (field string, sort string) {
-	var orderBy struct {
-		Field string `json:"order_by_field" label:"排序字段"`
-		Type  string `json:"order_by_type" label:"排序类型"`
+	page = pageInfo.Page
+	if page <= 0 {
+		page = defaultPage
 	}
-	if c.BindAll(&orderBy) != nil {
-		return defaultField, defaultType
+	pageSize = pageInfo.PageSize
+	if pageSize <= 0 || pageSize > 1000 {
+		pageSize = defaultPageSize
 	}
-	if orderBy.Type == "" {
-		orderBy.Type = defaultType
+	field = pageInfo.Field
+	if field == "" {
+		field = defaultField
 	}
-	if orderBy.Field == "" {
-		orderBy.Field = defaultField
+	sort = strings.ToLower(pageInfo.Type)
+	if sort == "" {
+		sort = defaultType
 	}
-	orderBy.Type = strings.ToLower(orderBy.Type)
-	if orderBy.Type != "desc" && orderBy.Type != "asc" {
-		orderBy.Type = "desc"
+	if sort != "" && sort != "desc" && sort != "asc" {
+		sort = defaultType
+	}
+	if allowField == "" || allowField == "*" {
+		return
 	}
 	fields := strings.Fields(strings.ReplaceAll(allowField, ",", " "))
 	for _, v := range fields {
-		if v == orderBy.Field {
-			return orderBy.Field, orderBy.Type
+		if v == field {
+			return
 		}
 	}
-	return defaultField, orderBy.Type
+	field = defaultField
+	return
 }

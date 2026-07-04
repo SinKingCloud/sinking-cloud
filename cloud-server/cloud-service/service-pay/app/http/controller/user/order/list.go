@@ -10,8 +10,7 @@ import (
 
 // List 订单列表
 func (Controller) List(c *context.Context) {
-	pageNum, pageSize := c.ValidatePage()
-	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,type,status,pay_status,pay_type,pay_time,expired_time,complete_time,create_time,update_time")
+	pageNum, pageSize, orderByField, orderByType := c.ValidatePage("id", "desc", "id,type,status,pay_status,pay_type,pay_time,expired_time,complete_time,create_time,update_time")
 	var form struct {
 		Id                string `json:"id" default:"" validate:"omitempty,numeric" label:"订单ID"`
 		Type              string `json:"type" default:"" validate:"omitempty,numeric" label:"订单类型"`

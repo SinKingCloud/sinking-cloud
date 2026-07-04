@@ -10,8 +10,7 @@ import (
 
 // List 用户列表
 func (Controller) List(c *context.Context) {
-	pageNum, pageSize := c.ValidatePage()
-	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,create_time,update_time")
+	pageNum, pageSize, orderByField, orderByType := c.ValidatePage("id", "desc", "id,create_time,update_time")
 	var form struct {
 		Account         string `json:"account" default:"" validate:"omitempty,alphanum" label:"账号"`
 		Phone           string `json:"phone" default:"" validate:"omitempty,numeric" label:"手机号"`

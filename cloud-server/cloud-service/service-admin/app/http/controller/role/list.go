@@ -10,8 +10,7 @@ import (
 
 // List 角色列表
 func (Controller) List(c *context.Context) {
-	pageNum, pageSize := c.ValidatePage()
-	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,create_time,update_time")
+	pageNum, pageSize, orderByField, orderByType := c.ValidatePage("id", "desc", "id,create_time,update_time")
 	var form struct {
 		Name            string `json:"name" default:"" validate:"omitempty" label:"名称"`
 		Status          string `json:"status" default:"" validate:"omitempty" label:"状态"`

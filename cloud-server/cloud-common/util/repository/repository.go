@@ -21,6 +21,9 @@ func NewRepository(db *database.Database, model interface{}) *Repository {
 
 // GetOrderBy 获取排序条件
 func (r *Repository) GetOrderBy(field string, orderType string) clause.OrderByColumn {
+	if field == "" {
+		return clause.OrderByColumn{}
+	}
 	orderType = strings.ToLower(orderType)
 	if orderType != "asc" && orderType != "desc" {
 		orderType = "desc"

@@ -10,8 +10,7 @@ import (
 
 // List 列表数据
 func (Controller) List(c *context.Context) {
-	pageNum, pageSize := c.ValidatePage()
-	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,create_time,update_time")
+	pageNum, pageSize, orderByField, orderByType := c.ValidatePage("id", "desc", "id,create_time,update_time")
 	var form struct {
 		ChannelId       string `json:"channel_id" default:"" validate:"omitempty,numeric" label:"通道ID"`
 		SceneId         string `json:"scene_id" default:"" validate:"omitempty,numeric" label:"场景ID"`

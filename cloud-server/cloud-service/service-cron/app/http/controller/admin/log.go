@@ -9,8 +9,7 @@ import (
 
 // Log 任务日志
 func (Controller) Log(c *context.Context) {
-	pageNum, pageSize := c.ValidatePage()
-	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,create_time")
+	pageNum, pageSize, orderByField, orderByType := c.ValidatePage("id", "desc", "id,create_time")
 	var form struct {
 		Id int64 `json:"id" default:"" validate:"numeric,min=1" label:"任务ID"`
 	}

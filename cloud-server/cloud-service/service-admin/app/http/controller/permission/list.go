@@ -10,8 +10,7 @@ import (
 
 // List 权限列表
 func (Controller) List(c *context.Context) {
-	pageNum, pageSize := c.ValidatePage()
-	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,create_time,update_time")
+	pageNum, pageSize, orderByField, orderByType := c.ValidatePage("id", "desc", "id,create_time,update_time")
 	var form struct {
 		Code            string `json:"code" default:"" validate:"omitempty" label:"标识"`
 		Name            string `json:"name" default:"" validate:"omitempty" label:"名称"`

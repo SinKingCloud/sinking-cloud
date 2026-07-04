@@ -10,8 +10,7 @@ import (
 
 // Session 用户会话
 func (Controller) Session(c *context.Context) {
-	pageNum, pageSize := c.ValidatePage()
-	orderByField, orderByType := c.ValidateOrderBy("create_time", "desc", "create_time,update_time,expire_time")
+	pageNum, pageSize, orderByField, orderByType := c.ValidatePage("create_time", "desc", "create_time,update_time,expire_time")
 	var form struct {
 		Id              int64  `json:"id" default:"" validate:"required,min=1" label:"用户ID"`
 		Device          string `json:"device" default:"" validate:"omitempty,max=100" label:"登录设备"`
