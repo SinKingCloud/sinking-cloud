@@ -24,6 +24,7 @@ type SocketOptionsRef = {
 };
 
 const DEFAULT_SOCKET_PATH = "/socket";
+const RECONNECT_DELAY = 5000;
 
 export const MESSAGE_REFRESH = "message.refresh";
 
@@ -31,7 +32,6 @@ export const MESSAGE_REFRESH = "message.refresh";
 let sharedSocket: WebSocket | undefined;
 let connecting = false;
 let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
-let reconnectAttempts = 0;
 let version = 0;
 let activeCount = 0;
 
@@ -113,15 +113,14 @@ function scheduleReconnect(connectVersion: number) {
     if (activeCount <= 0 || !getLoginToken()) {
         return;
     }
-    // 指数退避重连，最多 30 秒，避免异常时频繁请求 token 和重建连接。
-    reconnectAttempts += 1;
-    const delay = Math.min(1200 * Math.pow(2, reconnectAttempts - 1), 30000);
+    // 失败后进入 5 秒冷却，冷却期间不允许其他 useSocket 触发并发连接。
     clearReconnectTimer();
     reconnectTimer = setTimeout(() => {
+        reconnectTimer = undefined;
         if (connectVersion === version && activeCount > 0) {
             void connectSocket();
         }
-    }, delay);
+    }, RECONNECT_DELAY);
 }
 
 async function connectSocket() {
@@ -132,12 +131,11 @@ async function connectSocket() {
         closeSocket();
         return;
     }
-    // 已有连接或正在连接时直接复用，保证同一时刻只有一个 socket。
-    if (connecting || sharedSocket && sharedSocket.readyState !== WebSocket.CLOSED) {
+    // 已有连接、正在连接或等待重连冷却时直接复用，保证同一时刻只有一个连接尝试。
+    if (connecting || reconnectTimer !== undefined || (sharedSocket && sharedSocket.readyState !== WebSocket.CLOSED)) {
         return;
     }
 
-    clearReconnectTimer();
     version += 1;
     const connectVersion = version;
     connecting = true;
@@ -167,7 +165,6 @@ async function connectSocket() {
                 return;
             }
             connecting = false;
-            reconnectAttempts = 0;
             emit("onOpen");
         };
 
@@ -181,13 +178,13 @@ async function connectSocket() {
             emit("onError", new Error("WebSocket 连接异常"));
         };
 
-        ws.onclose = () => {
+        ws.onclose = (event: CloseEvent) => {
             connecting = false;
             if (sharedSocket === ws) {
                 sharedSocket = undefined;
             }
             emit("onClose");
-            if (connectVersion !== version) {
+            if (connectVersion !== version || event.code === 1000) {
                 return;
             }
             scheduleReconnect(connectVersion);

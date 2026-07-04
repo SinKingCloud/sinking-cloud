@@ -5,13 +5,13 @@ go 1.25.0
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260528084716-3cc85661c349
-	gorm.io/gorm v1.31.1
+	gorm.io/gorm v1.31.2
 )
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
-	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260528084716-3cc85661c349 // indirect
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260704075721-d99b5b067f90 // indirect
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible // indirect
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -37,8 +37,8 @@ require (
 	github.com/magiconair/properties v1.8.10 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
-	github.com/pelletier/go-toml/v2 v2.4.0 // indirect
-	github.com/redis/go-redis/v9 v9.20.1 // indirect
+	github.com/pelletier/go-toml/v2 v2.4.2 // indirect
+	github.com/redis/go-redis/v9 v9.21.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
@@ -58,10 +58,10 @@ require (
 	gorm.io/driver/mysql v1.6.0 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
-	modernc.org/libc v1.73.4 // indirect
+	modernc.org/libc v1.73.5 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.52.0 // indirect
+	modernc.org/sqlite v1.53.0 // indirect
 )
 
 replace github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common => ../../cloud-common
