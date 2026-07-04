@@ -49,11 +49,20 @@ func Proxy(c *context.Context) {
 	} else {
 		url = "http://" + node.Address
 	}
-	_ = c.Proxy(url, nil, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
+	var respErr error
+	respErr = c.Proxy(url, nil, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
 		r.URL.Path, r.URL.RawPath, r.RequestURI = targetPath, targetPath, targetPath
 		r.Header.Set(constant.RpcTokenName, global.App.Config.GetString(constant.ConsulToken))
 		r.Header.Set(constant.RpcOriginService, constant.ServiceUser)
 		r.Header.Set(constant.RpcOriginAddress, global.App.Consul.GetAddress())
-	}, nil)
+	}, func(_ http.ResponseWriter, _ *http.Request, err error) {
+		respErr = err
+	})
+	if respErr != nil {
+		c.StatusCode = http.StatusInternalServerError
+		global.App.Log.Println(respErr)
+	} else {
+		c.StatusCode = http.StatusOK
+	}
 	c.Request.URL.Path = tempPath
 }
