@@ -10,7 +10,7 @@ import (
 
 // List 列表数据
 func (Controller) List(c *context.Context) {
-	pageNum, pageSize, orderByField, orderByType := c.ValidatePage("id", "desc", "id,create_time,update_time")
+	query := c.ValidatePage("id", "desc", "id,create_time,update_time")
 	var form struct {
 		Name            string `json:"name" default:"" validate:"omitempty" label:"名称"`
 		Plugin          string `json:"plugin" default:"" validate:"omitempty,numeric" label:"插件"`
@@ -46,10 +46,10 @@ func (Controller) List(c *context.Context) {
 	if form.UpdateTimeEnd != "" {
 		where.UpdateTimeEnd = form.UpdateTimeEnd
 	}
-	data, total, err := service.Channel.Select(where, orderByField, orderByType, pageNum, pageSize)
+	data, total, err := service.Channel.Select(where, query)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("获取数据成功", page.NewPage(total, pageNum, pageSize, data))
+	c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, data))
 }

@@ -3,6 +3,7 @@ package context
 import (
 	"strings"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/validator"
 )
 
@@ -51,11 +52,11 @@ func (c *Context) ValidatorPath(data interface{}) (bool, string) {
 	return validator.Check(data)
 }
 
-// ValidatePage 验证分页和排序参数，并返回页码、每页数量、排序字段、排序方式。
+// ValidatePage 验证分页和排序参数，并返回分页查询对象。
 // 可选参数按类型匹配：int 参数依次表示 defaultPage、defaultPageSize；string 参数依次表示 defaultField、defaultType、allowField。
 // 例如 ValidatePage("id", "desc", "id,create_time") 表示默认按 id 倒序，并且只允许 id、create_time 排序。
 // defaultField 和 defaultType 默认为空；allowField 为空字符串或 "*" 时不限制排序字段；请求中的排序字段不在 allowField 内时，会回退到 defaultField。
-func (c *Context) ValidatePage(args ...interface{}) (page int, pageSize int, field string, sort string) {
+func (c *Context) ValidatePage(args ...interface{}) *page.Query {
 	defaultPage := 1
 	defaultPageSize := 20
 	defaultField := ""
@@ -106,36 +107,43 @@ func (c *Context) ValidatePage(args ...interface{}) (page int, pageSize int, fie
 		Type     string `json:"order_by_type" label:"排序类型"`
 	}
 	if c.BindAll(&pageInfo) != nil {
-		return defaultPage, defaultPageSize, defaultField, defaultType
+		return &page.Query{
+			Page:         defaultPage,
+			PageSize:     defaultPageSize,
+			OrderByField: defaultField,
+			OrderByType:  defaultType,
+		}
 	}
-	page = pageInfo.Page
-	if page <= 0 {
-		page = defaultPage
+	query := &page.Query{
+		Page:         pageInfo.Page,
+		PageSize:     pageInfo.PageSize,
+		OrderByField: pageInfo.Field,
+		OrderByType:  strings.ToLower(pageInfo.Type),
 	}
-	pageSize = pageInfo.PageSize
-	if pageSize <= 0 || pageSize > 1000 {
-		pageSize = defaultPageSize
+	if query.Page <= 0 {
+		query.Page = defaultPage
 	}
-	field = pageInfo.Field
-	if field == "" {
-		field = defaultField
+	if query.PageSize <= 0 || query.PageSize > 1000 {
+		query.PageSize = defaultPageSize
 	}
-	sort = strings.ToLower(pageInfo.Type)
-	if sort == "" {
-		sort = defaultType
+	if query.OrderByField == "" {
+		query.OrderByField = defaultField
 	}
-	if sort != "" && sort != "desc" && sort != "asc" {
-		sort = defaultType
+	if query.OrderByType == "" {
+		query.OrderByType = defaultType
+	}
+	if query.OrderByType != "" && query.OrderByType != "desc" && query.OrderByType != "asc" {
+		query.OrderByType = defaultType
 	}
 	if allowField == "" || allowField == "*" {
-		return
+		return query
 	}
 	fields := strings.Fields(strings.ReplaceAll(allowField, ",", " "))
 	for _, v := range fields {
-		if v == field {
-			return
+		if v == query.OrderByField {
+			return query
 		}
 	}
-	field = defaultField
-	return
+	query.OrderByField = defaultField
+	return query
 }

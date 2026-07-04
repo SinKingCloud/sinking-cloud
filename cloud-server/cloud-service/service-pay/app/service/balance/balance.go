@@ -10,17 +10,18 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/pay"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/client"
 )
 
 // Service service接口
 type Service interface {
 	GetByUserId(userId int64, refresh bool) (*Balance, error)
-	OperateMoney(userId int64, money float64, isOperateFrozen bool, logType int, describe string) error                                                   //操作用户余额并写入明细
-	OperateMoneyCount(userId int64, money float64) error                                                                                                  //操作累计充值或消费金额
-	SelectLog(where *balance_log.SelectBalanceLog, orderByField string, orderByType string, page int, pageSize int) (list []*Log, total int64, err error) //查询用户余额明细
-	CreateRechargeOrder(userId int64, money int, payType string) (orderId int64, err error)                                                               //创建充值订单
-	RechargeOrderNotify(order *pay.NotifyParam) error                                                                                                     //充值订单回调
+	OperateMoney(userId int64, money float64, isOperateFrozen bool, logType int, describe string) error    //操作用户余额并写入明细
+	OperateMoneyCount(userId int64, money float64) error                                                   //操作累计充值或消费金额
+	SelectLog(where *balance_log.SelectBalanceLog, page *page.Query) (list []*Log, total int64, err error) //查询用户余额明细
+	CreateRechargeOrder(userId int64, money int, payType string) (orderId int64, err error)                //创建充值订单
+	RechargeOrderNotify(order *pay.NotifyParam) error                                                      //充值订单回调
 }
 
 // Session服务

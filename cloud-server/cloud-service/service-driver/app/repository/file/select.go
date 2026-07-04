@@ -1,6 +1,10 @@
 package file
 
-import "service-driver/app/model"
+import (
+	"service-driver/app/model"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
+)
 
 // SelectChannelIdSceneIdHashPathByIds 根据 ids 查询清理所需的通道、场景、哈希和路径。
 func (r *Repository) SelectChannelIdSceneIdHashPathByIds(ids []int64) ([]*model.File, error) {
@@ -25,8 +29,8 @@ func (r *Repository) SelectChannelIdSceneIdHashPathByIds(ids []int64) ([]*model.
 }
 
 // Select 查询数据
-func (r *Repository) Select(where *SelectFile, orderByField string, orderByType string, page int, pageSize int) (list []*model.File, total int64, err error) {
-	offset := pageSize * (page - 1)
+func (r *Repository) Select(where *SelectFile, page *page.Query) (list []*model.File, total int64, err error) {
+	offset := page.PageSize * (page.Page - 1)
 	query := r.Database.Db.Model(&model.File{})
 	if where != nil {
 		if where.ChannelId != "" {
@@ -63,6 +67,6 @@ func (r *Repository) Select(where *SelectFile, orderByField string, orderByType 
 			query = query.Where("update_time <= ?", where.UpdateTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(r.GetOrderBy(orderByField, orderByType)).Find(&list).Error
+	err = query.Count(&total).Limit(page.PageSize).Offset(offset).Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).Find(&list).Error
 	return
 }

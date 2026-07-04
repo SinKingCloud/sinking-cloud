@@ -6,11 +6,12 @@ import (
 	"service-user/app/model"
 	sessionRepository "service-user/app/repository/session"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"gorm.io/gorm"
 )
 
 // SelectSessionByUserId 查询用户会话列表
-func (s *service) SelectSessionByUserId(userId int64, where *sessionRepository.SelectSession, orderByField string, orderByType string, page int, pageSize int) ([]*model.Session, int64, error) {
+func (s *service) SelectSessionByUserId(userId int64, where *sessionRepository.SelectSession, page *page.Query) ([]*model.Session, int64, error) {
 	if userId <= 0 {
 		return nil, 0, errors.New("用户ID错误")
 	}
@@ -18,7 +19,7 @@ func (s *service) SelectSessionByUserId(userId int64, where *sessionRepository.S
 		where = &sessionRepository.SelectSession{}
 	}
 	where.UserId = userId
-	list, total, err := s.repositorySession.Select(where, orderByField, orderByType, page, pageSize)
+	list, total, err := s.repositorySession.Select(where, page)
 	if err != nil {
 		return nil, 0, errors.Join(errors.New("查询会话失败"), err)
 	}

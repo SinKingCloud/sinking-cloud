@@ -4,6 +4,7 @@ import (
 	"service-user/app/model"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/repository"
 	"gorm.io/gorm"
 )
@@ -17,7 +18,7 @@ type Interface interface {
 	FindByIdAndUserId(id int64, userId int64) (*model.Message, error)
 	UpdateByIdAndUserId(id int64, userId int64, data *UpdateMessage, tx ...*gorm.DB) error
 	UpdateByIdsAndUserId(ids []int64, userId int64, data *UpdateMessage, tx ...*gorm.DB) error
-	Select(where *SelectMessage, orderByField string, orderByType string, page int, pageSize int) (list []*Message, total int64, err error)
+	Select(where *SelectMessage, page *page.Query) (list []*Message, total int64, err error)
 }
 
 // Repository 消息仓储

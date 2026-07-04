@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"gorm.io/gorm"
 )
 
@@ -95,7 +96,7 @@ func (s *service) FindById(id int64, refresh bool) (data *model.Task, err error)
 }
 
 // Select 查询任务列表
-func (s *service) Select(where *repositoryTask.SelectTask, orderByField string, orderByType string, page int, pageSize int) (list []*repositoryTask.Task, total int64, err error) {
+func (s *service) Select(where *repositoryTask.SelectTask, page *page.Query) (list []*repositoryTask.Task, total int64, err error) {
 	if where.Status != "" {
 		status, err := strconv.Atoi(where.Status)
 		if err != nil {
@@ -123,7 +124,7 @@ func (s *service) Select(where *repositoryTask.SelectTask, orderByField string, 
 			return nil, 0, errors.New("并发参数不合法")
 		}
 	}
-	return s.repositoryTask.Select(where, orderByField, orderByType, page, pageSize)
+	return s.repositoryTask.Select(where, page)
 }
 
 // Create 创建任务

@@ -10,10 +10,12 @@ import (
 	"service-driver/app/repository/scene"
 	"strconv"
 	"strings"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
 // Select 查询数据
-func (s *service) Select(where *scene.SelectScene, orderByField string, orderByType string, page int, pageSize int) (list []*model.Scene, total int64, err error) {
+func (s *service) Select(where *scene.SelectScene, page *page.Query) (list []*model.Scene, total int64, err error) {
 	if where.Status != "" {
 		status, err := strconv.Atoi(where.Status)
 		if err != nil {
@@ -38,7 +40,7 @@ func (s *service) Select(where *scene.SelectScene, orderByField string, orderByT
 			return nil, 0, errors.New("通道参数错误")
 		}
 	}
-	return s.repositoryScene.Select(where, orderByField, orderByType, page, pageSize)
+	return s.repositoryScene.Select(where, page)
 }
 
 // GetIdNameMap 获取id name映射

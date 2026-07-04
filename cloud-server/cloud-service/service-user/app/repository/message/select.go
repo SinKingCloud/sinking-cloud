@@ -1,10 +1,14 @@
 package message
 
-import "service-user/app/model"
+import (
+	"service-user/app/model"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
+)
 
 // Select 查询消息列表，不查询 content 字段。
-func (r *Repository) Select(where *SelectMessage, orderByField string, orderByType string, page int, pageSize int) (list []*Message, total int64, err error) {
-	offset := pageSize * (page - 1)
+func (r *Repository) Select(where *SelectMessage, page *page.Query) (list []*Message, total int64, err error) {
+	offset := page.PageSize * (page.Page - 1)
 	query := r.Database.Db.Model(&model.Message{})
 	if where != nil {
 		if where.UserId > 0 {
@@ -40,9 +44,9 @@ func (r *Repository) Select(where *SelectMessage, orderByField string, orderByTy
 	}
 	err = query.
 		Select("id", "title", "status", "read_time", "create_time", "update_time").
-		Limit(pageSize).
+		Limit(page.PageSize).
 		Offset(offset).
-		Order(r.GetOrderBy(orderByField, orderByType)).
+		Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).
 		Find(&list).Error
 	return
 }

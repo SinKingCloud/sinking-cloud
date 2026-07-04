@@ -4,6 +4,7 @@ import (
 	"service-admin/app/model"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/repository"
 	"gorm.io/gorm"
 )
@@ -15,7 +16,7 @@ type Interface interface {
 	UpdateById(id int64, data *UpdateRole, tx ...*gorm.DB) error
 	SelectByIds(ids []int64) ([]*model.Role, error)
 	SelectIdNameMap() (map[int64]string, error)
-	Select(where *SelectRole, orderByField string, orderByType string, page int, pageSize int) (list []*model.Role, total int64, err error)
+	Select(where *SelectRole, page *page.Query) (list []*model.Role, total int64, err error)
 	DeleteByIds(ids []int64, tx ...*gorm.DB) error
 }
 

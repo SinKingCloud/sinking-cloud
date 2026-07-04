@@ -1,9 +1,13 @@
 package order
 
-import "service-pay/app/model"
+import (
+	"service-pay/app/model"
 
-func (r *Repository) Select(where *SelectOrder, orderByField string, orderByType string, page int, pageSize int) (list []*Order, total int64, err error) {
-	offset := pageSize * (page - 1)
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
+)
+
+func (r *Repository) Select(where *SelectOrder, page *page.Query) (list []*Order, total int64, err error) {
+	offset := page.PageSize * (page.Page - 1)
 	query := r.Database.Db.Model(&model.Order{})
 	if where != nil {
 		if where.Id != "" {
@@ -55,6 +59,6 @@ func (r *Repository) Select(where *SelectOrder, orderByField string, orderByType
 			query = query.Where("update_time <= ?", where.UpdateTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(r.GetOrderBy(orderByField, orderByType)).Find(&list).Error
+	err = query.Count(&total).Limit(page.PageSize).Offset(offset).Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).Find(&list).Error
 	return
 }

@@ -11,13 +11,14 @@ import (
 	scene2 "service-driver/app/service/scene"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
 // Service service接口
 type Service interface {
 	SimpleUpload(ctx context.Context, isLogin bool, sceneId int64, body io.Reader, filename string, size int64) (string, error)                                                                                                         //简单上传
 	ChunkUpload(ctx context.Context, isLogin bool, step string, sceneId int64, uploadId string, hash string, filename string, totalSize int64, chunkSize int64, partNumber int, body io.Reader, size int64) (*ChunkUploadResult, error) //分片上传
-	Select(where *file.SelectFile, orderByField string, orderByType string, page int, pageSize int) (list []*model.File, total int64, err error)                                                                                        //查询数据
+	Select(where *file.SelectFile, page *page.Query) (list []*model.File, total int64, err error)                                                                                                                                       //查询数据
 	GetUrlByHash(sceneId int64, hash string) (string, error)                                                                                                                                                                            //根据场景和hash获取文件公开地址
 	UpdateByIds(ids []int64, data *file.UpdateFile) error                                                                                                                                                                               //批量更新数据
 	DeleteByIds(ids []int64, clear bool) error                                                                                                                                                                                          //批量删除数据

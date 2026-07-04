@@ -2,6 +2,8 @@ package task
 
 import (
 	"service-cron/app/model"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
 // SelectAll 查询全部任务
@@ -11,8 +13,8 @@ func (r *Repository) SelectAll() (list []*model.Task, err error) {
 }
 
 // Select 查询数据
-func (r *Repository) Select(where *SelectTask, orderByField string, orderByType string, page int, pageSize int) (list []*Task, total int64, err error) {
-	offset := pageSize * (page - 1)
+func (r *Repository) Select(where *SelectTask, page *page.Query) (list []*Task, total int64, err error) {
+	offset := page.PageSize * (page.Page - 1)
 	query := r.Database.Db.Model(&model.Task{})
 	if where != nil {
 		if where.Type != "" {
@@ -40,6 +42,6 @@ func (r *Repository) Select(where *SelectTask, orderByField string, orderByType 
 			query = query.Where("update_time <= ?", where.UpdateTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(r.GetOrderBy(orderByField, orderByType)).Find(&list).Error
+	err = query.Count(&total).Limit(page.PageSize).Offset(offset).Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).Find(&list).Error
 	return
 }

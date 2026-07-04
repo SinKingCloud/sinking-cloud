@@ -10,7 +10,7 @@ import (
 
 // List 权限列表
 func (Controller) List(c *context.Context) {
-	pageNum, pageSize, orderByField, orderByType := c.ValidatePage("id", "desc", "id,create_time,update_time")
+	query := c.ValidatePage("id", "desc", "id,create_time,update_time")
 	var form struct {
 		Code            string `json:"code" default:"" validate:"omitempty" label:"标识"`
 		Name            string `json:"name" default:"" validate:"omitempty" label:"名称"`
@@ -46,10 +46,10 @@ func (Controller) List(c *context.Context) {
 	if form.UpdateTimeEnd != "" {
 		where.UpdateTimeEnd = form.UpdateTimeEnd
 	}
-	data, total, err := service.Rbac.SelectPermission(where, orderByField, orderByType, pageNum, pageSize)
+	data, total, err := service.Rbac.SelectPermission(where, query)
 	if err != nil {
 		c.Error("获取数据失败")
 	} else {
-		c.SuccessWithData("获取数据成功", page.NewPage(total, pageNum, pageSize, data))
+		c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, data))
 	}
 }

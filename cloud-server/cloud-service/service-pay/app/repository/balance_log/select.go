@@ -1,10 +1,14 @@
 package balance_log
 
-import "service-pay/app/model"
+import (
+	"service-pay/app/model"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
+)
 
 // Select 查询数据
-func (r *Repository) Select(where *SelectBalanceLog, orderByField string, orderByType string, page int, pageSize int) (list []*model.BalanceLog, total int64, err error) {
-	offset := pageSize * (page - 1)
+func (r *Repository) Select(where *SelectBalanceLog, page *page.Query) (list []*model.BalanceLog, total int64, err error) {
+	offset := page.PageSize * (page.Page - 1)
 	query := r.Database.Db.Model(&model.BalanceLog{})
 	if where != nil {
 		if where.UserId != "" {
@@ -20,6 +24,6 @@ func (r *Repository) Select(where *SelectBalanceLog, orderByField string, orderB
 			query = query.Where("create_time <= ?", where.CreateTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(r.GetOrderBy(orderByField, orderByType)).Find(&list).Error
+	err = query.Count(&total).Limit(page.PageSize).Offset(offset).Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).Find(&list).Error
 	return
 }

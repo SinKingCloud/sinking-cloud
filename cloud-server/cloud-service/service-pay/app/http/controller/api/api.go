@@ -106,6 +106,6 @@ func (Controller) Callback(c *context.Context) {
 		for k, v := range header {
 			c.SetHeader(k, v[0])
 		}
-		c.String(code, body)
+		c.String(code, "%s", body)
 	}
 }

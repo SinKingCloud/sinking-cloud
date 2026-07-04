@@ -7,16 +7,17 @@ import (
 	"service-driver/app/repository/scene"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/cache"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
 // Service service接口
 type Service interface {
-	Create(data *model.Scene) error                                                                                                                 //创建数据
-	Select(where *scene.SelectScene, orderByField string, orderByType string, page int, pageSize int) (list []*model.Scene, total int64, err error) //查询数据
-	GetIdNameMap(refresh bool) (map[int64]string, error)                                                                                            //获取id name映射
-	DeleteById(id int64) error                                                                                                                      //通过ID删除数据
-	UpdateById(id int64, data *scene.UpdateScene) error                                                                                             //通过ID更新数据
-	FindById(id int64, refresh bool) (*model.Scene, error)                                                                                          //通过ID查询数据
+	Create(data *model.Scene) error                                                                  //创建数据
+	Select(where *scene.SelectScene, page *page.Query) (list []*model.Scene, total int64, err error) //查询数据
+	GetIdNameMap(refresh bool) (map[int64]string, error)                                             //获取id name映射
+	DeleteById(id int64) error                                                                       //通过ID删除数据
+	UpdateById(id int64, data *scene.UpdateScene) error                                              //通过ID更新数据
+	FindById(id int64, refresh bool) (*model.Scene, error)                                           //通过ID查询数据
 }
 
 // Session服务

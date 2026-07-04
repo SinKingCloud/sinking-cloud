@@ -10,7 +10,7 @@ import (
 
 // List 订单列表
 func (Controller) List(c *context.Context) {
-	pageNum, pageSize, orderByField, orderByType := c.ValidatePage("id", "desc", "id,type,status,pay_status,pay_type,pay_time,expired_time,complete_time,create_time,update_time")
+	query := c.ValidatePage("id", "desc", "id,type,status,pay_status,pay_type,pay_time,expired_time,complete_time,create_time,update_time")
 	var form struct {
 		Id                string `json:"id" default:"" validate:"omitempty,numeric" label:"订单ID"`
 		Type              string `json:"type" default:"" validate:"omitempty,numeric" label:"订单类型"`
@@ -71,10 +71,10 @@ func (Controller) List(c *context.Context) {
 	if form.UpdateTimeEnd != "" {
 		where.UpdateTimeEnd = form.UpdateTimeEnd
 	}
-	data, total, err := service.Order.SelectByUserId(u.Id, where, orderByField, orderByType, pageNum, pageSize)
+	data, total, err := service.Order.SelectByUserId(u.Id, where, query)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("获取数据成功", page.NewPage(total, pageNum, pageSize, data))
+	c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, data))
 }

@@ -4,6 +4,7 @@ import (
 	"service-admin/app/model"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/repository"
 	"gorm.io/gorm"
 )
@@ -17,7 +18,7 @@ type Interface interface {
 	SelectAll() ([]*model.Menu, error)
 	SelectWithStatus(status int) ([]*model.Menu, error)
 	SelectWithType(types []int) ([]*model.Menu, error)
-	Select(where *SelectMenu, orderByField string, orderByType string, page int, pageSize int) ([]*model.Menu, int64, error)
+	Select(where *SelectMenu, page *page.Query) ([]*model.Menu, int64, error)
 	SelectByParentIdWithStatusAndType(parentId int64, status int, types int) ([]*model.Menu, error)
 	FindByCode(code string) (*model.Menu, error)
 	FindById(id int64) (*model.Menu, error)

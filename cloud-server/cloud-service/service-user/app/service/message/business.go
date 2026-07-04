@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/socket"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
@@ -206,7 +207,7 @@ func (s *service) Clear(userId int64) error {
 }
 
 // SelectByUserId 查询用户消息列表
-func (s *service) SelectByUserId(userId int64, where *repositoryMessage.SelectMessage, orderByField string, orderByType string, page int, pageSize int) ([]*Message, int64, error) {
+func (s *service) SelectByUserId(userId int64, where *repositoryMessage.SelectMessage, page *page.Query) ([]*Message, int64, error) {
 	if userId <= 0 {
 		return nil, 0, errors.New("用户信息错误")
 	}
@@ -223,7 +224,7 @@ func (s *service) SelectByUserId(userId int64, where *repositoryMessage.SelectMe
 			return nil, 0, errors.New("消息状态参数不合法")
 		}
 	}
-	list, total, err := s.repositoryMessage.Select(where, orderByField, orderByType, page, pageSize)
+	list, total, err := s.repositoryMessage.Select(where, page)
 	if err != nil {
 		return nil, 0, err
 	}

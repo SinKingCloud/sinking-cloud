@@ -11,7 +11,7 @@ import (
 
 // Log 余额明细
 func (Controller) Log(c *context.Context) {
-	pageNum, pageSize, orderByField, orderByType := c.ValidatePage("id", "desc", "id,type,create_time")
+	query := c.ValidatePage("id", "desc", "id,type,create_time")
 	var form struct {
 		UserId          int64  `json:"user_id" default:"" validate:"numeric,min=1" label:"用户ID"`
 		Type            string `json:"type" default:"" validate:"omitempty,numeric" label:"类型"`
@@ -34,10 +34,10 @@ func (Controller) Log(c *context.Context) {
 	if form.CreateTimeEnd != "" {
 		where.CreateTimeEnd = form.CreateTimeEnd
 	}
-	data, total, err := service.Balance.SelectLog(where, orderByField, orderByType, pageNum, pageSize)
+	data, total, err := service.Balance.SelectLog(where, query)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("获取数据成功", page.NewPage(total, pageNum, pageSize, data))
+	c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, data))
 }

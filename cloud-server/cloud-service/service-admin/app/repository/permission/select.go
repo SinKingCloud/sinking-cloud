@@ -1,6 +1,10 @@
 package permission
 
-import "service-admin/app/model"
+import (
+	"service-admin/app/model"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
+)
 
 // SelectCodeNameMap 查询code name 映射
 func (r *Repository) SelectCodeNameMap() (map[string]string, error) {
@@ -68,8 +72,8 @@ func (r *Repository) SelectByIds(ids []int64) ([]*model.Permission, error) {
 }
 
 // Select 查询数据
-func (r *Repository) Select(where *SelectPermission, orderByField string, orderByType string, page int, pageSize int) (list []*model.Permission, total int64, err error) {
-	offset := pageSize * (page - 1)
+func (r *Repository) Select(where *SelectPermission, page *page.Query) (list []*model.Permission, total int64, err error) {
+	offset := page.PageSize * (page.Page - 1)
 	query := r.Database.Db.Model(&model.Permission{})
 	if where != nil {
 		if where.Code != "" {
@@ -94,6 +98,6 @@ func (r *Repository) Select(where *SelectPermission, orderByField string, orderB
 			query = query.Where("update_time <= ?", where.UpdateTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(r.GetOrderBy(orderByField, orderByType)).Find(&list).Error
+	err = query.Count(&total).Limit(page.PageSize).Offset(offset).Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).Find(&list).Error
 	return
 }

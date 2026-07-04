@@ -16,6 +16,7 @@ import (
 
 	commonConstant "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/constant"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/aliyun"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"gorm.io/gorm"
 )
@@ -227,7 +228,7 @@ func (s *service) UpdateByIds(ids []int64, data *user.UpdateUser) error {
 }
 
 // Select 查询用户列表
-func (s *service) Select(where *user.SelectUser, orderByField string, orderByType string, page int, pageSize int) ([]*User, int64, error) {
+func (s *service) Select(where *user.SelectUser, page *page.Query) ([]*User, int64, error) {
 	if where.RealAuthStatus != "" {
 		status, err := strconv.Atoi(where.RealAuthStatus)
 		if err != nil {
@@ -246,7 +247,7 @@ func (s *service) Select(where *user.SelectUser, orderByField string, orderByTyp
 			return nil, 0, errors.New("状态参数不合法")
 		}
 	}
-	list, total, err := s.repositoryUser.Select(where, orderByField, orderByType, page, pageSize)
+	list, total, err := s.repositoryUser.Select(where, page)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -4,6 +4,7 @@ import (
 	"service-user/app/model"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/repository"
 	"gorm.io/gorm"
 )
@@ -18,7 +19,7 @@ type Interface interface {
 	Create(user *model.User) error
 	UpdateById(id int64, data *UpdateUser, tx ...*gorm.DB) error
 	UpdateByIds(ids []int64, data *UpdateUser) error
-	Select(where *SelectUser, orderByField string, orderByType string, page int, pageSize int) (list []*User, total int64, err error)
+	Select(where *SelectUser, page *page.Query) (list []*User, total int64, err error)
 }
 
 // Repository 用户仓储

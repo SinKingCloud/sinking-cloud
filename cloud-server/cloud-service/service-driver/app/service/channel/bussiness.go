@@ -11,12 +11,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/storage"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
 // Select 查询数据
-func (s *service) Select(where *channel.SelectChannel, orderByField string, orderByType string, page int, pageSize int) (list []*channel.Channel, total int64, err error) {
+func (s *service) Select(where *channel.SelectChannel, page *page.Query) (list []*channel.Channel, total int64, err error) {
 	if where.Status != "" {
 		status, err := strconv.Atoi(where.Status)
 		if err != nil {
@@ -35,7 +36,7 @@ func (s *service) Select(where *channel.SelectChannel, orderByField string, orde
 			return nil, 0, errors.New("类型参数不合法")
 		}
 	}
-	return s.repositoryChannel.Select(where, orderByField, orderByType, page, pageSize)
+	return s.repositoryChannel.Select(where, page)
 }
 
 // GetIdNameMap 获取id name映射

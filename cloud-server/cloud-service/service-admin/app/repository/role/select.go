@@ -1,6 +1,10 @@
 package role
 
-import "service-admin/app/model"
+import (
+	"service-admin/app/model"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
+)
 
 // SelectByIds 根据ID集合查询角色
 func (r *Repository) SelectByIds(ids []int64) ([]*model.Role, error) {
@@ -46,8 +50,8 @@ func (r *Repository) SelectIdNameMap() (map[int64]string, error) {
 }
 
 // Select 查询数据
-func (r *Repository) Select(where *SelectRole, orderByField string, orderByType string, page int, pageSize int) (list []*model.Role, total int64, err error) {
-	offset := pageSize * (page - 1)
+func (r *Repository) Select(where *SelectRole, page *page.Query) (list []*model.Role, total int64, err error) {
+	offset := page.PageSize * (page.Page - 1)
 	query := r.Database.Db.Model(&model.Role{})
 	if where != nil {
 		if where.Name != "" {
@@ -69,6 +73,6 @@ func (r *Repository) Select(where *SelectRole, orderByField string, orderByType 
 			query = query.Where("update_time <= ?", where.UpdateTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(r.GetOrderBy(orderByField, orderByType)).Find(&list).Error
+	err = query.Count(&total).Limit(page.PageSize).Offset(offset).Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).Find(&list).Error
 	return
 }

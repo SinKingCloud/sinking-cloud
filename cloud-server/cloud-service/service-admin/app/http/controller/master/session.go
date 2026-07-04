@@ -10,7 +10,7 @@ import (
 
 // Session 会话列表
 func (Controller) Session(c *context.Context) {
-	pageNum, pageSize, orderByField, orderByType := c.ValidatePage("create_time", "desc", "create_time,update_time,expire_time")
+	query := c.ValidatePage("create_time", "desc", "create_time,update_time,expire_time")
 	var form struct {
 		Id              int64  `json:"id" default:"" validate:"required,min=1" label:"用户ID"`
 		Device          string `json:"device" default:"" validate:"omitempty,max=100" label:"登录设备"`
@@ -55,10 +55,10 @@ func (Controller) Session(c *context.Context) {
 	if form.ExpireTimeEnd != "" {
 		where.ExpireTimeEnd = form.ExpireTimeEnd
 	}
-	data, total, err := service.Auth.SelectSessionByUserId(form.Id, where, orderByField, orderByType, pageNum, pageSize)
+	data, total, err := service.Auth.SelectSessionByUserId(form.Id, where, query)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("获取数据成功", page.NewPage(total, pageNum, pageSize, data))
+	c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, data))
 }

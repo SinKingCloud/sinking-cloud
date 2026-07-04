@@ -18,6 +18,7 @@ import (
 	"time"
 
 	payService "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/pay"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"gorm.io/gorm"
@@ -39,7 +40,7 @@ func (s *service) FindById(id int64) (*model.Order, error) {
 }
 
 // Select 查询订单列表
-func (s *service) Select(where *orderRepository.SelectOrder, orderByField string, orderByType string, page int, pageSize int) (list []*orderRepository.Order, total int64, err error) {
+func (s *service) Select(where *orderRepository.SelectOrder, page *page.Query) (list []*orderRepository.Order, total int64, err error) {
 	if where != nil {
 		if where.Id != "" {
 			orderId, err := strconv.ParseInt(where.Id, 10, 64)
@@ -92,11 +93,11 @@ func (s *service) Select(where *orderRepository.SelectOrder, orderByField string
 			}
 		}
 	}
-	return s.orderRepository.Select(where, orderByField, orderByType, page, pageSize)
+	return s.orderRepository.Select(where, page)
 }
 
 // SelectByUserId 查询用户订单列表
-func (s *service) SelectByUserId(userId int64, where *orderRepository.SelectOrder, orderByField string, orderByType string, page int, pageSize int) (list []*UserOrder, total int64, err error) {
+func (s *service) SelectByUserId(userId int64, where *orderRepository.SelectOrder, page *page.Query) (list []*UserOrder, total int64, err error) {
 	if userId <= 0 {
 		return nil, 0, errors.New("用户ID错误")
 	}
@@ -104,7 +105,7 @@ func (s *service) SelectByUserId(userId int64, where *orderRepository.SelectOrde
 		where = &orderRepository.SelectOrder{}
 	}
 	where.UserId = strconv.FormatInt(userId, 10)
-	items, total, err := s.Select(where, orderByField, orderByType, page, pageSize)
+	items, total, err := s.Select(where, page)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -131,7 +132,7 @@ func (s *service) SelectByUserId(userId int64, where *orderRepository.SelectOrde
 }
 
 // SelectLog 查询订单日志
-func (s *service) SelectLog(where *orderLogRepository.SelectOrderLog, orderByField string, orderByType string, page int, pageSize int) (list []*orderLogRepository.OrderLog, total int64, err error) {
+func (s *service) SelectLog(where *orderLogRepository.SelectOrderLog, page *page.Query) (list []*orderLogRepository.OrderLog, total int64, err error) {
 	if where != nil {
 		if where.OperatorType != "" {
 			key, err := strconv.Atoi(where.OperatorType)
@@ -152,7 +153,7 @@ func (s *service) SelectLog(where *orderLogRepository.SelectOrderLog, orderByFie
 			}
 		}
 	}
-	return s.orderLogRepository.Select(where, orderByField, orderByType, page, pageSize)
+	return s.orderLogRepository.Select(where, page)
 }
 
 // FindLogById 根据ID查询日志

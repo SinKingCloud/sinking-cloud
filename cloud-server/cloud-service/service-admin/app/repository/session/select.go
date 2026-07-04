@@ -4,13 +4,14 @@ import (
 	"service-admin/app/model"
 	"time"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"gorm.io/gorm"
 )
 
 // Select 查询会话列表
-func (r *Repository) Select(where *SelectSession, orderByField string, orderByType string, page int, pageSize int) (list []*model.Session, total int64, err error) {
-	offset := pageSize * (page - 1)
+func (r *Repository) Select(where *SelectSession, page *page.Query) (list []*model.Session, total int64, err error) {
+	offset := page.PageSize * (page.Page - 1)
 	query := r.Database.Db.Model(&model.Session{})
 	if where != nil {
 		if where.UserId > 0 {
@@ -44,7 +45,7 @@ func (r *Repository) Select(where *SelectSession, orderByField string, orderByTy
 			query = query.Where("expire_time <= ?", where.ExpireTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(r.GetOrderBy(orderByField, orderByType)).Find(&list).Error
+	err = query.Count(&total).Limit(page.PageSize).Offset(offset).Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).Find(&list).Error
 	return
 }
 

@@ -4,6 +4,7 @@ import (
 	"service-cron/app/model"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/repository"
 	"gorm.io/gorm"
 )
@@ -15,7 +16,7 @@ type Interface interface {
 	FindById(id int64) (*model.Task, error)
 	SelectAll() ([]*model.Task, error)
 	UpdateById(id int64, data *UpdateTask) error
-	Select(where *SelectTask, orderByField string, orderByType string, page int, pageSize int) (list []*Task, total int64, err error)
+	Select(where *SelectTask, page *page.Query) (list []*Task, total int64, err error)
 }
 
 // Repository 仓储

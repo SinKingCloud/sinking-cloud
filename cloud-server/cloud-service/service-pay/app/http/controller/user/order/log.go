@@ -11,7 +11,7 @@ import (
 
 // Log 订单日志
 func (Controller) Log(c *context.Context) {
-	pageNum, pageSize, orderByField, orderByType := c.ValidatePage("id", "desc", "id,type,create_time")
+	query := c.ValidatePage("id", "desc", "id,type,create_time")
 	var form struct {
 		OrderId         int64  `json:"order_id" default:"0" validate:"numeric,min=1" label:"订单ID"`
 		Type            string `json:"type" default:"" validate:"omitempty,numeric" label:"日志类型"`
@@ -44,10 +44,10 @@ func (Controller) Log(c *context.Context) {
 	if form.CreateTimeEnd != "" {
 		where.CreateTimeEnd = form.CreateTimeEnd
 	}
-	data, total, err := service.Order.SelectLog(where, orderByField, orderByType, pageNum, pageSize)
+	data, total, err := service.Order.SelectLog(where, query)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("获取数据成功", page.NewPage(total, pageNum, pageSize, data))
+	c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, data))
 }

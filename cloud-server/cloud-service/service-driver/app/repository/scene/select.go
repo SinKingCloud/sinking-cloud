@@ -1,6 +1,10 @@
 package scene
 
-import "service-driver/app/model"
+import (
+	"service-driver/app/model"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
+)
 
 // SelectIdNameMap 查询id name 映射
 func (r *Repository) SelectIdNameMap() (map[int64]string, error) {
@@ -24,8 +28,8 @@ func (r *Repository) SelectIdNameMap() (map[int64]string, error) {
 }
 
 // Select 查询数据
-func (r *Repository) Select(where *SelectScene, orderByField string, orderByType string, page int, pageSize int) (list []*model.Scene, total int64, err error) {
-	offset := pageSize * (page - 1)
+func (r *Repository) Select(where *SelectScene, page *page.Query) (list []*model.Scene, total int64, err error) {
+	offset := page.PageSize * (page.Page - 1)
 	query := r.Database.Db.Model(&model.Scene{})
 	if where != nil {
 		if where.ChannelId != "" {
@@ -56,6 +60,6 @@ func (r *Repository) Select(where *SelectScene, orderByField string, orderByType
 			query = query.Where("update_time <= ?", where.UpdateTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(r.GetOrderBy(orderByField, orderByType)).Find(&list).Error
+	err = query.Count(&total).Limit(page.PageSize).Offset(offset).Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).Find(&list).Error
 	return
 }

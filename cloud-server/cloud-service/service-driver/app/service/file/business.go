@@ -10,10 +10,12 @@ import (
 	"service-driver/app/repository/file"
 	"strconv"
 	"strings"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
 // Select 查询数据
-func (s *service) Select(where *file.SelectFile, orderByField string, orderByType string, page int, pageSize int) (list []*model.File, total int64, err error) {
+func (s *service) Select(where *file.SelectFile, page *page.Query) (list []*model.File, total int64, err error) {
 	if where.Status != "" {
 		status, err := strconv.Atoi(where.Status)
 		if err != nil {
@@ -23,7 +25,7 @@ func (s *service) Select(where *file.SelectFile, orderByField string, orderByTyp
 			return nil, 0, errors.New("状态参数不合法")
 		}
 	}
-	return s.repositoryFile.Select(where, orderByField, orderByType, page, pageSize)
+	return s.repositoryFile.Select(where, page)
 }
 
 // GetUrlByHash 根据 hash 获取文件公开地址。

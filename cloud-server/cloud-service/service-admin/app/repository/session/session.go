@@ -4,6 +4,7 @@ import (
 	"service-admin/app/model"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/repository"
 	"gorm.io/gorm"
 )
@@ -17,7 +18,7 @@ type Interface interface {
 	DeleteByIds(ids []int64, tx ...*gorm.DB) error
 	FindByToken(token string) (*model.Session, error)
 	SelectExpireSessions(tx ...*gorm.DB) (map[int64]string, error)
-	Select(where *SelectSession, orderByField string, orderByType string, page int, pageSize int) (list []*model.Session, total int64, err error)
+	Select(where *SelectSession, page *page.Query) (list []*model.Session, total int64, err error)
 }
 
 // Repository 仓储

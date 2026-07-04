@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/pay"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"gorm.io/gorm"
 )
@@ -155,7 +156,7 @@ func (s *service) OperateMoneyCount(userId int64, money float64) error {
 }
 
 // SelectLog 查询用户余额明细
-func (s *service) SelectLog(where *balance_log.SelectBalanceLog, orderByField string, orderByType string, page int, pageSize int) (list []*Log, total int64, err error) {
+func (s *service) SelectLog(where *balance_log.SelectBalanceLog, page *page.Query) (list []*Log, total int64, err error) {
 	if where == nil {
 		return nil, 0, errors.New("参数错误")
 	}
@@ -173,7 +174,7 @@ func (s *service) SelectLog(where *balance_log.SelectBalanceLog, orderByField st
 			return nil, 0, errors.New("类型参数不合法")
 		}
 	}
-	items, total, err := s.balanceLogRepository.Select(where, orderByField, orderByType, page, pageSize)
+	items, total, err := s.balanceLogRepository.Select(where, page)
 	if err != nil {
 		return nil, 0, err
 	}

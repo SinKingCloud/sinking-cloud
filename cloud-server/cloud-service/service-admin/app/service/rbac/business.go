@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"gorm.io/gorm"
 )
@@ -255,8 +256,8 @@ func (s *service) CheckUserHasPermission(userId int64, path string) error {
 }
 
 // SelectPermission 查询权限数据
-func (s *service) SelectPermission(where *permission.SelectPermission, orderByField string, orderByType string, page int, pageSize int) ([]*model.Permission, int64, error) {
-	return s.repositoryPermission.Select(where, orderByField, orderByType, page, pageSize)
+func (s *service) SelectPermission(where *permission.SelectPermission, page *page.Query) ([]*model.Permission, int64, error) {
+	return s.repositoryPermission.Select(where, page)
 }
 
 // UpdatePermissionByIds 批量更新权限数据
@@ -690,7 +691,7 @@ func (s *service) GetMenuOrControlInfoById(id int64) (interface{}, error) {
 }
 
 // GetPageControlsByMenuId 获取页面控件
-func (s *service) GetPageControlsByMenuId(id int64, where *menu2.SelectMenu, orderByField string, orderByType string, page int, pageSize int) ([]*Control, int64, error) {
+func (s *service) GetPageControlsByMenuId(id int64, where *menu2.SelectMenu, page *page.Query) ([]*Control, int64, error) {
 	var controls []*Control
 	if id <= 0 {
 		return controls, 0, nil
@@ -700,7 +701,7 @@ func (s *service) GetPageControlsByMenuId(id int64, where *menu2.SelectMenu, ord
 	}
 	where.ParentId = strconv.FormatInt(id, 10)
 	where.Type = strconv.Itoa(int(menu_type.Control))
-	menus, total, err := s.repositoryMenu.Select(where, orderByField, orderByType, page, pageSize)
+	menus, total, err := s.repositoryMenu.Select(where, page)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -1234,7 +1235,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 }
 
 // SelectRole 查询角色数据
-func (s *service) SelectRole(where *role.SelectRole, orderByField string, orderByType string, page int, pageSize int) ([]*model.Role, int64, error) {
+func (s *service) SelectRole(where *role.SelectRole, page *page.Query) ([]*model.Role, int64, error) {
 	if where.Status != "" {
 		status, err := strconv.Atoi(where.Status)
 		if err != nil {
@@ -1244,7 +1245,7 @@ func (s *service) SelectRole(where *role.SelectRole, orderByField string, orderB
 			return nil, 0, errors.New("状态参数不合法")
 		}
 	}
-	return s.repositoryRole.Select(where, orderByField, orderByType, page, pageSize)
+	return s.repositoryRole.Select(where, page)
 }
 
 // UpdateRole 更新角色

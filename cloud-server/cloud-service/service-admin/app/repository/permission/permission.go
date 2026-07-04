@@ -4,6 +4,7 @@ import (
 	"service-admin/app/model"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/database"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/repository"
 	"gorm.io/gorm"
 )
@@ -19,7 +20,7 @@ type Interface interface {
 	SelectCodeNameMap() (map[string]string, error)
 	SelectByCodes(codes []string) ([]*model.Permission, error)
 	SelectByIds(ids []int64) ([]*model.Permission, error)
-	Select(where *SelectPermission, orderByField string, orderByType string, page int, pageSize int) (list []*model.Permission, total int64, err error)
+	Select(where *SelectPermission, page *page.Query) (list []*model.Permission, total int64, err error)
 }
 
 // Repository 仓储
