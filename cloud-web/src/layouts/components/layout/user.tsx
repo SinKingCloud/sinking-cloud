@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {useLocation, useModel, Outlet, history, useSelectedRoutes} from "umi";
-import {historyPush, getCurrentMenus, getFirstMenuWithoutChildren, getParentList} from "@/utils/route";
+import {history, Outlet, useLocation, useModel, useSelectedRoutes} from "umi";
+import {getCurrentMenus, getFirstMenuWithoutChildren, getParentList, historyPush} from "@/utils/route";
 import {createStyles} from 'antd-style';
 import Settings from "@/../config/defaultSettings";
 import defaultSettings from "@/../config/defaultSettings";
@@ -538,7 +538,9 @@ const RightTop: React.FC = () => {
                 <Spin spinning={notice.loading}>
                     <div className={messageList}>
                         <div className="message-head">
-                            <span className="message-head-title">站内消息</span>
+                            <Title>
+                                <span className="message-head-title">站内消息</span>
+                            </Title>
                             <span className="message-head-link" onClick={openNoticePage}>
                                 查看全部
                             </span>
