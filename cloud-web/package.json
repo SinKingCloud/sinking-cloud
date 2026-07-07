@@ -15,7 +15,7 @@
     "antd": "^6.4.3",
     "antd-style": "^4.1.0",
     "go-captcha-react": "^1.0.4",
-    "html-to-image": "1.11.11",
+    "html-to-image": "^1.11.13",
     "sinking-antd": "^1.1.4",
     "umi": "^4.6.55",
     "umi-request": "^1.4.0"
