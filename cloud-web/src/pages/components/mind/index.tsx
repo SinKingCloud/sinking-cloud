@@ -3181,7 +3181,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                         onClick={() => onContextAction("child")}
                     >
                         <PlusOutlined/>
-                        <span>{contextMenu.nodeId ? "新增子节点" : "新增一级节点"}</span>
+                        <span>{contextMenu.nodeId ? "添加子项" : "添加主题"}</span>
                     </button>
                     <button
                         type="button"
@@ -3190,7 +3190,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                         onClick={() => onContextAction("undo")}
                     >
                         <UndoOutlined/>
-                        <span>撤销</span>
+                        <span>撤销操作</span>
                     </button>
                     {contextMenu.nodeId && (
                         <>
@@ -3201,7 +3201,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                                 onClick={() => onContextAction("sibling")}
                             >
                                 <ForkOutlined/>
-                                <span>新增同级节点</span>
+                                <span>添加同级</span>
                             </button>
                             <button
                                 type="button"
@@ -3209,7 +3209,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                                 onClick={() => onContextAction("edit")}
                             >
                                 <EditOutlined/>
-                                <span>编辑节点</span>
+                                <span>编辑主题</span>
                             </button>
                             <div className={styles.contextMenuDivider}/>
                             <button
@@ -3219,7 +3219,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                                 onClick={() => onContextAction("delete")}
                             >
                                 <DeleteOutlined/>
-                                <span>删除节点</span>
+                                <span>删除主题</span>
                             </button>
                         </>
                     )}
