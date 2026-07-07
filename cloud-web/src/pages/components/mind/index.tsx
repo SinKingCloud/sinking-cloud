@@ -16,11 +16,13 @@ import {
     BgColorsOutlined,
     BoldOutlined,
     BorderOutlined,
-    BoxPlotOutlined,
     BranchesOutlined,
     ClearOutlined,
+    CopyOutlined,
     DeleteOutlined,
     EditOutlined,
+    FileImageOutlined,
+    FileTextOutlined,
     FontColorsOutlined,
     ForkOutlined,
     ItalicOutlined,
@@ -36,6 +38,8 @@ import {
     BackgroundVariant,
     Controls,
     type Edge,
+    getNodesBounds,
+    getViewportForBounds,
     Handle,
     MarkerType,
     MiniMap,
@@ -86,8 +90,6 @@ export type MindNodeStyle = {
     borderRadius?: number | undefined;
     /** 标题默认字号，未设置 titleStyle.fontSize 时生效。 */
     fontSize?: number | undefined;
-    /** 节点阴影。 */
-    boxShadow?: string | undefined;
     /** 标题文字样式。 */
     titleStyle?: MindTextStyle | undefined;
     /** 描述文字样式。 */
@@ -142,12 +144,32 @@ export type MindStats = {
     depth: number;
 };
 
+/** 思维导图导出配置。 */
+export type MindExportOptions = {
+    /** 导出内容四周留白，默认 32。 */
+    padding?: number;
+    /** 导出背景色，默认跟随编辑器背景，传 transparent 可导出透明背景 SVG。 */
+    background?: string;
+    /** 位图导出像素倍率，默认 2。 */
+    pixelRatio?: number;
+    /** JPG 导出质量，默认 0.92。 */
+    quality?: number;
+};
+
 /** Mind 组件通过 ref 暴露的命令式 API。 */
 export type MindRef = {
     /** 获取当前思维导图数据。 */
     getValue: () => MindValue;
     /** getValue 的别名，便于业务语义化调用。 */
     getData: () => MindValue;
+    /** 导出 SVG 字符串。 */
+    exportSvg: (options?: MindExportOptions) => Promise<string>;
+    /** 导出 PNG dataURL。 */
+    exportPng: (options?: MindExportOptions) => Promise<string>;
+    /** 导出 JPG dataURL。 */
+    exportJpg: (options?: MindExportOptions) => Promise<string>;
+    /** 复制当前思维导图为图片。 */
+    copyImage: (options?: MindExportOptions) => Promise<void>;
     /** 获取当前节点数量和层级深度。 */
     getStats: () => MindStats;
     /** 新增子节点，不传 parentId 时使用当前选中节点。 */
@@ -320,11 +342,11 @@ const levelGap = 250;
 const rowGap = 28;
 const palette = ["#1677ff", "#13c2c2", "#52c41a", "#faad14", "#eb2f96", "#722ed1", "#fa541c"];
 const stylePalette = ["#ffffff", "#000000", "#8c8c8c", "#f5222d", "#fa8c16", "#fadb14", "#52c41a", "#13c2c2", "#1677ff", "#722ed1", "#eb2f96"];
-const nodeShadow = "0 8px 20px rgba(15,23,42,0.14)";
 const reactFlowNoDragClass = "no" + "drag";
 const reactFlowNoPanClass = "no" + "pan";
 const reactFlowNoWheelClass = "no" + "wheel";
 const reactFlowLockClassName = [reactFlowNoDragClass, reactFlowNoPanClass, reactFlowNoWheelClass].join(" ");
+const mindExportingClass = "mind-exporting";
 
 // ==================== 富文本处理 ====================
 const normalizeTitle = (title?: string) => (title || "").replace(/\s+/g, " ").trim();
@@ -459,8 +481,6 @@ const setElementStyle = (element: HTMLElement, style: React.CSSProperties) => {
             element.style.setProperty("text-decoration-line", nextValue);
         } else if (key === "borderColor") {
             element.style.setProperty("border-color", nextValue);
-        } else if (key === "boxShadow") {
-            element.style.setProperty("box-shadow", nextValue);
         } else {
             element.style.setProperty(key.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`), nextValue);
         }
@@ -759,7 +779,11 @@ const cleanMindNodeStyle = (style?: MindNodeStyle) => {
         return undefined;
     }
     const next: MindNodeStyle = {
-        ...style,
+        background: style.background,
+        color: style.color,
+        borderColor: style.borderColor,
+        borderRadius: style.borderRadius,
+        fontSize: style.fontSize,
         titleStyle: cleanMindTextStyle(style.titleStyle),
         descriptionStyle: cleanMindTextStyle(style.descriptionStyle),
     };
@@ -871,7 +895,6 @@ const getNodeBoxStyle = (style?: MindNodeStyle): React.CSSProperties => ({
     background: style?.background,
     borderColor: style?.borderColor,
     borderRadius: style?.borderRadius,
-    boxShadow: style?.boxShadow,
 });
 
 const getTitleTextStyle = (style?: MindNodeStyle): React.CSSProperties => ({
@@ -1119,6 +1142,447 @@ const toEdges = (nodes: FlowNode[]): Edge[] => nodes
         };
     });
 
+// ==================== 导出处理 ====================
+
+type MindSvgExport = {
+    svg: string;
+    width: number;
+    height: number;
+};
+
+type MindDomExportConfig = {
+    width: number;
+    height: number;
+    transform: string;
+};
+
+type HtmlToImageModule = typeof import("html-to-image");
+
+const loadHtmlToImage = async (): Promise<HtmlToImageModule> => {
+    try {
+        return await import("html-to-image");
+    } catch {
+        throw new Error("缺少图片导出依赖，请先安装 html-to-image@1.11.11");
+    }
+};
+
+const getExportNodeHeight = (node: FlowNode, root?: HTMLElement | null) => {
+    const source = getExportDomNode(root, node.id);
+    const sourceHeight = source ? Math.ceil(Math.max(
+        Number.parseFloat(window.getComputedStyle(source).height) || 0,
+        source.scrollHeight,
+    )) : 0;
+    const dataHeight = typeof node.height === "number" ? node.height : getMindNodeHeight({
+        title: node.data.title,
+        description: node.data.description,
+        style: node.data.style,
+    });
+    return Math.max(sourceHeight, dataHeight);
+};
+
+const getExportBounds = (nodes: FlowNode[], padding: number, root?: HTMLElement | null) => {
+    if (nodes.length <= 0) {
+        return {x: -padding, y: -padding, width: padding * 2, height: padding * 2};
+    }
+    const minX = Math.min(...nodes.map((node) => node.position.x));
+    const minY = Math.min(...nodes.map((node) => node.position.y));
+    const maxX = Math.max(...nodes.map((node) => node.position.x + nodeWidth));
+    const maxY = Math.max(...nodes.map((node) => node.position.y + getExportNodeHeight(node, root)));
+    return {
+        x: minX - padding,
+        y: minY - padding,
+        width: maxX - minX + padding * 2,
+        height: maxY - minY + padding * 2,
+    };
+};
+
+const getExportTextLines = (text?: string, lineChars = 18) => {
+    if (!text) {
+        return [];
+    }
+    return text.split(/\r?\n/).flatMap((line) => {
+        const value = line.trim();
+        if (!value) {
+            return [""];
+        }
+        const result: string[] = [];
+        for (let index = 0; index < value.length; index += lineChars) {
+            result.push(value.slice(index, index + lineChars));
+        }
+        return result;
+    });
+};
+
+const getSvgStyle = (style: Record<string, string | number | undefined>) => {
+    return Object.entries(style)
+        .filter(([, value]) => value !== undefined && value !== "")
+        .map(([key, value]) => `${key}:${escapeHtml(String(value))}`)
+        .join(";");
+};
+
+const renderSvgText = (lines: string[], x: number, y: number, lineHeight: number, style: Record<string, string | number | undefined>) => {
+    if (lines.length <= 0) {
+        return "";
+    }
+    const textStyle = getSvgStyle(style);
+    return `<text x="${x}" y="${y}" style="${textStyle}">${lines.map((line, index) => (
+        `<tspan x="${x}" dy="${index === 0 ? 0 : lineHeight}">${escapeHtml(line)}</tspan>`
+    )).join("")}</text>`;
+};
+
+const inlineExportElementStyle = (source: Element, target: Element) => {
+    if (!(source instanceof HTMLElement || source instanceof SVGElement) || !(target instanceof HTMLElement || target instanceof SVGElement)) {
+        return;
+    }
+    const computed = window.getComputedStyle(source);
+    Array.from(computed).forEach((key) => {
+        target.style.setProperty(key, computed.getPropertyValue(key), computed.getPropertyPriority(key));
+    });
+    Array.from(source.children).forEach((child, index) => {
+        const targetChild = target.children[index];
+        if (targetChild) {
+            inlineExportElementStyle(child, targetChild);
+        }
+    });
+};
+
+const getExportDomNode = (root: HTMLElement | null | undefined, id: string) => {
+    if (!root) {
+        return null;
+    }
+    const flowNode = Array.from(root.querySelectorAll(".react-flow__node"))
+        .find((item) => item.getAttribute("data-id") === id) as HTMLElement | undefined;
+    const node = flowNode?.firstElementChild;
+    return node instanceof HTMLElement ? node : null;
+};
+
+const renderDomSvgNode = (root: HTMLElement | null | undefined, node: FlowNode) => {
+    const source = getExportDomNode(root, node.id);
+    if (!source) {
+        return "";
+    }
+    const height = getExportNodeHeight(node, root);
+    const clone = source.cloneNode(true) as HTMLElement;
+    inlineExportElementStyle(source, clone);
+    clone.querySelectorAll(".react-flow__handle").forEach((item) => item.remove());
+    clone.style.position = "relative";
+    clone.style.left = "0";
+    clone.style.top = "0";
+    clone.style.transform = "none";
+    clone.style.margin = "0";
+    clone.style.width = `${nodeWidth}px`;
+    clone.style.minHeight = `${height}px`;
+    clone.style.height = `${height}px`;
+    clone.style.cursor = "default";
+    clone.style.userSelect = "none";
+    return `
+        <foreignObject x="${node.position.x}" y="${node.position.y}" width="${nodeWidth}" height="${height}" overflow="visible">
+            <div xmlns="http://www.w3.org/1999/xhtml" style="width:${nodeWidth}px;height:${height}px;overflow:visible;">
+                ${clone.outerHTML}
+            </div>
+        </foreignObject>
+    `;
+};
+
+const renderSvgNode = (node: FlowNode, index: number) => {
+    const {data, position} = node;
+    const style = data.style;
+    const height = getExportNodeHeight(node);
+    const title = getRichText(data.titleHtml) || data.title || "";
+    const description = getRichText(data.descriptionHtml) || data.description || "";
+    const radius = style?.borderRadius ?? defaultBorderRadius;
+    const background = style?.background || (data.root ? "#e6f4ff" : "#ffffff");
+    const borderColor = style?.borderColor || (data.root ? data.color : "#d9d9d9");
+    const titleStyle = getTitleTextStyle(style);
+    const descriptionStyle = getDescriptionTextStyle(style);
+    const titleLines = getExportTextLines(title, 18).slice(0, 1);
+    const descriptionLines = getExportTextLines(description, 18);
+    const clipId = `mind-export-node-${index}`;
+    const titleLineHeightValue = getTitleLineHeight(style);
+    const descriptionLineHeightValue = getDescriptionLineHeight(style);
+    const contentX = position.x + 12;
+    const titleY = position.y + 8 + Math.round(titleLineHeightValue * 0.75);
+    const descriptionY = position.y + 8 + titleLineHeightValue + 4 + Math.round(descriptionLineHeightValue * 0.75);
+    const titleText = renderSvgText(titleLines, contentX, titleY, titleLineHeightValue, {
+        fill: titleStyle.color as string || data.color || "#262626",
+        "font-size": `${titleStyle.fontSize || defaultFontSize}px`,
+        "font-weight": titleStyle.fontWeight as string | number | undefined,
+        "font-style": titleStyle.fontStyle as string | undefined,
+        "text-decoration": titleStyle.textDecoration as string | undefined,
+        "font-family": "-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif",
+    });
+    const descriptionText = renderSvgText(descriptionLines, contentX, descriptionY, descriptionLineHeightValue, {
+        fill: descriptionStyle.color as string || "#595959",
+        "font-size": `${descriptionStyle.fontSize || defaultDescriptionFontSize}px`,
+        "font-weight": descriptionStyle.fontWeight as string | number | undefined,
+        "font-style": descriptionStyle.fontStyle as string | undefined,
+        "text-decoration": descriptionStyle.textDecoration as string | undefined,
+        "font-family": "-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif",
+    });
+
+    return `
+        <clipPath id="${clipId}">
+            <rect x="${position.x}" y="${position.y}" width="${nodeWidth}" height="${height}" rx="${radius}" ry="${radius}"/>
+        </clipPath>
+        <g clip-path="url(#${clipId})">
+            <rect x="${position.x}" y="${position.y}" width="${nodeWidth}" height="${height}" rx="${radius}" ry="${radius}" fill="${escapeHtml(background)}" stroke="${escapeHtml(borderColor)}"/>
+            ${titleText}
+            ${descriptionText}
+        </g>
+    `;
+};
+
+const createMindSvg = (nodes: FlowNode[], options?: MindExportOptions, root?: HTMLElement | null, useDomNode = true): MindSvgExport => {
+    const padding = options?.padding ?? 32;
+    const background = options?.background ?? "#ffffff";
+    const bounds = getExportBounds(nodes, padding, root);
+    const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+    const edges = nodes.filter((node) => Boolean(node.data.parentId && nodeMap.has(node.data.parentId)));
+    const defs = edges.map((node, index) => {
+        const lineColor = node.data.lineColor || node.data.color;
+        return `
+            <marker id="mind-export-arrow-${index}" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="${escapeHtml(lineColor)}"/>
+            </marker>
+        `;
+    }).join("");
+    const edgeSvg = edges.map((node, index) => {
+        const parent = nodeMap.get(node.data.parentId!);
+        if (!parent) {
+            return "";
+        }
+        const sourceX = parent.position.x + nodeWidth;
+        const sourceY = parent.position.y + getExportNodeHeight(parent, root) / 2;
+        const targetX = node.position.x;
+        const targetY = node.position.y + getExportNodeHeight(node, root) / 2;
+        const curve = Math.max(60, Math.abs(targetX - sourceX) / 2);
+        const lineColor = node.data.lineColor || node.data.color;
+        return `<path d="M ${sourceX} ${sourceY} C ${sourceX + curve} ${sourceY}, ${targetX - curve} ${targetY}, ${targetX} ${targetY}" fill="none" stroke="${escapeHtml(lineColor)}" stroke-width="1.5" stroke-opacity="0.72" marker-end="url(#mind-export-arrow-${index})"/>`;
+    }).join("");
+    const nodeSvg = nodes.map((node, index) => (
+        useDomNode ? renderDomSvgNode(root, node) || renderSvgNode(node, index) : renderSvgNode(node, index)
+    )).join("");
+    const backgroundSvg = background === "transparent" ? "" : `<rect x="${bounds.x}" y="${bounds.y}" width="${bounds.width}" height="${bounds.height}" fill="${escapeHtml(background)}"/>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${bounds.width}" height="${bounds.height}" viewBox="${bounds.x} ${bounds.y} ${bounds.width} ${bounds.height}">
+        <defs>${defs}</defs>
+        ${backgroundSvg}
+        <g>${edgeSvg}</g>
+        <g>${nodeSvg}</g>
+    </svg>`;
+    return {svg, width: bounds.width, height: bounds.height};
+};
+
+const createImageFromSvg = (data: MindSvgExport, options?: MindExportOptions, type: "image/png" | "image/jpeg" = "image/png") => {
+    return new Promise<string>((resolve, reject) => {
+        const pixelRatio = options?.pixelRatio ?? 2;
+        const image = new Image();
+        const blob = new Blob([data.svg], {type: "image/svg+xml;charset=utf-8"});
+        const url = URL.createObjectURL(blob);
+        image.onload = () => {
+            try {
+                const canvas = document.createElement("canvas");
+                canvas.width = Math.ceil(data.width * pixelRatio);
+                canvas.height = Math.ceil(data.height * pixelRatio);
+                const context = canvas.getContext("2d");
+                if (!context) {
+                    reject(new Error("浏览器不支持图片导出"));
+                    return;
+                }
+                context.scale(pixelRatio, pixelRatio);
+                if (type === "image/jpeg") {
+                    context.fillStyle = options?.background && options.background !== "transparent" ? options.background : "#ffffff";
+                    context.fillRect(0, 0, data.width, data.height);
+                }
+                context.drawImage(image, 0, 0);
+                resolve(canvas.toDataURL(type, options?.quality ?? 0.92));
+            } catch (error) {
+                reject(error instanceof Error ? error : new Error("图片导出失败"));
+            } finally {
+                URL.revokeObjectURL(url);
+            }
+        };
+        image.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error("图片导出失败"));
+        };
+        image.src = url;
+    });
+};
+
+const getExportViewport = (root: HTMLElement | null | undefined) => {
+    const viewport = root?.querySelector(".react-flow__viewport");
+    if (!(viewport instanceof HTMLElement)) {
+        throw new Error("思维导图画布未初始化");
+    }
+    return viewport;
+};
+
+const getExportBackground = (root: HTMLElement | null | undefined, options?: MindExportOptions, jpg = false) => {
+    if (options?.background) {
+        return jpg && options.background === "transparent" ? "#ffffff" : options.background;
+    }
+    const background = root ? window.getComputedStyle(root).backgroundColor : "";
+    if (background && background !== "rgba(0, 0, 0, 0)" && background !== "transparent") {
+        return background;
+    }
+    return jpg ? "#ffffff" : "#ffffff";
+};
+
+const getDomExportConfig = (nodes: FlowNode[], options: MindExportOptions | undefined, root: HTMLElement | null | undefined): MindDomExportConfig => {
+    const padding = options?.padding ?? 32;
+    const measuredNodes = nodes.map((node) => {
+        const height = getExportNodeHeight(node, root);
+        return {
+            ...node,
+            width: node.width || node.measured?.width || nodeWidth,
+            height,
+            measured: {
+                width: node.measured?.width || node.width || nodeWidth,
+                height,
+            },
+        };
+    }) as FlowNode[];
+    const bounds = getNodesBounds(measuredNodes);
+    const width = Math.max(1, Math.ceil(bounds.width + padding * 2));
+    const height = Math.max(1, Math.ceil(bounds.height + padding * 2));
+    const viewport = getViewportForBounds(bounds, width, height, 1, 1, padding);
+    return {
+        width,
+        height,
+        transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+    };
+};
+
+const isExportNodeVisible = (node: HTMLElement) => {
+    if (!(node instanceof Element) || typeof node.closest !== "function") {
+        return true;
+    }
+    return !node.closest([
+        ".react-flow__handle",
+        ".react-flow__selection",
+        ".react-flow__nodesselection",
+        "[data-mind-toolbar='true']",
+        "[data-mind-color-picker='true']",
+        ".ant-popover",
+    ].join(","));
+};
+
+const createDomExportOptions = (config: MindDomExportConfig, options: MindExportOptions | undefined, background?: string) => {
+    return {
+        width: config.width,
+        height: config.height,
+        cacheBust: true,
+        filter: isExportNodeVisible,
+        pixelRatio: options?.pixelRatio ?? 2,
+        skipFonts: false,
+        backgroundColor: background === "transparent" ? undefined : background,
+        style: {
+            width: `${config.width}px`,
+            height: `${config.height}px`,
+            transform: config.transform,
+            background: background === "transparent" ? "transparent" : background,
+        },
+    };
+};
+
+const withExportingClass = async <T,>(root: HTMLElement | null | undefined, task: () => Promise<T>) => {
+    root?.classList.add(mindExportingClass);
+    try {
+        return await task();
+    } finally {
+        root?.classList.remove(mindExportingClass);
+    }
+};
+
+const createDomImageBlob = async (
+    root: HTMLElement | null | undefined,
+    nodes: FlowNode[],
+    options?: MindExportOptions,
+    type: "image/png" | "image/jpeg" = "image/png",
+) => {
+    const htmlToImage = await loadHtmlToImage();
+    const viewport = getExportViewport(root);
+    const background = getExportBackground(root, options, type === "image/jpeg");
+    const exportOptions = createDomExportOptions(getDomExportConfig(nodes, options, root), options, background);
+    return withExportingClass(root, async () => {
+        if (type === "image/jpeg") {
+            return dataUrlToBlob(await htmlToImage.toJpeg(viewport, {...exportOptions, quality: options?.quality ?? 0.92}));
+        }
+        const blob = await htmlToImage.toBlob(viewport, exportOptions);
+        if (!blob) {
+            throw new Error("图片导出失败");
+        }
+        return blob;
+    });
+};
+
+const createDomSvgText = async (root: HTMLElement | null | undefined, nodes: FlowNode[], options?: MindExportOptions) => {
+    const htmlToImage = await loadHtmlToImage();
+    const viewport = getExportViewport(root);
+    const background = getExportBackground(root, options);
+    const exportOptions = createDomExportOptions(getDomExportConfig(nodes, options, root), options, background);
+    return withExportingClass(root, async () => dataUrlToText(await htmlToImage.toSvg(viewport, exportOptions)));
+};
+
+const dataUrlToBlob = async (url: string) => {
+    return (await fetch(url)).blob();
+};
+
+const dataUrlToText = async (url: string) => {
+    return (await fetch(url)).text();
+};
+
+const blobToDataUrl = (blob: Blob) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error || new Error("图片导出失败"));
+    reader.readAsDataURL(blob);
+});
+
+const copyPngToClipboard = async (blob: Promise<Blob>) => {
+    const ClipboardItemConstructor = window.ClipboardItem;
+    if (!window.isSecureContext) {
+        throw new Error("复制图片需要 HTTPS 或 localhost 环境");
+    }
+    if (!navigator.clipboard?.write || !ClipboardItemConstructor) {
+        throw new Error("当前浏览器不支持复制图片");
+    }
+    try {
+        await navigator.clipboard.write([new ClipboardItemConstructor({"image/png": blob})]);
+    } catch (error) {
+        if (isClipboardPermissionError(error)) {
+            throw new Error("浏览器不允许复制图片，请检查剪贴板权限或使用 HTTPS/localhost");
+        }
+        throw error;
+    }
+};
+
+const isClipboardPermissionError = (error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error || "");
+    return /not allowed|denied|permission|current context|浏览器不允许|剪贴板权限/i.test(message)
+        || (error instanceof DOMException && ["NotAllowedError", "SecurityError"].includes(error.name));
+};
+
+const downloadUrl = (url: string, filename: string) => {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+};
+
+const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    downloadUrl(url, filename);
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+};
+
+const downloadText = (content: string, filename: string, type: string) => {
+    const blob = new Blob([content], {type});
+    const url = URL.createObjectURL(blob);
+    downloadUrl(url, filename);
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+};
+
 // ==================== 组件样式 ====================
 const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
     editor: css`
@@ -1188,6 +1652,25 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             border: 1px solid ${token.colorPrimary};
             background: ${isDarkMode ? "rgba(22,119,255,0.18)" : token.colorPrimaryBg};
         }
+
+        &.${mindExportingClass} .react-flow__selection,
+        &.${mindExportingClass} .react-flow__nodesselection,
+        &.${mindExportingClass} .react-flow__controls,
+        &.${mindExportingClass} .react-flow__minimap,
+        &.${mindExportingClass} .react-flow__panel,
+        &.${mindExportingClass} .react-flow__attribution,
+        &.${mindExportingClass} .react-flow__handle {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            width: 0 !important;
+            height: 0 !important;
+            min-width: 0 !important;
+            min-height: 0 !important;
+            border: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
     `,
     fullscreen: css`
         width: 100vw !important;
@@ -1205,7 +1688,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         border-radius: ${token.borderRadius}px;
         background: ${token.colorBgContainer};
         color: ${token.colorTextHeading};
-        box-shadow: ${isDarkMode ? "0 4px 12px rgba(0,0,0,0.18)" : "0 4px 12px rgba(0,0,0,0.04)"};
+        box-shadow: none;
         font-size: 13px;
         line-height: 20px;
         font-weight: 400;
@@ -1531,6 +2014,38 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             background: ${token.colorErrorBg};
         }
     `,
+    contextMenuSub: css`
+        position: relative;
+
+        &:hover .mind-context-submenu,
+        &:focus-within .mind-context-submenu {
+            display: block;
+        }
+    `,
+    contextMenuSubLeft: css`
+        .mind-context-submenu {
+            right: 100%;
+            left: auto;
+        }
+    `,
+    contextMenuSubArrow: css`
+        margin-left: auto;
+        color: ${token.colorTextTertiary};
+        font-size: 14px;
+    `,
+    contextSubMenu: css`
+        position: absolute;
+        top: -4px;
+        left: 100%;
+        z-index: 1001;
+        display: none;
+        min-width: 132px;
+        padding: 4px;
+        border: 1px solid ${token.colorBorderSecondary};
+        border-radius: ${token.borderRadius}px;
+        background: ${token.colorBgElevated};
+        box-shadow: ${token.boxShadowSecondary};
+    `,
     contextMenuDivider: css`
         height: 1px;
         margin: 4px;
@@ -1840,6 +2355,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const [nodes, setNodes] = useState<FlowNode[]>(() => normalizeValue(value || defaultValue));
     const [editingId, setEditingId] = useState<string>();
     const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
+    const [contextSubMenuLeft, setContextSubMenuLeft] = useState(false);
     const [textTarget, setTextTarget] = useState<TextTarget>("title");
     const [richSelectionActive, setRichSelectionActive] = useState(false);
     const [richSelectionStyle, setRichSelectionStyle] = useState<MindTextStyle>({});
@@ -2261,6 +2777,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     // ----- 编辑保护、右键菜单与快捷键 -----
     const closeContextMenu = useCallback(() => {
         setContextMenu(null);
+        setContextSubMenuLeft(false);
     }, []);
 
     const finishTextSelectionGuard = useCallback(() => {
@@ -2485,6 +3002,101 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         setEditingId(undefined);
     }, [editingId, getRichEditor, removeNodes, updateNode]);
 
+    const getExportNodes = useCallback(() => {
+        const items = cloneFlowNodes(nodesRef.current);
+        if (!editingId) {
+            return items;
+        }
+        const node = items.find((item) => item.id === editingId);
+        if (!node) {
+            return items;
+        }
+        const nextTitleHtml = normalizeRichHtml(getRichEditor(editingId, "title")?.innerHTML);
+        const nextDescriptionHtml = normalizeRichHtml(getRichEditor(editingId, "description")?.innerHTML);
+        const title = normalizeTitle(getRichText(nextTitleHtml));
+        const description = normalizeDescription(getRichText(nextDescriptionHtml));
+        const finalTitle = title || node.data.title;
+        node.data = {
+            ...node.data,
+            title: finalTitle,
+            titleHtml: hasStyledRichHtml(nextTitleHtml) ? nextTitleHtml : undefined,
+            description,
+            descriptionHtml: hasStyledRichHtml(nextDescriptionHtml) ? nextDescriptionHtml : undefined,
+        };
+        node.height = getMindNodeHeight({title: finalTitle, description, style: node.data.style});
+        return items;
+    }, [editingId, getRichEditor]);
+
+    const exportSvg = useCallback(async (options?: MindExportOptions) => {
+        return createDomSvgText(rootRef.current, getExportNodes(), options);
+    }, [getExportNodes]);
+
+    const exportPngBlob = useCallback(async (options?: MindExportOptions) => {
+        return createDomImageBlob(rootRef.current, getExportNodes(), options);
+    }, [getExportNodes]);
+
+    const exportJpgBlob = useCallback(async (options?: MindExportOptions) => {
+        return createDomImageBlob(rootRef.current, getExportNodes(), options, "image/jpeg");
+    }, [getExportNodes]);
+
+    const exportPng = useCallback(async (options?: MindExportOptions) => {
+        return blobToDataUrl(await exportPngBlob(options));
+    }, [exportPngBlob]);
+
+    const exportJpg = useCallback(async (options?: MindExportOptions) => {
+        return blobToDataUrl(await exportJpgBlob(options));
+    }, [exportJpgBlob]);
+
+    const copyImage = useCallback(async (options?: MindExportOptions) => {
+        await copyPngToClipboard(exportPngBlob(options));
+    }, [exportPngBlob]);
+
+    const downloadSvgAction = useCallback(async () => {
+        try {
+            downloadText(await exportSvg(), `mind-${Date.now()}.svg`, "image/svg+xml;charset=utf-8");
+            message.success("SVG 已导出");
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : "SVG 导出失败");
+        }
+    }, [exportSvg, message]);
+
+    const downloadPngAction = useCallback(async () => {
+        try {
+            downloadBlob(await exportPngBlob(), `mind-${Date.now()}.png`);
+            message.success("图片已导出");
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : "图片导出失败");
+        }
+    }, [exportPngBlob, message]);
+
+    const downloadJpgAction = useCallback(async () => {
+        try {
+            downloadBlob(await exportJpgBlob(), `mind-${Date.now()}.jpg`);
+            message.success("JPG 已导出");
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : "JPG 导出失败");
+        }
+    }, [exportJpgBlob, message]);
+
+    const copyImageAction = useCallback(async () => {
+        const blob = exportPngBlob();
+        try {
+            await copyPngToClipboard(blob);
+            message.success("图片已复制");
+        } catch (error) {
+            if (isClipboardPermissionError(error)) {
+                try {
+                    downloadBlob(await blob, `mind-${Date.now()}.png`);
+                    message.warning("浏览器不允许复制图片，已自动下载 PNG");
+                } catch (exportError) {
+                    message.error(exportError instanceof Error ? exportError.message : "图片导出失败");
+                }
+                return;
+            }
+            message.error(error instanceof Error ? error.message : "复制图片失败");
+        }
+    }, [exportPngBlob, message]);
+
     const focusEditor = useCallback(() => {
         activeRef.current = true;
         rootRef.current?.focus({preventScroll: true});
@@ -2504,6 +3116,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         const maxY = Math.max(margin, window.innerHeight - rect.height - margin);
         const x = Math.min(Math.max(margin, contextMenu.x), maxX);
         const y = Math.min(Math.max(margin, contextMenu.y), maxY);
+        setContextSubMenuLeft(x + rect.width + 140 + margin > window.innerWidth);
         if (x !== contextMenu.x || y !== contextMenu.y) {
             setContextMenu((item) => item ? {...item, x, y} : item);
         }
@@ -2611,9 +3224,17 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             removeNodes([nodeId]);
         } else if (key === "undo") {
             undoMind();
+        } else if (key === "exportPng") {
+            downloadPngAction();
+        } else if (key === "exportJpg") {
+            downloadJpgAction();
+        } else if (key === "exportSvg") {
+            downloadSvgAction();
+        } else if (key === "copyImage") {
+            copyImageAction();
         }
         closeContextMenu();
-    }, [addChild, addSibling, closeContextMenu, contextMenu, removeNodes, startEdit, undoMind]);
+    }, [addChild, addSibling, closeContextMenu, contextMenu, copyImageAction, downloadJpgAction, downloadPngAction, downloadSvgAction, removeNodes, startEdit, undoMind]);
 
     // ----- 工具栏状态与动作 -----
     const onToolbarColor = useCallback((type: "background" | "border" | "line", color: string) => {
@@ -2752,21 +3373,10 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         setNodeStyle(nodeId, {borderRadius});
     }, [selectedNode, setNodeStyle]);
 
-    const toggleSelectedShadow = useCallback(() => {
-        const nodeId = selectedNode?.id;
-        if (!nodeId) {
-            return;
-        }
-        setNodeStyle(nodeId, {
-            boxShadow: selectedNode.data.style?.boxShadow ? undefined : nodeShadow,
-        });
-    }, [selectedNode, setNodeStyle]);
-
     const toolbarFillColor = selectedStyle.background || (isDark ? "#1f1f1f" : "#ffffff");
     const toolbarBorderColor = selectedStyle.borderColor || (isDark ? "#434343" : "#d9d9d9");
     const toolbarLineColor = selectedNode?.data.lineColor || selectedNode?.data.color || palette[0];
     const toolbarRadius = selectedStyle.borderRadius ?? defaultBorderRadius;
-    const toolbarShadow = Boolean(selectedStyle.boxShadow);
     const showTextToolbar = Boolean(selectedNode && !readOnly && editingId && (richSelectionActive || toolbarPopupOpen));
     const showCardToolbar = Boolean(selectedNode && !readOnly && !showTextToolbar);
 
@@ -2920,6 +3530,10 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     useImperativeHandle(ref, () => ({
         getValue: () => toMindValue(nodesRef.current),
         getData: () => toMindValue(nodesRef.current),
+        exportSvg,
+        exportPng,
+        exportJpg,
+        copyImage,
         getStats: () => getFlowStats(nodesRef.current),
         addChild,
         addSibling,
@@ -2963,6 +3577,10 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         clearBorderColor,
         clearLineColor,
         clearNodeColor,
+        copyImage,
+        exportJpg,
+        exportPng,
+        exportSvg,
         exitFullscreen,
         fitView,
         hideControlsAction,
@@ -3159,7 +3777,6 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                             <span className={styles.styleToolbarValue}>{toolbarRadius}</span>
                         </Tooltip>
                         {renderToolbarButton("增大圆角", <span>+</span>, () => changeSelectedRadius(2), toolbarRadius >= 18)}
-                        {renderToolbarButton("节点阴影", <BoxPlotOutlined/>, toggleSelectedShadow, false, toolbarShadow)}
                     </div>
                 </div>
             )}
@@ -3192,6 +3809,47 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                         <UndoOutlined/>
                         <span>撤销操作</span>
                     </button>
+                    <div className={`${styles.contextMenuSub} ${contextSubMenuLeft ? styles.contextMenuSubLeft : ""}`}>
+                        <button type="button" className={styles.contextMenuItem}>
+                            <FileTextOutlined/>
+                            <span>导出文件</span>
+                            <span className={styles.contextMenuSubArrow}>{contextSubMenuLeft ? "‹" : "›"}</span>
+                        </button>
+                        <div className={`${styles.contextSubMenu} mind-context-submenu`}>
+                            <button
+                                type="button"
+                                className={styles.contextMenuItem}
+                                onClick={() => onContextAction("copyImage")}
+                            >
+                                <CopyOutlined/>
+                                <span>复制图片</span>
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.contextMenuItem}
+                                onClick={() => onContextAction("exportPng")}
+                            >
+                                <FileImageOutlined/>
+                                <span>导出PNG</span>
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.contextMenuItem}
+                                onClick={() => onContextAction("exportJpg")}
+                            >
+                                <FileImageOutlined/>
+                                <span>导出JPG</span>
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.contextMenuItem}
+                                onClick={() => onContextAction("exportSvg")}
+                            >
+                                <FileTextOutlined/>
+                                <span>导出SVG</span>
+                            </button>
+                        </div>
+                    </div>
                     {contextMenu.nodeId && (
                         <>
                             <button
