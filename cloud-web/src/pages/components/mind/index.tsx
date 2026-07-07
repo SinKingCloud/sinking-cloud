@@ -38,7 +38,6 @@ import {
     BackgroundVariant,
     Controls,
     type Edge,
-    getNodesBounds,
     getViewportForBounds,
     Handle,
     MarkerType,
@@ -295,6 +294,8 @@ type FlowNodeData = {
 };
 
 type FlowNode = Node<FlowNodeData, "mind">;
+
+type MindNodesBoundsGetter = ReactFlowInstance<FlowNode, Edge>["getNodesBounds"];
 
 type MindNodeViewProps = NodeProps<FlowNode> & {
     styles: ReturnType<typeof useStyles>["styles"];
@@ -1216,7 +1217,43 @@ const getExportBackground = (root: HTMLElement | null | undefined, options?: Min
     return jpg ? "#ffffff" : "#ffffff";
 };
 
-const getDomExportConfig = (nodes: FlowNode[], options: MindExportOptions | undefined, root: HTMLElement | null | undefined): MindDomExportConfig => {
+const getFallbackNodesBounds = (nodes: FlowNode[]) => {
+    if (nodes.length <= 0) {
+        return {x: 0, y: 0, width: 1, height: 1};
+    }
+    const rect = nodes.reduce((result, node) => {
+        const width = node.width || node.measured?.width || nodeWidth;
+        const height = node.height || node.measured?.height || getMindNodeHeight({
+            title: node.data.title,
+            description: node.data.description,
+            style: node.data.style,
+        });
+        return {
+            minX: Math.min(result.minX, node.position.x),
+            minY: Math.min(result.minY, node.position.y),
+            maxX: Math.max(result.maxX, node.position.x + width),
+            maxY: Math.max(result.maxY, node.position.y + height),
+        };
+    }, {
+        minX: Number.POSITIVE_INFINITY,
+        minY: Number.POSITIVE_INFINITY,
+        maxX: Number.NEGATIVE_INFINITY,
+        maxY: Number.NEGATIVE_INFINITY,
+    });
+    return {
+        x: rect.minX,
+        y: rect.minY,
+        width: rect.maxX - rect.minX,
+        height: rect.maxY - rect.minY,
+    };
+};
+
+const getDomExportConfig = (
+    nodes: FlowNode[],
+    options: MindExportOptions | undefined,
+    root: HTMLElement | null | undefined,
+    getNodesBounds?: MindNodesBoundsGetter,
+): MindDomExportConfig => {
     const padding = options?.padding ?? 32;
     const measuredNodes = nodes.map((node) => {
         const height = getExportNodeHeight(node, root);
@@ -1230,7 +1267,7 @@ const getDomExportConfig = (nodes: FlowNode[], options: MindExportOptions | unde
             },
         };
     }) as FlowNode[];
-    const bounds = getNodesBounds(measuredNodes);
+    const bounds = getNodesBounds?.(measuredNodes) || getFallbackNodesBounds(measuredNodes);
     const width = Math.max(1, Math.ceil(bounds.width + padding * 2));
     const height = Math.max(1, Math.ceil(bounds.height + padding * 2));
     const viewport = getViewportForBounds(bounds, width, height, 1, 1, padding);
@@ -1286,12 +1323,13 @@ const createDomImageBlob = async (
     root: HTMLElement | null | undefined,
     nodes: FlowNode[],
     options?: MindExportOptions,
+    getNodesBounds?: MindNodesBoundsGetter,
     type: "image/png" | "image/jpeg" = "image/png",
 ) => {
     const htmlToImage = await loadHtmlToImage();
     const viewport = getExportViewport(root);
     const background = getExportBackground(root, options, type === "image/jpeg");
-    const exportOptions = createDomExportOptions(getDomExportConfig(nodes, options, root), options, background);
+    const exportOptions = createDomExportOptions(getDomExportConfig(nodes, options, root, getNodesBounds), options, background);
     return withExportingClass(root, async () => {
         if (type === "image/jpeg") {
             return dataUrlToBlob(await htmlToImage.toJpeg(viewport, {...exportOptions, quality: options?.quality ?? 0.92}));
@@ -2799,12 +2837,12 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     }, [editingId, getRichEditor]);
 
     const exportPngBlob = useCallback(async (options?: MindExportOptions) => {
-        return createDomImageBlob(rootRef.current, getExportNodes(), options);
-    }, [getExportNodes]);
+        return createDomImageBlob(rootRef.current, getExportNodes(), options, flow?.getNodesBounds);
+    }, [flow, getExportNodes]);
 
     const exportJpgBlob = useCallback(async (options?: MindExportOptions) => {
-        return createDomImageBlob(rootRef.current, getExportNodes(), options, "image/jpeg");
-    }, [getExportNodes]);
+        return createDomImageBlob(rootRef.current, getExportNodes(), options, flow?.getNodesBounds, "image/jpeg");
+    }, [flow, getExportNodes]);
 
     const exportPng = useCallback(async (options?: MindExportOptions) => {
         return blobToDataUrl(await exportPngBlob(options));
