@@ -10,7 +10,7 @@ import React, {
     useRef,
     useState,
 } from "react";
-import {App, Popover, Tooltip} from "antd";
+import {App, Popover, theme as antdTheme, Tooltip} from "antd";
 import {
     ApartmentOutlined,
     BgColorsOutlined,
@@ -333,7 +333,7 @@ const descriptionLineHeight = 18;
 const defaultFontSize = 13;
 const boldFontWeight = 600;
 const defaultDescriptionFontSize = 12;
-const defaultBorderRadius = 6;
+const fallbackBorderRadius = 6;
 const minTextFontSize = 11;
 const maxTextFontSize = 22;
 const levelGap = 250;
@@ -855,6 +855,18 @@ export const createMindNode = (data: MindNode): MindNode => {
     };
 };
 
+const createDefaultRootNode = () => createMindNode({
+    id: rootId,
+    title: "中心主题",
+    color: palette[0],
+    lineColor: palette[0],
+    root: true,
+});
+
+const getMindValueNodes = (value?: MindValue) => {
+    return value?.nodes?.length ? value.nodes : [createDefaultRootNode()];
+};
+
 const getDefaultId = () => `node_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
 const getTextLines = (text?: string, lineChars = 14) => {
@@ -1001,11 +1013,14 @@ const getDepth = <T extends { id: string; parentId?: string }>(nodes: T[], id = 
     return 1 + Math.max(...children.map((node) => getDepth(nodes, node.id)));
 };
 
-/** 统计思维导图节点数量和最大层级深度。 */
-export const getMindStats = (value: MindValue): MindStats => ({
-    nodeCount: value.nodes.length,
-    depth: getDepth(value.nodes),
-});
+/** 统计思维导图节点数量和最大层级深度，空数据会按默认中心主题计算。 */
+export const getMindStats = (value?: MindValue): MindStats => {
+    const nodes = getMindValueNodes(value);
+    return {
+        nodeCount: nodes.length,
+        depth: getDepth(nodes),
+    };
+};
 
 const getFlowStats = (nodes: FlowNode[]) => getMindStats(toMindValue(nodes));
 
@@ -1092,7 +1107,7 @@ const layoutNodes = (nodes: FlowNode[], layoutRootId = rootId): FlowNode[] => {
 };
 
 const normalizeValue = (value?: MindValue) => {
-    const sourceNodes = value?.nodes || [];
+    const sourceNodes = getMindValueNodes(value);
     const flowNodes = sourceNodes.map(toFlowNode);
     return sourceNodes.some((node) => !node.position) ? layoutNodes(flowNodes) : flowNodes;
 };
@@ -2104,6 +2119,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const {styles} = useStyles();
     const {message} = App.useApp();
     const theme = useTheme();
+    const {token} = antdTheme.useToken();
     const rootRef = useRef<HTMLDivElement | null>(null);
     const [flow, setFlow] = useState<ReactFlowInstance<FlowNode, Edge> | null>(null);
     const [nodes, setNodes] = useState<FlowNode[]>(() => normalizeValue(value || defaultValue));
@@ -2140,6 +2156,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const selectedNode = useMemo(() => nodes.find((node) => selectedIdsRef.current.includes(node.id)), [nodes]);
     const currentShowControls = showControls ?? controlsVisible;
     const currentShowMiniMap = showMiniMap ?? miniMapVisible;
+    const systemBorderRadius = token.borderRadius ?? fallbackBorderRadius;
 
     // ----- 基础状态同步 -----
     useEffect(() => {
@@ -3108,14 +3125,14 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         if (!nodeId) {
             return;
         }
-        const borderRadius = Math.min(18, Math.max(0, (selectedNode.data.style?.borderRadius ?? defaultBorderRadius) + step));
+        const borderRadius = Math.min(18, Math.max(0, (selectedNode.data.style?.borderRadius ?? systemBorderRadius) + step));
         setNodeStyle(nodeId, {borderRadius});
-    }, [selectedNode, setNodeStyle]);
+    }, [selectedNode, setNodeStyle, systemBorderRadius]);
 
     const toolbarFillColor = selectedStyle.background || (isDark ? "#1f1f1f" : "#ffffff");
     const toolbarBorderColor = selectedStyle.borderColor || (isDark ? "#434343" : "#d9d9d9");
     const toolbarLineColor = selectedNode?.data.lineColor || selectedNode?.data.color || palette[0];
-    const toolbarRadius = selectedStyle.borderRadius ?? defaultBorderRadius;
+    const toolbarRadius = selectedStyle.borderRadius ?? systemBorderRadius;
     const showTextToolbar = Boolean(selectedNode && !readOnly && editingId && (richSelectionActive || toolbarPopupOpen));
     const showCardToolbar = Boolean(selectedNode && !readOnly && !showTextToolbar);
 
