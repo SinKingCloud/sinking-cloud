@@ -1606,10 +1606,13 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         z-index: 12;
         display: flex;
         align-items: center;
+        align-content: center;
         gap: 4px;
         flex-wrap: wrap;
         justify-content: center;
-        max-width: calc(100% - 32px);
+        width: max-content;
+        max-width: min(calc(100% - 24px), calc(100vw - 24px));
+        box-sizing: border-box;
         padding: 5px;
         border: 1px solid ${token.colorBorderSecondary};
         border-radius: ${token.borderRadiusLG}px;
@@ -1621,6 +1624,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
     styleToolbarGroup: css`
         display: flex;
         align-items: center;
+        flex: 0 0 auto;
         gap: 2px;
         min-width: 0;
         height: 30px;
@@ -1634,10 +1638,15 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         line-height: 0;
     `,
     styleToolbarDivider: css`
+        flex: 0 0 1px;
         width: 1px;
         height: 24px;
         margin: 0 2px;
         background: ${token.colorBorderSecondary};
+
+        @media (max-width: 520px) {
+            display: none;
+        }
     `,
     styleToolbarButton: css`
         display: inline-flex;
