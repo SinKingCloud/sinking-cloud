@@ -856,16 +856,14 @@ export const createMindNode = (data: MindNode): MindNode => {
     };
 };
 
-const createDefaultRootNode = () => createMindNode({
-    id: rootId,
-    title: "中心主题",
-    color: palette[0],
-    lineColor: palette[0],
-    root: true,
-});
-
 const getMindValueNodes = (value?: MindValue) => {
-    return value?.nodes?.length ? value.nodes : [createDefaultRootNode()];
+    return value?.nodes?.length ? value.nodes : [createMindNode({
+        id: rootId,
+        title: "中心主题",
+        color: palette[0],
+        lineColor: palette[0],
+        root: true,
+    })];
 };
 
 const getDefaultId = () => `node_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
@@ -878,8 +876,6 @@ const getTextLines = (text?: string, lineChars = 14) => {
         return total + Math.max(1, Math.ceil((line.trim().length || 1) / lineChars));
     }, 0);
 };
-
-const getTextStyleKey = (target: TextTarget) => target === "title" ? "titleStyle" : "descriptionStyle";
 
 const getToolbarTextStyle = (style: MindNodeStyle | undefined, target: TextTarget): MindTextStyle => {
     if (target === "title") {
@@ -1022,8 +1018,6 @@ export const getMindStats = (value?: MindValue): MindStats => {
         depth: getDepth(nodes),
     };
 };
-
-const getFlowStats = (nodes: FlowNode[]) => getMindStats(toMindValue(nodes));
 
 // ==================== 自动布局 ====================
 const layoutNodes = (nodes: FlowNode[], layoutRootId = rootId): FlowNode[] => {
@@ -1175,7 +1169,10 @@ const loadHtmlToImage = async (): Promise<HtmlToImageModule> => {
 };
 
 const getExportNodeHeight = (node: FlowNode, root?: HTMLElement | null) => {
-    const source = getExportDomNode(root, node.id);
+    const flowNode = Array.from(root?.querySelectorAll(".react-flow__node") || [])
+        .find((item) => item.getAttribute("data-id") === node.id) as HTMLElement | undefined;
+    const nodeElement = flowNode?.firstElementChild;
+    const source = nodeElement instanceof HTMLElement ? nodeElement : null;
     const sourceHeight = source ? Math.ceil(Math.max(
         Number.parseFloat(window.getComputedStyle(source).height) || 0,
         source.scrollHeight,
@@ -1186,35 +1183,6 @@ const getExportNodeHeight = (node: FlowNode, root?: HTMLElement | null) => {
         style: node.data.style,
     });
     return Math.max(sourceHeight, dataHeight);
-};
-
-const getExportDomNode = (root: HTMLElement | null | undefined, id: string) => {
-    if (!root) {
-        return null;
-    }
-    const flowNode = Array.from(root.querySelectorAll(".react-flow__node"))
-        .find((item) => item.getAttribute("data-id") === id) as HTMLElement | undefined;
-    const node = flowNode?.firstElementChild;
-    return node instanceof HTMLElement ? node : null;
-};
-
-const getExportViewport = (root: HTMLElement | null | undefined) => {
-    const viewport = root?.querySelector(".react-flow__viewport");
-    if (!(viewport instanceof HTMLElement)) {
-        throw new Error("思维导图画布未初始化");
-    }
-    return viewport;
-};
-
-const getExportBackground = (root: HTMLElement | null | undefined, options?: MindExportOptions, jpg = false) => {
-    if (options?.background) {
-        return jpg && options.background === "transparent" ? "#ffffff" : options.background;
-    }
-    const background = root ? window.getComputedStyle(root).backgroundColor : "";
-    if (background && background !== "rgba(0, 0, 0, 0)" && background !== "transparent") {
-        return background;
-    }
-    return jpg ? "#ffffff" : "#ffffff";
 };
 
 const getFallbackNodesBounds = (nodes: FlowNode[]) => {
@@ -1278,26 +1246,41 @@ const getDomExportConfig = (
     };
 };
 
-const isExportNodeVisible = (node: HTMLElement) => {
-    if (!(node instanceof Element) || typeof node.closest !== "function") {
-        return true;
+const createDomImageBlob = async (
+    root: HTMLElement | null | undefined,
+    nodes: FlowNode[],
+    options?: MindExportOptions,
+    getNodesBounds?: MindNodesBoundsGetter,
+    type: "image/png" | "image/jpeg" = "image/png",
+) => {
+    const htmlToImage = await loadHtmlToImage();
+    const viewport = root?.querySelector(".react-flow__viewport");
+    if (!(viewport instanceof HTMLElement)) {
+        throw new Error("思维导图画布未初始化");
     }
-    return !node.closest([
-        ".react-flow__handle",
-        ".react-flow__selection",
-        ".react-flow__nodesselection",
-        "[data-mind-toolbar='true']",
-        "[data-mind-color-picker='true']",
-        ".ant-popover",
-    ].join(","));
-};
-
-const createDomExportOptions = (config: MindDomExportConfig, options: MindExportOptions | undefined, background?: string) => {
-    return {
+    const jpg = type === "image/jpeg";
+    const rootBackground = root ? window.getComputedStyle(root).backgroundColor : "";
+    const background = options?.background
+        ? (jpg && options.background === "transparent" ? "#ffffff" : options.background)
+        : (rootBackground && rootBackground !== "rgba(0, 0, 0, 0)" && rootBackground !== "transparent" ? rootBackground : "#ffffff");
+    const config = getDomExportConfig(nodes, options, root, getNodesBounds);
+    const exportOptions = {
         width: config.width,
         height: config.height,
         cacheBust: true,
-        filter: isExportNodeVisible,
+        filter: (node: HTMLElement) => {
+            if (!(node instanceof Element) || typeof node.closest !== "function") {
+                return true;
+            }
+            return !node.closest([
+                ".react-flow__handle",
+                ".react-flow__selection",
+                ".react-flow__nodesselection",
+                "[data-mind-toolbar='true']",
+                "[data-mind-color-picker='true']",
+                ".ant-popover",
+            ].join(","));
+        },
         pixelRatio: options?.pixelRatio ?? 2,
         skipFonts: false,
         backgroundColor: background === "transparent" ? undefined : background,
@@ -1308,42 +1291,20 @@ const createDomExportOptions = (config: MindDomExportConfig, options: MindExport
             background: background === "transparent" ? "transparent" : background,
         },
     };
-};
-
-const withExportingClass = async <T,>(root: HTMLElement | null | undefined, task: () => Promise<T>) => {
     root?.classList.add(mindExportingClass);
     try {
-        return await task();
-    } finally {
-        root?.classList.remove(mindExportingClass);
-    }
-};
-
-const createDomImageBlob = async (
-    root: HTMLElement | null | undefined,
-    nodes: FlowNode[],
-    options?: MindExportOptions,
-    getNodesBounds?: MindNodesBoundsGetter,
-    type: "image/png" | "image/jpeg" = "image/png",
-) => {
-    const htmlToImage = await loadHtmlToImage();
-    const viewport = getExportViewport(root);
-    const background = getExportBackground(root, options, type === "image/jpeg");
-    const exportOptions = createDomExportOptions(getDomExportConfig(nodes, options, root, getNodesBounds), options, background);
-    return withExportingClass(root, async () => {
         if (type === "image/jpeg") {
-            return dataUrlToBlob(await htmlToImage.toJpeg(viewport, {...exportOptions, quality: options?.quality ?? 0.92}));
+            const url = await htmlToImage.toJpeg(viewport, {...exportOptions, quality: options?.quality ?? 0.92});
+            return (await fetch(url)).blob();
         }
         const blob = await htmlToImage.toBlob(viewport, exportOptions);
         if (!blob) {
             throw new Error("图片导出失败");
         }
         return blob;
-    });
-};
-
-const dataUrlToBlob = async (url: string) => {
-    return (await fetch(url)).blob();
+    } finally {
+        root?.classList.remove(mindExportingClass);
+    }
 };
 
 const blobToDataUrl = (blob: Blob) => new Promise<string>((resolve, reject) => {
@@ -1356,16 +1317,16 @@ const blobToDataUrl = (blob: Blob) => new Promise<string>((resolve, reject) => {
 const copyPngToClipboard = async (blob: Promise<Blob>) => {
     const ClipboardItemConstructor = window.ClipboardItem;
     if (!window.isSecureContext) {
-        throw new Error("复制图片需要 HTTPS 或 localhost 环境");
+        throw new Error("当前浏览器环境不支持复制，请使用导出图片");
     }
     if (!navigator.clipboard?.write || !ClipboardItemConstructor) {
-        throw new Error("当前浏览器不支持复制图片");
+        throw new Error("当前浏览器环境不支持复制，请使用导出图片");
     }
     try {
         await navigator.clipboard.write([new ClipboardItemConstructor({"image/png": blob})]);
     } catch (error) {
         if (isClipboardPermissionError(error)) {
-            throw new Error("浏览器不允许复制图片，请检查剪贴板权限或使用 HTTPS/localhost");
+            throw new Error("当前浏览器环境不支持复制，请使用导出图片");
         }
         throw error;
     }
@@ -1373,20 +1334,16 @@ const copyPngToClipboard = async (blob: Promise<Blob>) => {
 
 const isClipboardPermissionError = (error: unknown) => {
     const message = error instanceof Error ? error.message : String(error || "");
-    return /not allowed|denied|permission|current context|浏览器不允许|剪贴板权限/i.test(message)
+    return /not allowed|denied|permission|current context|不支持复制|浏览器不允许|剪贴板权限/i.test(message)
         || (error instanceof DOMException && ["NotAllowedError", "SecurityError"].includes(error.name));
-};
-
-const downloadUrl = (url: string, filename: string) => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
 };
 
 const downloadBlob = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
-    downloadUrl(url, filename);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 0);
 };
 
@@ -2892,7 +2849,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             if (isClipboardPermissionError(error)) {
                 try {
                     downloadBlob(await blob, `mind-${Date.now()}.png`);
-                    message.warning("浏览器不允许复制图片，已自动下载 PNG");
+                    message.warning("当前浏览器环境不支持复制，已自动下载 PNG");
                 } catch (exportError) {
                     message.error(exportError instanceof Error ? exportError.message : "图片导出失败");
                 }
@@ -3073,7 +3030,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         if (!nodeId) {
             return;
         }
-        setNodeStyle(nodeId, {[getTextStyleKey(textTarget)]: style} as MindNodeStyle);
+        setNodeStyle(nodeId, {[textTarget === "title" ? "titleStyle" : "descriptionStyle"]: style} as MindNodeStyle);
     }, [selectedNode?.id, setNodeStyle, textTarget]);
 
     const selectedStyle = selectedNode?.data.style || {};
@@ -3336,7 +3293,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         exportPng,
         exportJpg,
         copyImage,
-        getStats: () => getFlowStats(nodesRef.current),
+        getStats: () => getMindStats(toMindValue(nodesRef.current)),
         addChild,
         addSibling,
         edit: startEdit,
