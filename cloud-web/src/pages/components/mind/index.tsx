@@ -538,6 +538,84 @@ const clearRichFragmentStyle = (fragment: DocumentFragment, style: React.CSSProp
     });
 };
 
+const getTextDecorationSet = (value?: React.CSSProperties["textDecoration"]) => {
+    return new Set(String(value || "").split(/\s+/).filter((item) => item === "underline" || item === "line-through"));
+};
+
+const getElementTextDecorationSet = (element: HTMLElement) => {
+    const tag = element.tagName.toLowerCase();
+    const values = getTextDecorationSet(element.style.textDecoration || element.style.textDecorationLine);
+    if (tag === "u") {
+        values.add("underline");
+    }
+    if (tag === "s" || tag === "strike") {
+        values.add("line-through");
+    }
+    return values;
+};
+
+const inheritRichElementStyle = (target: HTMLElement, source: HTMLElement) => {
+    const tag = source.tagName.toLowerCase();
+    if ((tag === "strong" || tag === "b") && !target.style.fontWeight) {
+        target.style.fontWeight = "bold";
+    }
+    if ((tag === "em" || tag === "i") && !target.style.fontStyle) {
+        target.style.fontStyle = "italic";
+    }
+    if (source.style.color && !target.style.color) {
+        target.style.color = source.style.color;
+    }
+    if (source.style.fontSize && !target.style.fontSize) {
+        target.style.fontSize = source.style.fontSize;
+    }
+    if (source.style.fontWeight && !target.style.fontWeight) {
+        target.style.fontWeight = source.style.fontWeight;
+    }
+    if (source.style.fontStyle && !target.style.fontStyle) {
+        target.style.fontStyle = source.style.fontStyle;
+    }
+};
+
+const liftRichElementOutOfParent = (element: HTMLElement) => {
+    const parent = element.parentElement;
+    const grandParent = parent?.parentNode;
+    if (!parent || !grandParent) {
+        return;
+    }
+    const before = parent.cloneNode(false);
+    const after = parent.cloneNode(false);
+    while (parent.firstChild && parent.firstChild !== element) {
+        before.appendChild(parent.firstChild);
+    }
+    while (element.nextSibling) {
+        after.appendChild(element.nextSibling);
+    }
+    if (before.childNodes.length > 0) {
+        grandParent.insertBefore(before, parent);
+    }
+    grandParent.insertBefore(element, parent);
+    if (after.childNodes.length > 0) {
+        grandParent.insertBefore(after, parent);
+    }
+    parent.remove();
+};
+
+const liftRichTextDecorationElement = (element: HTMLElement, editor: HTMLElement, textDecoration?: React.CSSProperties["textDecoration"]) => {
+    const nextDecorations = getTextDecorationSet(textDecoration);
+    let parent = element.parentElement;
+    while (parent && parent !== editor && editor.contains(parent)) {
+        const parentDecorations = getElementTextDecorationSet(parent);
+        const shouldLift = Array.from(parentDecorations).some((decoration) => !nextDecorations.has(decoration));
+        if (shouldLift) {
+            inheritRichElementStyle(element, parent);
+            liftRichElementOutOfParent(element);
+            parent = element.parentElement;
+            continue;
+        }
+        parent = parent.parentElement;
+    }
+};
+
 const getRichEditorBaseStyle = (editor: HTMLElement): React.CSSProperties => {
     const computed = window.getComputedStyle(editor);
     const fontSize = Number.parseFloat(computed.fontSize);
@@ -2339,34 +2417,13 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         clearRichFragmentStyle(fragment, nextStyle);
         span.appendChild(fragment);
         range.insertNode(span);
+        if (hasField(nextStyle, "textDecoration")) {
+            liftRichTextDecorationElement(span, editor, nextStyle.textDecoration);
+        }
         editor.normalize();
         const nextRange = document.createRange();
         nextRange.selectNodeContents(span);
         selectRichRange(nextRange, editor);
-        return true;
-    }, [editingId, getRichSelectionEditor, restoreRichSelection, selectRichRange]);
-
-    const runRichCommand = useCallback((command: "underline" | "strikeThrough") => {
-        if (!editingId) {
-            return false;
-        }
-        if (!restoreRichSelection()) {
-            return false;
-        }
-        const selection = window.getSelection();
-        if (!selection || selection.rangeCount <= 0) {
-            return false;
-        }
-        const range = selection.getRangeAt(0);
-        const editor = getRichSelectionEditor(range.commonAncestorContainer);
-        if (!editor || range.collapsed) {
-            return false;
-        }
-        document.execCommand(command, false);
-        editor.normalize();
-        if (selection.rangeCount > 0) {
-            selectRichRange(selection.getRangeAt(0).cloneRange(), editor);
-        }
         return true;
     }, [editingId, getRichSelectionEditor, restoreRichSelection, selectRichRange]);
 
@@ -2678,16 +2735,13 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const toggleSelectedTextDecoration = useCallback((decoration: string) => {
         const textDecoration = toggleTextDecoration(toolbarTextStyle.textDecoration, decoration);
         if (editingId) {
-            if (runRichCommand(decoration === "underline" ? "underline" : "strikeThrough")) {
-                return;
-            }
             applyRichSelectionStyle({textDecoration: textDecoration || "none"});
             return;
         }
         if (!applyRichSelectionStyle({textDecoration: textDecoration || "none"})) {
             updateSelectedTextStyle({textDecoration});
         }
-    }, [applyRichSelectionStyle, editingId, runRichCommand, toolbarTextStyle.textDecoration, updateSelectedTextStyle]);
+    }, [applyRichSelectionStyle, editingId, toolbarTextStyle.textDecoration, updateSelectedTextStyle]);
 
     const changeSelectedRadius = useCallback((step: number) => {
         const nodeId = selectedNode?.id;
