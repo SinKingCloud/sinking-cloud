@@ -583,6 +583,20 @@ const getElementTextDecorationSet = (element: HTMLElement) => {
     return values;
 };
 
+const getRichTextDecorationLine = (element: HTMLElement, editor: HTMLElement) => {
+    const values = new Set<string>();
+    let current: HTMLElement | null = element;
+    while (current && editor.contains(current)) {
+        getElementTextDecorationSet(current).forEach((item) => values.add(item));
+        getTextDecorationSet(window.getComputedStyle(current).textDecorationLine).forEach((item) => values.add(item));
+        if (current === editor) {
+            break;
+        }
+        current = current.parentElement;
+    }
+    return values.size > 0 ? Array.from(values).join(" ") : "none";
+};
+
 const inheritRichElementStyle = (target: HTMLElement, source: HTMLElement) => {
     const tag = source.tagName.toLowerCase();
     if ((tag === "strong" || tag === "b") && !target.style.fontWeight) {
@@ -722,14 +736,15 @@ const getRichRangeStyle = (range: Range, editor: HTMLElement): MindTextStyle => 
     }
     if (nodes.length <= 0) {
         const element = range.startContainer instanceof HTMLElement ? range.startContainer : range.startContainer.parentElement;
-        const computed = window.getComputedStyle(element && editor.contains(element) ? element : editor);
+        const target = element && editor.contains(element) ? element : editor;
+        const computed = window.getComputedStyle(target);
         const fontSize = Number.parseFloat(computed.fontSize);
         return {
             color: computed.color,
             fontSize: Number.isFinite(fontSize) ? Math.round(fontSize) : undefined,
             fontWeight: computed.fontWeight,
             fontStyle: computed.fontStyle === "italic" ? "italic" : "normal",
-            textDecoration: computed.textDecorationLine === "none" ? "none" : computed.textDecorationLine,
+            textDecoration: getRichTextDecorationLine(target, editor),
         };
     }
 
@@ -745,7 +760,7 @@ const getRichRangeStyle = (range: Range, editor: HTMLElement): MindTextStyle => 
         const computed = window.getComputedStyle(element);
         const fontSize = Number.parseFloat(computed.fontSize);
         const fontWeight = computed.fontWeight;
-        const decoration = computed.textDecorationLine || "";
+        const decoration = getRichTextDecorationLine(element, editor);
         colors.add(computed.color);
         if (Number.isFinite(fontSize)) {
             fontSizes.add(Math.round(fontSize));
@@ -2905,8 +2920,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         return editOpeningRef.current ||
             textSelectingRef.current ||
             toolbarMouseDownRef.current ||
-            toolbarPopupOpenRef.current ||
-            Boolean(document.querySelector(".ant-popover"));
+            toolbarPopupOpenRef.current;
     }, []);
 
     const getRichSelectionEditor = useCallback((node?: globalThis.Node | null) => {
@@ -3022,6 +3036,22 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         selectRichRange(nextRange, editor);
         return true;
     }, [editingId, getRichSelectionEditor, restoreRichSelection, selectRichRange]);
+
+    const getCurrentRichSelectionStyle = useCallback(() => {
+        if (!editingId || !restoreRichSelection()) {
+            return undefined;
+        }
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount <= 0) {
+            return undefined;
+        }
+        const range = selection.getRangeAt(0);
+        const editor = getRichSelectionEditor(range.commonAncestorContainer);
+        if (!editor || range.collapsed) {
+            return undefined;
+        }
+        return getRichRangeStyle(range, editor);
+    }, [editingId, getRichSelectionEditor, restoreRichSelection]);
 
     const clearRichSelectionStyle = useCallback(() => {
         if (!editingId) {
@@ -3547,7 +3577,8 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     }, [applyRichSelectionStyle, editingId, toolbarTextItalic, updateSelectedTextStyle]);
 
     const toggleSelectedTextDecoration = useCallback((decoration: string) => {
-        const textDecoration = toggleTextDecoration(toolbarTextStyle.textDecoration, decoration);
+        const currentStyle = editingId ? getCurrentRichSelectionStyle() : undefined;
+        const textDecoration = toggleTextDecoration(currentStyle?.textDecoration ?? toolbarTextStyle.textDecoration, decoration);
         if (editingId) {
             applyRichSelectionStyle({textDecoration: textDecoration || "none"});
             return;
@@ -3555,7 +3586,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         if (!applyRichSelectionStyle({textDecoration: textDecoration || "none"})) {
             updateSelectedTextStyle({textDecoration});
         }
-    }, [applyRichSelectionStyle, editingId, toolbarTextStyle.textDecoration, updateSelectedTextStyle]);
+    }, [applyRichSelectionStyle, editingId, getCurrentRichSelectionStyle, toolbarTextStyle.textDecoration, updateSelectedTextStyle]);
 
     const changeSelectedRadius = useCallback((step: number) => {
         const nodeId = selectedNode?.id;
