@@ -2358,11 +2358,16 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const selectedIdsRef = useRef<string[]>([]);
     const historyRef = useRef<FlowNode[][]>([]);
     const pendingEmitRef = useRef(false);
+    const draggingRef = useRef(false);
+    const dragMovedRef = useRef(false);
+    const dropParentFrameRef = useRef<number | undefined>(undefined);
+    const pendingDragNodeRef = useRef<FlowNode | undefined>(undefined);
     const activeRef = useRef(false);
     const controlsVisibleRef = useRef(showControls ?? defaultShowControls);
     const fullscreenRef = useRef(false);
     const miniMapVisibleRef = useRef(showMiniMap ?? defaultShowMiniMap);
     const isDark = Boolean(theme?.isDarkTheme?.() || theme?.isDarkMode?.());
+    const edgeSignature = nodes.map((node) => `${node.id}:${node.data.parentId || ""}:${node.data.color}:${node.data.lineColor}`).join("|");
     const edges = useMemo(() => {
         if (!dragNodeId || !dropParentId) {
             return toEdges(nodes);
@@ -2374,7 +2379,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                 parentId: dropParentId,
             },
         } : node));
-    }, [dragNodeId, dropParentId, nodes]);
+    }, [dragNodeId, dropParentId, edgeSignature]);
     const selectedNode = useMemo(() => nodes.find((node) => selectedIdsRef.current.includes(node.id)), [nodes]);
     const currentShowControls = showControls ?? controlsVisible;
     const currentShowMiniMap = showMiniMap ?? miniMapVisible;
@@ -2384,6 +2389,14 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     useEffect(() => {
         nodesRef.current = nodes;
     }, [nodes]);
+
+    useEffect(() => {
+        return () => {
+            if (dropParentFrameRef.current !== undefined) {
+                window.cancelAnimationFrame(dropParentFrameRef.current);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         toolbarPopupOpenRef.current = toolbarPopupOpen;
@@ -3240,7 +3253,11 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     }), [dropParentId, editingId, readOnly, removeNodes, saveRichSelection, shouldKeepEdit, startEdit, startTextSelectionGuard, styles, updateNode]);
 
     const onNodesChange = useCallback((changes: NodeChange<FlowNode>[]) => {
-        const shouldEmit = changes.some((change) => change.type !== "select" && change.type !== "dimensions");
+        const hasDragPosition = draggingRef.current && changes.some((change) => change.type === "position");
+        if (hasDragPosition) {
+            dragMovedRef.current = true;
+        }
+        const shouldEmit = !hasDragPosition && changes.some((change) => change.type !== "select" && change.type !== "dimensions");
         const shouldHistory = shouldEmit && changes.every((change) => change.type !== "position");
         updateNodes((items) => {
             const nextNodes = applyNodeChanges(changes, items) as FlowNode[];
@@ -3252,6 +3269,11 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     }, [updateNodes]);
 
     const clearDropParent = useCallback(() => {
+        if (dropParentFrameRef.current !== undefined) {
+            window.cancelAnimationFrame(dropParentFrameRef.current);
+            dropParentFrameRef.current = undefined;
+        }
+        pendingDragNodeRef.current = undefined;
         dropParentIdRef.current = undefined;
         dragNodeIdRef.current = undefined;
         setDropParentId(undefined);
@@ -3262,6 +3284,8 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         if (readOnly) {
             return;
         }
+        draggingRef.current = true;
+        dragMovedRef.current = false;
         dragNodeIdRef.current = node.id;
         setDragNodeId(node.id);
         pushHistory(nodesRef.current);
@@ -3276,14 +3300,15 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             dragNodeIdRef.current = node.id;
             setDragNodeId(node.id);
         }
-        const items = nodesRef.current.map((item) => item.id === node.id ? {
-            ...item,
+        const items = nodesRef.current;
+        const sourceNode = items.find((item) => item.id === node.id) || node;
+        const currentNode = {
+            ...sourceNode,
             position: node.position,
-            width: node.width || item.width,
-            height: node.height || item.height,
-            measured: node.measured || item.measured,
-        } : item);
-        const currentNode = items.find((item) => item.id === node.id) || node;
+            width: node.width || sourceNode.width,
+            height: node.height || sourceNode.height,
+            measured: node.measured || sourceNode.measured,
+        };
         const parent = getDropParent(items, currentNode);
         const nextParentId: string | undefined = parent && parent.id !== currentNode.data.parentId ? parent.id : undefined;
         if (dropParentIdRef.current !== nextParentId) {
@@ -3294,20 +3319,47 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     }, [clearDropParent, readOnly]);
 
     const onNodeDrag = useCallback((_: MouseEvent | TouchEvent, node: FlowNode) => {
-        updateDropParent(node);
+        if (node.id === rootId) {
+            return;
+        }
+        pendingDragNodeRef.current = node;
+        if (dropParentFrameRef.current !== undefined) {
+            return;
+        }
+        dropParentFrameRef.current = window.requestAnimationFrame(() => {
+            dropParentFrameRef.current = undefined;
+            const nextNode = pendingDragNodeRef.current;
+            if (nextNode) {
+                updateDropParent(nextNode);
+            }
+        });
     }, [updateDropParent]);
 
     const onNodeDragStop = useCallback((_: MouseEvent | TouchEvent, node: FlowNode) => {
+        draggingRef.current = false;
         if (readOnly || node.id === rootId) {
             clearDropParent();
+            if (!readOnly && dragMovedRef.current) {
+                window.requestAnimationFrame(() => emitChange(nodesRef.current));
+            }
             return;
         }
         const items = nodesRef.current;
-        const currentNode = items.find((item) => item.id === node.id) || node;
+        const sourceNode = items.find((item) => item.id === node.id) || node;
+        const currentNode = {
+            ...sourceNode,
+            position: node.position,
+            width: node.width || sourceNode.width,
+            height: node.height || sourceNode.height,
+            measured: node.measured || sourceNode.measured,
+        };
         const parentId = dropParentIdRef.current || updateDropParent(currentNode);
         const parent = parentId ? items.find((item) => item.id === parentId) : getDropParent(items, currentNode);
         clearDropParent();
         if (!parent || parent.id === currentNode.data.parentId) {
+            if (dragMovedRef.current) {
+                window.requestAnimationFrame(() => emitChange(nodesRef.current));
+            }
             return;
         }
         const nextNodes = selectOnly(layoutNodes(items.map((item) => item.id === currentNode.id ? {
@@ -3321,7 +3373,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         setEditingId(undefined);
         updateNodes(nextNodes, true, false);
         window.requestAnimationFrame(() => focusNode(currentNode.id, nextNodes));
-    }, [clearDropParent, focusNode, readOnly, updateDropParent, updateNodes]);
+    }, [clearDropParent, emitChange, focusNode, readOnly, updateDropParent, updateNodes]);
 
     const openNodeContextMenu = useCallback((event: React.MouseEvent, node: FlowNode) => {
         if (readOnly) {
@@ -3771,6 +3823,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                         nodes={nodes}
                         edges={edges}
                         nodeTypes={mindNodeTypes}
+                        onlyRenderVisibleElements
                         onInit={setFlow}
                         onNodesChange={onNodesChange}
                         onSelectionChange={({nodes: selectedNodes}) => {
