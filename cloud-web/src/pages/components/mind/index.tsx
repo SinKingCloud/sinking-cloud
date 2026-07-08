@@ -201,6 +201,10 @@ export type MindRef = {
     canUndo: () => boolean;
     /** 删除当前选中的节点，根节点不会被删除。 */
     removeSelected: () => void;
+    /** 复制当前选中的节点和子节点，根节点不会被复制。 */
+    copySelected: () => boolean;
+    /** 粘贴最近复制的节点到指定父节点，不传时粘贴到当前选中节点或根节点。 */
+    paste: (parentId?: string) => boolean;
     /** 按树结构重新整理布局。 */
     layout: () => void;
     /** layout 的别名。 */
@@ -301,6 +305,7 @@ type MindNodeViewProps = NodeProps<FlowNode> & {
     styles: ReturnType<typeof useStyles>["styles"];
     readOnly?: boolean;
     editingId?: string;
+    dropParentId?: string;
     onStartEdit: (id: string) => void;
     onUpdateNode: (id: string, data: MindNodeUpdate) => void;
     onRemoveNode: (id: string) => void;
@@ -316,6 +321,11 @@ type ContextMenu = {
     y: number;
     nodeId?: string;
     position?: MindPoint;
+};
+
+type MindClipboard = {
+    nodes: MindNode[];
+    rootIds: string[];
 };
 
 type MindContextValue = Omit<MindNodeViewProps, keyof NodeProps<FlowNode>>;
@@ -760,8 +770,10 @@ const getRichRangeStyle = (range: Range, editor: HTMLElement): MindTextStyle => 
     };
 };
 
+const isObject = (value: unknown): value is Record<string, any> => Boolean(value && typeof value === "object" && !Array.isArray(value));
+
 const cleanMindTextStyle = (style?: MindTextStyle) => {
-    if (!style) {
+    if (!isObject(style)) {
         return undefined;
     }
     const next: MindTextStyle = {...style};
@@ -774,7 +786,7 @@ const cleanMindTextStyle = (style?: MindTextStyle) => {
 };
 
 const cleanMindNodeStyle = (style?: MindNodeStyle) => {
-    if (!style) {
+    if (!isObject(style)) {
         return undefined;
     }
     const next: MindNodeStyle = {
@@ -794,22 +806,25 @@ const cleanMindNodeStyle = (style?: MindNodeStyle) => {
     return Object.keys(next).length > 0 ? next : undefined;
 };
 
-const cloneMindNodeStyle = (style?: MindNodeStyle) => cleanMindNodeStyle(style ? {
+const cloneMindNodeStyle = (style?: MindNodeStyle) => cleanMindNodeStyle(isObject(style) ? {
     ...style,
-    titleStyle: style.titleStyle ? {...style.titleStyle} : undefined,
-    descriptionStyle: style.descriptionStyle ? {...style.descriptionStyle} : undefined,
+    titleStyle: isObject(style.titleStyle) ? {...style.titleStyle} : undefined,
+    descriptionStyle: isObject(style.descriptionStyle) ? {...style.descriptionStyle} : undefined,
 } : undefined);
 
 const mergeMindNodeStyle = (style?: MindNodeStyle, patch?: MindNodeStyle) => {
-    if (!patch) {
+    if (!isObject(patch)) {
         return cleanMindNodeStyle(style);
     }
-    const next: MindNodeStyle = {...style, ...patch};
+    const baseStyle = isObject(style) ? style : undefined;
+    const next: MindNodeStyle = {...baseStyle, ...patch};
     if (hasField(patch, "titleStyle")) {
-        next.titleStyle = patch.titleStyle ? {...style?.titleStyle, ...patch.titleStyle} : undefined;
+        const titleStyle = isObject(baseStyle?.titleStyle) ? baseStyle.titleStyle : {};
+        next.titleStyle = isObject(patch.titleStyle) ? {...titleStyle, ...patch.titleStyle} : undefined;
     }
     if (hasField(patch, "descriptionStyle")) {
-        next.descriptionStyle = patch.descriptionStyle ? {...style?.descriptionStyle, ...patch.descriptionStyle} : undefined;
+        const descriptionStyle = isObject(baseStyle?.descriptionStyle) ? baseStyle.descriptionStyle : {};
+        next.descriptionStyle = isObject(patch.descriptionStyle) ? {...descriptionStyle, ...patch.descriptionStyle} : undefined;
     }
     return cleanMindNodeStyle(next);
 };
@@ -839,6 +854,40 @@ const isMindColorDropdownTarget = (target: EventTarget | null) => {
 
 // ==================== 数据转换 ====================
 
+const toSafeString = (value: unknown) => {
+    if (typeof value === "string") {
+        return value;
+    }
+    if (typeof value === "number" || typeof value === "boolean") {
+        return String(value);
+    }
+    return undefined;
+};
+
+const toNodeId = (value: unknown) => {
+    const id = toSafeString(value)?.trim();
+    return id || undefined;
+};
+
+const getUniqueNodeId = (id: string, usedIds: Set<string>) => {
+    let nextId = id;
+    let index = 1;
+    while (usedIds.has(nextId)) {
+        nextId = `${id}_${index}`;
+        index += 1;
+    }
+    return nextId;
+};
+
+const toMindPoint = (value: unknown): MindPoint | undefined => {
+    if (!isObject(value)) {
+        return undefined;
+    }
+    const x = Number(value.x);
+    const y = Number(value.y);
+    return Number.isFinite(x) && Number.isFinite(y) ? {x, y} : undefined;
+};
+
 /** 创建并规范化一个思维导图节点，适合外部生成初始 value 时使用。 */
 export const createMindNode = (data: MindNode): MindNode => {
     const color = data.color || palette[0];
@@ -856,14 +905,103 @@ export const createMindNode = (data: MindNode): MindNode => {
     };
 };
 
+const createDefaultMindNode = () => createMindNode({
+    id: rootId,
+    title: "中心主题",
+    color: palette[0],
+    lineColor: palette[0],
+    root: true,
+});
+
+/** 清洗外部传入的思维导图数据，避免脏数据导致画布渲染异常。 */
+export const sanitizeMindValue = (value?: MindValue): MindValue => {
+    const sourceNodes = Array.isArray((value as any)?.nodes) ? (value as any).nodes : [];
+    if (sourceNodes.length <= 0) {
+        return {nodes: [createDefaultMindNode()]};
+    }
+
+    const usedIds = new Set<string>();
+    const idMap = new Map<string, string>();
+    const entries: { raw: Record<string, any>; id: string }[] = [];
+    let hasRoot = false;
+
+    sourceNodes.forEach((item: unknown, index: number) => {
+        if (!isObject(item)) {
+            return;
+        }
+        const rawId = toNodeId(item.id);
+        const shouldUseRootId = !hasRoot && (item.root === true || rawId === rootId);
+        const fallbackId = `node_${index + 1}`;
+        const baseId = shouldUseRootId ? rootId : (rawId && rawId !== rootId ? rawId : fallbackId);
+        const id = getUniqueNodeId(baseId, usedIds);
+        usedIds.add(id);
+        if (id === rootId) {
+            hasRoot = true;
+        }
+        if (rawId && !idMap.has(rawId)) {
+            idMap.set(rawId, id);
+        }
+        entries.push({raw: item, id});
+    });
+
+    if (entries.length <= 0) {
+        return {nodes: [createDefaultMindNode()]};
+    }
+    if (!hasRoot) {
+        entries.unshift({raw: createDefaultMindNode(), id: rootId});
+        usedIds.add(rootId);
+    }
+
+    const parentMap = new Map<string, string | undefined>();
+    entries.forEach(({raw, id}) => {
+        if (id === rootId) {
+            parentMap.set(id, undefined);
+            return;
+        }
+        const rawParentId = toNodeId(raw.parentId);
+        const parentId = rawParentId ? idMap.get(rawParentId) : undefined;
+        parentMap.set(id, parentId && parentId !== id && usedIds.has(parentId) ? parentId : rootId);
+    });
+
+    const hasParentCycle = (id: string, parentId?: string) => {
+        const visited = new Set<string>([id]);
+        let currentId = parentId;
+        while (currentId) {
+            if (visited.has(currentId)) {
+                return true;
+            }
+            visited.add(currentId);
+            currentId = parentMap.get(currentId);
+        }
+        return false;
+    };
+
+    entries.forEach(({id}) => {
+        const parentId = parentMap.get(id);
+        if (id !== rootId && hasParentCycle(id, parentId)) {
+            parentMap.set(id, rootId);
+        }
+    });
+
+    return {
+        nodes: entries.map(({raw, id}) => createMindNode({
+            id,
+            title: toSafeString(raw.title) || (id === rootId ? "中心主题" : ""),
+            titleHtml: toSafeString(raw.titleHtml),
+            description: toSafeString(raw.description),
+            descriptionHtml: toSafeString(raw.descriptionHtml),
+            parentId: parentMap.get(id),
+            color: toSafeString(raw.color),
+            lineColor: toSafeString(raw.lineColor),
+            root: id === rootId,
+            position: toMindPoint(raw.position),
+            style: isObject(raw.style) ? raw.style as MindNodeStyle : undefined,
+        })),
+    };
+};
+
 const getMindValueNodes = (value?: MindValue) => {
-    return value?.nodes?.length ? value.nodes : [createMindNode({
-        id: rootId,
-        title: "中心主题",
-        color: palette[0],
-        lineColor: palette[0],
-        root: true,
-    })];
+    return sanitizeMindValue(value).nodes;
 };
 
 const getDefaultId = () => `node_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
@@ -1002,12 +1140,16 @@ const getFlowChildrenMap = (nodes: FlowNode[]) => {
     return map;
 };
 
-const getDepth = <T extends { id: string; parentId?: string }>(nodes: T[], id = rootId): number => {
+const getDepth = <T extends { id: string; parentId?: string }>(nodes: T[], id = rootId, visited = new Set<string>()): number => {
+    if (visited.has(id)) {
+        return 0;
+    }
+    const nextVisited = new Set(visited).add(id);
     const children = nodes.filter((node) => node.parentId === id);
     if (children.length <= 0) {
         return nodes.some((node) => node.id === id) ? 1 : 0;
     }
-    return 1 + Math.max(...children.map((node) => getDepth(nodes, node.id)));
+    return 1 + Math.max(...children.map((node) => getDepth(nodes, node.id, nextVisited)));
 };
 
 /** 统计思维导图节点数量和最大层级深度，空数据会按默认中心主题计算。 */
@@ -1112,6 +1254,33 @@ const selectOnly = (nodes: FlowNode[], ids?: string | string[]) => {
     return nodes.map((node) => ({...node, selected: selectedIds.has(node.id)}));
 };
 
+const getFlowNodeSize = (node: FlowNode) => ({
+    width: node.width || node.measured?.width || nodeWidth,
+    height: node.height || node.measured?.height || getMindNodeHeight({
+        title: node.data.title,
+        description: node.data.description,
+        style: node.data.style,
+    }),
+});
+
+const getFlowNodeCenter = (node: FlowNode) => {
+    const size = getFlowNodeSize(node);
+    return {
+        x: node.position.x + size.width / 2,
+        y: node.position.y + size.height / 2,
+    };
+};
+
+const isPointNearNode = (point: MindPoint, node: FlowNode, margin = 24) => {
+    const size = getFlowNodeSize(node);
+    return point.x >= node.position.x - margin &&
+        point.x <= node.position.x + size.width + margin &&
+        point.y >= node.position.y - margin &&
+        point.y <= node.position.y + size.height + margin;
+};
+
+const getDistance = (a: MindPoint, b: MindPoint) => Math.hypot(a.x - b.x, a.y - b.y);
+
 const getDescendantIds = (nodes: FlowNode[], ids: string[]) => {
     const childrenMap = getFlowChildrenMap(nodes);
     const result = new Set(ids);
@@ -1123,6 +1292,32 @@ const getDescendantIds = (nodes: FlowNode[], ids: string[]) => {
     };
     ids.forEach(walk);
     return result;
+};
+
+const getCopyRootIds = (nodes: FlowNode[], ids: string[]) => {
+    const selectedIds = new Set(ids.filter((id) => id !== rootId));
+    return Array.from(selectedIds).filter((id) => {
+        let parentId = nodes.find((node) => node.id === id)?.data.parentId;
+        while (parentId) {
+            if (selectedIds.has(parentId)) {
+                return false;
+            }
+            parentId = nodes.find((node) => node.id === parentId)?.data.parentId;
+        }
+        return true;
+    });
+};
+
+const getDropParent = (nodes: FlowNode[], node: FlowNode) => {
+    if (node.id === rootId) {
+        return undefined;
+    }
+    const blockedIds = getDescendantIds(nodes, [node.id]);
+    const center = getFlowNodeCenter(node);
+    return nodes
+        .filter((item) => !blockedIds.has(item.id) && isPointNearNode(center, item))
+        .map((item) => ({node: item, distance: getDistance(center, getFlowNodeCenter(item))}))
+        .sort((a, b) => a.distance - b.distance)[0]?.node;
 };
 
 const toEdges = (nodes: FlowNode[]): Edge[] => nodes
@@ -1472,6 +1667,9 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
     nodeEditing: css`
         cursor: text;
         user-select: text;
+    `,
+    nodeDropTarget: css`
+        border-color: ${token.colorPrimary} !important;
     `,
     nodeContent: css`
         width: 100%;
@@ -1834,6 +2032,7 @@ const MindNodeView: React.FC<MindNodeViewProps> = ({
     styles,
     readOnly,
     editingId,
+    dropParentId,
     onStartEdit,
     onUpdateNode,
     onRemoveNode,
@@ -2001,7 +2200,7 @@ const MindNodeView: React.FC<MindNodeViewProps> = ({
 
     return (
         <div
-            className={`${styles.node} ${data.root ? styles.nodeRoot : ""} ${editing ? styles.nodeEditing : ""}`}
+            className={`${styles.node} ${data.root ? styles.nodeRoot : ""} ${editing ? styles.nodeEditing : ""} ${dropParentId === id ? styles.nodeDropTarget : ""}`}
             style={{
                 "--mind-node-color": data.color,
                 ...getNodeBoxStyle(data.style),
@@ -2124,9 +2323,11 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const {message} = App.useApp();
     const theme = useTheme();
     const {token} = antdTheme.useToken();
+    const hasControlledValue = value !== undefined;
+    const initialInputValue = hasControlledValue ? value : defaultValue;
     const rootRef = useRef<HTMLDivElement | null>(null);
     const [flow, setFlow] = useState<ReactFlowInstance<FlowNode, Edge> | null>(null);
-    const [nodes, setNodes] = useState<FlowNode[]>(() => normalizeValue(value || defaultValue));
+    const [nodes, setNodes] = useState<FlowNode[]>(() => normalizeValue(initialInputValue));
     const [editingId, setEditingId] = useState<string>();
     const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
     const [contextSubMenuLeft, setContextSubMenuLeft] = useState(false);
@@ -2135,11 +2336,17 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const [richSelectionStyle, setRichSelectionStyle] = useState<MindTextStyle>({});
     const [toolbarPopupOpen, setToolbarPopupOpen] = useState(false);
     const [toolbarColorOpen, setToolbarColorOpen] = useState<string>();
+    const [dropParentId, setDropParentId] = useState<string | undefined>(undefined);
+    const [dragNodeId, setDragNodeId] = useState<string | undefined>(undefined);
     const [fullscreen, setFullscreen] = useState(false);
     const [controlsVisible, setControlsVisible] = useState(defaultShowControls);
     const [miniMapVisible, setMiniMapVisible] = useState(defaultShowMiniMap);
-    const initialValueRef = useRef<MindValue | undefined>(value || defaultValue);
+    const [hasCopiedNodes, setHasCopiedNodes] = useState(false);
+    const initialValueRef = useRef<MindValue | undefined>(initialInputValue);
     const contextMenuRef = useRef<HTMLDivElement | null>(null);
+    const clipboardRef = useRef<MindClipboard | null>(null);
+    const dropParentIdRef = useRef<string | undefined>(undefined);
+    const dragNodeIdRef = useRef<string | undefined>(undefined);
     const richSelectionRef = useRef<Range | null>(null);
     const toolbarPopupOpenRef = useRef(false);
     const toolbarMouseDownRef = useRef(false);
@@ -2156,7 +2363,18 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const fullscreenRef = useRef(false);
     const miniMapVisibleRef = useRef(showMiniMap ?? defaultShowMiniMap);
     const isDark = Boolean(theme?.isDarkTheme?.() || theme?.isDarkMode?.());
-    const edges = useMemo(() => toEdges(nodes), [nodes]);
+    const edges = useMemo(() => {
+        if (!dragNodeId || !dropParentId) {
+            return toEdges(nodes);
+        }
+        return toEdges(nodes.map((node) => node.id === dragNodeId ? {
+            ...node,
+            data: {
+                ...node.data,
+                parentId: dropParentId,
+            },
+        } : node));
+    }, [dragNodeId, dropParentId, nodes]);
     const selectedNode = useMemo(() => nodes.find((node) => selectedIdsRef.current.includes(node.id)), [nodes]);
     const currentShowControls = showControls ?? controlsVisible;
     const currentShowMiniMap = showMiniMap ?? miniMapVisible;
@@ -2184,7 +2402,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     }, [currentShowMiniMap]);
 
     useEffect(() => {
-        if (value) {
+        if (hasControlledValue) {
             if (!initialValueRef.current) {
                 initialValueRef.current = value;
             }
@@ -2192,14 +2410,14 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             selectedIdsRef.current = [];
             setNodes(nextNodes);
         }
-    }, [value]);
+    }, [hasControlledValue, value]);
 
     useEffect(() => {
-        if (!value && defaultValue && !initialValueRef.current) {
+        if (!hasControlledValue && defaultValue && !initialValueRef.current) {
             initialValueRef.current = defaultValue;
             setNodes(normalizeValue(defaultValue));
         }
-    }, [defaultValue, value]);
+    }, [defaultValue, hasControlledValue]);
 
     // ----- 数据提交与历史快照 -----
     const emitChange = useCallback((nextNodes: FlowNode[]) => {
@@ -2245,6 +2463,18 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
 
     const fitView = useCallback(() => {
         flow?.fitView({padding: 0.22, duration: 260});
+    }, [flow]);
+
+    const focusNode = useCallback((id: string, items: FlowNode[]) => {
+        const node = items.find((item) => item.id === id);
+        if (!flow || !node) {
+            return;
+        }
+        const center = getFlowNodeCenter(node);
+        flow.setCenter(center.x, center.y, {
+            zoom: flow.getViewport().zoom,
+            duration: 180,
+        });
     }, [flow]);
 
     const zoomIn = useCallback(() => {
@@ -2388,10 +2618,11 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                 y: position?.y ?? parent.position.y + rowGap,
             },
         });
+        const nextNodes = selectOnly(position ? items.concat(nextNode) : layoutNodes(items.concat(nextNode)), id);
         selectedIdsRef.current = [id];
-        updateNodes((current) => selectOnly(position ? current.concat(nextNode) : layoutNodes(current.concat(nextNode)), id));
-        window.requestAnimationFrame(fitView);
-    }, [createId, fitView, newNodeTitle, readOnly, selectedNode?.id, updateNodes]);
+        updateNodes(nextNodes);
+        window.requestAnimationFrame(() => focusNode(id, nextNodes));
+    }, [createId, focusNode, newNodeTitle, readOnly, selectedNode?.id, updateNodes]);
 
     const addSibling = useCallback((nodeId?: string) => {
         if (readOnly) {
@@ -2419,10 +2650,11 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                 y: target.position.y + rowGap,
             },
         });
+        const nextNodes = selectOnly(layoutNodes(items.concat(nextNode)), id);
         selectedIdsRef.current = [id];
-        updateNodes((current) => selectOnly(layoutNodes(current.concat(nextNode)), id));
-        window.requestAnimationFrame(fitView);
-    }, [createId, fitView, message, newNodeTitle, readOnly, selectedNode?.id, updateNodes]);
+        updateNodes(nextNodes);
+        window.requestAnimationFrame(() => focusNode(id, nextNodes));
+    }, [createId, focusNode, message, newNodeTitle, readOnly, selectedNode?.id, updateNodes]);
 
     const removeNodes = useCallback((ids: string[]) => {
         if (readOnly) {
@@ -2446,6 +2678,65 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const removeSelected = useCallback(() => {
         removeNodes([...selectedIdsRef.current]);
     }, [removeNodes]);
+
+    const copySelected = useCallback(() => {
+        const items = nodesRef.current;
+        const rootIds = getCopyRootIds(items, selectedIdsRef.current);
+        if (rootIds.length <= 0) {
+            message.warning("请先选择要复制的节点");
+            return false;
+        }
+        const copyIds = getDescendantIds(items, rootIds);
+        clipboardRef.current = {
+            rootIds,
+            nodes: toMindValue(items.filter((node) => copyIds.has(node.id))).nodes,
+        };
+        setHasCopiedNodes(true);
+        return true;
+    }, [message]);
+
+    const pasteNodes = useCallback((parentId?: string) => {
+        if (readOnly) {
+            return false;
+        }
+        const clipboard = clipboardRef.current;
+        if (!clipboard || clipboard.nodes.length <= 0) {
+            message.warning("暂无可粘贴的节点");
+            return false;
+        }
+        const items = nodesRef.current;
+        const parent = items.find((item) => item.id === (parentId || selectedIdsRef.current[0])) || items.find((item) => item.id === rootId);
+        if (!parent) {
+            return false;
+        }
+        const usedIds = new Set(items.map((item) => item.id));
+        const idMap = new Map<string, string>();
+        clipboard.nodes.forEach((node) => {
+            const id = getUniqueNodeId(createId(), usedIds);
+            usedIds.add(id);
+            idMap.set(node.id, id);
+        });
+        const pastedNodes = clipboard.nodes.map((node) => {
+            const id = idMap.get(node.id)!;
+            const nextParentId = node.parentId && idMap.has(node.parentId) ? idMap.get(node.parentId) : parent.id;
+            return toFlowNode({
+                ...node,
+                id,
+                parentId: nextParentId,
+                root: false,
+                position: undefined,
+            });
+        });
+        const selectedIds = clipboard.rootIds.map((id) => idMap.get(id)).filter(Boolean) as string[];
+        const nextNodes = selectOnly(layoutNodes(items.concat(pastedNodes)), selectedIds);
+        selectedIdsRef.current = selectedIds;
+        setEditingId(undefined);
+        updateNodes(nextNodes);
+        if (selectedIds[0]) {
+            window.requestAnimationFrame(() => focusNode(selectedIds[0], nextNodes));
+        }
+        return true;
+    }, [createId, focusNode, message, readOnly, updateNodes]);
 
     const arrangeMind = useCallback(() => {
         updateNodes((items) => layoutNodes(items));
@@ -2906,6 +3197,18 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                 undoMind();
                 return;
             }
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "c") {
+                event.preventDefault();
+                closeContextMenu();
+                copySelected();
+                return;
+            }
+            if (!readOnly && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "v") {
+                event.preventDefault();
+                closeContextMenu();
+                pasteNodes();
+                return;
+            }
             if (!readOnly && selectedIds.length > 0 && (event.key === "Delete" || event.key === "Backspace")) {
                 event.preventDefault();
                 closeContextMenu();
@@ -2918,13 +3221,14 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             document.removeEventListener("click", handleClick);
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [closeContextMenu, readOnly, removeNodes, undoMind]);
+    }, [closeContextMenu, copySelected, pasteNodes, readOnly, removeNodes, undoMind]);
 
     // ----- React Flow 节点上下文与事件 -----
     const nodeContext = useMemo<MindContextValue>(() => ({
         styles,
         readOnly,
         editingId,
+        dropParentId,
         onStartEdit: startEdit,
         onUpdateNode: updateNode,
         onRemoveNode: (id) => removeNodes([id]),
@@ -2933,7 +3237,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         onRichSelectionChange: saveRichSelection,
         onShouldKeepEdit: shouldKeepEdit,
         onTextSelectionStart: startTextSelectionGuard,
-    }), [editingId, readOnly, removeNodes, saveRichSelection, shouldKeepEdit, startEdit, startTextSelectionGuard, styles, updateNode]);
+    }), [dropParentId, editingId, readOnly, removeNodes, saveRichSelection, shouldKeepEdit, startEdit, startTextSelectionGuard, styles, updateNode]);
 
     const onNodesChange = useCallback((changes: NodeChange<FlowNode>[]) => {
         const shouldEmit = changes.some((change) => change.type !== "select" && change.type !== "dimensions");
@@ -2946,6 +3250,78 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             return nextNodes;
         }, shouldEmit, shouldHistory);
     }, [updateNodes]);
+
+    const clearDropParent = useCallback(() => {
+        dropParentIdRef.current = undefined;
+        dragNodeIdRef.current = undefined;
+        setDropParentId(undefined);
+        setDragNodeId(undefined);
+    }, []);
+
+    const onNodeDragStart = useCallback((_: MouseEvent | TouchEvent, node: FlowNode) => {
+        if (readOnly) {
+            return;
+        }
+        dragNodeIdRef.current = node.id;
+        setDragNodeId(node.id);
+        pushHistory(nodesRef.current);
+    }, [pushHistory, readOnly]);
+
+    const updateDropParent = useCallback((node: FlowNode) => {
+        if (readOnly || node.id === rootId) {
+            clearDropParent();
+            return undefined;
+        }
+        if (dragNodeIdRef.current !== node.id) {
+            dragNodeIdRef.current = node.id;
+            setDragNodeId(node.id);
+        }
+        const items = nodesRef.current.map((item) => item.id === node.id ? {
+            ...item,
+            position: node.position,
+            width: node.width || item.width,
+            height: node.height || item.height,
+            measured: node.measured || item.measured,
+        } : item);
+        const currentNode = items.find((item) => item.id === node.id) || node;
+        const parent = getDropParent(items, currentNode);
+        const nextParentId: string | undefined = parent && parent.id !== currentNode.data.parentId ? parent.id : undefined;
+        if (dropParentIdRef.current !== nextParentId) {
+            dropParentIdRef.current = nextParentId;
+            setDropParentId(nextParentId);
+        }
+        return nextParentId;
+    }, [clearDropParent, readOnly]);
+
+    const onNodeDrag = useCallback((_: MouseEvent | TouchEvent, node: FlowNode) => {
+        updateDropParent(node);
+    }, [updateDropParent]);
+
+    const onNodeDragStop = useCallback((_: MouseEvent | TouchEvent, node: FlowNode) => {
+        if (readOnly || node.id === rootId) {
+            clearDropParent();
+            return;
+        }
+        const items = nodesRef.current;
+        const currentNode = items.find((item) => item.id === node.id) || node;
+        const parentId = dropParentIdRef.current || updateDropParent(currentNode);
+        const parent = parentId ? items.find((item) => item.id === parentId) : getDropParent(items, currentNode);
+        clearDropParent();
+        if (!parent || parent.id === currentNode.data.parentId) {
+            return;
+        }
+        const nextNodes = selectOnly(layoutNodes(items.map((item) => item.id === currentNode.id ? {
+            ...item,
+            data: {
+                ...item.data,
+                parentId: parent.id,
+            },
+        } : item)), currentNode.id);
+        selectedIdsRef.current = [currentNode.id];
+        setEditingId(undefined);
+        updateNodes(nextNodes, true, false);
+        window.requestAnimationFrame(() => focusNode(currentNode.id, nextNodes));
+    }, [clearDropParent, focusNode, readOnly, updateDropParent, updateNodes]);
 
     const openNodeContextMenu = useCallback((event: React.MouseEvent, node: FlowNode) => {
         if (readOnly) {
@@ -2984,6 +3360,11 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             startEdit(nodeId);
         } else if (key === "delete" && nodeId) {
             removeNodes([nodeId]);
+        } else if (key === "copy" && nodeId) {
+            selectNodes(nodeId);
+            copySelected();
+        } else if (key === "paste") {
+            pasteNodes(nodeId);
         } else if (key === "undo") {
             undoMind();
         } else if (key === "exportPng") {
@@ -2994,7 +3375,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             copyImageAction();
         }
         closeContextMenu();
-    }, [addChild, addSibling, closeContextMenu, contextMenu, copyImageAction, downloadJpgAction, downloadPngAction, removeNodes, startEdit, undoMind]);
+    }, [addChild, addSibling, closeContextMenu, contextMenu, copyImageAction, copySelected, downloadJpgAction, downloadPngAction, pasteNodes, removeNodes, selectNodes, startEdit, undoMind]);
 
     // ----- 工具栏状态与动作 -----
     const onToolbarColor = useCallback((type: "background" | "border" | "line", color: string) => {
@@ -3310,6 +3691,8 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         undo: undoMind,
         canUndo: () => historyRef.current.length > 0,
         removeSelected,
+        copySelected,
+        paste: pasteNodes,
         layout: arrangeMind,
         arrange: arrangeMind,
         fitView,
@@ -3337,6 +3720,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         clearLineColor,
         clearNodeColor,
         copyImage,
+        copySelected,
         exportJpg,
         exportPng,
         exitFullscreen,
@@ -3344,6 +3728,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         hideControlsAction,
         hideMiniMapAction,
         openFullscreen,
+        pasteNodes,
         removeSelected,
         resetMind,
         setBackgroundColor,
@@ -3391,11 +3776,9 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                         onSelectionChange={({nodes: selectedNodes}) => {
                             selectedIdsRef.current = selectedNodes.map((node) => node.id);
                         }}
-                        onNodeDragStart={() => {
-                            if (!readOnly) {
-                                pushHistory(nodesRef.current);
-                            }
-                        }}
+                        onNodeDragStart={onNodeDragStart}
+                        onNodeDrag={onNodeDrag}
+                        onNodeDragStop={onNodeDragStop}
                         onNodeClick={(_, node) => {
                             if (shouldKeepEdit()) {
                                 return;
@@ -3567,6 +3950,15 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                         <UndoOutlined/>
                         <span>撤销操作</span>
                     </button>
+                    <button
+                        type="button"
+                        disabled={!hasCopiedNodes || readOnly}
+                        className={styles.contextMenuItem}
+                        onClick={() => onContextAction("paste")}
+                    >
+                        <FileTextOutlined/>
+                        <span>粘贴节点</span>
+                    </button>
                     <div className={`${styles.contextMenuSub} ${contextSubMenuLeft ? styles.contextMenuSubLeft : ""}`}>
                         <button type="button" className={styles.contextMenuItem}>
                             <FileTextOutlined/>
@@ -3618,6 +4010,15 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                             >
                                 <EditOutlined/>
                                 <span>编辑主题</span>
+                            </button>
+                            <button
+                                type="button"
+                                disabled={contextMenu.nodeId === rootId}
+                                className={styles.contextMenuItem}
+                                onClick={() => onContextAction("copy")}
+                            >
+                                <CopyOutlined/>
+                                <span>复制节点</span>
                             </button>
                             <div className={styles.contextMenuDivider}/>
                             <button
