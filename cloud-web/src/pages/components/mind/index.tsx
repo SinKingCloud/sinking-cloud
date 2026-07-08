@@ -26,6 +26,7 @@ import {
     FontColorsOutlined,
     ForkOutlined,
     ItalicOutlined,
+    LinkOutlined,
     PlusOutlined,
     StrikethroughOutlined,
     UnderlineOutlined,
@@ -143,6 +144,9 @@ export type MindStats = {
     depth: number;
 };
 
+/** 保存触发来源。 */
+export type MindSaveReason = "manual" | "auto" | "shortcut";
+
 /** 思维导图导出配置。 */
 export type MindExportOptions = {
     /** 导出内容四周留白，默认 32。 */
@@ -161,6 +165,20 @@ export type MindRef = {
     getValue: () => MindValue;
     /** getValue 的别名，便于业务语义化调用。 */
     getData: () => MindValue;
+    /** 触发保存回调，保存当前画布数据。 */
+    save: (reason?: MindSaveReason) => Promise<void>;
+    /** 导出 JSON 字符串。 */
+    exportJson: () => string;
+    /** 导入 JSON 字符串或对象，成功返回 true。 */
+    importJson: (value: string | MindValue) => boolean;
+    /** 导出 Markdown 标题层级文本。 */
+    exportMarkdown: () => string;
+    /** 导入 Markdown 标题层级文本，成功返回 true。 */
+    importMarkdown: (markdown: string) => boolean;
+    /** 下载 JSON 文件。 */
+    downloadJson: () => void;
+    /** 下载 Markdown 文件。 */
+    downloadMarkdown: () => void;
     /** 导出 PNG dataURL。 */
     exportPng: (options?: MindExportOptions) => Promise<string>;
     /** 导出 JPG dataURL。 */
@@ -169,10 +187,10 @@ export type MindRef = {
     copyImage: (options?: MindExportOptions) => Promise<void>;
     /** 获取当前节点数量和层级深度。 */
     getStats: () => MindStats;
-    /** 新增子节点，不传 parentId 时使用当前选中节点。 */
-    addChild: (parentId?: string) => void;
-    /** 新增同级节点，不传 nodeId 时使用当前选中节点。 */
-    addSibling: (nodeId?: string) => void;
+    /** 新增子节点，不传 parentId 时使用当前选中节点，成功返回新节点 ID。 */
+    addChild: (parentId?: string) => string | undefined;
+    /** 新增同级节点，不传 nodeId 时使用当前选中节点，成功返回新节点 ID。 */
+    addSibling: (nodeId?: string) => string | undefined;
     /** 进入节点编辑模式，不传 nodeId 时编辑当前选中节点。 */
     edit: (nodeId?: string) => void;
     /** 更新指定节点数据。 */
@@ -275,6 +293,14 @@ export type MindProps = {
     onChange?: (value: MindValue, stats: MindStats) => void;
     /** onChange 的别名，便于业务语义化监听。 */
     onDataChange?: (value: MindValue, stats: MindStats) => void;
+    /** 保存回调，手动保存、快捷键保存和自动保存都会触发。 */
+    onSave?: (value: MindValue, stats: MindStats, reason: MindSaveReason) => void | Promise<void>;
+    /** 是否启用自动保存，默认 false。 */
+    autoSave?: boolean;
+    /** 自动保存防抖时间，默认 4000ms。 */
+    autoSaveDelay?: number;
+    /** 是否启用内置快捷键，默认 true。 */
+    shortcuts?: boolean;
     /** 左下角控制器显示状态变化回调。 */
     onControlsChange?: (visible: boolean) => void;
     /** 全屏状态变化回调。 */
@@ -314,6 +340,8 @@ type MindNodeViewProps = NodeProps<FlowNode> & {
     onRichSelectionChange: () => void;
     onShouldKeepEdit: () => boolean;
     onTextSelectionStart: () => void;
+    onEditInput: () => void;
+    onShortcut: (action: "child" | "sibling" | "save", nodeId: string) => void;
 };
 
 type ContextMenu = {
@@ -375,6 +403,25 @@ const escapeHtml = (value?: string) => (value || "")
 const textToRichHtml = (value?: string) => {
     const text = value || "";
     return text ? escapeHtml(text).replace(/\n/g, "<br>") : undefined;
+};
+
+const normalizeLinkHref = (value?: string) => {
+    const href = (value || "").trim();
+    if (!href) {
+        return undefined;
+    }
+    if (/^(https?:|mailto:|tel:|#)/i.test(href) || /^\/(?!\/)/.test(href)) {
+        return href;
+    }
+    if (/^[\w.-]+\.[a-z]{2,}([/?#].*)?$/i.test(href)) {
+        return `https://${href}`;
+    }
+    return undefined;
+};
+
+const normalizeLinkText = (value?: string) => {
+    const text = (value || "").replace(/\s+/g, " ").trim();
+    return text || undefined;
 };
 
 const getRichStyle = (element: HTMLElement) => {
@@ -441,6 +488,11 @@ const sanitizeRichHtml = (html?: string) => {
         if (tag === "s" || tag === "strike") {
             return children ? `<s>${children}</s>` : "";
         }
+        if (tag === "a") {
+            const href = normalizeLinkHref(node.getAttribute("href") || "");
+            const style = getRichStyle(node);
+            return href && children ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer"${style ? ` style="${style}"` : ""}>${children}</a>` : children;
+        }
         if (tag === "span" || tag === "font") {
             const style = getRichStyle(node);
             return style && children ? `<span style="${style}">${children}</span>` : children;
@@ -468,7 +520,7 @@ const normalizeRichHtml = (html?: string) => {
     return getRichText(value).trim() ? value : undefined;
 };
 
-const hasStyledRichHtml = (html?: string) => /<(strong|em|u|s|span)\b/i.test(html || "");
+const hasStyledRichHtml = (html?: string) => /<(strong|em|u|s|span|a)\b/i.test(html || "");
 
 const hasField = <T extends object>(data: T, key: keyof T) => Object.prototype.hasOwnProperty.call(data, key);
 
@@ -565,6 +617,16 @@ const clearRichFragmentStyle = (fragment: DocumentFragment, style: React.CSSProp
         }
         clearEmptyRichElement(element);
     });
+};
+
+const clearRichFragmentLinks = (fragment: DocumentFragment) => {
+    (Array.from(fragment.querySelectorAll("a")).reverse() as HTMLElement[]).forEach(unwrapElement);
+};
+
+const getRangeLinkElement = (range: Range, editor: HTMLElement) => {
+    const element = range.commonAncestorContainer instanceof HTMLElement ? range.commonAncestorContainer : range.commonAncestorContainer.parentElement;
+    const link = element?.closest("a") as HTMLAnchorElement | null;
+    return link && editor.contains(link) ? link : null;
 };
 
 const getTextDecorationSet = (value?: React.CSSProperties["textDecoration"]) => {
@@ -1021,6 +1083,144 @@ const getMindValueNodes = (value?: MindValue) => {
 
 const getDefaultId = () => `node_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
+/** 将 JSON 字符串或对象转换为安全的思维导图数据。 */
+export const jsonToMindValue = (value: string | MindValue): MindValue => {
+    const data = typeof value === "string" ? JSON.parse(value) : value;
+    return sanitizeMindValue(data);
+};
+
+/** 将思维导图数据导出为格式化 JSON。 */
+export const mindValueToJson = (value?: MindValue) => JSON.stringify(sanitizeMindValue(value), null, 2);
+
+const cleanMarkdownTitle = (value: string) => value
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\[([^\]]+)]\([^)]+\)/g, "$1")
+    .replace(/[*_~]/g, "")
+    .trim();
+
+const createMarkdownNodeId = (usedIds: Set<string>) => {
+    return getUniqueNodeId(`node_${usedIds.size + 1}`, usedIds);
+};
+
+/** 将 Markdown 标题层级转换为思维导图数据。 */
+export const markdownToMindValue = (markdown?: string): MindValue => {
+    const lines = String(markdown || "").split(/\r?\n/);
+    const nodes: MindNode[] = [];
+    const usedIds = new Set<string>();
+    const stack: { level: number; node: MindNode }[] = [];
+
+    const ensureRoot = (title = "中心主题") => {
+        if (nodes.some((node) => node.root)) {
+            return nodes.find((node) => node.root) || nodes[0] || createDefaultMindNode();
+        }
+        const root = createMindNode({
+            id: rootId,
+            title,
+            color: palette[0],
+            lineColor: palette[0],
+            root: true,
+        });
+        usedIds.add(rootId);
+        nodes.push(root);
+        stack.splice(0, stack.length, {level: 1, node: root});
+        return root;
+    };
+
+    const appendDescription = (text: string) => {
+        const target = stack[stack.length - 1]?.node;
+        if (!target) {
+            return;
+        }
+        target.description = [target.description, text].filter(Boolean).join("\n");
+    };
+
+    lines.forEach((line) => {
+        const heading = line.match(/^(#{1,6})\s+(.+)$/);
+        const bullet = line.match(/^(\s*)[-*+]\s+(.+)$/);
+        if (!heading && !bullet) {
+            const text = line.trim();
+            if (text) {
+                appendDescription(text);
+            }
+            return;
+        }
+
+        const level = heading ? heading[1].length : Math.min(6, Math.floor((bullet?.[1].length || 0) / 2) + 2);
+        const title = cleanMarkdownTitle(heading ? heading[2] : bullet?.[2] || "");
+        if (!title) {
+            return;
+        }
+        if (nodes.length <= 0 && level <= 1) {
+            ensureRoot(title);
+            return;
+        }
+        const root = ensureRoot();
+        const parent = [...stack].reverse().find((item) => item.level < level)?.node || root;
+        const id = createMarkdownNodeId(usedIds);
+        usedIds.add(id);
+        const node = createMindNode({
+            id,
+            title,
+            parentId: parent.id,
+            color: palette[nodes.length % palette.length],
+        });
+        nodes.push(node);
+        while (stack.length > 0 && stack[stack.length - 1].level >= level) {
+            stack.pop();
+        }
+        stack.push({level, node});
+    });
+
+    return sanitizeMindValue({nodes});
+};
+
+/** 将思维导图数据导出为 Markdown 标题层级。 */
+export const mindValueToMarkdown = (value?: MindValue) => {
+    const nodes = sanitizeMindValue(value).nodes;
+    const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+    const childrenMap = new Map<string, MindNode[]>();
+    nodes.forEach((node) => {
+        if (!node.parentId) {
+            return;
+        }
+        childrenMap.set(node.parentId, (childrenMap.get(node.parentId) || []).concat(node));
+    });
+    const root = nodes.find((node) => node.root) || nodes[0] || createDefaultMindNode();
+    const lines: string[] = [];
+    const walk = (node: MindNode, level: number) => {
+        const title = node.title || "未命名";
+        lines.push(`${"#".repeat(Math.min(6, Math.max(1, level)))} ${title}`);
+        if (node.description) {
+            lines.push("", node.description, "");
+        }
+        (childrenMap.get(node.id) || [])
+            .filter((item) => nodeMap.has(item.id))
+            .sort((a, b) => (a.position?.y || 0) - (b.position?.y || 0) || (a.position?.x || 0) - (b.position?.x || 0))
+            .forEach((child) => walk(child, level + 1));
+    };
+    walk(root, 1);
+    return lines.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd();
+};
+
+/** 生成大数据量测试用思维导图，默认 120 个节点。 */
+export const createMindBenchmarkValue = (count = 120): MindValue => {
+    const total = Math.max(1, Math.floor(count));
+    const nodes: MindNode[] = [createDefaultMindNode()];
+    for (let index = 1; index < total; index += 1) {
+        const parentIndex = Math.max(0, Math.floor((index - 1) / 3));
+        nodes.push(createMindNode({
+            id: `node_${index}`,
+            parentId: nodes[parentIndex]?.id || rootId,
+            title: `测试节点 ${index}`,
+            description: index % 5 === 0 ? "用于验证 100+ 节点拖拽、整理和缩放性能" : undefined,
+            color: palette[index % palette.length],
+        }));
+    }
+    return sanitizeMindValue({nodes});
+};
+
 const getTextLines = (text?: string, lineChars = 14) => {
     if (!text) {
         return 0;
@@ -1181,8 +1381,19 @@ const layoutNodes = (nodes: FlowNode[], layoutRootId = rootId): FlowNode[] => {
     const childrenMap = getFlowChildrenMap(nodes);
     const nodeMap = new Map(nodes.map((node) => [node.id, node]));
     const positionMap = new Map<string, MindPoint>();
+    const childrenCache = new Map<string, FlowNode[]>();
+    const subtreeHeightCache = new Map<string, number>();
 
     const sortNodes = (items: FlowNode[]) => [...items].sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
+    const getChildren = (id: string) => {
+        const cached = childrenCache.get(id);
+        if (cached) {
+            return cached;
+        }
+        const children = sortNodes(childrenMap.get(id) || []);
+        childrenCache.set(id, children);
+        return children;
+    };
 
     const getFlowNodeHeight = (id: string) => {
         const node = nodeMap.get(id);
@@ -1206,15 +1417,23 @@ const layoutNodes = (nodes: FlowNode[], layoutRootId = rootId): FlowNode[] => {
     };
 
     const getSubtreeHeight = (id: string): number => {
-        const children = sortNodes(childrenMap.get(id) || []);
-        if (children.length <= 0) {
-            return getFlowNodeHeight(id);
+        const cached = subtreeHeightCache.get(id);
+        if (cached !== undefined) {
+            return cached;
         }
-        return Math.max(getFlowNodeHeight(id), getChildrenHeight(children));
+        const children = getChildren(id);
+        let height: number;
+        if (children.length <= 0) {
+            height = getFlowNodeHeight(id);
+        } else {
+            height = Math.max(getFlowNodeHeight(id), getChildrenHeight(children));
+        }
+        subtreeHeightCache.set(id, height);
+        return height;
     };
 
     const placeNode = (id: string, depth: number, top: number): { nextTop: number; center: number } => {
-        const children = sortNodes(childrenMap.get(id) || []);
+        const children = getChildren(id);
         const subtreeHeight = getSubtreeHeight(id);
         if (children.length <= 0) {
             const center = top + subtreeHeight / 2;
@@ -1557,6 +1776,10 @@ const downloadBlob = (blob: Blob, filename: string) => {
     window.setTimeout(() => URL.revokeObjectURL(url), 0);
 };
 
+const downloadTextFile = (text: string, filename: string, type = "text/plain;charset=utf-8") => {
+    downloadBlob(new Blob([text], {type}), filename);
+};
+
 // ==================== 组件样式 ====================
 const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
     editor: css`
@@ -1568,6 +1791,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         overflow: hidden;
         outline: none;
         background: ${token.colorBgLayout};
+        touch-action: pan-x pan-y;
 
         .react-flow {
             flex: 1;
@@ -1625,6 +1849,17 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         .react-flow__selection {
             border: 1px solid ${token.colorPrimary};
             background: ${isDarkMode ? "rgba(22,119,255,0.18)" : token.colorPrimaryBg};
+        }
+
+        @media (max-width: 640px) {
+            .react-flow__controls-button {
+                width: 34px;
+                height: 34px;
+            }
+
+            .react-flow__minimap {
+                display: none;
+            }
         }
 
         &.${mindExportingClass} .react-flow__selection,
@@ -1689,6 +1924,11 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
     nodeContent: css`
         width: 100%;
         min-width: 0;
+
+        a {
+            text-underline-offset: 2px;
+            cursor: pointer;
+        }
     `,
     nodeTitle: css`
         min-width: 0;
@@ -1713,6 +1953,11 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         gap: 6px;
         min-width: 0;
         user-select: text;
+
+        a {
+            text-underline-offset: 2px;
+            cursor: text;
+        }
     `,
     nodeTitleInput: css`
         width: 100%;
@@ -1950,6 +2195,59 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             background: ${token.colorPrimaryBg};
         }
     `,
+    linkPanel: css`
+        display: grid;
+        gap: 8px;
+        width: 240px;
+        padding: 2px;
+    `,
+    linkInput: css`
+        width: 100%;
+        height: 30px;
+        box-sizing: border-box;
+        padding: 0 9px;
+        border: 1px solid ${token.colorBorderSecondary};
+        border-radius: ${token.borderRadiusSM}px;
+        outline: none;
+        background: ${token.colorBgContainer};
+        color: ${token.colorText};
+        font-size: 13px;
+
+        &:focus {
+            border-color: ${token.colorPrimary};
+            box-shadow: 0 0 0 2px ${token.colorPrimaryBg};
+        }
+    `,
+    linkPanelFooter: css`
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 2px;
+    `,
+    linkPanelButton: css`
+        height: 26px;
+        padding: 0 10px;
+        border: 0;
+        border-radius: ${token.borderRadiusSM}px;
+        background: ${token.colorFillTertiary};
+        color: ${token.colorTextSecondary};
+        font-size: 12px;
+        cursor: pointer;
+
+        &:hover {
+            color: ${token.colorPrimary};
+            background: ${token.colorPrimaryBg};
+        }
+    `,
+    linkPanelPrimaryButton: css`
+        background: ${token.colorPrimary};
+        color: ${token.colorWhite};
+
+        &:hover {
+            color: ${token.colorWhite};
+            background: ${token.colorPrimaryHover};
+        }
+    `,
     handle: css`
         width: 7px;
         height: 7px;
@@ -2056,6 +2354,8 @@ const MindNodeView: React.FC<MindNodeViewProps> = ({
     onRichSelectionChange,
     onShouldKeepEdit,
     onTextSelectionStart,
+    onEditInput,
+    onShortcut,
 }) => {
     const titleRef = useRef<HTMLDivElement | null>(null);
     const descriptionRef = useRef<HTMLDivElement | null>(null);
@@ -2130,6 +2430,9 @@ const MindNodeView: React.FC<MindNodeViewProps> = ({
     }, [data.description, data.descriptionHtml, data.root, data.title, data.titleHtml, id, onEditDone, onRemoveNode, onUpdateNode, setEditorContent]);
 
     const stopInputEvent = useCallback((event: React.SyntheticEvent) => {
+        if ((event.target as HTMLElement | null)?.closest?.("a")) {
+            event.preventDefault();
+        }
         event.stopPropagation();
     }, []);
 
@@ -2186,23 +2489,53 @@ const MindNodeView: React.FC<MindNodeViewProps> = ({
             range.deleteContents();
             range.insertNode(createPlainRichFragment(event.clipboardData.getData("text/plain")));
         }
+        onEditInput();
         onRichSelectionChange();
-    }, [onRichSelectionChange]);
+    }, [onEditInput, onRichSelectionChange]);
+
+    const onEditorInput = useCallback(() => {
+        onEditInput();
+        onRichSelectionChange();
+    }, [onEditInput, onRichSelectionChange]);
 
     const onTitleKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
         event.stopPropagation();
-        if (event.key === "Enter") {
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+            event.preventDefault();
+            onShortcut("save", id);
+            return;
+        }
+        if (event.key === "Tab") {
             event.preventDefault();
             finishEdit();
+            onShortcut("child", id);
+            return;
+        }
+        if (event.key === "Enter" && !event.shiftKey && !event.metaKey && !event.ctrlKey) {
+            event.preventDefault();
+            finishEdit();
+            onShortcut("sibling", id);
+            return;
         }
         if (event.key === "Escape") {
             event.preventDefault();
             finishEdit(true);
         }
-    }, [finishEdit]);
+    }, [finishEdit, id, onShortcut]);
 
     const onDescriptionKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
         event.stopPropagation();
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+            event.preventDefault();
+            onShortcut("save", id);
+            return;
+        }
+        if (event.key === "Tab") {
+            event.preventDefault();
+            finishEdit();
+            onShortcut("child", id);
+            return;
+        }
         if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
             event.preventDefault();
             finishEdit();
@@ -2211,7 +2544,7 @@ const MindNodeView: React.FC<MindNodeViewProps> = ({
             event.preventDefault();
             finishEdit(true);
         }
-    }, [finishEdit]);
+    }, [finishEdit, id, onShortcut]);
 
     return (
         <div
@@ -2264,6 +2597,7 @@ const MindNodeView: React.FC<MindNodeViewProps> = ({
                         data-placeholder="标题"
                         onFocus={() => onEditorFocus("title")}
                         onMouseUp={onRichSelectionChange}
+                        onInput={onEditorInput}
                         onKeyUp={onRichSelectionChange}
                         onPaste={onEditorPaste}
                         onKeyDown={onTitleKeyDown}
@@ -2280,6 +2614,7 @@ const MindNodeView: React.FC<MindNodeViewProps> = ({
                         data-placeholder="添加描述"
                         onFocus={() => onEditorFocus("description")}
                         onMouseUp={onRichSelectionChange}
+                        onInput={onEditorInput}
                         onKeyUp={onRichSelectionChange}
                         onPaste={onEditorPaste}
                         onKeyDown={onDescriptionKeyDown}
@@ -2330,6 +2665,10 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         createId = getDefaultId,
         onChange,
         onDataChange,
+        onSave,
+        autoSave = false,
+        autoSaveDelay = 4000,
+        shortcuts = true,
         onControlsChange,
         onFullscreenChange,
         onMiniMapChange,
@@ -2347,16 +2686,18 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
     const [contextSubMenuLeft, setContextSubMenuLeft] = useState(false);
     const [textTarget, setTextTarget] = useState<TextTarget>("title");
-    const [richSelectionActive, setRichSelectionActive] = useState(false);
     const [richSelectionStyle, setRichSelectionStyle] = useState<MindTextStyle>({});
     const [toolbarPopupOpen, setToolbarPopupOpen] = useState(false);
     const [toolbarColorOpen, setToolbarColorOpen] = useState<string>();
+    const [linkText, setLinkText] = useState("");
+    const [linkValue, setLinkValue] = useState("");
     const [dropParentId, setDropParentId] = useState<string | undefined>(undefined);
     const [dragNodeId, setDragNodeId] = useState<string | undefined>(undefined);
     const [fullscreen, setFullscreen] = useState(false);
     const [controlsVisible, setControlsVisible] = useState(defaultShowControls);
     const [miniMapVisible, setMiniMapVisible] = useState(defaultShowMiniMap);
     const [hasCopiedNodes, setHasCopiedNodes] = useState(false);
+    const [dataRevision, setDataRevision] = useState(0);
     const initialValueRef = useRef<MindValue | undefined>(initialInputValue);
     const contextMenuRef = useRef<HTMLDivElement | null>(null);
     const clipboardRef = useRef<MindClipboard | null>(null);
@@ -2373,6 +2714,9 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const selectedIdsRef = useRef<string[]>([]);
     const historyRef = useRef<FlowNode[][]>([]);
     const pendingEmitRef = useRef(false);
+    const autoSaveReadyRef = useRef(false);
+    const autoSaveTimerRef = useRef<number | undefined>(undefined);
+    const scheduleAutoSaveRef = useRef<() => void>(() => undefined);
     const draggingRef = useRef(false);
     const dragMovedRef = useRef(false);
     const dropParentFrameRef = useRef<number | undefined>(undefined);
@@ -2461,6 +2805,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         }
         pendingEmitRef.current = false;
         emitChange(nodes);
+        setDataRevision((revision) => revision + 1);
     }, [emitChange, nodes]);
 
     const pushHistory = useCallback((items: FlowNode[]) => {
@@ -2627,12 +2972,12 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
 
     const addChild = useCallback((parentId?: string, position?: MindPoint) => {
         if (readOnly) {
-            return;
+            return undefined;
         }
         const items = nodesRef.current;
         const parent = items.find((item) => item.id === (parentId || selectedNode?.id)) || items.find((item) => item.id === rootId);
         if (!parent) {
-            return;
+            return undefined;
         }
         const id = createId();
         const nextNode = toFlowNode({
@@ -2650,21 +2995,22 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         selectedIdsRef.current = [id];
         updateNodes(nextNodes);
         window.requestAnimationFrame(() => focusNode(id, nextNodes));
+        return id;
     }, [createId, focusNode, newNodeTitle, readOnly, selectedNode?.id, updateNodes]);
 
     const addSibling = useCallback((nodeId?: string) => {
         if (readOnly) {
-            return;
+            return undefined;
         }
         const items = nodesRef.current;
         const target = items.find((item) => item.id === (nodeId || selectedNode?.id));
         if (!target) {
             message.warning("请先选择一个节点");
-            return;
+            return undefined;
         }
         if (target.id === rootId) {
             message.warning("根节点不能新增同级节点");
-            return;
+            return undefined;
         }
         const id = createId();
         const nextNode = toFlowNode({
@@ -2682,6 +3028,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         selectedIdsRef.current = [id];
         updateNodes(nextNodes);
         window.requestAnimationFrame(() => focusNode(id, nextNodes));
+        return id;
     }, [createId, focusNode, message, newNodeTitle, readOnly, selectedNode?.id, updateNodes]);
 
     const removeNodes = useCallback((ids: string[]) => {
@@ -2890,6 +3237,10 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         document.addEventListener("mouseup", finishTextSelectionGuard, {capture: true, once: true});
     }, [finishTextSelectionGuard]);
 
+    const markEditInput = useCallback(() => {
+        scheduleAutoSaveRef.current();
+    }, []);
+
     useEffect(() => {
         return () => {
             window.clearTimeout(editOpeningTimerRef.current);
@@ -2939,17 +3290,11 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const saveRichSelection = useCallback(() => {
         const selection = window.getSelection();
         if (!selection || selection.rangeCount <= 0) {
-            if (!toolbarPopupOpenRef.current) {
-                setRichSelectionActive(false);
-            }
             return;
         }
         const range = selection.getRangeAt(0);
         const editor = getRichSelectionEditor(range.commonAncestorContainer);
         if (!editor || !rootRef.current?.contains(editor)) {
-            if (!toolbarPopupOpenRef.current) {
-                setRichSelectionActive(false);
-            }
             return;
         }
         richSelectionRef.current = range.cloneRange();
@@ -2957,7 +3302,6 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         if (target) {
             setTextTarget(target);
         }
-        setRichSelectionActive(!range.collapsed && Boolean(range.toString().trim()));
         setRichSelectionStyle(getRichRangeStyle(range, editor));
     }, [getRichSelectionEditor]);
 
@@ -3000,7 +3344,6 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         if (target) {
             setTextTarget(target);
         }
-        setRichSelectionActive(!range.collapsed && Boolean(range.toString().trim()));
         setRichSelectionStyle(getRichRangeStyle(range, editor));
     }, []);
 
@@ -3017,7 +3360,27 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         }
         const range = selection.getRangeAt(0);
         const editor = getRichSelectionEditor(range.commonAncestorContainer);
-        if (!editor || range.collapsed) {
+        if (!editor) {
+            return false;
+        }
+        const currentLink = getRangeLinkElement(range, editor);
+        if (currentLink && (hasField(style, "color") || hasField(style, "textDecoration"))) {
+            if (hasField(style, "color")) {
+                const color = style.color === "inherit" ? "inherit" : getAppliedRichStyle({color: style.color}, editor).color;
+                if (color) {
+                    currentLink.style.color = String(color);
+                }
+            }
+            if (hasField(style, "textDecoration")) {
+                currentLink.style.textDecorationLine = String(style.textDecoration || "none");
+            }
+            const nextRange = document.createRange();
+            nextRange.selectNodeContents(currentLink);
+            selectRichRange(nextRange, editor);
+            markEditInput();
+            return true;
+        }
+        if (range.collapsed) {
             return false;
         }
         const nextStyle = getAppliedRichStyle(style, editor);
@@ -3034,8 +3397,9 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         const nextRange = document.createRange();
         nextRange.selectNodeContents(span);
         selectRichRange(nextRange, editor);
+        markEditInput();
         return true;
-    }, [editingId, getRichSelectionEditor, restoreRichSelection, selectRichRange]);
+    }, [editingId, getRichSelectionEditor, markEditInput, restoreRichSelection, saveRichSelection, selectRichRange]);
 
     const getCurrentRichSelectionStyle = useCallback(() => {
         if (!editingId || !restoreRichSelection()) {
@@ -3066,7 +3430,21 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         }
         const range = selection.getRangeAt(0);
         const editor = getRichSelectionEditor(range.commonAncestorContainer);
-        if (!editor || range.collapsed) {
+        if (!editor) {
+            return false;
+        }
+        const currentLink = getRangeLinkElement(range, editor);
+        if (currentLink) {
+            currentLink.removeAttribute("style");
+            if (range.collapsed) {
+                const nextRange = document.createRange();
+                nextRange.selectNodeContents(currentLink);
+                selectRichRange(nextRange, editor);
+                markEditInput();
+                return true;
+            }
+        }
+        if (range.collapsed) {
             return false;
         }
         const span = document.createElement("span");
@@ -3078,8 +3456,116 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         const nextRange = document.createRange();
         nextRange.selectNodeContents(span);
         selectRichRange(nextRange, editor);
+        markEditInput();
         return true;
-    }, [editingId, getRichSelectionEditor, restoreRichSelection, selectRichRange]);
+    }, [editingId, getRichSelectionEditor, markEditInput, restoreRichSelection, selectRichRange]);
+
+    const getCurrentRichSelectionHref = useCallback(() => {
+        if (!editingId || !restoreRichSelection()) {
+            return "";
+        }
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount <= 0) {
+            return "";
+        }
+        const range = selection.getRangeAt(0);
+        const editor = getRichSelectionEditor(range.commonAncestorContainer);
+        const link = editor ? getRangeLinkElement(range, editor) : null;
+        return link?.getAttribute("href") || "";
+    }, [editingId, getRichSelectionEditor, restoreRichSelection]);
+
+    const getCurrentRichSelectionText = useCallback(() => {
+        if (!editingId || !restoreRichSelection()) {
+            return "";
+        }
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount <= 0) {
+            return "";
+        }
+        const range = selection.getRangeAt(0);
+        const editor = getRichSelectionEditor(range.commonAncestorContainer);
+        const link = editor ? getRangeLinkElement(range, editor) : null;
+        return link?.textContent || range.toString() || "";
+    }, [editingId, getRichSelectionEditor, restoreRichSelection]);
+
+    const applyRichSelectionLink = useCallback((href?: string, text?: string) => {
+        if (!editingId) {
+            return false;
+        }
+        if (!restoreRichSelection()) {
+            return false;
+        }
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount <= 0) {
+            return false;
+        }
+        const range = selection.getRangeAt(0);
+        const editor = getRichSelectionEditor(range.commonAncestorContainer);
+        if (!editor) {
+            return false;
+        }
+        const normalizedHref = normalizeLinkHref(href);
+        const normalizedText = normalizeLinkText(text);
+        const currentLink = getRangeLinkElement(range, editor);
+        if (currentLink) {
+            if (normalizedHref) {
+                currentLink.setAttribute("href", normalizedHref);
+                currentLink.setAttribute("target", "_blank");
+                currentLink.setAttribute("rel", "noopener noreferrer");
+                if (normalizedText && normalizedText !== currentLink.textContent) {
+                    currentLink.textContent = normalizedText;
+                }
+                const nextRange = document.createRange();
+                nextRange.selectNodeContents(currentLink);
+                selectRichRange(nextRange, editor);
+            } else {
+                unwrapElement(currentLink);
+                editor.normalize();
+                saveRichSelection();
+            }
+            markEditInput();
+            return true;
+        }
+        if (range.collapsed) {
+            if (!normalizedHref) {
+                return false;
+            }
+            const link = document.createElement("a");
+            link.setAttribute("href", normalizedHref);
+            link.setAttribute("target", "_blank");
+            link.setAttribute("rel", "noopener noreferrer");
+            link.textContent = normalizedText || normalizedHref;
+            range.insertNode(link);
+            editor.normalize();
+            const nextRange = document.createRange();
+            nextRange.setStartAfter(link);
+            nextRange.collapse(true);
+            selectRichRange(nextRange, editor);
+            markEditInput();
+            return true;
+        }
+        const selectedText = normalizeLinkText(range.toString());
+        const fragment = range.extractContents();
+        clearRichFragmentLinks(fragment);
+        const wrapper = normalizedHref ? document.createElement("a") : document.createElement("span");
+        if (normalizedHref) {
+            wrapper.setAttribute("href", normalizedHref);
+            wrapper.setAttribute("target", "_blank");
+            wrapper.setAttribute("rel", "noopener noreferrer");
+        }
+        if (normalizedText && normalizedText !== selectedText) {
+            wrapper.textContent = normalizedText;
+        } else {
+            wrapper.appendChild(fragment);
+        }
+        range.insertNode(wrapper);
+        editor.normalize();
+        const nextRange = document.createRange();
+        nextRange.selectNodeContents(wrapper);
+        selectRichRange(nextRange, editor);
+        markEditInput();
+        return true;
+    }, [editingId, getRichSelectionEditor, markEditInput, restoreRichSelection, selectRichRange]);
 
     const runRichFontSize = useCallback((fontSize: number) => {
         return applyRichSelectionStyle({fontSize});
@@ -3135,6 +3621,57 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         node.height = getMindNodeHeight({title: finalTitle, description, style: node.data.style});
         return items;
     }, [editingId, getRichEditor]);
+
+    const getCurrentMindValue = useCallback(() => toMindValue(getExportNodes()), [getExportNodes]);
+
+    const saveMind = useCallback(async (reason: MindSaveReason = "manual") => {
+        const nextValue = getCurrentMindValue();
+        await onSave?.(nextValue, getMindStats(nextValue), reason);
+    }, [getCurrentMindValue, onSave]);
+
+    const replaceMindValue = useCallback((nextValue: MindValue) => {
+        if (readOnly) {
+            return false;
+        }
+        const nextNodes = normalizeValue(nextValue);
+        selectedIdsRef.current = [];
+        setEditingId(undefined);
+        updateNodes(nextNodes);
+        window.requestAnimationFrame(fitView);
+        return true;
+    }, [fitView, readOnly, updateNodes]);
+
+    const exportJson = useCallback(() => mindValueToJson(getCurrentMindValue()), [getCurrentMindValue]);
+
+    const importJson = useCallback((input: string | MindValue) => {
+        try {
+            return replaceMindValue(jsonToMindValue(input));
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : "JSON 导入失败");
+            return false;
+        }
+    }, [message, replaceMindValue]);
+
+    const exportMarkdown = useCallback(() => mindValueToMarkdown(getCurrentMindValue()), [getCurrentMindValue]);
+
+    const importMarkdown = useCallback((markdown: string) => {
+        try {
+            return replaceMindValue(markdownToMindValue(markdown));
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : "Markdown 导入失败");
+            return false;
+        }
+    }, [message, replaceMindValue]);
+
+    const downloadJsonAction = useCallback(() => {
+        downloadTextFile(exportJson(), `mind-${Date.now()}.json`, "application/json;charset=utf-8");
+        message.success("JSON 已导出");
+    }, [exportJson, message]);
+
+    const downloadMarkdownAction = useCallback(() => {
+        downloadTextFile(exportMarkdown(), `mind-${Date.now()}.md`);
+        message.success("Markdown 已导出");
+    }, [exportMarkdown, message]);
 
     const exportPngBlob = useCallback(async (options?: MindExportOptions) => {
         return createDomImageBlob(rootRef.current, getExportNodes(), options, flow?.getNodesBounds);
@@ -3193,6 +3730,57 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         }
     }, [exportPngBlob, message]);
 
+    useEffect(() => {
+        return () => {
+            window.clearTimeout(autoSaveTimerRef.current);
+        };
+    }, []);
+
+    const scheduleAutoSave = useCallback(() => {
+        if (!autoSave || !onSave || readOnly) {
+            return;
+        }
+        window.clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = window.setTimeout(() => {
+            saveMind("auto").catch((error) => {
+                message.error(error instanceof Error ? error.message : "自动保存失败");
+            });
+        }, Math.max(500, autoSaveDelay));
+    }, [autoSave, autoSaveDelay, message, onSave, readOnly, saveMind]);
+
+    useEffect(() => {
+        scheduleAutoSaveRef.current = scheduleAutoSave;
+    }, [scheduleAutoSave]);
+
+    useEffect(() => {
+        if (!autoSaveReadyRef.current) {
+            autoSaveReadyRef.current = true;
+            return;
+        }
+        scheduleAutoSave();
+        return () => {
+            window.clearTimeout(autoSaveTimerRef.current);
+        };
+    }, [dataRevision, scheduleAutoSave]);
+
+    const runEditorShortcut = useCallback((action: "child" | "sibling" | "save", nodeId: string) => {
+        if (action === "save") {
+            saveMind("shortcut").catch((error) => {
+                message.error(error instanceof Error ? error.message : "保存失败");
+            });
+            return;
+        }
+        if (readOnly) {
+            return;
+        }
+        window.setTimeout(() => {
+            const nextId = action === "child" ? addChild(nodeId) : addSibling(nodeId);
+            if (nextId) {
+                window.setTimeout(() => startEdit(nextId), 0);
+            }
+        }, 0);
+    }, [addChild, addSibling, message, readOnly, saveMind, startEdit]);
+
     const focusEditor = useCallback(() => {
         activeRef.current = true;
         rootRef.current?.focus({preventScroll: true});
@@ -3231,7 +3819,18 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             if (event.key === "Escape") {
                 closeContextMenu();
             }
-            if (!active || isInput) {
+            if (!active || !shortcuts) {
+                return;
+            }
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+                event.preventDefault();
+                closeContextMenu();
+                saveMind("shortcut").catch((error) => {
+                    message.error(error instanceof Error ? error.message : "保存失败");
+                });
+                return;
+            }
+            if (isInput) {
                 return;
             }
             if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z" && !event.shiftKey) {
@@ -3252,6 +3851,24 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                 pasteNodes();
                 return;
             }
+            if (!readOnly && event.key === "Tab") {
+                event.preventDefault();
+                closeContextMenu();
+                const nextId = addChild(selectedIds[0]);
+                if (nextId) {
+                    startEdit(nextId);
+                }
+                return;
+            }
+            if (!readOnly && event.key === "Enter") {
+                event.preventDefault();
+                closeContextMenu();
+                const nextId = addSibling(selectedIds[0]);
+                if (nextId) {
+                    startEdit(nextId);
+                }
+                return;
+            }
             if (!readOnly && selectedIds.length > 0 && (event.key === "Delete" || event.key === "Backspace")) {
                 event.preventDefault();
                 closeContextMenu();
@@ -3264,7 +3881,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             document.removeEventListener("click", handleClick);
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [closeContextMenu, copySelected, pasteNodes, readOnly, removeNodes, undoMind]);
+    }, [addChild, addSibling, closeContextMenu, copySelected, message, pasteNodes, readOnly, removeNodes, saveMind, shortcuts, startEdit, undoMind]);
 
     // ----- React Flow 节点上下文与事件 -----
     const nodeContext = useMemo<MindContextValue>(() => ({
@@ -3280,7 +3897,9 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         onRichSelectionChange: saveRichSelection,
         onShouldKeepEdit: shouldKeepEdit,
         onTextSelectionStart: startTextSelectionGuard,
-    }), [dropParentId, editingId, readOnly, removeNodes, saveRichSelection, shouldKeepEdit, startEdit, startTextSelectionGuard, styles, updateNode]);
+        onEditInput: markEditInput,
+        onShortcut: runEditorShortcut,
+    }), [dropParentId, editingId, markEditInput, readOnly, removeNodes, runEditorShortcut, saveRichSelection, shouldKeepEdit, startEdit, startTextSelectionGuard, styles, updateNode]);
 
     const onNodesChange = useCallback((changes: NodeChange<FlowNode>[]) => {
         const hasDragPosition = draggingRef.current && changes.some((change) => change.type === "position");
@@ -3453,11 +4072,15 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             downloadPngAction();
         } else if (key === "exportJpg") {
             downloadJpgAction();
+        } else if (key === "exportJson") {
+            downloadJsonAction();
+        } else if (key === "exportMarkdown") {
+            downloadMarkdownAction();
         } else if (key === "copyImage") {
             copyImageAction();
         }
         closeContextMenu();
-    }, [addChild, addSibling, closeContextMenu, contextMenu, copyImageAction, copySelected, downloadJpgAction, downloadPngAction, pasteNodes, removeNodes, selectNodes, startEdit, undoMind]);
+    }, [addChild, addSibling, closeContextMenu, contextMenu, copyImageAction, copySelected, downloadJpgAction, downloadJsonAction, downloadMarkdownAction, downloadPngAction, pasteNodes, removeNodes, selectNodes, startEdit, undoMind]);
 
     // ----- 工具栏状态与动作 -----
     const onToolbarColor = useCallback((type: "background" | "border" | "line", color: string) => {
@@ -3507,6 +4130,29 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const toolbarTextItalic = toolbarTextStyle.fontStyle === "italic";
     const toolbarTextUnderline = toolbarTextStyle.textDecoration !== "none" && hasTextDecoration(toolbarTextStyle.textDecoration, "underline");
     const toolbarTextStrike = toolbarTextStyle.textDecoration !== "none" && hasTextDecoration(toolbarTextStyle.textDecoration, "line-through");
+
+    const insertSelectedLink = useCallback(() => {
+        const href = normalizeLinkHref(linkValue);
+        if (!href) {
+            message.warning("请输入有效链接");
+            return;
+        }
+        if (!applyRichSelectionLink(href, linkText)) {
+            message.warning("请先将光标放到要插入链接的位置");
+            return;
+        }
+        changeToolbarPopupOpen(false, "插入链接", true);
+    }, [applyRichSelectionLink, changeToolbarPopupOpen, linkText, linkValue, message]);
+
+    const clearSelectedLink = useCallback(() => {
+        if (!applyRichSelectionLink()) {
+            message.warning("请先选择要清除链接的文字");
+            return;
+        }
+        setLinkText("");
+        setLinkValue("");
+        changeToolbarPopupOpen(false, "插入链接", true);
+    }, [applyRichSelectionLink, changeToolbarPopupOpen, message]);
 
     const changeSelectedTextFontSize = useCallback((step: number) => {
         const fontSize = Math.min(maxTextFontSize, Math.max(minTextFontSize, toolbarTextFontSize + step));
@@ -3601,7 +4247,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const toolbarBorderColor = selectedStyle.borderColor || (isDark ? "#434343" : "#d9d9d9");
     const toolbarLineColor = selectedNode?.data.lineColor || selectedNode?.data.color || palette[0];
     const toolbarRadius = selectedStyle.borderRadius ?? systemBorderRadius;
-    const showTextToolbar = Boolean(selectedNode && !readOnly && editingId && (richSelectionActive || toolbarPopupOpen));
+    const showTextToolbar = Boolean(selectedNode && !readOnly && editingId);
     const showCardToolbar = Boolean(selectedNode && !readOnly && !showTextToolbar);
 
     // ----- 工具栏渲染工具 -----
@@ -3724,6 +4370,130 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         toolbarColorOpen,
     ]);
 
+    const renderToolbarLink = useCallback(() => {
+        const label = "插入链接";
+        const open = toolbarColorOpen === label;
+        const changeOpen = (nextOpen: boolean) => {
+            startToolbarInteraction();
+            if (nextOpen) {
+                saveRichSelection();
+                setLinkText(getCurrentRichSelectionText());
+                setLinkValue(getCurrentRichSelectionHref());
+            }
+            changeToolbarPopupOpen(nextOpen, label, true);
+        };
+        const content = (
+            <div
+                data-mind-color-picker="true"
+                className={styles.linkPanel}
+                onMouseDown={(event) => event.stopPropagation()}
+                onClick={(event) => event.stopPropagation()}
+                onKeyDown={(event) => {
+                    event.stopPropagation();
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        insertSelectedLink();
+                    }
+                    if (event.key === "Escape") {
+                        event.preventDefault();
+                        changeToolbarPopupOpen(false, label, true);
+                    }
+                }}
+            >
+                <input
+                    autoFocus
+                    className={styles.linkInput}
+                    placeholder="链接文本"
+                    value={linkText}
+                    onMouseDown={(event) => {
+                        startToolbarInteraction();
+                        event.stopPropagation();
+                    }}
+                    onChange={(event) => setLinkText(event.target.value)}
+                />
+                <input
+                    className={styles.linkInput}
+                    placeholder="https://example.com"
+                    value={linkValue}
+                    onMouseDown={(event) => {
+                        startToolbarInteraction();
+                        event.stopPropagation();
+                    }}
+                    onChange={(event) => setLinkValue(event.target.value)}
+                />
+                <div className={styles.linkPanelFooter}>
+                    <button
+                        type="button"
+                        className={styles.linkPanelButton}
+                        onMouseDown={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }}
+                        onClick={clearSelectedLink}
+                    >
+                        清除
+                    </button>
+                    <button
+                        type="button"
+                        className={`${styles.linkPanelButton} ${styles.linkPanelPrimaryButton}`}
+                        onMouseDown={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }}
+                        onClick={insertSelectedLink}
+                    >
+                        确定
+                    </button>
+                </div>
+            </div>
+        );
+        return (
+            <Popover
+                open={open}
+                trigger="click"
+                placement="bottom"
+                content={content}
+                destroyOnHidden
+                getPopupContainer={() => rootRef.current || document.body}
+                onOpenChange={changeOpen}
+            >
+                <span data-mind-color-picker="true" className={styles.styleToolbarTooltip}>
+                    <Tooltip title={label}>
+                        <button
+                            type="button"
+                            tabIndex={-1}
+                            className={styles.styleToolbarButton}
+                            onMouseDown={() => {
+                                startToolbarInteraction();
+                                saveRichSelection();
+                            }}
+                        >
+                            <LinkOutlined/>
+                        </button>
+                    </Tooltip>
+                </span>
+            </Popover>
+        );
+    }, [
+        changeToolbarPopupOpen,
+        clearSelectedLink,
+        getCurrentRichSelectionHref,
+        getCurrentRichSelectionText,
+        insertSelectedLink,
+        linkText,
+        linkValue,
+        saveRichSelection,
+        startToolbarInteraction,
+        styles.linkInput,
+        styles.linkPanel,
+        styles.linkPanelButton,
+        styles.linkPanelFooter,
+        styles.linkPanelPrimaryButton,
+        styles.styleToolbarButton,
+        styles.styleToolbarTooltip,
+        toolbarColorOpen,
+    ]);
+
     const renderToolbarButton = useCallback((
         title: string,
         icon: React.ReactNode,
@@ -3752,12 +4522,19 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
 
     // ----- 命令式 API -----
     useImperativeHandle(ref, () => ({
-        getValue: () => toMindValue(nodesRef.current),
-        getData: () => toMindValue(nodesRef.current),
+        getValue: getCurrentMindValue,
+        getData: getCurrentMindValue,
+        save: saveMind,
+        exportJson,
+        importJson,
+        exportMarkdown,
+        importMarkdown,
+        downloadJson: downloadJsonAction,
+        downloadMarkdown: downloadMarkdownAction,
         exportPng,
         exportJpg,
         copyImage,
-        getStats: () => getMindStats(toMindValue(nodesRef.current)),
+        getStats: () => getMindStats(getCurrentMindValue()),
         addChild,
         addSibling,
         edit: startEdit,
@@ -3804,16 +4581,24 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         clearNodeColor,
         copyImage,
         copySelected,
+        getCurrentMindValue,
+        downloadJsonAction,
+        downloadMarkdownAction,
         exportJpg,
+        exportJson,
+        exportMarkdown,
         exportPng,
         exitFullscreen,
         fitView,
+        importJson,
+        importMarkdown,
         hideControlsAction,
         hideMiniMapAction,
         openFullscreen,
         pasteNodes,
         removeSelected,
         resetMind,
+        saveMind,
         setBackgroundColor,
         setBorderColor,
         setLineColor,
@@ -3956,6 +4741,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                         {renderToolbarButton("下划线", <UnderlineOutlined/>, () => toggleSelectedTextDecoration("underline"), false, toolbarTextUnderline)}
                         {renderToolbarButton("删除线", <StrikethroughOutlined/>, () => toggleSelectedTextDecoration("line-through"), false, toolbarTextStrike)}
                         {renderToolbarColor("文字颜色", <FontColorsOutlined/>, toolbarTextColor, setSelectedTextColor, clearSelectedTextColor, true)}
+                        {renderToolbarLink()}
                         {renderToolbarButton("清除文字样式", <ClearOutlined/>, clearSelectedTextStyle)}
                     </div>
                 </div>
@@ -4071,6 +4857,22 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                             >
                                 <FileImageOutlined/>
                                 <span>导出JPG</span>
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.contextMenuItem}
+                                onClick={() => onContextAction("exportJson")}
+                            >
+                                <FileTextOutlined/>
+                                <span>导出JSON</span>
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.contextMenuItem}
+                                onClick={() => onContextAction("exportMarkdown")}
+                            >
+                                <FileTextOutlined/>
+                                <span>导出MD</span>
                             </button>
                         </div>
                     </div>
