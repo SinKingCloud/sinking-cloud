@@ -9,4 +9,4 @@ consul:
   group: sinking-cloud
   address: 101.201.124.64:5678
   token: E10ADC3949BA59ABBE56E057F20F883E
-  local: 127.0.0.1:1005
+  local: 127.0.0.1:1008
