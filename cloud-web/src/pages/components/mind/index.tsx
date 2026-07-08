@@ -3868,8 +3868,6 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                         panOnDrag
                         selectionOnDrag={!readOnly}
                         zoomOnDoubleClick={false}
-                        snapToGrid
-                        snapGrid={[8, 8]}
                         minZoom={0.25}
                         maxZoom={2}
                         proOptions={{hideAttribution: true}}
