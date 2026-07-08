@@ -159,9 +159,9 @@ export type MindExportOptions = {
     padding?: number;
     /** 导出背景色，默认跟随编辑器背景。 */
     background?: string;
-    /** 位图导出像素倍率，默认 2。 */
+    /** 位图导出像素倍率，默认 3。 */
     pixelRatio?: number;
-    /** JPG 导出质量，默认 0.92。 */
+    /** JPG 导出质量，默认 0.96。 */
     quality?: number;
 };
 
@@ -385,6 +385,8 @@ const maxTextFontSize = 22;
 const levelGap = 300;
 const verticalLevelGap = 210;
 const rowGap = 28;
+const defaultExportPixelRatio = 3;
+const defaultJpgQuality = 0.96;
 const palette = ["#1677ff", "#13c2c2", "#52c41a", "#faad14", "#eb2f96", "#722ed1", "#fa541c"];
 const stylePalette = ["#ffffff", "#000000", "#8c8c8c", "#f5222d", "#fa8c16", "#fadb14", "#52c41a", "#13c2c2", "#1677ff", "#722ed1", "#eb2f96"];
 const reactFlowNoDragClass = "no" + "drag";
@@ -1792,6 +1794,10 @@ const getDomExportConfig = (
     };
 };
 
+const getExportPixelRatio = (value?: number) => {
+    return Number.isFinite(value) && value && value > 0 ? value : defaultExportPixelRatio;
+};
+
 const createDomImageBlob = async (
     root: HTMLElement | null | undefined,
     nodes: FlowNode[],
@@ -1827,7 +1833,8 @@ const createDomImageBlob = async (
                 ".ant-popover",
             ].join(","));
         },
-        pixelRatio: options?.pixelRatio ?? 2,
+        pixelRatio: getExportPixelRatio(options?.pixelRatio),
+        skipAutoScale: true,
         skipFonts: false,
         backgroundColor: background === "transparent" ? undefined : background,
         style: {
@@ -1840,7 +1847,7 @@ const createDomImageBlob = async (
     root?.classList.add(mindExportingClass);
     try {
         if (type === "image/jpeg") {
-            const url = await htmlToImage.toJpeg(viewport, {...exportOptions, quality: options?.quality ?? 0.92});
+            const url = await htmlToImage.toJpeg(viewport, {...exportOptions, quality: options?.quality ?? defaultJpgQuality});
             return (await fetch(url)).blob();
         }
         const blob = await htmlToImage.toBlob(viewport, exportOptions);
@@ -3912,24 +3919,31 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     }, [exportPngBlob]);
 
     const downloadPngAction = useCallback(async () => {
+        const closeLoading = message.loading("图片导出中...", 0);
         try {
             downloadBlob(await exportPngBlob(), `mind-${Date.now()}.png`);
             message.success("图片已导出");
         } catch (error) {
             message.error(error instanceof Error ? error.message : "图片导出失败");
+        } finally {
+            closeLoading();
         }
     }, [exportPngBlob, message]);
 
     const downloadJpgAction = useCallback(async () => {
+        const closeLoading = message.loading("JPG 导出中...", 0);
         try {
             downloadBlob(await exportJpgBlob(), `mind-${Date.now()}.jpg`);
             message.success("JPG 已导出");
         } catch (error) {
             message.error(error instanceof Error ? error.message : "JPG 导出失败");
+        } finally {
+            closeLoading();
         }
     }, [exportJpgBlob, message]);
 
     const copyImageAction = useCallback(async () => {
+        const closeLoading = message.loading("图片复制中...", 0);
         const blob = exportPngBlob();
         try {
             await copyPngToClipboard(blob);
@@ -3945,6 +3959,8 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                 return;
             }
             message.error(error instanceof Error ? error.message : "复制图片失败");
+        } finally {
+            closeLoading();
         }
     }, [exportPngBlob, message]);
 
