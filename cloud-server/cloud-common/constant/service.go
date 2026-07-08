@@ -9,4 +9,5 @@ const (
 	ServiceDriver  = "driver"  //存储服务
 	ServiceUser    = "user"    //用户服务
 	ServiceAdmin   = "admin"   //后台服务
+	ServiceSpace   = "space"   //业务服务
 )

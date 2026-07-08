@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="业务服务" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="sinking-cloud" />
+    <working_directory value="$PROJECT_DIR$/cloud-server/cloud-service/service-space" />
+    <kind value="PACKAGE" />
+    <package value="service-space" />
+    <directory value="$PROJECT_DIR$" />
+    <auto_managed_config_id value="$PROJECT_DIR$/cloud-server/cloud-service/service-space" />
+    <method v="2" />
+  </configuration>
+</component>
