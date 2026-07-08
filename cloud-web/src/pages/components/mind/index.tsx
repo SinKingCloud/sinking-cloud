@@ -50,6 +50,7 @@ import {
     ReactFlow,
     type ReactFlowInstance,
     ReactFlowProvider,
+    useUpdateNodeInternals,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import {useTheme} from "sinking-antd";
@@ -116,6 +117,8 @@ export type MindNode = {
     lineColor?: string;
     /** 是否为根节点。 */
     root?: boolean;
+    /** 根节点一级分支方向，左侧分支会从右往左展开。 */
+    side?: MindBranchSide;
     /** 节点位置，不传时由组件布局生成。 */
     position?: MindPoint;
     /** 节点样式。 */
@@ -146,6 +149,9 @@ export type MindStats = {
 
 /** 保存触发来源。 */
 export type MindSaveReason = "manual" | "auto" | "shortcut";
+
+/** 根节点一级分支方向。 */
+export type MindBranchSide = "left" | "right" | "top" | "bottom";
 
 /** 思维导图导出配置。 */
 export type MindExportOptions = {
@@ -320,6 +326,7 @@ type FlowNodeData = {
     color: string;
     lineColor: string;
     root?: boolean;
+    side?: MindBranchSide;
     style?: MindNodeStyle;
 };
 
@@ -376,6 +383,7 @@ const fallbackBorderRadius = 6;
 const minTextFontSize = 11;
 const maxTextFontSize = 22;
 const levelGap = 300;
+const verticalLevelGap = 210;
 const rowGap = 28;
 const palette = ["#1677ff", "#13c2c2", "#52c41a", "#faad14", "#eb2f96", "#722ed1", "#fa541c"];
 const stylePalette = ["#ffffff", "#000000", "#8c8c8c", "#f5222d", "#fa8c16", "#fadb14", "#52c41a", "#13c2c2", "#1677ff", "#722ed1", "#eb2f96"];
@@ -965,6 +973,10 @@ const toMindPoint = (value: unknown): MindPoint | undefined => {
     return Number.isFinite(x) && Number.isFinite(y) ? {x, y} : undefined;
 };
 
+const toBranchSide = (value: unknown): MindBranchSide | undefined => {
+    return value === "left" || value === "right" || value === "top" || value === "bottom" ? value : undefined;
+};
+
 /** 创建并规范化一个思维导图节点，适合外部生成初始 value 时使用。 */
 export const createMindNode = (data: MindNode): MindNode => {
     const color = data.color || palette[0];
@@ -979,6 +991,7 @@ export const createMindNode = (data: MindNode): MindNode => {
         color,
         lineColor: data.lineColor || color,
         style: cleanMindNodeStyle(data.style),
+        side: toBranchSide(data.side),
     };
 };
 
@@ -1071,6 +1084,7 @@ export const sanitizeMindValue = (value?: MindValue): MindValue => {
             color: toSafeString(raw.color),
             lineColor: toSafeString(raw.lineColor),
             root: id === rootId,
+            side: toBranchSide(raw.side),
             position: toMindPoint(raw.position),
             style: isObject(raw.style) ? raw.style as MindNodeStyle : undefined,
         })),
@@ -1291,6 +1305,14 @@ const getMindNodeHeight = (node: Pick<MindNode, "title" | "description"> & { sty
     return Math.max(nodeMinHeight, 16 + getTitleLineHeight(node.style) + descriptionHeight);
 };
 
+const getFlowNodeRenderHeight = (node: FlowNode) => {
+    return node.measured?.height || node.height || getMindNodeHeight({
+        title: node.data.title,
+        description: node.data.description,
+        style: node.data.style,
+    });
+};
+
 // ==================== 画布节点转换 ====================
 
 const cloneFlowNodes = (nodes: FlowNode[]) => nodes.map((node) => ({
@@ -1322,6 +1344,7 @@ const toFlowNode = (node: MindNode): FlowNode => {
             color: node.color || palette[0],
             lineColor: node.lineColor || node.color || palette[0],
             root: node.root,
+            side: toBranchSide(node.side),
             style: cleanMindNodeStyle(node.style),
         },
     };
@@ -1338,6 +1361,7 @@ const toMindValue = (nodes: FlowNode[]): MindValue => ({
         color: node.data.color,
         lineColor: node.data.lineColor,
         root: node.data.root,
+        side: node.data.parentId === rootId ? node.data.side : undefined,
         position: node.position,
         style: cleanMindNodeStyle(node.data.style),
     })),
@@ -1353,6 +1377,39 @@ const getFlowChildrenMap = (nodes: FlowNode[]) => {
         map.set(node.data.parentId, (map.get(node.data.parentId) || []).concat(node));
     });
     return map;
+};
+
+const getDirectRootSide = (nodes: FlowNode[], node: FlowNode): MindBranchSide => {
+    if (node.data.side) {
+        return node.data.side;
+    }
+    const root = nodes.find((item) => item.id === rootId);
+    if (!root) {
+        return "right";
+    }
+    return getRootRelativeSide(root, node);
+};
+
+const getNodeBranchSideMap = (nodes: FlowNode[]) => {
+    const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+    const sideMap = new Map<string, MindBranchSide>([[rootId, "right"]]);
+
+    const resolveSide = (id: string): MindBranchSide => {
+        const cached = sideMap.get(id);
+        if (cached) {
+            return cached;
+        }
+        const node = nodeMap.get(id);
+        if (!node) {
+            return "right";
+        }
+        const side = node.data.parentId === rootId ? getDirectRootSide(nodes, node) : resolveSide(node.data.parentId || rootId);
+        sideMap.set(id, side);
+        return side;
+    };
+
+    nodes.forEach((node) => resolveSide(node.id));
+    return sideMap;
 };
 
 const getDepth = <T extends { id: string; parentId?: string }>(nodes: T[], id = rootId, visited = new Set<string>()): number => {
@@ -1381,17 +1438,24 @@ const layoutNodes = (nodes: FlowNode[], layoutRootId = rootId): FlowNode[] => {
     const childrenMap = getFlowChildrenMap(nodes);
     const nodeMap = new Map(nodes.map((node) => [node.id, node]));
     const positionMap = new Map<string, MindPoint>();
+    const sideMap = getNodeBranchSideMap(nodes);
     const childrenCache = new Map<string, FlowNode[]>();
     const subtreeHeightCache = new Map<string, number>();
 
-    const sortNodes = (items: FlowNode[]) => [...items].sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
-    const getChildren = (id: string) => {
-        const cached = childrenCache.get(id);
+    const isHorizontalSide = (side: MindBranchSide) => side === "left" || side === "right";
+    const sortNodes = (items: FlowNode[], side: MindBranchSide) => [...items].sort((a, b) => {
+        return isHorizontalSide(side)
+            ? a.position.y - b.position.y || a.position.x - b.position.x
+            : a.position.x - b.position.x || a.position.y - b.position.y;
+    });
+    const getChildren = (id: string, side: MindBranchSide) => {
+        const cacheKey = `${side}:${id}`;
+        const cached = childrenCache.get(cacheKey);
         if (cached) {
             return cached;
         }
-        const children = sortNodes(childrenMap.get(id) || []);
-        childrenCache.set(id, children);
+        const children = sortNodes(childrenMap.get(id) || [], side);
+        childrenCache.set(cacheKey, children);
         return children;
     };
 
@@ -1400,75 +1464,106 @@ const layoutNodes = (nodes: FlowNode[], layoutRootId = rootId): FlowNode[] => {
         if (!node) {
             return nodeMinHeight;
         }
-        return getMindNodeHeight({
-            title: node.data.title,
-            description: node.data.description,
-            style: node.data.style,
-        });
+        return getFlowNodeRenderHeight(node);
     };
 
-    const getChildrenHeight = (children: FlowNode[]) => {
+    const getNodeCrossSize = (id: string, side: MindBranchSide) => {
+        return isHorizontalSide(side) ? getFlowNodeHeight(id) : nodeWidth;
+    };
+
+    const getChildrenSpan = (children: FlowNode[], side: MindBranchSide) => {
         if (children.length <= 0) {
             return 0;
         }
         return children.reduce((total, child, index) => {
-            return total + getSubtreeHeight(child.id) + (index > 0 ? rowGap : 0);
+            return total + getSubtreeSpan(child.id, side) + (index > 0 ? rowGap : 0);
         }, 0);
     };
 
-    const getSubtreeHeight = (id: string): number => {
-        const cached = subtreeHeightCache.get(id);
+    const getSubtreeSpan = (id: string, side: MindBranchSide): number => {
+        const cacheKey = `${side}:${id}`;
+        const cached = subtreeHeightCache.get(cacheKey);
         if (cached !== undefined) {
             return cached;
         }
-        const children = getChildren(id);
-        let height: number;
+        const children = getChildren(id, side);
+        let span: number;
         if (children.length <= 0) {
-            height = getFlowNodeHeight(id);
+            span = getNodeCrossSize(id, side);
         } else {
-            height = Math.max(getFlowNodeHeight(id), getChildrenHeight(children));
+            span = Math.max(getNodeCrossSize(id, side), getChildrenSpan(children, side));
         }
-        subtreeHeightCache.set(id, height);
-        return height;
+        subtreeHeightCache.set(cacheKey, span);
+        return span;
     };
 
-    const placeNode = (id: string, depth: number, top: number): { nextTop: number; center: number } => {
-        const children = getChildren(id);
-        const subtreeHeight = getSubtreeHeight(id);
+    const placeNode = (id: string, depth: number, start: number, side: MindBranchSide): { nextStart: number; center: number } => {
+        const children = getChildren(id, side);
+        const subtreeSpan = getSubtreeSpan(id, side);
+        const direction = side === "left" || side === "top" ? -1 : 1;
+        const mainGap = isHorizontalSide(side) ? levelGap : verticalLevelGap;
         if (children.length <= 0) {
-            const center = top + subtreeHeight / 2;
-            positionMap.set(id, {x: depth * levelGap, y: center});
-            return {nextTop: top + subtreeHeight + rowGap, center};
+            const center = start + subtreeSpan / 2;
+            positionMap.set(id, isHorizontalSide(side)
+                ? {x: depth * mainGap * direction, y: center}
+                : {x: center, y: depth * mainGap * direction});
+            return {nextStart: start + subtreeSpan + rowGap, center};
         }
 
-        const childrenHeight = getChildrenHeight(children);
-        let cursor = top + Math.max(0, (subtreeHeight - childrenHeight) / 2);
+        const childrenSpan = getChildrenSpan(children, side);
+        let cursor = start + Math.max(0, (subtreeSpan - childrenSpan) / 2);
         const centers = children.map((child) => {
-            const placed = placeNode(child.id, depth + 1, cursor);
-            cursor = placed.nextTop;
+            const placed = placeNode(child.id, depth + 1, cursor, side);
+            cursor = placed.nextStart;
             return placed.center;
         });
         const center = (centers[0] + centers[centers.length - 1]) / 2;
-        positionMap.set(id, {x: depth * levelGap, y: center});
-        return {nextTop: top + subtreeHeight + rowGap, center};
+        positionMap.set(id, isHorizontalSide(side)
+            ? {x: depth * mainGap * direction, y: center}
+            : {x: center, y: depth * mainGap * direction});
+        return {nextStart: start + subtreeSpan + rowGap, center};
     };
 
-    const rootHeight = getSubtreeHeight(layoutRootId);
-    placeNode(layoutRootId, 0, -rootHeight / 2);
+    const placeBranches = (children: FlowNode[], side: MindBranchSide) => {
+        const span = getChildrenSpan(children, side);
+        let cursor = -span / 2;
+        children.forEach((child) => {
+            const placed = placeNode(child.id, 1, cursor, side);
+            cursor = placed.nextStart;
+            sideMap.set(child.id, side);
+        });
+    };
+
+    if (layoutRootId === rootId && nodeMap.has(rootId)) {
+        const rootChildren = childrenMap.get(rootId) || [];
+        const leftChildren = rootChildren.filter((child) => sideMap.get(child.id) === "left");
+        const rightChildren = rootChildren.filter((child) => sideMap.get(child.id) === "right");
+        const topChildren = rootChildren.filter((child) => sideMap.get(child.id) === "top");
+        const bottomChildren = rootChildren.filter((child) => sideMap.get(child.id) === "bottom");
+        positionMap.set(rootId, {x: 0, y: 0});
+        placeBranches(sortNodes(leftChildren, "left"), "left");
+        placeBranches(sortNodes(rightChildren, "right"), "right");
+        placeBranches(sortNodes(topChildren, "top"), "top");
+        placeBranches(sortNodes(bottomChildren, "bottom"), "bottom");
+    } else {
+        const side = sideMap.get(layoutRootId) || "right";
+        const rootSpan = getSubtreeSpan(layoutRootId, side);
+        placeNode(layoutRootId, 0, -rootSpan / 2, side);
+    }
 
     return nodes.map((node) => {
         const point = positionMap.get(node.id);
-        const height = getMindNodeHeight({
-            title: node.data.title,
-            description: node.data.description,
-            style: node.data.style,
-        });
+        const height = getFlowNodeRenderHeight(node);
         if (!point) {
             return node;
         }
         return {
             ...node,
             height,
+            data: {
+                ...node.data,
+                side: node.data.parentId === rootId ? (sideMap.get(node.id) || "right") : undefined,
+            },
             position: {
                 x: point.x - nodeWidth / 2,
                 y: point.y - height / 2,
@@ -1490,11 +1585,7 @@ const selectOnly = (nodes: FlowNode[], ids?: string | string[]) => {
 
 const getFlowNodeSize = (node: FlowNode) => ({
     width: node.width || node.measured?.width || nodeWidth,
-    height: node.height || node.measured?.height || getMindNodeHeight({
-        title: node.data.title,
-        description: node.data.description,
-        style: node.data.style,
-    }),
+    height: getFlowNodeRenderHeight(node),
 });
 
 const getFlowNodeCenter = (node: FlowNode) => {
@@ -1503,6 +1594,20 @@ const getFlowNodeCenter = (node: FlowNode) => {
         x: node.position.x + size.width / 2,
         y: node.position.y + size.height / 2,
     };
+};
+
+const getRootRelativePointSide = (root: FlowNode, point: MindPoint): MindBranchSide => {
+    const rootCenter = getFlowNodeCenter(root);
+    const dx = point.x - rootCenter.x;
+    const dy = point.y - rootCenter.y;
+    if (Math.abs(dx) >= Math.abs(dy)) {
+        return dx < 0 ? "left" : "right";
+    }
+    return dy < 0 ? "top" : "bottom";
+};
+
+const getRootRelativeSide = (root: FlowNode, node: FlowNode): MindBranchSide => {
+    return getRootRelativePointSide(root, getFlowNodeCenter(node));
 };
 
 const isPointNearNode = (point: MindPoint, node: FlowNode, margin = 24) => {
@@ -1554,17 +1659,28 @@ const getDropParent = (nodes: FlowNode[], node: FlowNode) => {
         .sort((a, b) => a.distance - b.distance)[0]?.node;
 };
 
-const toEdges = (nodes: FlowNode[]): Edge[] => nodes
-    .filter((node) => Boolean(node.data.parentId))
-    .map((node) => {
+const toEdges = (nodes: FlowNode[]): Edge[] => {
+    const sideMap = getNodeBranchSideMap(nodes);
+    return nodes.filter((node) => Boolean(node.data.parentId)).map((node) => {
         const lineColor = node.data.lineColor || node.data.color;
+        const side = sideMap.get(node.id) || "right";
         return {
             id: `${node.data.parentId}-${node.id}`,
             source: node.data.parentId!,
             target: node.id,
             type: "default",
-            sourceHandle: "right",
-            targetHandle: "left",
+            sourceHandle: {
+                left: "left-source",
+                right: "right-source",
+                top: "top-source",
+                bottom: "bottom-source",
+            }[side],
+            targetHandle: {
+                left: "right-target",
+                right: "left-target",
+                top: "bottom-target",
+                bottom: "top-target",
+            }[side],
             markerEnd: {
                 type: MarkerType.ArrowClosed,
                 color: lineColor,
@@ -1578,6 +1694,7 @@ const toEdges = (nodes: FlowNode[]): Edge[] => nodes
             },
         };
     });
+};
 
 // ==================== 导出处理 ====================
 
@@ -1741,6 +1858,10 @@ const blobToDataUrl = (blob: Blob) => new Promise<string>((resolve, reject) => {
     reader.onload = () => resolve(String(reader.result || ""));
     reader.onerror = () => reject(reader.error || new Error("图片导出失败"));
     reader.readAsDataURL(blob);
+});
+
+const waitAnimationFrame = () => new Promise<void>((resolve) => {
+    window.requestAnimationFrame(() => resolve());
 });
 
 const copyPngToClipboard = async (blob: Promise<Blob>) => {
@@ -2359,11 +2480,29 @@ const MindNodeView: React.FC<MindNodeViewProps> = ({
 }) => {
     const titleRef = useRef<HTMLDivElement | null>(null);
     const descriptionRef = useRef<HTMLDivElement | null>(null);
+    const updateNodeInternals = useUpdateNodeInternals();
     const editing = editingId === id;
     const titleTextStyle = getTitleTextStyle(data.style);
     const descriptionTextStyle = getDescriptionTextStyle(data.style);
     const titleHtml = data.titleHtml || textToRichHtml(data.title) || "";
     const descriptionHtml = data.descriptionHtml || textToRichHtml(data.description) || "";
+
+    useLayoutEffect(() => {
+        const frame = window.requestAnimationFrame(() => {
+            // 节点高度变化后刷新 handle 坐标，避免长内容导致连接线偏离节点中心。
+            updateNodeInternals(id);
+        });
+        return () => window.cancelAnimationFrame(frame);
+    }, [
+        id,
+        data.description,
+        data.descriptionHtml,
+        data.style,
+        data.title,
+        data.titleHtml,
+        editing,
+        updateNodeInternals,
+    ]);
 
     const setEditorContent = useCallback(() => {
         if (titleRef.current) {
@@ -2560,7 +2699,10 @@ const MindNodeView: React.FC<MindNodeViewProps> = ({
             }}
             onDoubleClickCapture={startCardEdit}
         >
-            <Handle id="left" type="target" position={Position.Left} className={styles.handle}/>
+            <Handle id="top-target" type="target" position={Position.Top} className={styles.handle}/>
+            <Handle id="top-source" type="source" position={Position.Top} className={styles.handle}/>
+            <Handle id="left-target" type="target" position={Position.Left} className={styles.handle}/>
+            <Handle id="left-source" type="source" position={Position.Left} className={styles.handle}/>
             {editing ? (
                 <div
                     data-mind-edit-content="true"
@@ -2628,7 +2770,10 @@ const MindNodeView: React.FC<MindNodeViewProps> = ({
                     )}
                 </div>
             )}
-            <Handle id="right" type="source" position={Position.Right} className={styles.handle}/>
+            <Handle id="right-target" type="target" position={Position.Right} className={styles.handle}/>
+            <Handle id="right-source" type="source" position={Position.Right} className={styles.handle}/>
+            <Handle id="bottom-target" type="target" position={Position.Bottom} className={styles.handle}/>
+            <Handle id="bottom-source" type="source" position={Position.Bottom} className={styles.handle}/>
         </div>
     );
 };
@@ -2698,11 +2843,14 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const [miniMapVisible, setMiniMapVisible] = useState(defaultShowMiniMap);
     const [hasCopiedNodes, setHasCopiedNodes] = useState(false);
     const [dataRevision, setDataRevision] = useState(0);
+    const [exportingFullRender, setExportingFullRender] = useState(false);
     const initialValueRef = useRef<MindValue | undefined>(initialInputValue);
     const contextMenuRef = useRef<HTMLDivElement | null>(null);
     const clipboardRef = useRef<MindClipboard | null>(null);
     const dropParentIdRef = useRef<string | undefined>(undefined);
     const dragNodeIdRef = useRef<string | undefined>(undefined);
+    const fullExportCountRef = useRef(0);
+    const exportingFullRenderRef = useRef(false);
     const richSelectionRef = useRef<Range | null>(null);
     const toolbarPopupOpenRef = useRef(false);
     const toolbarMouseDownRef = useRef(false);
@@ -2719,6 +2867,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const scheduleAutoSaveRef = useRef<() => void>(() => undefined);
     const draggingRef = useRef(false);
     const dragMovedRef = useRef(false);
+    const dragSubtreeIdsRef = useRef<Set<string>>(new Set());
     const dropParentFrameRef = useRef<number | undefined>(undefined);
     const pendingDragNodeRef = useRef<FlowNode | undefined>(undefined);
     const activeRef = useRef(false);
@@ -2726,18 +2875,28 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const fullscreenRef = useRef(false);
     const miniMapVisibleRef = useRef(showMiniMap ?? defaultShowMiniMap);
     const isDark = Boolean(theme?.isDarkTheme?.() || theme?.isDarkMode?.());
-    const edgeSignature = nodes.map((node) => `${node.id}:${node.data.parentId || ""}:${node.data.color}:${node.data.lineColor}`).join("|");
+    const edgeSignature = nodes.map((node) => {
+        return `${node.id}:${node.data.parentId || ""}:${node.data.color}:${node.data.lineColor}:${node.data.side || ""}:${node.position.x}:${node.position.y}`;
+    }).join("|");
     const edges = useMemo(() => {
-        if (!dragNodeId || !dropParentId) {
+        if (!dragNodeId) {
             return toEdges(nodes);
         }
-        return toEdges(nodes.map((node) => node.id === dragNodeId ? {
-            ...node,
-            data: {
-                ...node.data,
-                parentId: dropParentId,
-            },
-        } : node));
+        const root = nodes.find((node) => node.id === rootId);
+        return toEdges(nodes.map((node) => {
+            if (node.id !== dragNodeId) {
+                return node;
+            }
+            const nextParentId = dropParentId || node.data.parentId;
+            return {
+                ...node,
+                data: {
+                    ...node.data,
+                    parentId: nextParentId,
+                    side: nextParentId === rootId && root ? getRootRelativeSide(root, node) : node.data.side,
+                },
+            };
+        }));
     }, [dragNodeId, dropParentId, edgeSignature]);
     const selectedNode = useMemo(() => nodes.find((node) => selectedIdsRef.current.includes(node.id)), [nodes]);
     const currentShowControls = showControls ?? controlsVisible;
@@ -2894,9 +3053,15 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                     return node;
                 }
                 changed = true;
+                const currentHeight = getFlowNodeRenderHeight(node);
+                const nextHeight = getMindNodeHeight({title, description, style: nextStyle});
                 return {
                     ...node,
-                    height: getMindNodeHeight({title, description, style: nextStyle}),
+                    height: nextHeight,
+                    position: {
+                        ...node.position,
+                        y: node.position.y + (currentHeight - nextHeight) / 2,
+                    },
                     data: {
                         ...node.data,
                         title,
@@ -2979,6 +3144,17 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         if (!parent) {
             return undefined;
         }
+        const sideMap = getNodeBranchSideMap(items);
+        const parentCenter = getFlowNodeCenter(parent);
+        const childSide: MindBranchSide = parent.id === rootId
+            ? (position ? getRootRelativePointSide(parent, {x: position.x + nodeWidth / 2, y: position.y + nodeMinHeight / 2}) : "right")
+            : (sideMap.get(parent.id) || "right");
+        const defaultPosition = {
+            left: {x: parent.position.x - levelGap, y: parent.position.y + rowGap},
+            right: {x: parent.position.x + levelGap, y: parent.position.y + rowGap},
+            top: {x: parentCenter.x - nodeWidth / 2 + rowGap, y: parent.position.y - verticalLevelGap},
+            bottom: {x: parentCenter.x - nodeWidth / 2 + rowGap, y: parent.position.y + verticalLevelGap},
+        }[childSide];
         const id = createId();
         const nextNode = toFlowNode({
             id,
@@ -2986,9 +3162,10 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             parentId: parent.id,
             color: parent.data.color,
             lineColor: parent.data.lineColor || parent.data.color,
+            side: parent.id === rootId ? childSide : undefined,
             position: {
-                x: position?.x ?? parent.position.x + levelGap,
-                y: position?.y ?? parent.position.y + rowGap,
+                x: position?.x ?? defaultPosition.x,
+                y: position?.y ?? defaultPosition.y,
             },
         });
         const nextNodes = selectOnly(position ? items.concat(nextNode) : layoutNodes(items.concat(nextNode)), id);
@@ -3012,6 +3189,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             message.warning("根节点不能新增同级节点");
             return undefined;
         }
+        const side = target.data.parentId === rootId ? getDirectRootSide(items, target) : undefined;
         const id = createId();
         const nextNode = toFlowNode({
             id,
@@ -3019,6 +3197,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
             parentId: target.data.parentId,
             color: target.data.color,
             lineColor: target.data.lineColor || target.data.color,
+            side,
             position: {
                 x: target.position.x,
                 y: target.position.y + rowGap,
@@ -3673,13 +3852,52 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         message.success("Markdown 已导出");
     }, [exportMarkdown, message]);
 
+    const refreshViewport = useCallback(async () => {
+        const viewport = flow?.getViewport();
+        if (!viewport) {
+            return;
+        }
+        try {
+            await flow?.setViewport({...viewport, x: viewport.x + 0.01}, {duration: 0});
+            await waitAnimationFrame();
+            await flow?.setViewport(viewport, {duration: 0});
+        } finally {
+            await waitAnimationFrame();
+        }
+    }, [flow]);
+
+    const withFullExportRender = useCallback(async <Result,>(handler: () => Promise<Result>) => {
+        fullExportCountRef.current += 1;
+        exportingFullRenderRef.current = true;
+        setExportingFullRender(true);
+        try {
+            // 导出需要完整 DOM，临时关闭 React Flow 的可视区虚拟渲染，避免大脑图丢失屏幕外节点。
+            await waitAnimationFrame();
+            await waitAnimationFrame();
+            // 触发一次几乎无感的视口刷新，让完整渲染后的边层先稳定，避免截图抓到旧 path。
+            await refreshViewport();
+            return await handler();
+        } finally {
+            fullExportCountRef.current = Math.max(0, fullExportCountRef.current - 1);
+            if (fullExportCountRef.current <= 0) {
+                setExportingFullRender(false);
+                try {
+                    await waitAnimationFrame();
+                    await refreshViewport();
+                } finally {
+                    exportingFullRenderRef.current = false;
+                }
+            }
+        }
+    }, [refreshViewport]);
+
     const exportPngBlob = useCallback(async (options?: MindExportOptions) => {
-        return createDomImageBlob(rootRef.current, getExportNodes(), options, flow?.getNodesBounds);
-    }, [flow, getExportNodes]);
+        return withFullExportRender(() => createDomImageBlob(rootRef.current, getExportNodes(), options, flow?.getNodesBounds));
+    }, [flow, getExportNodes, withFullExportRender]);
 
     const exportJpgBlob = useCallback(async (options?: MindExportOptions) => {
-        return createDomImageBlob(rootRef.current, getExportNodes(), options, flow?.getNodesBounds, "image/jpeg");
-    }, [flow, getExportNodes]);
+        return withFullExportRender(() => createDomImageBlob(rootRef.current, getExportNodes(), options, flow?.getNodesBounds, "image/jpeg"));
+    }, [flow, getExportNodes, withFullExportRender]);
 
     const exportPng = useCallback(async (options?: MindExportOptions) => {
         return blobToDataUrl(await exportPngBlob(options));
@@ -3902,6 +4120,9 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     }), [dropParentId, editingId, markEditInput, readOnly, removeNodes, runEditorShortcut, saveRichSelection, shouldKeepEdit, startEdit, startTextSelectionGuard, styles, updateNode]);
 
     const onNodesChange = useCallback((changes: NodeChange<FlowNode>[]) => {
+        if (exportingFullRenderRef.current && changes.every((change) => change.type === "dimensions")) {
+            return;
+        }
         const hasDragPosition = draggingRef.current && changes.some((change) => change.type === "position");
         if (hasDragPosition) {
             dragMovedRef.current = true;
@@ -3909,9 +4130,60 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         const shouldEmit = !hasDragPosition && changes.some((change) => change.type !== "select" && change.type !== "dimensions");
         const shouldHistory = shouldEmit && changes.every((change) => change.type !== "position");
         updateNodes((items) => {
-            const nextNodes = applyNodeChanges(changes, items) as FlowNode[];
+            const dragId = dragNodeIdRef.current;
+            const dragPositionChange = dragId ? changes.find((change: any) => change.type === "position" && change.id === dragId && change.position) as any : undefined;
+            const dragNode = dragId ? items.find((item) => item.id === dragId) : undefined;
+            const dx = dragPositionChange && dragNode ? dragPositionChange.position.x - dragNode.position.x : 0;
+            const dy = dragPositionChange && dragNode ? dragPositionChange.position.y - dragNode.position.y : 0;
+            const changedPositionIds = new Set(changes.filter((change: any) => change.type === "position").map((change: any) => change.id));
+            const dimensionHeightMap = new Map<string, number>();
+            changes.forEach((change: any) => {
+                if (change.type !== "dimensions" || !change.dimensions?.height) {
+                    return;
+                }
+                const source = items.find((item) => item.id === change.id);
+                if (source) {
+                    dimensionHeightMap.set(change.id, getFlowNodeRenderHeight(source));
+                }
+            });
+            let nextNodes = applyNodeChanges(changes, items) as FlowNode[];
             if (changes.some((change) => change.type === "select")) {
                 selectedIdsRef.current = nextNodes.filter((node) => node.selected).map((node) => node.id);
+            }
+            if (dimensionHeightMap.size > 0) {
+                nextNodes = nextNodes.map((node) => {
+                    const previousHeight = dimensionHeightMap.get(node.id);
+                    if (previousHeight === undefined) {
+                        return node;
+                    }
+                    const nextHeight = getFlowNodeRenderHeight(node);
+                    const delta = previousHeight - nextHeight;
+                    if (Math.abs(delta) < 0.5) {
+                        return node;
+                    }
+                    return {
+                        ...node,
+                        position: {
+                            ...node.position,
+                            y: node.position.y + delta / 2,
+                        },
+                    };
+                });
+            }
+            if (hasDragPosition && dragId && (dx !== 0 || dy !== 0)) {
+                const subtreeIds = dragSubtreeIdsRef.current;
+                return nextNodes.map((node) => {
+                    if (!subtreeIds.has(node.id) || node.id === dragId || changedPositionIds.has(node.id)) {
+                        return node;
+                    }
+                    return {
+                        ...node,
+                        position: {
+                            x: node.position.x + dx,
+                            y: node.position.y + dy,
+                        },
+                    };
+                });
             }
             return nextNodes;
         }, shouldEmit, shouldHistory);
@@ -3925,6 +4197,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         pendingDragNodeRef.current = undefined;
         dropParentIdRef.current = undefined;
         dragNodeIdRef.current = undefined;
+        dragSubtreeIdsRef.current = new Set();
         setDropParentId(undefined);
         setDragNodeId(undefined);
     }, []);
@@ -3936,6 +4209,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         draggingRef.current = true;
         dragMovedRef.current = false;
         dragNodeIdRef.current = node.id;
+        dragSubtreeIdsRef.current = getDescendantIds(nodesRef.current, [node.id]);
         setDragNodeId(node.id);
         pushHistory(nodesRef.current);
     }, [pushHistory, readOnly]);
@@ -4006,16 +4280,39 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         const parent = parentId ? items.find((item) => item.id === parentId) : getDropParent(items, currentNode);
         clearDropParent();
         if (!parent || parent.id === currentNode.data.parentId) {
+            if (currentNode.data.parentId === rootId) {
+                const root = items.find((item) => item.id === rootId);
+                const side: MindBranchSide = root ? getRootRelativeSide(root, currentNode) : "right";
+                if (currentNode.data.side !== side) {
+                    const nextNodes = selectOnly(layoutNodes(items.map((item) => item.id === currentNode.id ? {
+                        ...item,
+                        data: {
+                            ...item.data,
+                            side,
+                        },
+                    } : item)), currentNode.id);
+                    selectedIdsRef.current = [currentNode.id];
+                    setEditingId(undefined);
+                    updateNodes(nextNodes, true, false);
+                    window.requestAnimationFrame(() => focusNode(currentNode.id, nextNodes));
+                    return;
+                }
+            }
             if (dragMovedRef.current) {
                 window.requestAnimationFrame(() => emitChange(nodesRef.current));
             }
             return;
         }
+        const root = items.find((item) => item.id === rootId);
+        const side: MindBranchSide | undefined = parent.id === rootId
+            ? (root ? getRootRelativeSide(root, currentNode) : "right")
+            : undefined;
         const nextNodes = selectOnly(layoutNodes(items.map((item) => item.id === currentNode.id ? {
             ...item,
             data: {
                 ...item.data,
                 parentId: parent.id,
+                side,
             },
         } : item)), currentNode.id);
         selectedIdsRef.current = [currentNode.id];
@@ -4639,7 +4936,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                         nodes={nodes}
                         edges={edges}
                         nodeTypes={mindNodeTypes}
-                        onlyRenderVisibleElements
+                        onlyRenderVisibleElements={!exportingFullRender}
                         onInit={setFlow}
                         onNodesChange={onNodesChange}
                         onSelectionChange={({nodes: selectedNodes}) => {
