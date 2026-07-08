@@ -4,7 +4,7 @@ import {getCurrentMenus, getFirstMenuWithoutChildren, getParentList, historyPush
 import {createStyles} from 'antd-style';
 import Settings from "@/../config/defaultSettings";
 import defaultSettings from "@/../config/defaultSettings";
-import {Icon, Layout, ProModal, ProModalRef, Title, useTheme} from "sinking-antd";
+import {Icon, Layout, ProModal, type ProModalRef, type SinKingRef, Title, useTheme} from "sinking-antd";
 import {getPath} from "@/utils/assets";
 import {deleteHeader} from "@/utils/auth";
 import {logout} from "@/service/common/login";
@@ -985,6 +985,7 @@ const SKLayout: React.FC = () => {
     const match = useSelectedRoutes();
     const [loading, setLoading] = useState(true);
     const [customerVisible, setCustomerVisible] = useState(false);
+    const layoutRef = useRef<SinKingRef | null>(null);
     const {styles: {menuColor, collapsedImg, collapsedLogo, unCollapsed}} = useSKLayoutStyles();
 
     /**
@@ -1034,7 +1035,8 @@ const SKLayout: React.FC = () => {
             onCancel={() => setCustomerVisible(false)}
             contact={web?.info?.contact}
         />
-        <Layout loading={loading || !user?.web}
+        <Layout ref={layoutRef}
+                loading={loading || !user?.web}
                 pathname={location?.pathname}
                 matchedRoutes={match || []}
                 onNavigate={(path) => history.push(path)}
@@ -1078,7 +1080,7 @@ const SKLayout: React.FC = () => {
                         </div>
                     </div>
                 }}>
-            <Outlet/>
+            <Outlet context={{layoutRef}}/>
         </Layout>
     </>;
 }
