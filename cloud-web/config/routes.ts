@@ -14,36 +14,22 @@ export const user = [
         component: "@/pages/user/index",
     },
     {
-        path: "pay",
-        title: "财务管理",
-        name: "user.pay",
+        path: "mind",
+        title: "思维导图",
+        name: "user.mind",
         icon: 'icon-order',
         hideInMenu: false,
         routes: [
             {
-                path: "recharge",
-                component: "@/pages/user/pay/recharge",
-                title: "在线充值",
-                name: "user.pay.recharge",
-                icon: '•',
-            },
-            {
-                path: "log",
-                component: "@/pages/user/pay/log",
-                title: "财务明细",
-                name: "user.pay.log",
-                icon: '•',
-            },
-            {
-                path: "order",
-                component: "@/pages/user/pay/order",
-                title: "订单管理",
-                name: "user.pay.order",
+                path: "index",
+                component: "@/pages/user/mind",
+                title: "我的导图",
+                name: "user.mind.index",
                 icon: '•',
             },
             {
                 path: "",
-                redirect: "recharge",
+                redirect: "index",
             },
         ]
     },
@@ -59,6 +45,13 @@ export const user = [
                 component: "@/pages/user/person/info",
                 title: "账户信息",
                 name: "user.person.info",
+                icon: '•',
+            },
+            {
+                path: "pay",
+                component: "@/pages/user/person/pay",
+                title: "财务管理",
+                name: "user.person.pay",
                 icon: '•',
             },
             {

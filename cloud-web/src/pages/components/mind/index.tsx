@@ -373,10 +373,10 @@ const MindContext = React.createContext<MindContextValue | null>(null);
 
 const rootId = "root";
 const nodeWidth = 196;
-const nodeMinHeight = 46;
-const titleLineHeight = 20;
-const descriptionLineHeight = 18;
-const defaultFontSize = 13;
+const nodeMinHeight = 40;
+const titleLineHeight = 19;
+const descriptionLineHeight = 16;
+const defaultFontSize = 14;
 const boldFontWeight = 600;
 const defaultDescriptionFontSize = 12;
 const fallbackBorderRadius = 6;
@@ -387,8 +387,24 @@ const verticalLevelGap = 210;
 const rowGap = 28;
 const defaultExportPixelRatio = 3;
 const defaultJpgQuality = 0.96;
-const palette = ["#1677ff", "#13c2c2", "#52c41a", "#faad14", "#eb2f96", "#722ed1", "#fa541c"];
-const stylePalette = ["#ffffff", "#000000", "#8c8c8c", "#f5222d", "#fa8c16", "#fadb14", "#52c41a", "#13c2c2", "#1677ff", "#722ed1", "#eb2f96"];
+const palette = [
+    "#1677ff", "#4096ff", "#0958d9", "#69b1ff",
+    "#13c2c2", "#36cfc9", "#08979c", "#5cdbd3",
+    "#52c41a", "#73d13d", "#389e0d", "#95de64",
+    "#faad14", "#ffc53d", "#d48806", "#ffd666",
+    "#fa8c16", "#ffa940", "#d46b08", "#ffc069",
+    "#f5222d", "#ff4d4f", "#cf1322", "#ff7875",
+    "#eb2f96", "#f759ab", "#c41d7f", "#ff85c0",
+    "#722ed1", "#9254de", "#531dab", "#b37feb",
+    "#2f54eb", "#597ef7", "#1d39c4", "#85a5ff",
+    "#fa541c", "#ff7a45", "#d4380d", "#ff9c6e",
+    "#a0d911", "#bae637", "#7cb305", "#d3f261",
+    "#fadb14", "#ffec3d", "#d4b106", "#fff566", "#ad6800",
+];
+const stylePalette = [
+    "#ffffff", "#f5f5f5", "#d9d9d9", "#8c8c8c", "#595959", "#262626", "#000000",
+    ...palette,
+];
 const reactFlowNoDragClass = "no" + "drag";
 const reactFlowNoPanClass = "no" + "pan";
 const reactFlowNoWheelClass = "no" + "wheel";
@@ -1303,8 +1319,8 @@ const hasTextDecoration = (value: React.CSSProperties["textDecoration"], decorat
 
 const getMindNodeHeight = (node: Pick<MindNode, "title" | "description"> & { style?: MindNodeStyle }) => {
     const descriptionLines = getTextLines(node.description, 18);
-    const descriptionHeight = descriptionLines > 0 ? 4 + descriptionLines * getDescriptionLineHeight(node.style) : 0;
-    return Math.max(nodeMinHeight, 16 + getTitleLineHeight(node.style) + descriptionHeight);
+    const descriptionHeight = descriptionLines > 0 ? 3 + descriptionLines * getDescriptionLineHeight(node.style) : 0;
+    return Math.max(nodeMinHeight, 12 + getTitleLineHeight(node.style) + descriptionHeight);
 };
 
 const getFlowNodeRenderHeight = (node: FlowNode) => {
@@ -2020,14 +2036,14 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         align-items: center;
         width: ${nodeWidth}px;
         min-height: ${nodeMinHeight}px;
-        padding: 8px 12px;
+        padding: 6px 10px;
         border: 1px solid ${token.colorBorderSecondary};
         border-radius: ${token.borderRadius}px;
         background: ${token.colorBgContainer};
         color: ${token.colorTextHeading};
         box-shadow: none;
         font-size: 13px;
-        line-height: 20px;
+        line-height: ${titleLineHeight}px;
         font-weight: 400;
         cursor: grab;
         user-select: none;
@@ -2035,6 +2051,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         &:hover {
             border-color: ${token.colorPrimaryBorderHover};
         }
+
     `,
     nodeRoot: css`
         border-color: ${token.colorPrimaryBorder};
@@ -2061,11 +2078,12 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
     nodeTitle: css`
         min-width: 0;
         overflow: hidden;
+        font-weight: inherit;
         white-space: nowrap;
         text-overflow: ellipsis;
     `,
     nodeDescription: css`
-        margin-top: 4px;
+        margin-top: 3px;
         color: ${token.colorTextSecondary};
         font-size: 12px;
         line-height: ${descriptionLineHeight}px;
@@ -2078,7 +2096,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         display: grid;
         width: 100%;
         flex: 1;
-        gap: 6px;
+        gap: 4px;
         min-width: 0;
         user-select: text;
 
@@ -2098,6 +2116,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         background: transparent;
         color: inherit;
         font-size: 13px;
+        font-weight: inherit;
         line-height: ${titleLineHeight}px;
         white-space: nowrap;
         overflow: hidden;
@@ -2116,7 +2135,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
     `,
     nodeDescriptionInput: css`
         width: 100%;
-        min-height: 38px;
+        min-height: 32px;
         box-sizing: border-box;
         padding: 0;
         border: 0;
@@ -2270,18 +2289,20 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         box-shadow: 0 0 0 1px ${token.colorBgElevated};
     `,
     colorPanel: css`
-        width: 188px;
+        width: 236px;
+        max-width: calc(100vw - 32px);
         padding: 2px;
     `,
     colorPanelGrid: css`
         display: grid;
-        grid-template-columns: repeat(6, 22px);
-        gap: 7px;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: 5px;
         margin-bottom: 10px;
     `,
     colorSwatch: css`
-        width: 22px;
-        height: 22px;
+        width: 100%;
+        aspect-ratio: 1;
+        min-height: 22px;
         padding: 0;
         border: 1px solid ${token.colorBorderSecondary};
         border-radius: ${token.borderRadiusSM}px;
@@ -3003,6 +3024,35 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const fitView = useCallback(() => {
         flow?.fitView({padding: 0.22, duration: 260});
     }, [flow]);
+
+    useEffect(() => {
+        const element = rootRef.current;
+        if (!flow || !element) {
+            return;
+        }
+        let frame = 0;
+        const refreshView = () => {
+            window.cancelAnimationFrame(frame);
+            frame = window.requestAnimationFrame(() => {
+                const rect = element.getBoundingClientRect();
+                if (rect.width <= 0 || rect.height <= 0) {
+                    return;
+                }
+                flow.fitView({padding: 0.22, duration: 0});
+            });
+        };
+        refreshView();
+        const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(refreshView) : undefined;
+        observer?.observe(element);
+        window.addEventListener("resize", refreshView);
+        window.addEventListener("orientationchange", refreshView);
+        return () => {
+            window.cancelAnimationFrame(frame);
+            observer?.disconnect();
+            window.removeEventListener("resize", refreshView);
+            window.removeEventListener("orientationchange", refreshView);
+        };
+    }, [flow, isDark, systemBorderRadius]);
 
     const focusNode = useCallback((id: string, items: FlowNode[]) => {
         const node = items.find((item) => item.id === id);
