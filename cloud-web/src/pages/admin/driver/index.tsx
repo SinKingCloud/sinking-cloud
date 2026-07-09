@@ -41,6 +41,8 @@ const useStyles: any = createStyles(({css, token}: any) => ({
         }
     `,
     tabs: css`
+        width: 100%;
+
         .ant-tabs-nav {
             margin: 0;
         }
@@ -49,14 +51,18 @@ const useStyles: any = createStyles(({css, token}: any) => ({
             display: none;
         }
 
+        .ant-tabs-nav-list {
+            gap: 18px;
+        }
+
         .ant-tabs-tab {
-            margin: 0;
+            margin: 0 !important;
             padding: 15px 0;
             color: ${token.colorTextSecondary};
         }
 
         .ant-tabs-tab + .ant-tabs-tab {
-            margin-left: 18px;
+            margin-left: 0;
         }
 
         .ant-tabs-tab-btn {

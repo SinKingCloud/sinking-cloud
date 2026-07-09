@@ -48,24 +48,9 @@ const useStyles = createStyles(({css, token, isDarkMode}: any): any => ({
             padding: 0 15px;
         }
     `,
-    navToolbar: css`
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-
-        .ant-tabs {
-            flex: 1;
-            min-width: 0;
-        }
-
-        @media (max-width: 575px) {
-            align-items: flex-start;
-            flex-direction: column;
-            padding: 8px 0;
-        }
-    `,
     tabs: css`
+        width: 100%;
+
         .ant-tabs-nav {
             margin: 0;
         }
@@ -74,14 +59,18 @@ const useStyles = createStyles(({css, token, isDarkMode}: any): any => ({
             display: none;
         }
 
+        .ant-tabs-nav-list {
+            gap: 18px;
+        }
+
         .ant-tabs-tab {
-            margin: 0;
+            margin: 0 !important;
             padding: 15px 0;
             color: ${token.colorTextSecondary};
         }
 
         .ant-tabs-tab + .ant-tabs-tab {
-            margin-left: 18px;
+            margin-left: 0;
         }
 
         .ant-tabs-tab-btn {
@@ -442,18 +431,16 @@ export default (): React.ReactNode => {
         <Body>
             <div className={styles.page}>
                 <Card className={styles.navCard} variant="borderless">
-                    <div className={styles.navToolbar}>
-                        <Tabs
-                            className={styles.tabs}
-                            activeKey={activeStatus}
-                            onChange={(value) => {
-                                if (value !== activeStatus) {
-                                    setActiveStatus(value);
-                                }
-                            }}
-                            items={messageTabs as any}
-                        />
-                    </div>
+                    <Tabs
+                        className={styles.tabs}
+                        activeKey={activeStatus}
+                        onChange={(value) => {
+                            if (value !== activeStatus) {
+                                setActiveStatus(value);
+                            }
+                        }}
+                        items={messageTabs as any}
+                    />
                 </Card>
                 <ProTable
                     ref={tableRef}

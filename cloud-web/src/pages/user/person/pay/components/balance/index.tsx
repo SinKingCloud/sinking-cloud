@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import {App, Button, Card, Col, DatePicker, Popover, Row, Segmented, Tag, Typography} from "antd";
+import {App, Button, Card, Col, DatePicker, Popover, Row, Segmented, Spin, Tag, Typography} from "antd";
 import {createStyles} from "antd-style";
 import {Body, Icon, ProTable, ProTableRef, Title, useTheme} from "sinking-antd";
 import useEnum from "@/utils/enum";
@@ -46,6 +46,14 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             width: 100%;
             max-width: 1440px;
             margin: 0 auto !important;
+        `,
+        loadingWrap: css`
+            min-height: ${compact ? 300 : 360}px;
+
+            .ant-spin-nested-loading,
+            .ant-spin-container {
+                min-height: inherit;
+            }
         `,
         overviewCol: css`
             min-width: 0;
@@ -771,7 +779,12 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
     };
 });
 
-export default (): React.ReactNode => {
+type PayPanelProps = {
+    embedded?: boolean;
+};
+
+export default (props: PayPanelProps = {}): React.ReactNode => {
+    const {embedded = false} = props;
     const {message} = App.useApp();
     const theme = useTheme();
     const isCompactMode = theme?.isCompactTheme?.() || false;
@@ -953,8 +966,8 @@ export default (): React.ReactNode => {
         ),
     } : item);
 
-    return (
-        <Body loading={loading}>
+    const content = (
+        <>
             {!loading && (
                 <Row className={styles.layout} gutter={[0, 14]}>
                     <Col className={styles.overviewCol} span={24}>
@@ -1134,6 +1147,16 @@ export default (): React.ReactNode => {
                     </Col>
                 </Row>
             )}
-        </Body>
+        </>
     );
+
+    if (embedded) {
+        return (
+            <Spin size="large" spinning={loading}>
+                <div className={styles.loadingWrap}>{content}</div>
+            </Spin>
+        );
+    }
+
+    return <Body loading={loading}>{content}</Body>;
 };

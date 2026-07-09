@@ -1,5 +1,5 @@
 import React, {useRef} from "react";
-import {Button, Dropdown, Space, Tag, Typography} from "antd";
+import {Button, Dropdown, Space, Spin, Tag, Typography} from "antd";
 import {createStyles} from "antd-style";
 import {Body, ProTable, Title} from "sinking-antd";
 import useEnum from "@/utils/enum";
@@ -31,6 +31,9 @@ const useStyles: any = createStyles((): any => ({
         width: "100%",
         maxWidth: 1440,
         margin: "0 auto",
+    },
+    loadingWrap: {
+        minHeight: 360,
     },
     infoColumn: {
         width: "100%",
@@ -77,7 +80,12 @@ const useStyles: any = createStyles((): any => ({
     },
 }));
 
-export default (): React.ReactNode => {
+type PayPanelProps = {
+    embedded?: boolean;
+};
+
+export default (props: PayPanelProps = {}): React.ReactNode => {
+    const {embedded = false} = props;
     const {styles} = useStyles();
     const infoRef = useRef<InfoRef>({} as InfoRef);
     const [enumData, enumLoading] = useEnum(["pay.order", "pay.order_log", "pay.pay"]) as any;
@@ -283,8 +291,8 @@ export default (): React.ReactNode => {
         },
     ];
 
-    return (
-        <Body loading={enumLoading}>
+    const content = (
+        <>
             <div className={styles.page}>
                 <ProTable
                     rowKey="id"
@@ -316,6 +324,16 @@ export default (): React.ReactNode => {
                 payStatusColors={payStatusColors}
                 logTypeColors={logTypeColors}
             />
-        </Body>
+        </>
     );
+
+    if (embedded) {
+        return (
+            <Spin size="large" spinning={enumLoading}>
+                <div className={styles.loadingWrap}>{content}</div>
+            </Spin>
+        );
+    }
+
+    return <Body loading={enumLoading}>{content}</Body>;
 };

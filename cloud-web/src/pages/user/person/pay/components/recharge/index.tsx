@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from "react";
-import {App, Button, Card, Col, Form, InputNumber, Radio, Row, Typography} from "antd";
+import {App, Button, Card, Col, Form, InputNumber, Radio, Row, Spin, Typography} from "antd";
 import {createStyles} from "antd-style";
 import {Body, Icon, Title, useTheme} from "sinking-antd";
 import useEnum from "@/utils/enum";
@@ -33,6 +33,14 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             width: 100%;
             max-width: 1440px;
             margin: 0 auto;
+        `,
+        loadingWrap: css`
+            min-height: ${compact ? 300 : 360}px;
+
+            .ant-spin-nested-loading,
+            .ant-spin-container {
+                min-height: inherit;
+            }
         `,
         hero: css`
             position: relative;
@@ -240,8 +248,13 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             overflow: hidden;
             border: 1px solid ${borderColor};
             border-radius: ${radius}px;
-            background:
-                linear-gradient(180deg, ${token.colorBgContainer} 0%, ${isDarkMode ? "rgba(255,255,255,0.025)" : "rgba(255,255,255,0.86)"} 100%);
+            background: ${token.colorBgContainer};
+            transition: none;
+
+            > .ant-card-head,
+            > .ant-card-body {
+                transition: none;
+            }
 
             > .ant-card-body {
                 padding: ${cardPadding}px;
@@ -317,7 +330,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             letter-spacing: 0;
             cursor: pointer;
             text-align: left;
-            transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+            transition: none;
 
             .amount-main {
                 display: flex;
@@ -329,7 +342,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 font-weight: 700;
                 letter-spacing: 0;
                 font-variant-numeric: tabular-nums;
-                transition: color 0.18s ease;
+                transition: none;
             }
 
             &:hover {
@@ -370,7 +383,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             border: 1px solid ${token.colorBorderSecondary};
             border-radius: ${token.borderRadius}px;
             background: ${token.colorBgContainer};
-            transition: border-color 0.18s ease, background-color 0.18s ease;
+            transition: none;
 
             .ant-input-number {
                 width: 100%;
@@ -469,7 +482,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             border: 1px solid ${token.colorBorderSecondary};
             border-radius: ${token.borderRadius}px;
             background: ${token.colorBgContainer};
-            transition: border-color 0.18s ease, background-color 0.18s ease;
+            transition: none;
 
             .icon {
                 display: inline-flex;
@@ -480,7 +493,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 height: 20px;
                 font-size: 16px;
                 color: ${token.colorTextTertiary};
-                transition: color 0.18s ease;
+                transition: none;
             }
 
             .name {
@@ -492,7 +505,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
-                transition: color 0.18s ease;
+                transition: none;
             }
 
             .check {
@@ -532,8 +545,13 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
             overflow: hidden;
             border: 1px solid ${borderColor};
             border-radius: ${radius}px;
-            background:
-                linear-gradient(180deg, ${token.colorBgContainer} 0%, ${isDarkMode ? "rgba(255,255,255,0.025)" : "rgba(255,255,255,0.88)"} 100%);
+            background: ${token.colorBgContainer};
+            transition: none;
+
+            > .ant-card-head,
+            > .ant-card-body {
+                transition: none;
+            }
 
             @media (max-width: 930px) {
                 position: static;
@@ -631,7 +649,12 @@ const PayOption = ({value, label, active, className}: { value: string; label: st
     );
 };
 
-export default (): React.ReactNode => {
+type PayPanelProps = {
+    embedded?: boolean;
+};
+
+export default (props: PayPanelProps = {}): React.ReactNode => {
+    const {embedded = false} = props;
     const {message, modal} = App.useApp();
     const [form] = Form.useForm();
     const theme = useTheme();
@@ -666,7 +689,8 @@ export default (): React.ReactNode => {
         }
         return "不限制";
     }, [config]);
-    const currentPayText = enabledPayOptions.find((item) => item.value === payType)?.label || "-";
+    const selectedPayType = payType || enabledPayOptions[0]?.value;
+    const currentPayText = enabledPayOptions.find((item) => item.value === selectedPayType)?.label || "-";
 
     const refreshBalance = async () => {
         setBalanceLoading(true);
@@ -720,7 +744,7 @@ export default (): React.ReactNode => {
         const amount = Number(money || 0);
         const min = Number(config?.min || 0);
         const max = Number(config?.max || 0);
-        const type = values?.type || payType;
+        const type = values?.type || selectedPayType;
         if (amount <= 0) {
             message?.warning("请输入充值金额");
             return;
@@ -804,12 +828,10 @@ export default (): React.ReactNode => {
     };
 
     const pageLoading = loading || enumLoading;
-    const formDisabled = pageLoading;
     const payDisabled = pageLoading || enabledPayOptions.length <= 0;
 
-    return (
-        <Body loading={pageLoading}>
-            <Row className={styles.page} gutter={[0, isCompactMode ? 12 : 14]}>
+    const content = (
+        <Row className={styles.page} gutter={[0, isCompactMode ? 12 : 14]}>
                 <Col span={24}>
                     <Card className={styles.hero} variant="borderless" styles={{body: {padding: 0}}}>
                         <span className="hero-ambient"/>
@@ -861,7 +883,6 @@ export default (): React.ReactNode => {
                                                     key={item}
                                                     type="button"
                                                     className={`${styles.amountItem} ${customMoney === undefined && Number(money) === item ? "active" : ""}`}
-                                                    disabled={formDisabled}
                                                     onClick={() => {
                                                         setCustomMoney(undefined);
                                                         setMoney(item);
@@ -876,7 +897,6 @@ export default (): React.ReactNode => {
                                                     precision={0}
                                                     step={1}
                                                     placeholder="自定义"
-                                                    disabled={formDisabled}
                                                     onChange={(value) => {
                                                         const nextMoney = Number(value || 0);
                                                         setCustomMoney(value === null ? undefined : nextMoney);
@@ -894,8 +914,7 @@ export default (): React.ReactNode => {
                                         <Form.Item name="type" rules={[{required: true, message: "请选择支付方式"}]}>
                                             <Radio.Group
                                                 style={{width: "100%"}}
-                                                disabled={formDisabled}
-                                                value={payType}
+                                                value={selectedPayType}
                                                 onChange={(event) => setPayType(event?.target?.value)}>
                                                 <div className={styles.payOptions}>
                                                     {enabledPayOptions.map((item) => (
@@ -904,7 +923,7 @@ export default (): React.ReactNode => {
                                                                 className={styles.payOption}
                                                                 value={item.value}
                                                                 label={item.label}
-                                                                active={payType === item.value}
+                                                                active={selectedPayType === item.value}
                                                             />
                                                         </Radio>
                                                     ))}
@@ -962,7 +981,16 @@ export default (): React.ReactNode => {
                         </Col>
                     </Row>
                 </Col>
-            </Row>
-        </Body>
+        </Row>
     );
+
+    if (embedded) {
+        return (
+            <Spin size="large" spinning={pageLoading}>
+                <div className={styles.loadingWrap}>{content}</div>
+            </Spin>
+        );
+    }
+
+    return <Body loading={pageLoading}>{content}</Body>;
 };
