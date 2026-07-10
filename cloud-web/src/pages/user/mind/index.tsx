@@ -679,7 +679,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         }
 
         &:hover {
-            border-color: color-mix(in srgb, var(--accent), ${token.colorBorder} 56%);
+            border-color: ${token.colorPrimary};
             box-shadow: ${isDarkMode ? "none" : "0 10px 24px rgba(15, 23, 42, 0.06)"};
         }
 
