@@ -1,5 +1,20 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
-import {App, Button, Card, Drawer, Dropdown, Form, Input, Modal, Select, Tooltip,} from "antd";
+import {
+    App,
+    Button,
+    Card,
+    Col,
+    Drawer,
+    Dropdown,
+    Empty,
+    Form,
+    Input,
+    Modal,
+    Pagination,
+    Row,
+    Select,
+    Tooltip,
+} from "antd";
 import {
     ApartmentOutlined,
     CloseOutlined,
@@ -20,7 +35,7 @@ import {
     SortDescendingOutlined,
 } from "@ant-design/icons";
 import {createStyles} from "antd-style";
-import {Body, ProTable, type ProTableRef} from "sinking-antd";
+import {Body} from "sinking-antd";
 import Mind, {
     getMindStats,
     type MindRef,
@@ -104,12 +119,24 @@ const getStableColor = (value?: string | number) => {
     return previewColors[hash % previewColors.length];
 };
 
+const demoCategoryNames = [
+    "需求分析", "用户研究", "竞品调研", "版本规划", "增长策略", "运营活动",
+    "交互设计", "视觉规范", "前端架构", "后端服务", "数据库设计", "接口文档",
+    "测试方案", "发布流程", "监控告警", "性能优化", "安全合规", "故障复盘",
+    "项目管理", "会议记录", "读书笔记", "课程学习", "灵感收集", "写作素材",
+    "旅行计划", "健康管理", "理财规划", "年度目标", "团队建设", "客户方案",
+];
+
 const initialCategories: MindCategory[] = [
     {id: "product", name: "产品构想"},
     {id: "tech", name: "技术方案"},
     {id: "knowledge", name: "知识整理"},
     {id: "personal", name: "个人计划"},
     {id: "server", name: "服务器管理"},
+    ...demoCategoryNames.slice(0, 5).map((name, index) => ({
+        id: `demo-category-${index + 1}`,
+        name,
+    })),
 ];
 
 const padTime = (value: number) => String(value).padStart(2, "0");
@@ -219,6 +246,31 @@ const templateItems = [
     },
 ];
 
+const demoDocumentTopics = [
+    "产品需求拆解", "季度路线规划", "用户访谈总结", "核心流程优化", "增长实验计划",
+    "技术架构升级", "接口治理方案", "数据库迁移", "性能排查清单", "安全建设计划",
+    "项目里程碑", "版本发布检查", "线上问题复盘", "团队协作流程", "知识库结构",
+    "个人学习计划", "年度目标拆解", "读书笔记整理", "旅行行程规划", "内容选题规划",
+];
+
+const demoDocuments: MindDocument[] = Array.from({length: 7}, (_, index) => {
+    const category = initialCategories[index % initialCategories.length];
+    const topic = demoDocumentTopics[index % demoDocumentTopics.length];
+    const sequence = index + 1;
+    return withStats({
+        id: `mind-demo-${sequence}`,
+        categoryId: category.id,
+        title: `${topic} ${String(sequence).padStart(2, "0")}`,
+        description: `用于验证「${category.name}」分类下的列表滚动、搜索、排序与分页效果。`,
+        tags: [category.name, "演示数据", `第${sequence}组`],
+        version: (index % 6) + 1,
+        shared: index % 7 === 0,
+        createTime: before((index % 28) + 2, index % 8),
+        updateTime: before(index % 16, index % 12),
+        value: defaultValue(topic, getStableColor(category.id)),
+    });
+});
+
 const initialDocuments: MindDocument[] = [
     withStats({
         id: "mind-product-roadmap",
@@ -304,6 +356,7 @@ const initialDocuments: MindDocument[] = [
         updateTime: before(1),
         value: defaultValue("本周计划", "#eb2f96"),
     }),
+    ...demoDocuments,
 ];
 
 const createVersionRecord = (record: MindDocument, remark = "保存快照"): MindVersionRecord => ({
@@ -332,43 +385,83 @@ const downloadDataUrl = (dataUrl: string, filename: string) => {
 const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
     page: css`
         --mind-page-height: calc(100dvh - 177px);
+        --mind-library-min-height: calc(var(--mind-page-height) - 84px);
+        min-height: var(--mind-library-min-height);
 
         @supports not (height: 100dvh) {
             --mind-page-height: calc(100vh - 177px);
         }
     `,
     library: css`
-        display: grid;
-        grid-template-columns: 238px minmax(0, 1fr);
-        gap: 18px;
         min-width: 0;
+        min-height: inherit;
+    `,
+    libraryCard: css`
+        min-height: var(--mind-library-min-height);
+        overflow: hidden;
+        border-radius: ${token.borderRadiusLG}px;
+        background: ${token.colorBgContainer};
+
+        > .ant-card-body {
+            display: grid;
+            grid-template-columns: 238px minmax(0, 1fr);
+            grid-template-rows: auto auto minmax(0, 1fr);
+            min-width: 0;
+            min-height: var(--mind-library-min-height);
+            padding: 0 !important;
+        }
 
         @media (max-width: 900px) {
-            grid-template-columns: 1fr;
-            gap: 12px;
+            > .ant-card-body {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto minmax(0, 1fr);
+            }
         }
     `,
     categoryPanel: css`
-        position: sticky;
-        top: 0;
-        display: flex;
-        flex-direction: column;
+        position: relative;
+        display: block;
+        grid-column: 1;
+        grid-row: 2 / span 2;
+        width: auto;
         min-width: 0;
-        max-height: var(--mind-page-height);
-        padding: 10px;
-        border-radius: ${token.borderRadiusLG}px;
+        min-height: 0;
+        max-height: none;
+        padding: 0;
+        border-radius: 0 0 0 ${token.borderRadiusLG}px;
         background: ${token.colorBgContainer};
-        align-self: start;
+        align-self: stretch;
         overflow: hidden;
 
         @media (max-width: 900px) {
-            position: static;
-            max-height: min(360px, var(--mind-page-height));
+            grid-column: 1;
+            grid-row: 2;
+            width: 100%;
+            max-height: none;
+            border-radius: 0;
+            align-self: stretch;
         }
 
         @media (max-width: 640px) {
+            width: 100%;
             height: auto;
             max-height: none;
+        }
+    `,
+    categoryInner: css`
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+        padding: 10px;
+
+        @media (max-width: 900px) {
+            position: static;
+        }
+
+        @media (max-width: 640px) {
             padding: 9px;
         }
     `,
@@ -442,9 +535,27 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
     categoryScroll: css`
         flex: 1;
         min-height: 0;
-        overflow-y: auto;
-        padding: 0;
+        overflow-y: scroll;
+        padding: 0 3px 0 0;
+        scrollbar-color: ${token.colorBorderSecondary} transparent;
         scrollbar-width: thin;
+
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            border-radius: ${token.borderRadiusSM}px;
+            background: ${token.colorBorderSecondary};
+        }
+
+        &::-webkit-scrollbar-thumb:hover {
+            background: ${token.colorTextQuaternary};
+        }
 
         @media (max-width: 640px) {
             overflow-x: auto;
@@ -566,6 +677,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             flex: 0 0 auto;
             min-height: 34px;
             padding: 0 8px 0 9px;
+            background: ${token.colorFillQuaternary};
 
             .name-wrap {
                 gap: 6px;
@@ -582,67 +694,231 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         }
     `,
     content: css`
+        display: contents;
         min-width: 0;
 
-        > .ant-row > .ant-col:has(.ant-table-wrapper) > .ant-card {
-            margin-top: 0 !important;
-            border-radius: 0 0 ${token.borderRadiusLG}px ${token.borderRadiusLG}px !important;
-            background: ${token.colorBgContainer};
+        > .ant-row {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            grid-column: 2;
+            grid-row: 3;
+            height: 100%;
+            row-gap: 0 !important;
+            column-gap: 0 !important;
+            margin: 0 !important;
+            min-width: 0;
         }
 
-        > .ant-row > .ant-col:has(.ant-table-wrapper) > .ant-card > .ant-card-body {
-            padding-top: 0 !important;
+        > .ant-row > .ant-col {
+            flex: none;
+            width: 100%;
+            max-width: 100%;
+            padding: 0 !important;
+        }
+
+        @media (max-width: 900px) {
+            display: contents;
+
+            > .ant-row {
+                grid-column: 1;
+                grid-row: 4;
+            }
         }
     `,
     contentPanel: css`
-        overflow: hidden;
-        border-radius: ${token.borderRadiusLG}px ${token.borderRadiusLG}px 0 0;
-        background: ${token.colorBgContainer};
-    `,
-    documentTable: css`
-        .ant-table {
-            background: transparent;
-            white-space: normal !important;
-        }
+        display: contents;
 
-        .ant-table-container,
-        .ant-table-content,
-        .ant-table-tbody {
-            background: transparent;
-        }
-
-        .ant-table-tbody > tr > td.ant-table-cell {
-            padding: 0 !important;
-            border-bottom: 0 !important;
-            background: transparent !important;
-        }
-
-        .ant-table-tbody > tr:hover > td.ant-table-cell {
-            background: transparent !important;
+        @media (max-width: 900px) {
+            display: contents;
         }
     `,
-    searchCard: css`
-        position: relative;
-        z-index: 1;
-        margin-bottom: 0;
-        border: 0;
-        border-radius: 0;
+    documentDataCard: css`
+        display: block;
+        flex: 1;
+        width: 100%;
         background: ${token.colorBgContainer};
+        padding: 0 10px 24px;
 
-        > .ant-card-body {
+        &.empty {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            min-width: 0;
-            padding: 16px 16px 12px !important;
+            justify-content: center;
+            min-height: 240px;
+            padding: 24px;
         }
 
         @media (max-width: 640px) {
-            > .ant-card-body {
-                gap: 8px;
-                padding: 12px 12px 10px !important;
-            }
+            padding: 0 11px 12px;
+        }
+    `,
+    documentDataColumn: css`
+        display: flex;
+        flex: 1 1 auto !important;
+        min-height: 0;
+    `,
+    documentPaginationCard: css`
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 15px;
+        background: transparent;
+
+        .ant-pagination {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .ant-pagination-total-text {
+            color: ${token.colorTextTertiary};
+            font-size: 12px;
+        }
+
+        .ant-pagination-options {
+            margin-inline-start: 10px;
+        }
+
+        .ant-pagination-item,
+        .ant-pagination-prev .ant-pagination-item-link,
+        .ant-pagination-next .ant-pagination-item-link {
+            min-width: 24px;
+            height: 24px;
+            margin-inline-end: 4px;
+            border: 0;
+            border-radius: ${token.borderRadiusSM}px;
+            background: transparent;
+            color: ${token.colorTextSecondary};
+            font-size: 11px;
+            line-height: 24px;
+        }
+
+        .ant-pagination-item a {
+            color: inherit;
+        }
+
+        .ant-pagination-item:hover,
+        .ant-pagination-prev:hover .ant-pagination-item-link,
+        .ant-pagination-next:hover .ant-pagination-item-link {
+            background: ${token.colorFillTertiary};
+            color: ${token.colorTextSecondary};
+        }
+
+        .ant-pagination-item-active,
+        .ant-pagination-item-active:hover {
+            background: ${token.colorBgContainer};
+            box-shadow: inset 0 0 0 1px ${token.colorPrimaryBorder};
+            color: ${token.colorPrimary};
+        }
+
+        .ant-pagination-item-active a,
+        .ant-pagination-item-active:hover a {
+            color: ${token.colorPrimary};
+        }
+
+        .ant-pagination-options-size-changer.ant-select .ant-select-selector {
+            height: 24px !important;
+            padding-inline: 7px 22px !important;
+            border: 0 !important;
+            border-radius: ${token.borderRadiusSM}px !important;
+            background: ${token.colorBgContainer} !important;
+            box-shadow: inset 0 0 0 1px ${token.colorBorderSecondary} !important;
+        }
+
+        .ant-pagination-options-size-changer .ant-select-selection-item,
+        .ant-pagination-options-quick-jumper {
+            color: ${token.colorTextTertiary};
+            font-size: 11px;
+            line-height: 24px;
+        }
+
+        .ant-pagination-options-quick-jumper input {
+            width: 32px;
+            height: 24px;
+            margin-inline: 4px;
+            border-radius: ${token.borderRadiusSM}px;
+            color: ${token.colorTextSecondary};
+            font-size: 11px;
+        }
+
+        @media (max-width: 900px) {
+            padding: 12px;
+        }
+    `,
+    documentPaginationColumn: css`
+        margin-top: auto;
+    `,
+    pageSizeSelect: css`
+        && {
+            height: 24px;
+            font-size: 11px;
+        }
+
+        && .ant-select-selector {
+            height: 24px !important;
+            padding-inline: 7px 22px !important;
+            border: 0 !important;
+            border-radius: ${token.borderRadiusSM}px !important;
+            background: ${token.colorBgContainer} !important;
+            box-shadow: inset 0 0 0 1px ${token.colorBorderSecondary} !important;
+        }
+
+        && .ant-select-selection-item {
+            color: ${token.colorTextSecondary} !important;
+            font-size: 11px !important;
+            font-weight: 400 !important;
+            line-height: 24px !important;
+        }
+
+        && .ant-select-arrow {
+            color: ${token.colorTextQuaternary};
+            font-size: 9px;
+        }
+    `,
+    pageSizeDropdown: css`
+        && {
+            padding: 2px;
+            border-radius: ${token.borderRadius}px;
+        }
+
+        && .ant-select-item {
+            min-height: 26px;
+            padding: 4px 8px;
+            border-radius: ${token.borderRadiusSM}px;
+            color: ${token.colorTextSecondary};
+            font-size: 11px;
+            line-height: 18px;
+        }
+
+        && .ant-select-item-option-content {
+            font-size: 11px !important;
+            font-weight: 400;
+        }
+
+        && .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+            background: ${token.colorFillTertiary};
+            color: ${token.colorTextSecondary};
+            font-weight: 400;
+        }
+    `,
+    searchCard: css`
+        grid-column: 2;
+        grid-row: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-width: 0;
+        padding: 16px 16px 12px;
+        background: ${token.colorBgContainer};
+
+        @media (max-width: 640px) {
+            gap: 8px;
+            padding: 12px 12px 10px;
+        }
+
+        @media (max-width: 900px) {
+            grid-column: 1;
+            grid-row: 3;
         }
     `,
     searchBox: css`
@@ -821,6 +1097,8 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         }
     `,
     createHero: css`
+        grid-column: 1 / -1;
+        grid-row: 1;
         position: relative;
         display: flex;
         align-items: center;
@@ -829,7 +1107,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         margin-bottom: 0;
         overflow: hidden;
         border: 0;
-        border-radius: 0;
+        border-radius: ${token.borderRadiusLG}px ${token.borderRadiusLG}px 0 0;
         background: ${isDarkMode
             ? "linear-gradient(118deg, rgba(22,119,255,0.1) 0%, rgba(255,255,255,0.035) 58%, rgba(114,46,209,0.08) 100%)"
             : "linear-gradient(118deg, #f7faff 0%, #eef4ff 58%, #f7f4ff 100%)"};
@@ -1501,7 +1779,6 @@ const MindPage: React.FC = () => {
     const {message, modal} = App.useApp();
     const pageRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<MindRef>(null);
-    const tableRef = useRef<ProTableRef>(null);
     const [form] = Form.useForm<CreateMindForm>();
     const [categoryForm] = Form.useForm<CategoryForm>();
     const selectedTemplateId = Form.useWatch("templateId", form);
@@ -1510,6 +1787,8 @@ const MindPage: React.FC = () => {
     const [activeCategoryId, setActiveCategoryId] = useState(ALL_CATEGORY_ID);
     const [keyword, setKeyword] = useState("");
     const [sortType, setSortType] = useState<MindSortType>("update-desc");
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(12);
     const [selectedId, setSelectedId] = useState<string>();
     const [editorValue, setEditorValue] = useState<MindValue>(initialDocuments[0].value);
     const [editorRevision, setEditorRevision] = useState(0);
@@ -1557,12 +1836,20 @@ const MindPage: React.FC = () => {
             });
     }, [activeCategoryId, documents, keyword, sortType]);
 
-    const tableKey = `${activeCategoryId}-${keyword.trim()}-${sortType}`;
     const activeSortLabel = mindSortOptions.find((item) => item.value === sortType)?.label || "最近更新";
+    const pagedDocuments = useMemo(() => {
+        const start = (page - 1) * pageSize;
+        return filteredDocuments.slice(start, start + pageSize);
+    }, [filteredDocuments, page, pageSize]);
 
     useEffect(() => {
-        tableRef.current?.refreshTableData?.();
-    }, [documents, sortType]);
+        setPage(1);
+    }, [activeCategoryId, keyword, sortType]);
+
+    useEffect(() => {
+        const lastPage = Math.max(1, Math.ceil(filteredDocuments.length / pageSize));
+        setPage((current) => Math.min(current, lastPage));
+    }, [filteredDocuments.length, pageSize]);
 
     const openDocument = (record: MindDocument) => {
         setSelectedId(record.id);
@@ -1916,7 +2203,9 @@ const MindPage: React.FC = () => {
         <Body space={false}>
             <div ref={pageRef} className={styles.page} style={pageStyle}>
                 <div className={styles.library}>
+                    <Card className={styles.libraryCard}>
                     <aside className={styles.categoryPanel} aria-label="导图分类">
+                        <div className={styles.categoryInner}>
                         <div className={styles.categoryScroll}>
                             <div className={styles.categoryGrid}>
                                 {categoryItems.map((item) => (
@@ -1970,6 +2259,7 @@ const MindPage: React.FC = () => {
                                 <span>添加分类</span>
                             </button>
                         </div>
+                        </div>
                     </aside>
 
                     <div className={styles.content}>
@@ -1990,7 +2280,7 @@ const MindPage: React.FC = () => {
                                 <span>新建导图</span>
                             </button>
                         </section>
-                        <Card className={styles.searchCard}>
+                        <div className={styles.searchCard}>
                             <Input
                                 allowClear
                                 className={styles.searchBox}
@@ -2021,42 +2311,14 @@ const MindPage: React.FC = () => {
                                     <DownOutlined className="arrow"/>
                                 </button>
                             </Dropdown>
-                        </Card>
                         </div>
-                        <ProTable
-                            key={tableKey}
-                            ref={tableRef}
-                            rowKey="id"
-                            search={false}
-                            pageHidden={filteredDocuments.length <= 0}
-                            defaultPage={1}
-                            defaultPageSize={12}
-                            tableProps={{
-                                showHeader: false,
-                                className: styles.documentTable,
-                                style: {whiteSpace: "normal"},
-                            } as any}
-                            request={async (params) => {
-                                const current = Number(params?.current || 1);
-                                const pageSize = Number(params?.pageSize || 12);
-                                const start = (current - 1) * pageSize;
-                                const list = filteredDocuments.slice(start, start + pageSize);
-                                return {
-                                    success: true,
-                                    data: list.length <= 0 ? [] : [{
-                                        id: "mind-document-card-list",
-                                        list,
-                                    }],
-                                    total: filteredDocuments.length,
-                                };
-                            }}
-                            columns={[{
-                                title: "导图",
-                                dataIndex: "list",
-                                render: (_: any, record: {list: MindDocument[]}) => (
-                                    <div className={styles.documentGrid}>
-                                        {record.list.map((item) => {
-                                            return (
+                        </div>
+                        <Row>
+                            <Col className={styles.documentDataColumn} span={24}>
+                                <div className={`${styles.documentDataCard} ${pagedDocuments.length <= 0 ? "empty" : ""}`}>
+                                    {pagedDocuments.length > 0 ? (
+                                        <div className={styles.documentGrid}>
+                                            {pagedDocuments.map((item) => (
                                                 <Card
                                                     key={item.id}
                                                     className={styles.documentCard}
@@ -2094,13 +2356,44 @@ const MindPage: React.FC = () => {
                                                         </div>
                                                     </div>
                                                 </Card>
-                                            );
-                                        })}
+                                            ))}
+                                        </div>
+                                    ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无导图"/>}
+                                </div>
+                            </Col>
+                            {filteredDocuments.length > 0 && (
+                                <Col className={styles.documentPaginationColumn} span={24}>
+                                    <div className={styles.documentPaginationCard}>
+                                        <Pagination
+                                            current={page}
+                                            pageSize={pageSize}
+                                            total={filteredDocuments.length}
+                                            align="center"
+                                            size="small"
+                                            responsive
+                                            showQuickJumper
+                                            showLessItems
+                                            showSizeChanger={{
+                                                showSearch: false,
+                                                variant: "filled",
+                                                size: "small",
+                                                className: styles.pageSizeSelect,
+                                                popupClassName: styles.pageSizeDropdown,
+                                            }}
+                                            pageSizeOptions={[10, 20, 50, 100]}
+                                            showTotal={(total, range) => `第 ${range[0]}-${range[1]} 条 / 共 ${total} 条`}
+                                            onChange={(nextPage, nextPageSize) => {
+                                                const sizeChanged = nextPageSize !== pageSize;
+                                                setPageSize(nextPageSize);
+                                                setPage(sizeChanged ? 1 : nextPage);
+                                            }}
+                                        />
                                     </div>
-                                ),
-                            } as any]}
-                        />
+                                </Col>
+                            )}
+                        </Row>
                     </div>
+                    </Card>
                 </div>
             </div>
 
