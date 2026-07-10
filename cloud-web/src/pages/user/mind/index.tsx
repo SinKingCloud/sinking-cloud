@@ -6,6 +6,7 @@ import {
     CopyOutlined,
     DeleteOutlined,
     DownloadOutlined,
+    DownOutlined,
     EditOutlined,
     FileImageOutlined,
     FileMarkdownOutlined,
@@ -14,12 +15,12 @@ import {
     MoreOutlined,
     PlusOutlined,
     SaveOutlined,
+    SearchOutlined,
     ShareAltOutlined,
-    StarFilled,
-    StarOutlined,
+    SortDescendingOutlined,
 } from "@ant-design/icons";
 import {createStyles} from "antd-style";
-import {Body, ProTable, type ProTableRef, Title} from "sinking-antd";
+import {Body, ProTable, type ProTableRef} from "sinking-antd";
 import Mind, {
     getMindStats,
     type MindRef,
@@ -44,7 +45,6 @@ type MindDocument = {
     nodeCount: number;
     depth: number;
     version: number;
-    favorite?: boolean;
     shared?: boolean;
     createTime: string;
     updateTime: string;
@@ -71,6 +71,13 @@ type CreateMindForm = {
 type CategoryForm = {
     name: string;
 };
+
+type MindSortType = "update-desc" | "create-desc";
+
+const mindSortOptions: Array<{label: string; value: MindSortType}> = [
+    {label: "最近更新", value: "update-desc"},
+    {label: "最近创建", value: "create-desc"},
+];
 
 const ALL_CATEGORY_ID = "all";
 
@@ -141,6 +148,25 @@ const MindPreviewSvg: React.FC = () => (
     </svg>
 );
 
+const MindCreateHeroGraphic: React.FC = () => (
+    <svg className="hero-graphic" viewBox="0 0 390 154" aria-hidden="true" focusable="false">
+        <ellipse className="hero-orbit" cx="239" cy="77" rx="126" ry="61"/>
+        <path className="hero-link" d="M219 77C184 77 181 40 143 40M219 77C181 77 180 116 139 116"/>
+        <path className="hero-link secondary" d="M267 77C302 77 303 38 341 38M267 77C304 77 306 115 345 115"/>
+        <path className="hero-link" d="M243 59V25M243 95V130"/>
+        <rect className="hero-node" x="91" y="29" width="57" height="22" rx="7"/>
+        <rect className="hero-node" x="79" y="105" width="65" height="22" rx="7"/>
+        <rect className="hero-node secondary" x="336" y="27" width="48" height="22" rx="7"/>
+        <rect className="hero-node secondary" x="340" y="104" width="45" height="22" rx="7"/>
+        <rect className="hero-node" x="219" y="8" width="48" height="20" rx="7"/>
+        <rect className="hero-node secondary" x="217" y="127" width="52" height="20" rx="7"/>
+        <rect className="hero-core" x="217" y="57" width="52" height="40" rx="12"/>
+        <circle className="hero-dot" cx="243" cy="77" r="4"/>
+        <circle className="hero-dot" cx="113" cy="40" r="2.5"/>
+        <circle className="hero-dot" cx="362" cy="115" r="2.5"/>
+    </svg>
+);
+
 const withStats = (data: Omit<MindDocument, "nodeCount" | "depth">): MindDocument => {
     const stats = getMindStats(data.value);
     return {
@@ -200,7 +226,6 @@ const initialDocuments: MindDocument[] = [
         title: "云上豁者产品路线图",
         description: "个人工作台、博客主页和工具插件的产品结构。",
         tags: ["工作台", "博客", "插件"],
-        favorite: true,
         shared: true,
         version: 8,
         createTime: before(9),
@@ -239,7 +264,6 @@ const initialDocuments: MindDocument[] = [
         title: "三节点高可用部署",
         description: "数据库、缓存、消息队列和应用层拆分。",
         tags: ["PostgreSQL", "Redis", "NATS"],
-        favorite: true,
         version: 5,
         createTime: before(5),
         updateTime: before(2),
@@ -308,14 +332,9 @@ const downloadDataUrl = (dataUrl: string, filename: string) => {
 const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
     page: css`
         --mind-page-height: calc(100dvh - 177px);
-        min-height: var(--mind-page-height);
 
         @supports not (height: 100dvh) {
             --mind-page-height: calc(100vh - 177px);
-        }
-
-        @media (max-width: 640px) {
-            min-height: auto;
         }
     `,
     library: css`
@@ -336,34 +355,11 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         flex-direction: column;
         min-width: 0;
         max-height: var(--mind-page-height);
-        border: 0;
+        padding: 10px;
         border-radius: ${token.borderRadiusLG}px;
         background: ${token.colorBgContainer};
         align-self: start;
         overflow: hidden;
-
-        > .ant-card-head {
-            min-height: 48px;
-            padding: 0 12px;
-            border-bottom: 1px solid ${token.colorBorderSecondary};
-        }
-
-        > .ant-card-head .ant-card-head-title {
-            padding: 11px 0;
-        }
-
-        > .ant-card-head .ant-card-extra {
-            padding: 0;
-        }
-
-        > .ant-card-body {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-height: 0;
-            padding: 7px;
-            overflow: hidden;
-        }
 
         @media (max-width: 900px) {
             position: static;
@@ -373,18 +369,73 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         @media (max-width: 640px) {
             height: auto;
             max-height: none;
+            padding: 9px;
+        }
+    `,
+    categoryFooter: css`
+        flex: none;
+        padding-top: 8px;
 
-            > .ant-card-head {
-                min-height: 44px;
-                padding: 0 10px;
-            }
+        @media (max-width: 640px) {
+            display: none;
+        }
+    `,
+    categoryAddCard: css`
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        min-width: 0;
+        min-height: 38px;
+        padding: 0 10px;
+        border: 1px dashed ${token.colorBorder};
+        border-radius: ${token.borderRadius}px;
+        outline: none;
+        appearance: none;
+        background: transparent;
+        color: ${token.colorTextTertiary};
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+        line-height: 20px;
+        text-align: left;
+        transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
 
-            > .ant-card-head .ant-card-head-title {
-                padding: 9px 0;
-            }
+        &.mobile {
+            display: none;
+        }
 
-            > .ant-card-body {
-                padding: 7px 8px;
+        &:hover,
+        &:focus-visible {
+            border-color: ${token.colorPrimaryBorder};
+            background: ${token.colorFillQuaternary};
+            color: ${token.colorPrimary};
+        }
+
+        &:focus-visible {
+            box-shadow: 0 0 0 2px ${token.colorPrimaryBg};
+        }
+
+        .icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: ${token.borderRadiusSM}px;
+            background: ${token.colorFillTertiary};
+            font-size: 10px;
+        }
+
+        @media (max-width: 640px) {
+            min-height: 34px;
+            padding: 0 9px;
+
+            &.mobile {
+                display: flex;
+                flex: 0 0 auto;
+                width: auto;
+                white-space: nowrap;
             }
         }
     `,
@@ -392,13 +443,13 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         flex: 1;
         min-height: 0;
         overflow-y: auto;
-        padding-right: 2px;
+        padding: 0;
         scrollbar-width: thin;
 
         @media (max-width: 640px) {
             overflow-x: auto;
             overflow-y: hidden;
-            padding-right: 0;
+            padding: 0;
             scrollbar-width: none;
 
             &::-webkit-scrollbar {
@@ -406,18 +457,10 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             }
         }
     `,
-    categoryFooter: css`
-        flex: none;
-        padding-top: 7px;
-
-        @media (max-width: 640px) {
-            display: none;
-        }
-    `,
     categoryGrid: css`
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 4px;
 
         @media (max-width: 640px) {
             flex-direction: row;
@@ -430,8 +473,8 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         display: flex;
         align-items: center;
         min-width: 0;
-        min-height: 38px;
-        padding: 0 5px 0 10px;
+        min-height: 40px;
+        padding: 0 7px 0 11px;
         overflow: hidden;
         border: 0;
         border-radius: ${token.borderRadius}px;
@@ -441,12 +484,12 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
 
         &:hover,
         &.active {
-            background: ${isDarkMode ? "rgba(255,255,255,0.04)" : token.colorFillQuaternary};
+            background: ${token.colorFillQuaternary};
         }
 
         &.active {
             color: ${token.colorTextHeading};
-            background: ${isDarkMode ? "color-mix(in srgb, var(--accent), transparent 86%)" : "color-mix(in srgb, var(--accent), #ffffff 92%)"};
+            background: ${token.colorPrimaryBg};
         }
 
         .row {
@@ -478,7 +521,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             height: 7px;
             border-radius: 50%;
             background: color-mix(in srgb, var(--accent), ${token.colorTextTertiary} 8%);
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 86%);
+            opacity: 0.62;
         }
 
         .action {
@@ -512,6 +555,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         &.active .color {
             background: var(--accent);
             box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 78%);
+            opacity: 1;
         }
 
         .action .ant-btn {
@@ -537,58 +581,23 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             }
         }
     `,
-    categoryAddCard: css`
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        min-width: 0;
-        min-height: 38px;
-        padding: 0 10px;
-        border: 1px dashed ${token.colorBorder};
-        border-radius: ${token.borderRadius}px;
-        background: transparent;
-        color: ${token.colorTextTertiary};
-        cursor: pointer;
-        font-size: 13px;
-        line-height: 20px;
-        text-align: left;
-        transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
-
-        &.mobile {
-            display: none;
-        }
-
-        &:hover {
-            border-color: ${token.colorPrimaryBorder};
-            background: ${isDarkMode ? "rgba(255,255,255,0.035)" : token.colorFillQuaternary};
-            color: ${token.colorPrimary};
-        }
-
-        .icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 18px;
-            height: 18px;
-            border-radius: ${token.borderRadiusSM}px;
-            background: ${isDarkMode ? "rgba(255,255,255,0.04)" : token.colorFillTertiary};
-        }
-
-        @media (max-width: 640px) {
-            min-height: 34px;
-            padding: 0 9px;
-
-            &.mobile {
-                display: flex;
-                flex: 0 0 auto;
-                width: auto;
-                white-space: nowrap;
-            }
-        }
-    `,
     content: css`
         min-width: 0;
+
+        > .ant-row > .ant-col:has(.ant-table-wrapper) > .ant-card {
+            margin-top: 0 !important;
+            border-radius: 0 0 ${token.borderRadiusLG}px ${token.borderRadiusLG}px !important;
+            background: ${token.colorBgContainer};
+        }
+
+        > .ant-row > .ant-col:has(.ant-table-wrapper) > .ant-card > .ant-card-body {
+            padding-top: 0 !important;
+        }
+    `,
+    contentPanel: css`
+        overflow: hidden;
+        border-radius: ${token.borderRadiusLG}px ${token.borderRadiusLG}px 0 0;
+        background: ${token.colorBgContainer};
     `,
     documentTable: css`
         .ant-table {
@@ -612,56 +621,458 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             background: transparent !important;
         }
     `,
-    tableHeader: css`
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        width: 100%;
-        min-width: 0;
+    searchCard: css`
+        position: relative;
+        z-index: 1;
+        margin-bottom: 0;
+        border: 0;
+        border-radius: 0;
+        background: ${token.colorBgContainer};
 
-        > *:first-child {
-            flex: none;
+        > .ant-card-body {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            min-width: 0;
+            padding: 16px 16px 12px !important;
         }
 
         @media (max-width: 640px) {
-            align-items: stretch;
-            flex-direction: column;
-            gap: 10px;
+            > .ant-card-body {
+                gap: 8px;
+                padding: 12px 12px 10px !important;
+            }
         }
     `,
     searchBox: css`
-        width: 320px;
+        flex: 0 1 300px;
+        width: 300px;
+        max-width: 100%;
+        min-width: 0;
 
-        &.ant-input-search > .ant-input,
-        &.ant-input-search > .ant-input-affix-wrapper {
-            border-top-right-radius: 0 !important;
-            border-bottom-right-radius: 0 !important;
+        &.ant-input-affix-wrapper {
+            height: 36px;
+            padding: 0 11px;
+            border: 1px solid transparent;
+            border-radius: ${token.borderRadiusSM}px;
+            background: ${token.colorFillQuaternary};
+            box-shadow: none;
+            transition: border-color 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
         }
 
-        &.ant-input-search > .ant-btn,
-        &.ant-input-search > .ant-input-search-button,
-        &.ant-input-search > .ant-btn-compact-last-item {
-            border-top-left-radius: 0 !important;
-            border-bottom-left-radius: 0 !important;
+        &.ant-input-affix-wrapper:hover {
+            background: color-mix(in srgb, ${token.colorFillQuaternary}, ${token.colorBgContainer} 44%);
+        }
+
+        &.ant-input-affix-wrapper-focused {
+            border-color: ${token.colorPrimaryBorder};
+            background: ${token.colorBgContainer};
+            box-shadow: 0 0 0 3px ${token.colorPrimaryBg};
+        }
+
+        .ant-input-prefix {
+            margin-right: 8px;
+            color: ${token.colorTextTertiary};
+            font-size: 14px;
+        }
+
+        .ant-input {
+            background: transparent;
+            color: color-mix(in srgb, ${token.colorTextSecondary}, ${token.colorBgContainer} 24%);
+            font-size: 11px;
+        }
+
+        .ant-input::placeholder {
+            color: ${token.colorTextQuaternary};
+            font-size: 11px;
         }
 
         @media (max-width: 820px) {
+            flex-basis: 260px;
             width: 260px;
         }
 
         @media (max-width: 640px) {
-            width: 100%;
+            flex: 1 1 auto;
+            width: auto;
+        }
+    `,
+    sortTrigger: css`
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        height: 32px;
+        padding: 0 8px;
+        border: 1px solid transparent;
+        border-radius: ${token.borderRadiusSM}px;
+        outline: none;
+        appearance: none;
+        background: ${token.colorFillQuaternary};
+        color: ${token.colorTextSecondary};
+        cursor: pointer;
+        font: inherit;
+        line-height: 1;
+        transition: background-color 0.16s ease, color 0.16s ease;
+
+        .marker {
+            color: ${token.colorTextQuaternary};
+            font-size: 11px;
+        }
+
+        .value {
+            color: ${token.colorTextTertiary};
+            font-size: 11px;
+            font-weight: 400;
+            white-space: nowrap;
+            transition: color 0.16s ease;
+        }
+
+        .arrow {
+            color: ${token.colorTextQuaternary};
+            font-size: 9px;
+            transition: color 0.16s ease, transform 0.16s ease;
+        }
+
+        &:hover,
+        &.ant-dropdown-open {
+            background: ${token.colorFillSecondary};
+        }
+
+        &:hover .value,
+        &.ant-dropdown-open .value {
+            color: ${token.colorTextSecondary};
+        }
+
+        &.ant-dropdown-open .arrow {
+            color: ${token.colorTextTertiary};
+            transform: rotate(180deg);
+        }
+
+        &:focus-visible {
+            border-color: ${token.colorPrimaryBorder};
+            background: ${token.colorBgContainer};
+            box-shadow: 0 0 0 3px ${token.colorPrimaryBg};
+        }
+
+        @media (max-width: 640px) {
+            flex: 0 0 auto;
+        }
+    `,
+    sortDropdown: css`
+        && {
+            min-width: 100px;
+            padding: 0;
+            border-radius: ${token.borderRadius}px;
+        }
+
+        && .ant-dropdown-menu {
+            padding: 2px !important;
+            border-radius: ${token.borderRadius}px !important;
+            background: ${token.colorBgElevated};
+            box-shadow: ${token.boxShadowSecondary};
+        }
+
+        && .ant-dropdown-menu .ant-dropdown-menu-item {
+            min-height: 26px !important;
+            margin: 0 !important;
+            padding: 0 8px !important;
+            border-radius: ${token.borderRadiusSM}px !important;
+            color: ${token.colorTextTertiary};
+            font-size: 11px !important;
+            font-weight: 400;
+            line-height: 26px !important;
+        }
+
+        && .ant-dropdown-menu .ant-dropdown-menu-item .ant-dropdown-menu-title-content {
+            font-size: 11px !important;
+            line-height: 26px !important;
+        }
+
+        && .ant-dropdown-menu .ant-dropdown-menu-item:hover {
+            background: ${token.colorFillQuaternary};
+            color: ${token.colorTextSecondary};
+        }
+
+        && .ant-dropdown-menu .ant-dropdown-menu-item-selected,
+        && .ant-dropdown-menu .ant-dropdown-menu-item-selected:hover {
+            background: color-mix(in srgb, ${token.colorPrimary}, ${token.colorBgElevated} 94%);
+            color: ${token.colorTextSecondary};
+        }
+
+        && .ant-dropdown-menu .ant-dropdown-menu-item .ant-dropdown-menu-item-icon {
+            margin-inline-end: 4px !important;
+            color: ${token.colorTextQuaternary};
+            font-size: 9px !important;
         }
     `,
     documentGrid: css`
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(208px, 1fr));
-        gap: 12px;
+        gap: 14px;
+        padding: 5px 6px 8px;
 
         @media (max-width: 640px) {
             grid-template-columns: 1fr;
             gap: 10px;
+            padding: 3px 1px 6px;
+        }
+    `,
+    createHero: css`
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 128px;
+        margin-bottom: 0;
+        overflow: hidden;
+        border: 0;
+        border-radius: 0;
+        background: ${isDarkMode
+            ? "linear-gradient(118deg, rgba(22,119,255,0.1) 0%, rgba(255,255,255,0.035) 58%, rgba(114,46,209,0.08) 100%)"
+            : "linear-gradient(118deg, #f7faff 0%, #eef4ff 58%, #f7f4ff 100%)"};
+        box-shadow: none;
+
+        &::before {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(72, 132, 202, 0.055) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(72, 132, 202, 0.055) 1px, transparent 1px);
+            background-size: 24px 24px;
+            content: "";
+            -webkit-mask-image: linear-gradient(90deg, transparent 16%, rgba(0, 0, 0, 0.18) 55%, #000 100%);
+            mask-image: linear-gradient(90deg, transparent 16%, rgba(0, 0, 0, 0.18) 55%, #000 100%);
+            pointer-events: none;
+        }
+
+        &::after {
+            position: absolute;
+            top: 50%;
+            right: 20%;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: color-mix(in srgb, ${token.colorPrimary}, transparent 90%);
+            content: "";
+            filter: blur(48px);
+            pointer-events: none;
+            transform: translateY(-50%);
+        }
+
+        .hero-copy {
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            min-width: 0;
+            max-width: 68%;
+            padding: 18px 24px 19px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: color-mix(in srgb, ${token.colorPrimary}, ${token.colorTextTertiary} 62%);
+            font-size: 10px;
+            font-weight: 600;
+            line-height: 17px;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: color-mix(in srgb, ${token.colorPrimary}, #ffffff 28%);
+            box-shadow: 0 0 0 4px color-mix(in srgb, ${token.colorPrimary}, transparent 91%);
+        }
+
+        .hero-title {
+            margin-top: 3px;
+            color: color-mix(in srgb, ${token.colorTextHeading}, transparent 8%);
+            font-size: 19px;
+            font-weight: 600;
+            line-height: 27px;
+            letter-spacing: 0.005em;
+        }
+
+        .hero-desc {
+            max-width: 480px;
+            margin-top: 2px;
+            color: ${token.colorTextTertiary};
+            font-size: 12px;
+            line-height: 19px;
+        }
+
+        .create-button {
+            position: relative;
+            z-index: 3;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: none;
+            box-sizing: border-box;
+            width: auto;
+            min-width: 88px;
+            height: 36px;
+            margin: 0 24px 0 0;
+            padding: 0 17px;
+            border: 0;
+            border-radius: ${token.borderRadius}px;
+            outline: none;
+            appearance: none;
+            background: ${token.colorPrimary};
+            color: #ffffff;
+            cursor: pointer;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1;
+            white-space: nowrap;
+            transform: none;
+            transition: background-color 0.18s ease;
+        }
+
+        .create-button:hover,
+        .create-button:focus-visible {
+            background: ${token.colorPrimaryHover};
+            color: #ffffff;
+            transform: none;
+        }
+
+        .create-button:focus-visible {
+            box-shadow: 0 0 0 3px ${token.colorPrimaryBg};
+        }
+
+        .create-button:active {
+            background: ${token.colorPrimaryActive};
+            transform: none;
+        }
+
+        .hero-visual {
+            position: absolute;
+            top: 0;
+            right: 106px;
+            z-index: 1;
+            width: 38%;
+            height: 100%;
+            opacity: 0.34;
+            pointer-events: none;
+        }
+
+        .hero-graphic {
+            display: block;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .hero-orbit {
+            fill: none;
+            stroke: color-mix(in srgb, ${token.colorPrimary}, transparent 82%);
+            stroke-dasharray: 5 7;
+            stroke-width: 1;
+        }
+
+        .hero-link {
+            fill: none;
+            stroke: color-mix(in srgb, ${token.colorPrimary}, transparent 62%);
+            stroke-linecap: round;
+            stroke-width: 1.3;
+        }
+
+        .hero-link.secondary {
+            stroke: rgba(114, 46, 209, 0.3);
+        }
+
+        .hero-node {
+            fill: ${isDarkMode ? "rgba(255,255,255,0.045)" : "rgba(255,255,255,0.58)"};
+            stroke: color-mix(in srgb, ${token.colorPrimary}, transparent 58%);
+            stroke-width: 1;
+        }
+
+        .hero-node.secondary {
+            stroke: rgba(114, 46, 209, 0.34);
+        }
+
+        .hero-core {
+            fill: color-mix(in srgb, ${token.colorPrimary}, transparent 42%);
+            stroke: color-mix(in srgb, ${token.colorPrimary}, #ffffff 48%);
+            stroke-width: 1;
+        }
+
+        .hero-dot {
+            fill: color-mix(in srgb, ${token.colorPrimary}, #ffffff 22%);
+        }
+
+        @media (max-width: 720px) {
+            min-height: 126px;
+
+            .hero-copy {
+                max-width: calc(100% - 118px);
+                padding: 16px 18px;
+            }
+
+            .hero-title {
+                font-size: 17px;
+                line-height: 24px;
+            }
+
+            .hero-desc {
+                display: -webkit-box;
+                overflow: hidden;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+            }
+
+            .create-button {
+                height: 36px;
+                margin-right: 16px;
+            }
+
+            .hero-visual {
+                right: 76px;
+                width: 50%;
+                opacity: 0.2;
+            }
+        }
+
+        @media (max-width: 420px) {
+            min-height: 132px;
+
+            .hero-copy {
+                max-width: calc(100% - 104px);
+                padding: 15px 8px 15px 16px;
+            }
+
+            .eyebrow {
+                letter-spacing: 0.06em;
+            }
+
+            .hero-title {
+                font-size: 15px;
+                line-height: 22px;
+            }
+
+            .hero-desc {
+                font-size: 11px;
+                line-height: 17px;
+            }
+
+            .create-button {
+                margin-right: 12px;
+                padding: 0 14px;
+            }
+
+            .hero-visual {
+                right: 58px;
+                width: 64%;
+                opacity: 0.13;
+            }
         }
     `,
     documentCard: css`
@@ -672,7 +1083,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         border-radius: ${token.borderRadiusLG}px;
         background: ${token.colorBgContainer};
         cursor: pointer;
-        transition: border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+        transition: border-color 0.16s ease, transform 0.16s ease;
 
         &.ant-card > .ant-card-body {
             padding: 0 !important;
@@ -680,7 +1091,6 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
 
         &:hover {
             border-color: ${token.colorPrimary};
-            box-shadow: ${isDarkMode ? "none" : "0 10px 24px rgba(15, 23, 42, 0.06)"};
         }
 
         .preview {
@@ -721,16 +1131,12 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             stroke-width: 1.2;
         }
 
-        .preview-root {
-            filter: ${isDarkMode ? "none" : "drop-shadow(0 4px 8px rgba(15, 23, 42, 0.06))"};
-        }
-
         .preview-dot {
             fill: color-mix(in srgb, var(--accent), ${token.colorBgContainer} 18%);
         }
 
         .body {
-            padding: 9px 10px 10px;
+            padding: 11px 13px 12px;
         }
 
         .head {
@@ -746,7 +1152,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             align-items: center;
             gap: 2px;
             flex: none;
-            margin-right: -4px;
+            margin-right: 0;
         }
 
         .title {
@@ -803,55 +1209,59 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
 
         @media (max-width: 640px) {
             min-height: 0;
+            border-color: ${token.colorBorderSecondary};
 
             > .ant-card-body {
-                display: grid;
-                grid-template-columns: 108px minmax(0, 1fr);
+                display: block;
             }
 
             .preview {
-                height: auto;
-                min-height: 104px;
-                border-right: 1px solid ${token.colorBorderSecondary};
-                border-bottom: 0;
+                height: 124px;
+                min-height: 0;
+                border-right: 0;
+                border-bottom: 1px solid ${token.colorBorderSecondary};
+            }
+
+            .mind-preview {
+                transform: scale(1.08);
             }
 
             .body {
                 min-width: 0;
-                padding: 9px 10px;
+                padding: 12px 14px 13px;
             }
 
             .head {
-                gap: 6px;
-                min-height: 22px;
+                gap: 8px;
+                min-height: 24px;
             }
 
             .title {
-                font-size: 13px;
-                line-height: 20px;
+                font-size: 14px;
+                line-height: 21px;
             }
 
             .desc {
-                -webkit-line-clamp: 2;
-                min-height: auto;
-                margin-top: 2px;
+                -webkit-line-clamp: 1;
+                min-height: 18px;
+                margin-top: 3px;
             }
 
             .meta {
-                flex-wrap: wrap;
-                justify-content: flex-start;
-                gap: 3px 10px;
-                margin-top: 6px;
+                flex-wrap: nowrap;
+                justify-content: space-between;
+                gap: 12px;
+                margin-top: 8px;
             }
         }
 
         @media (max-width: 420px) {
-            > .ant-card-body {
-                grid-template-columns: 92px minmax(0, 1fr);
+            .preview {
+                height: 112px;
             }
 
-            .preview {
-                min-height: 96px;
+            .body {
+                padding: 11px 12px 12px;
             }
         }
 
@@ -864,7 +1274,6 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         border: 1px solid ${token.colorBorderSecondary};
         border-radius: ${token.borderRadiusLG}px;
         background: ${token.colorBgContainer};
-        box-shadow: ${isDarkMode ? "none" : "0 14px 34px rgba(18,30,46,0.055)"};
     `,
     editorDrawer: css`
         .ant-drawer-content-wrapper {
@@ -1100,6 +1509,7 @@ const MindPage: React.FC = () => {
     const [documents, setDocuments] = useState<MindDocument[]>(initialDocuments);
     const [activeCategoryId, setActiveCategoryId] = useState(ALL_CATEGORY_ID);
     const [keyword, setKeyword] = useState("");
+    const [sortType, setSortType] = useState<MindSortType>("update-desc");
     const [selectedId, setSelectedId] = useState<string>();
     const [editorValue, setEditorValue] = useState<MindValue>(initialDocuments[0].value);
     const [editorRevision, setEditorRevision] = useState(0);
@@ -1141,16 +1551,18 @@ const MindPage: React.FC = () => {
         return documents
             .filter((item) => activeCategoryId === ALL_CATEGORY_ID || item.categoryId === activeCategoryId)
             .filter((item) => !search || `${item.title} ${item.description} ${item.tags.join(" ")}`.toLowerCase().includes(search))
-            .sort((a, b) => new Date(b.updateTime.replace(/-/g, "/")).getTime() - new Date(a.updateTime.replace(/-/g, "/")).getTime());
-    }, [activeCategoryId, documents, keyword]);
+            .sort((a, b) => {
+                const field = sortType === "create-desc" ? "createTime" : "updateTime";
+                return new Date(b[field].replace(/-/g, "/")).getTime() - new Date(a[field].replace(/-/g, "/")).getTime();
+            });
+    }, [activeCategoryId, documents, keyword, sortType]);
 
-    const currentCategory = categories.find((item) => item.id === activeCategoryId);
-    const categoryName = activeCategoryId === ALL_CATEGORY_ID ? "全部导图" : currentCategory?.name || "导图";
-    const tableKey = `${activeCategoryId}-${keyword.trim()}`;
+    const tableKey = `${activeCategoryId}-${keyword.trim()}-${sortType}`;
+    const activeSortLabel = mindSortOptions.find((item) => item.value === sortType)?.label || "最近更新";
 
     useEffect(() => {
         tableRef.current?.refreshTableData?.();
-    }, [documents]);
+    }, [documents, sortType]);
 
     const openDocument = (record: MindDocument) => {
         setSelectedId(record.id);
@@ -1303,7 +1715,6 @@ const MindPage: React.FC = () => {
             id: `mind-${Date.now().toString(36)}`,
             title: `${record.title} 副本`,
             value: cloneValue(record.value),
-            favorite: false,
             shared: false,
             version: 1,
             createTime: now,
@@ -1337,10 +1748,6 @@ const MindPage: React.FC = () => {
                 message.success("导图已删除");
             },
         });
-    };
-
-    const toggleFavorite = (record: MindDocument) => {
-        setDocuments((items) => items.map((item) => item.id === record.id ? {...item, favorite: !item.favorite} : item));
     };
 
     const toggleShare = (record: MindDocument) => {
@@ -1430,8 +1837,6 @@ const MindPage: React.FC = () => {
             }},
     ];
 
-    const categoryMap = useMemo(() => new Map(categories.map((item) => [item.id, item])), [categories]);
-
     const categoryItems = [
         {id: ALL_CATEGORY_ID, name: "全部导图", accent: getStableColor(ALL_CATEGORY_ID)},
         ...categories.map((item) => ({
@@ -1511,10 +1916,7 @@ const MindPage: React.FC = () => {
         <Body space={false}>
             <div ref={pageRef} className={styles.page} style={pageStyle}>
                 <div className={styles.library}>
-                    <Card
-                        className={styles.categoryPanel}
-                        title={<Title>导图分类</Title>}
-                    >
+                    <aside className={styles.categoryPanel} aria-label="导图分类">
                         <div className={styles.categoryScroll}>
                             <div className={styles.categoryGrid}>
                                 {categoryItems.map((item) => (
@@ -1568,27 +1970,63 @@ const MindPage: React.FC = () => {
                                 <span>添加分类</span>
                             </button>
                         </div>
-                    </Card>
+                    </aside>
 
                     <div className={styles.content}>
+                        <div className={styles.contentPanel}>
+                        <section className={styles.createHero} aria-labelledby="mind-create-title">
+                            <div className="hero-copy">
+                                <div className="eyebrow">
+                                    <span className="status-dot"/>
+                                    <span>Mind Studio</span>
+                                </div>
+                                <div className="hero-title" id="mind-create-title">让灵感快速长成一张清晰的导图</div>
+                                <div className="hero-desc">从空白画布自由创作，或选择模板快速梳理想法与计划。</div>
+                            </div>
+                            <div className="hero-visual">
+                                <MindCreateHeroGraphic/>
+                            </div>
+                            <button className="create-button" type="button" onClick={openCreate}>
+                                <span>新建导图</span>
+                            </button>
+                        </section>
+                        <Card className={styles.searchCard}>
+                            <Input
+                                allowClear
+                                className={styles.searchBox}
+                                prefix={<SearchOutlined/>}
+                                placeholder="搜索标题、描述或标签"
+                                value={keyword}
+                                onChange={(event) => setKeyword(event.target.value)}
+                                onPressEnter={(event) => setKeyword(event.currentTarget.value)}
+                            />
+                            <Dropdown
+                                trigger={["click"]}
+                                placement="bottomRight"
+                                overlayClassName={styles.sortDropdown}
+                                menu={{
+                                    selectable: true,
+                                    selectedKeys: [sortType],
+                                    items: mindSortOptions.map((item) => ({key: item.value, label: item.label})),
+                                    onClick: ({key}) => setSortType(key as MindSortType),
+                                }}
+                            >
+                                <button
+                                    className={styles.sortTrigger}
+                                    type="button"
+                                    aria-label={`排序方式：${activeSortLabel}`}
+                                >
+                                    <SortDescendingOutlined className="marker"/>
+                                    <span className="value">{activeSortLabel}</span>
+                                    <DownOutlined className="arrow"/>
+                                </button>
+                            </Dropdown>
+                        </Card>
+                        </div>
                         <ProTable
                             key={tableKey}
                             ref={tableRef}
                             rowKey="id"
-                            title={(
-                                <div className={styles.tableHeader}>
-                                    <Title>{categoryName}</Title>
-                                    <Input.Search
-                                        allowClear
-                                        className={styles.searchBox}
-                                        placeholder="搜索标题、描述或标签"
-                                        enterButton="搜索"
-                                        value={keyword}
-                                        onChange={(event) => setKeyword(event.target.value)}
-                                        onSearch={(value) => setKeyword(value)}
-                                    />
-                                </div>
-                            )}
                             search={false}
                             pageHidden={filteredDocuments.length <= 0}
                             defaultPage={1}
@@ -1618,7 +2056,6 @@ const MindPage: React.FC = () => {
                                 render: (_: any, record: {list: MindDocument[]}) => (
                                     <div className={styles.documentGrid}>
                                         {record.list.map((item) => {
-                                            const category = categoryMap.get(item.categoryId);
                                             return (
                                                 <Card
                                                     key={item.id}
@@ -1643,14 +2080,6 @@ const MindPage: React.FC = () => {
                                                                 {item.title}
                                                             </button>
                                                             <span className="actions" onClick={(event) => event.stopPropagation()}>
-                                                                <Tooltip title={item.favorite ? "取消收藏" : "收藏"}>
-                                                                    <Button
-                                                                        type="text"
-                                                                        size="small"
-                                                                        icon={item.favorite ? <StarFilled/> : <StarOutlined/>}
-                                                                        onClick={() => toggleFavorite(item)}
-                                                                    />
-                                                                </Tooltip>
                                                                 <Dropdown trigger={["click"]} placement="bottomRight" menu={{items: documentMenu(item) as any}}>
                                                                     <Button type="text" size="small" icon={<MoreOutlined/>}/>
                                                                 </Dropdown>
@@ -1658,7 +2087,6 @@ const MindPage: React.FC = () => {
                                                         </div>
                                                         <div className="desc">{item.description || "暂无描述"}</div>
                                                         <div className="meta">
-                                                            <span>{category?.name || "未分类"}</span>
                                                             <span>{item.nodeCount} 节点</span>
                                                             <Tooltip title={item.updateTime}>
                                                                 <span>{getTimeText(item.updateTime)}</span>
