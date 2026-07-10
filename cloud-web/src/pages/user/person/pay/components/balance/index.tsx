@@ -78,6 +78,16 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
         recordCol: css`
             min-width: 0;
 
+            > .ant-row > .ant-col:has(.ant-table-wrapper) > .ant-card {
+                margin-top: 0 !important;
+                border-radius: 0 0 ${radius}px ${radius}px !important;
+                background: ${token.colorBgContainer};
+            }
+
+            > .ant-row > .ant-col:has(.ant-table-wrapper) > .ant-card > .ant-card-body {
+                padding-top: 0 !important;
+            }
+
             @media (min-width: 992px) {
                 flex: 1 1 0;
                 max-width: none;
@@ -416,13 +426,11 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 justify-content: center !important;
             }
         `,
-        recordCard: css`
+        recordPanel: css`
             min-width: 0;
-            border-radius: ${radius}px;
-
-            > .ant-card-body {
-                padding: ${compact ? "10px" : "12px"};
-            }
+            overflow: hidden;
+            border-radius: ${radius}px ${radius}px 0 0;
+            background: ${token.colorBgContainer};
 
             > .ant-card-head {
                 min-height: ${compact ? 38 : 42}px;
@@ -433,30 +441,13 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
                 padding: ${compact ? "8px 0" : "10px 0"};
             }
 
-            .ant-row {
-                margin: 0 !important;
-            }
-
-            .ant-row > .ant-col:nth-child(2) {
-                padding: 0 !important;
-            }
-
-            .ant-row > .ant-col:nth-child(2) .ant-card {
-                background: transparent;
-                box-shadow: none;
-            }
-
-            .ant-row > .ant-col:nth-child(2) .ant-card-head {
-                display: none;
-            }
-
-            .ant-row > .ant-col:nth-child(2) .ant-card-body {
-                padding: 0 !important;
+            > .ant-card-body {
+                padding: ${compact ? "10px 10px 6px" : "12px 12px 8px"};
             }
         `,
         recordFilter: css`
             min-width: 0;
-            margin-bottom: ${compact ? 8 : 10}px;
+            margin: 0;
 
             .filter-row {
                 position: relative;
@@ -1013,7 +1004,7 @@ export default (props: PayPanelProps = {}): React.ReactNode => {
                     </Col>
                     <Col className={styles.recordCol} span={24}>
                         <Card
-                            className={styles.recordCard}
+                            className={styles.recordPanel}
                             title={<Title>资金记录</Title>}
                             extra={(
                                 <Button
@@ -1023,7 +1014,8 @@ export default (props: PayPanelProps = {}): React.ReactNode => {
                                     onClick={() => tableRef.current?.refreshTableData?.()}
                                 />
                             )}
-                            variant="borderless">
+                            variant="borderless"
+                        >
                             <div className={styles.recordFilter}>
                                 <div className="filter-row">
                                     <Button
@@ -1076,6 +1068,7 @@ export default (props: PayPanelProps = {}): React.ReactNode => {
                                     />
                                 </div>
                             </div>
+                        </Card>
                             <ProTable
                                 ref={tableRef}
                                 rowKey="id"
@@ -1084,8 +1077,6 @@ export default (props: PayPanelProps = {}): React.ReactNode => {
                                 search={false}
                                 defaultPage={1}
                                 defaultPageSize={10}
-                                pageInTable={true}
-                                paginationProps={{placement: ["bottomCenter"]} as any}
                                 columns={[
                                     {
                                         title: "资金记录",
@@ -1143,7 +1134,6 @@ export default (props: PayPanelProps = {}): React.ReactNode => {
                                     },
                                 } as any)}
                             />
-                        </Card>
                     </Col>
                 </Row>
             )}
