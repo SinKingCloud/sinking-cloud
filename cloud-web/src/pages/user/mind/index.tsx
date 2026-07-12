@@ -27,8 +27,10 @@ import {
     FileMarkdownOutlined,
     FileTextOutlined,
     HistoryOutlined,
+    LeftOutlined,
     MoreOutlined,
     PlusOutlined,
+    RightOutlined,
     SaveOutlined,
     SearchOutlined,
     ShareAltOutlined,
@@ -465,6 +467,63 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
 
         @media (max-width: 640px) {
             padding: 9px;
+        }
+    `,
+    categoryRail: css`
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+
+        @container mind-library (max-width: 780px) {
+            flex-direction: row;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+        }
+    `,
+    categoryScrollButton: css`
+        display: none;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 34px;
+        padding: 0;
+        border: 0;
+        border-radius: ${token.borderRadius}px;
+        outline: none;
+        background: ${token.colorFillQuaternary};
+        color: ${token.colorTextSecondary};
+        cursor: pointer;
+        transition: background 0.16s ease, color 0.16s ease, opacity 0.16s ease;
+
+        &:hover:not(:disabled),
+        &:focus-visible:not(:disabled) {
+            background: ${token.colorFillTertiary};
+            color: ${token.colorPrimary};
+        }
+
+        &:focus-visible {
+            box-shadow: 0 0 0 2px ${token.colorPrimaryBg};
+        }
+
+        &:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        .anticon {
+            font-size: 11px;
+        }
+
+        @container mind-library (max-width: 780px) {
+            display: inline-flex;
+        }
+
+        @media (max-width: 640px), (hover: none) and (pointer: coarse) {
+            display: none;
         }
     `,
     categoryFooter: css`
@@ -1780,6 +1839,7 @@ const MindPage: React.FC = () => {
     const {styles} = useStyles();
     const {message, modal} = App.useApp();
     const pageRef = useRef<HTMLDivElement>(null);
+    const categoryScrollRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<MindRef>(null);
     const [form] = Form.useForm<CreateMindForm>();
     const [categoryForm] = Form.useForm<CategoryForm>();
@@ -1800,6 +1860,7 @@ const MindPage: React.FC = () => {
     const [versionOpen, setVersionOpen] = useState(false);
     const [versions, setVersions] = useState<Record<string, MindVersionRecord[]>>(initialVersions);
     const [pageHeight, setPageHeight] = useState<number>();
+    const [categoryScrollState, setCategoryScrollState] = useState({canLeft: false, canRight: false});
 
     const selectedDocument = documents.find((item) => item.id === selectedId);
     const versionItems = selectedId ? versions[selectedId] || [] : [];
@@ -1826,6 +1887,53 @@ const MindPage: React.FC = () => {
             window.removeEventListener("orientationchange", updateHeight);
         };
     }, [selectedId]);
+
+    useEffect(() => {
+        const element = categoryScrollRef.current;
+        if (!element) return;
+
+        const updateScrollState = () => {
+            const maxScrollLeft = Math.max(0, element.scrollWidth - element.clientWidth);
+            const nextState = {
+                canLeft: element.scrollLeft > 1,
+                canRight: element.scrollLeft < maxScrollLeft - 1,
+            };
+            setCategoryScrollState((current) => current.canLeft === nextState.canLeft
+                && current.canRight === nextState.canRight ? current : nextState);
+        };
+        const handleWheel = (event: WheelEvent) => {
+            const maxScrollLeft = Math.max(0, element.scrollWidth - element.clientWidth);
+            if (maxScrollLeft <= 0) return;
+            const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+            const canScroll = delta < 0 ? element.scrollLeft > 0 : element.scrollLeft < maxScrollLeft;
+            if (!canScroll) return;
+            event.preventDefault();
+            element.scrollLeft += delta;
+        };
+
+        updateScrollState();
+        element.addEventListener("scroll", updateScrollState, {passive: true});
+        element.addEventListener("wheel", handleWheel, {passive: false});
+        const observer = new ResizeObserver(updateScrollState);
+        observer.observe(element);
+        if (element.firstElementChild) {
+            observer.observe(element.firstElementChild);
+        }
+        return () => {
+            element.removeEventListener("scroll", updateScrollState);
+            element.removeEventListener("wheel", handleWheel);
+            observer.disconnect();
+        };
+    }, [categories]);
+
+    const scrollCategories = (direction: -1 | 1) => {
+        const element = categoryScrollRef.current;
+        if (!element) return;
+        element.scrollBy({
+            left: direction * Math.max(180, Math.round(element.clientWidth * 0.68)),
+            behavior: "smooth",
+        });
+    };
 
     const filteredDocuments = useMemo(() => {
         const search = keyword.trim().toLowerCase();
@@ -2208,7 +2316,17 @@ const MindPage: React.FC = () => {
                     <Card className={styles.libraryCard}>
                     <aside className={styles.categoryPanel} aria-label="导图分类">
                         <div className={styles.categoryInner}>
-                        <div className={styles.categoryScroll}>
+                        <div className={styles.categoryRail}>
+                        <button
+                            className={styles.categoryScrollButton}
+                            type="button"
+                            aria-label="向左浏览分类"
+                            disabled={!categoryScrollState.canLeft}
+                            onClick={() => scrollCategories(-1)}
+                        >
+                            <LeftOutlined/>
+                        </button>
+                        <div ref={categoryScrollRef} className={styles.categoryScroll}>
                             <div className={styles.categoryGrid}>
                                 {categoryItems.map((item) => (
                                     <div
@@ -2254,6 +2372,16 @@ const MindPage: React.FC = () => {
                                     <span>添加分类</span>
                                 </button>
                             </div>
+                        </div>
+                        <button
+                            className={styles.categoryScrollButton}
+                            type="button"
+                            aria-label="向右浏览分类"
+                            disabled={!categoryScrollState.canRight}
+                            onClick={() => scrollCategories(1)}
+                        >
+                            <RightOutlined/>
+                        </button>
                         </div>
                         <div className={styles.categoryFooter}>
                             <button className={styles.categoryAddCard} type="button" onClick={openCreateCategory}>
