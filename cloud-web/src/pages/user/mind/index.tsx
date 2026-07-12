@@ -12,6 +12,7 @@ import {
     Modal,
     Pagination,
     Row,
+    Segmented,
     Select,
     Tooltip,
 } from "antd";
@@ -23,6 +24,7 @@ import {
     DownloadOutlined,
     DownOutlined,
     EditOutlined,
+    EyeOutlined,
     FileImageOutlined,
     FileMarkdownOutlined,
     FileTextOutlined,
@@ -71,12 +73,15 @@ type MindVersionRecord = {
     id: string;
     mindId: string;
     version: number;
+    saveType: MindVersionSaveType;
     remark: string;
     nodeCount: number;
     depth: number;
     value: MindValue;
     createTime: string;
 };
+
+type MindVersionSaveType = "manual" | "auto";
 
 type CreateMindForm = {
     title: string;
@@ -155,6 +160,8 @@ const before = (days: number, hours = 0) => {
 };
 
 const getTimeText = (value: string) => ago(value) || value;
+
+const getDateTimeValue = (value: string) => new Date(value.replace(/-/g, "/")).getTime();
 
 const createValue = (nodes: MindValue["nodes"]): MindValue => ({nodes});
 
@@ -361,16 +368,35 @@ const initialDocuments: MindDocument[] = [
     ...demoDocuments,
 ];
 
-const createVersionRecord = (record: MindDocument, remark = "保存快照"): MindVersionRecord => ({
+const MAX_VERSION_RECORDS_PER_TYPE = 20;
+// Keep frequent draft saves in one rolling snapshot instead of flooding version history.
+const AUTO_VERSION_SNAPSHOT_INTERVAL = 60 * 1000;
+
+const createVersionRecord = (
+    record: MindDocument,
+    remark = "保存快照",
+    saveType: MindVersionSaveType = "manual",
+): MindVersionRecord => ({
     id: `${record.id}-v${record.version}-${Date.now().toString(36)}`,
     mindId: record.id,
     version: record.version,
+    saveType,
     remark,
     nodeCount: record.nodeCount,
     depth: record.depth,
     value: cloneValue(record.value),
     createTime: record.updateTime,
 });
+
+const limitVersionRecords = (records: MindVersionRecord[]) => {
+    const counts: Record<MindVersionSaveType, number> = {manual: 0, auto: 0};
+    return records.filter((record) => {
+        counts[record.saveType] += 1;
+        return counts[record.saveType] <= MAX_VERSION_RECORDS_PER_TYPE;
+    });
+};
+
+const getMindValueSignature = (value: MindValue) => JSON.stringify(value);
 
 const initialVersions = initialDocuments.reduce<Record<string, MindVersionRecord[]>>((data, item) => ({
     ...data,
@@ -1763,38 +1789,441 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         min-height: 0;
         background: ${isDarkMode ? "rgba(255,255,255,0.01)" : "#fbfcfe"};
     `,
-    versionList: css`
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-
-        .version {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 10px 12px;
-            border: 1px solid ${token.colorBorderSecondary};
-            border-radius: ${token.borderRadius}px;
-            background: ${token.colorBgContainer};
+    versionDrawer: css`
+        .ant-drawer-content-wrapper {
+            width: min(420px, 100vw) !important;
+            max-width: 100vw;
+            transition-property: transform;
         }
 
-        .main {
-            min-width: 0;
+        .ant-drawer-section {
+            overflow: hidden;
+            border-radius: ${token.borderRadiusLG}px 0 0 ${token.borderRadiusLG}px;
         }
 
-        .name {
+        .ant-drawer-header {
+            min-height: 56px;
+            padding: 14px 18px;
+            border-bottom-color: ${token.colorBorderSecondary};
+        }
+
+        .ant-drawer-title {
             color: ${token.colorTextHeading};
-            font-size: 13px;
-            line-height: 20px;
+            font-size: 15px;
             font-weight: 600;
         }
 
-        .desc {
-            margin-top: 2px;
+        .ant-drawer-body {
+            padding: 0;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 640px) {
+            .ant-drawer-section {
+                border-radius: 0;
+            }
+
+            .ant-drawer-header {
+                padding-inline: 16px;
+            }
+
+            .ant-drawer-body {
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+    `,
+    versionList: css`
+        min-height: 100%;
+        background: ${token.colorBgContainer};
+
+        .version-filter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 18px 12px;
+        }
+
+        .version-filter .ant-segmented {
+            width: auto;
+            padding: 2px;
+            background: ${token.colorFillTertiary};
+        }
+
+        .version-filter .ant-segmented-item-label {
+            min-height: 28px;
+            padding-inline: 12px;
+            font-size: 12px;
+            line-height: 28px;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 2px 18px 18px;
+            list-style: none;
+        }
+
+        .version {
+            position: relative;
+            display: grid;
+            grid-template-columns: 24px minmax(0, 1fr);
+            gap: 10px;
+            min-width: 0;
+            padding-bottom: 10px;
+        }
+
+        .version:last-child {
+            padding-bottom: 0;
+        }
+
+        .version:last-child .line {
+            display: none;
+        }
+
+        .version.current .dot {
+            background: ${token.colorPrimary};
+        }
+
+        .axis {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            align-self: stretch;
+            justify-content: center;
+            padding-top: 15px;
+        }
+
+        .dot {
+            position: relative;
+            z-index: 1;
+            width: 9px;
+            height: 9px;
+            border: 2px solid ${token.colorPrimary};
+            border-radius: 50%;
+            background: ${token.colorBgContainer};
+        }
+
+        .line {
+            position: absolute;
+            top: 0;
+            bottom: -12px;
+            left: 50%;
+            width: 1px;
+            transform: translateX(-50%);
+            background: ${token.colorBorderSecondary};
+        }
+
+        .body {
+            position: relative;
+            box-sizing: border-box;
+            width: 100%;
+            min-width: 0;
+            padding: 10px 12px;
+            border-radius: ${token.borderRadius}px;
+            background: ${token.colorFillQuaternary};
+            cursor: pointer;
+            transition: background ${token.motionDurationSlow};
+        }
+
+        .body::before {
+            position: absolute;
+            top: 14px;
+            left: -6px;
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-right: 6px solid ${token.colorFillQuaternary};
+            border-bottom: 6px solid transparent;
+            content: "";
+            transition: border-right-color ${token.motionDurationSlow};
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .body:hover {
+                background: ${token.colorFillSecondary};
+            }
+
+            .body:hover::before {
+                border-right-color: ${token.colorFillSecondary};
+            }
+        }
+
+        .head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            min-width: 0;
+            min-height: 20px;
+            margin-bottom: 6px;
+        }
+
+        .meta {
+            display: flex;
+            flex: 1 1 auto;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 7px;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .snapshot-version {
+            flex: none;
+            padding-inline: 6px;
+            border-radius: ${token.borderRadiusSM}px;
+            background: ${token.colorPrimaryBg};
+            color: ${token.colorPrimary};
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 20px;
+        }
+
+        .current-label {
+            flex: none;
+            color: ${token.colorPrimary};
+            font-size: 11px;
+            line-height: 20px;
+            white-space: nowrap;
+        }
+
+        .snapshot-time {
+            flex: 0 1 auto;
+            min-width: 0;
+            max-width: 45%;
+            overflow: hidden;
             color: ${token.colorTextTertiary};
+            font-size: 11px;
+            line-height: 18px;
+            font-variant-numeric: tabular-nums;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .snapshot-text {
+            min-height: 18px;
+            overflow: hidden;
+            color: ${token.colorTextSecondary};
             font-size: 12px;
             line-height: 18px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .snapshot-extra {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            min-height: 28px;
+            margin-top: 6px;
+        }
+
+        .snapshot-stats {
+            display: flex;
+            flex: 1 1 auto;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 5px 10px;
+            min-width: 0;
+            overflow: hidden;
+            color: ${token.colorTextTertiary};
+            font-size: 11px;
+            line-height: 18px;
+            white-space: nowrap;
+        }
+
+        .preview-button.ant-btn {
+            flex: none;
+            height: 28px;
+            min-width: 48px;
+            padding-inline: 4px;
+            font-size: 12px;
+        }
+
+        .preview-button.ant-btn:focus-visible {
+            outline: 1px solid ${token.colorPrimaryBorder};
+            outline-offset: -2px;
+            box-shadow: none;
+        }
+
+        .empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 240px;
+            padding: 24px;
+        }
+
+        @media (max-width: 640px) {
+            .version-filter {
+                padding-inline: 16px;
+            }
+
+            .timeline {
+                padding-inline: 16px;
+            }
+
+            .version {
+                grid-template-columns: 18px minmax(0, 1fr);
+                gap: 8px;
+            }
+        }
+    `,
+    versionPreviewModal: css`
+        .ant-modal {
+            width: min(900px, calc(100vw - 32px)) !important;
+            max-width: calc(100vw - 32px);
+        }
+
+        @media (max-width: 640px), (max-width: 960px) and (max-height: 520px) {
+            .ant-modal-wrap {
+                box-sizing: border-box;
+                overflow: hidden;
+                padding:
+                    max(16px, env(safe-area-inset-top))
+                    max(12px, env(safe-area-inset-right))
+                    max(16px, env(safe-area-inset-bottom))
+                    max(12px, env(safe-area-inset-left));
+            }
+
+            .ant-modal {
+                top: 0;
+                width: 100% !important;
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 0;
+            }
+
+            .ant-modal-container {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                height: min(
+                    620px,
+                    calc(
+                        100vh
+                        - max(16px, env(safe-area-inset-top))
+                        - max(16px, env(safe-area-inset-bottom))
+                    )
+                );
+                height: min(
+                    620px,
+                    calc(
+                        100dvh
+                        - max(16px, env(safe-area-inset-top))
+                        - max(16px, env(safe-area-inset-bottom))
+                    )
+                );
+                max-height: 100%;
+                min-height: 0;
+                border-radius: ${token.borderRadiusLG}px;
+                overflow: hidden;
+            }
+
+            .ant-modal-header {
+                flex: none;
+            }
+
+            .ant-modal-body {
+                display: flex;
+                flex: 1;
+                min-width: 0;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .ant-modal-footer {
+                flex: none;
+            }
+        }
+    `,
+    versionPreview: css`
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-width: 0;
+
+        .preview-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .preview-remark {
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
+            color: ${token.colorTextHeading};
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 20px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .preview-details {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 4px 12px;
+            color: ${token.colorTextTertiary};
+            font-size: 11px;
+            line-height: 20px;
+            text-align: right;
+        }
+
+        .preview-canvas {
+            height: clamp(300px, 56dvh, 520px);
+            min-height: 0;
+            overflow: hidden;
+            border: 1px solid ${token.colorBorderSecondary};
+            border-radius: ${token.borderRadiusLG}px;
+            background: ${token.colorBgLayout};
+        }
+
+        @media (max-width: 640px), (max-width: 960px) and (max-height: 520px) {
+            flex: 1;
+            min-height: 0;
+
+            .preview-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+                margin-bottom: 10px;
+            }
+
+            .preview-details {
+                width: 100%;
+                max-width: 100%;
+                justify-content: flex-start;
+                text-align: left;
+            }
+
+            .preview-canvas {
+                flex: 1;
+                height: auto;
+                min-height: 0;
+            }
+        }
+
+        @media (min-width: 480px) and (max-width: 960px) and (max-height: 520px) {
+            .preview-meta {
+                flex-direction: row;
+                align-items: center;
+                gap: 16px;
+                margin-bottom: 8px;
+            }
+
+            .preview-details {
+                width: auto;
+                justify-content: flex-end;
+                text-align: right;
+            }
         }
     `,
     templateGrid: css`
@@ -1841,6 +2270,14 @@ const MindPage: React.FC = () => {
     const pageRef = useRef<HTMLDivElement>(null);
     const categoryScrollRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<MindRef>(null);
+    const versionPreviewRef = useRef<MindRef>(null);
+    const versionPreviewCanvasRef = useRef<HTMLDivElement>(null);
+    const versionSequenceRef = useRef<Record<string, number>>(Object.fromEntries(
+        initialDocuments.map((record) => [record.id, record.version]),
+    ));
+    const lastVersionSignatureRef = useRef<Record<string, string>>(Object.fromEntries(
+        initialDocuments.map((record) => [record.id, getMindValueSignature(record.value)]),
+    ));
     const [form] = Form.useForm<CreateMindForm>();
     const [categoryForm] = Form.useForm<CategoryForm>();
     const selectedTemplateId = Form.useWatch("templateId", form);
@@ -1858,12 +2295,46 @@ const MindPage: React.FC = () => {
     const [categoryOpen, setCategoryOpen] = useState(false);
     const [categoryRecord, setCategoryRecord] = useState<MindCategory>();
     const [versionOpen, setVersionOpen] = useState(false);
+    const [versionFilter, setVersionFilter] = useState<MindVersionSaveType>("manual");
+    const [versionPreview, setVersionPreview] = useState<MindVersionRecord>();
     const [versions, setVersions] = useState<Record<string, MindVersionRecord[]>>(initialVersions);
     const [pageHeight, setPageHeight] = useState<number>();
     const [categoryScrollState, setCategoryScrollState] = useState({canLeft: false, canRight: false});
 
     const selectedDocument = documents.find((item) => item.id === selectedId);
     const versionItems = selectedId ? versions[selectedId] || [] : [];
+    const filteredVersionItems = versionItems.filter((item) => item.saveType === versionFilter);
+    const currentVersionRecord = useMemo(() => {
+        if (!selectedDocument) {
+            return undefined;
+        }
+        const currentSignature = getMindValueSignature(editorValue);
+        return versionItems.find((item) => item.version === selectedDocument.version
+            && getMindValueSignature(item.value) === currentSignature);
+    }, [editorValue, selectedDocument, versionItems]);
+
+    useEffect(() => {
+        const element = versionPreviewCanvasRef.current;
+        if (!versionPreview || !element || typeof ResizeObserver === "undefined") {
+            return;
+        }
+        let frame = 0;
+        const observer = new ResizeObserver(() => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => versionPreviewRef.current?.fitView());
+        });
+        observer.observe(element);
+        return () => {
+            cancelAnimationFrame(frame);
+            observer.disconnect();
+        };
+    }, [versionPreview]);
+
+    const takeNextVersion = (mindId: string, fallback = 0) => {
+        const nextVersion = Math.max(versionSequenceRef.current[mindId] || 0, fallback) + 1;
+        versionSequenceRef.current[mindId] = nextVersion;
+        return nextVersion;
+    };
 
     useEffect(() => {
         // 按页面真实位置测量当前视口可用高度，避免 Header、面包屑高度变化导致左侧滚动区失准。
@@ -2065,42 +2536,71 @@ const MindPage: React.FC = () => {
             ...items,
             [record.id]: [createVersionRecord(record, "初始版本")],
         }));
+        versionSequenceRef.current[record.id] = record.version;
+        lastVersionSignatureRef.current[record.id] = getMindValueSignature(record.value);
         setCreateOpen(false);
         openDocument(record);
         message.success("导图已创建");
     };
 
     const persistDocument = async (value?: MindValue, stats?: MindStats, reason: MindSaveReason = "manual") => {
-        if (!selectedId) {
+        if (!selectedId || !selectedDocument) {
             return;
         }
         const nextValue = value || editorRef.current?.getValue() || editorValue;
         const nextStats = stats || getMindStats(nextValue);
-        const now = formatDateTime(new Date());
+        const nowDate = new Date();
+        const now = formatDateTime(nowDate);
+        const saveType: MindVersionSaveType = reason === "auto" ? "auto" : "manual";
+        const signature = getMindValueSignature(nextValue);
+        const shouldWriteVersion = saveType === "manual"
+            || lastVersionSignatureRef.current[selectedId] !== signature;
+        const latestVersion = versionItems[0];
+        const rollingAutoVersion = saveType === "auto"
+            && latestVersion?.saveType === "auto"
+            && latestVersion.remark === "自动保存"
+            && nowDate.getTime() - getDateTimeValue(latestVersion.createTime) < AUTO_VERSION_SNAPSHOT_INTERVAL
+            ? latestVersion
+            : undefined;
+        const shouldAppendVersion = shouldWriteVersion && !rollingAutoVersion;
+        const nextVersion = shouldAppendVersion
+            ? takeNextVersion(selectedId, selectedDocument.version)
+            : (rollingAutoVersion?.version
+                || Math.max(versionSequenceRef.current[selectedId] || 0, selectedDocument.version));
+
         setDocuments((items) => items.map((item) => item.id === selectedId ? {
             ...item,
             value: cloneValue(nextValue),
             nodeCount: nextStats.nodeCount,
             depth: nextStats.depth,
-            version: reason === "auto" ? item.version : item.version + 1,
+            version: nextVersion,
             updateTime: now,
         } : item));
         setEditorValue(cloneValue(nextValue));
-        if (reason !== "auto") {
-            const nextVersion = (selectedDocument?.version || 0) + 1;
+
+        if (shouldWriteVersion) {
+            const nextRecord: MindVersionRecord = {
+                id: rollingAutoVersion?.id
+                    || `${selectedId}-${saveType}-v${nextVersion}-${Date.now().toString(36)}`,
+                mindId: selectedId,
+                version: nextVersion,
+                saveType,
+                remark: reason === "auto" ? "自动保存" : (reason === "shortcut" ? "快捷键保存" : "手动保存"),
+                nodeCount: nextStats.nodeCount,
+                depth: nextStats.depth,
+                value: cloneValue(nextValue),
+                createTime: now,
+            };
             setVersions((items) => ({
                 ...items,
-                [selectedId]: [{
-                    id: `${selectedId}-v${nextVersion}-${Date.now().toString(36)}`,
-                    mindId: selectedId,
-                    version: nextVersion,
-                    remark: reason === "shortcut" ? "快捷键保存" : "手动保存",
-                    nodeCount: nextStats.nodeCount,
-                    depth: nextStats.depth,
-                    value: cloneValue(nextValue),
-                    createTime: now,
-                }, ...(items[selectedId] || [])].slice(0, 20),
+                [selectedId]: rollingAutoVersion
+                    ? (items[selectedId] || []).map((item) => item.id === rollingAutoVersion.id ? nextRecord : item)
+                    : limitVersionRecords([nextRecord, ...(items[selectedId] || [])]),
             }));
+            lastVersionSignatureRef.current[selectedId] = signature;
+        }
+
+        if (reason !== "auto") {
             message.success("导图已保存");
         }
     };
@@ -2122,6 +2622,8 @@ const MindPage: React.FC = () => {
             ...items,
             [copy.id]: [createVersionRecord(copy, "复制创建")],
         }));
+        versionSequenceRef.current[copy.id] = copy.version;
+        lastVersionSignatureRef.current[copy.id] = getMindValueSignature(copy.value);
         message.success("导图已复制");
     };
 
@@ -2138,9 +2640,12 @@ const MindPage: React.FC = () => {
                     delete nextItems[record.id];
                     return nextItems;
                 });
+                delete versionSequenceRef.current[record.id];
+                delete lastVersionSignatureRef.current[record.id];
                 if (record.id === selectedId) {
                     setSelectedId(undefined);
                     setVersionOpen(false);
+                    setVersionPreview(undefined);
                 }
                 message.success("导图已删除");
             },
@@ -2185,33 +2690,92 @@ const MindPage: React.FC = () => {
             return;
         }
         const now = formatDateTime(new Date());
+        const currentValue = cloneValue(editorRef.current?.getValue() || selectedDocument.value);
+        const currentStats = getMindStats(currentValue);
         const nextValue = cloneValue(record.value);
-        const stats = getMindStats(nextValue);
-        const nextVersion = selectedDocument.version + 1;
+        const nextStats = getMindStats(nextValue);
+        const currentSignature = getMindValueSignature(currentValue);
+        const targetSignature = getMindValueSignature(nextValue);
+        if (currentSignature === targetSignature) {
+            message.info("当前内容已与该版本一致");
+            return;
+        }
+        const latestVersion = versionItems[0];
+        const shouldBackupCurrent = !latestVersion
+            || getMindValueSignature(latestVersion.value) !== currentSignature;
+        const backupVersion = shouldBackupCurrent
+            ? takeNextVersion(selectedDocument.id, selectedDocument.version)
+            : selectedDocument.version;
+        const restoredVersion = takeNextVersion(selectedDocument.id, backupVersion);
+        const backupRecord: MindVersionRecord | undefined = shouldBackupCurrent ? {
+            id: `${selectedDocument.id}-auto-v${backupVersion}-${Date.now().toString(36)}`,
+            mindId: selectedDocument.id,
+            version: backupVersion,
+            saveType: "auto",
+            remark: "恢复前备份",
+            nodeCount: currentStats.nodeCount,
+            depth: currentStats.depth,
+            value: currentValue,
+            createTime: now,
+        } : undefined;
+        const restoredRecord: MindVersionRecord = {
+            id: `${selectedDocument.id}-manual-v${restoredVersion}-${Date.now().toString(36)}`,
+            mindId: selectedDocument.id,
+            version: restoredVersion,
+            saveType: "manual",
+            remark: `从 v${record.version} 恢复`,
+            nodeCount: nextStats.nodeCount,
+            depth: nextStats.depth,
+            value: nextValue,
+            createTime: now,
+        };
+
         setDocuments((items) => items.map((item) => item.id === selectedDocument.id ? {
             ...item,
             value: nextValue,
-            nodeCount: stats.nodeCount,
-            depth: stats.depth,
-            version: nextVersion,
+            nodeCount: nextStats.nodeCount,
+            depth: nextStats.depth,
+            version: restoredVersion,
             updateTime: now,
         } : item));
         setVersions((items) => ({
             ...items,
-            [selectedDocument.id]: [{
-                id: `${selectedDocument.id}-v${nextVersion}-${Date.now().toString(36)}`,
-                mindId: selectedDocument.id,
-                version: nextVersion,
-                remark: `从 v${record.version} 恢复`,
-                nodeCount: stats.nodeCount,
-                depth: stats.depth,
-                value: nextValue,
-                createTime: now,
-            }, ...(items[selectedDocument.id] || [])].slice(0, 20),
+            [selectedDocument.id]: limitVersionRecords([
+                restoredRecord,
+                ...(backupRecord ? [backupRecord] : []),
+                ...(items[selectedDocument.id] || []),
+            ]),
         }));
+        lastVersionSignatureRef.current[selectedDocument.id] = getMindValueSignature(nextValue);
         setEditorValue(cloneValue(nextValue));
         setEditorRevision((value) => value + 1);
-        message.success("版本已恢复");
+        setVersionPreview(undefined);
+        setVersionOpen(false);
+        message.success(backupRecord ? "版本已恢复，恢复前内容已自动备份" : "版本已恢复");
+    };
+
+    const confirmRestoreVersion = (record: MindVersionRecord) => {
+        if (!selectedDocument) {
+            return;
+        }
+        const currentValue = editorRef.current?.getValue() || selectedDocument.value;
+        const currentSignature = getMindValueSignature(currentValue);
+        if (currentSignature === getMindValueSignature(record.value)) {
+            message.info("当前内容已与该版本一致");
+            return;
+        }
+        const latestVersion = versionItems[0];
+        const shouldBackupCurrent = !latestVersion
+            || getMindValueSignature(latestVersion.value) !== currentSignature;
+        modal.confirm({
+            title: `恢复到 v${record.version}？`,
+            content: shouldBackupCurrent
+                ? `恢复前会自动备份当前内容，然后使用 ${record.createTime} 保存的版本替换画布。`
+                : `当前内容已保存在版本记录中，将使用 ${record.createTime} 保存的版本替换画布。`,
+            okText: "确认",
+            cancelText: "取消",
+            onOk: () => restoreVersion(record),
+        });
     };
 
     const documentMenu = (record: MindDocument) => [
@@ -2254,9 +2818,15 @@ const MindPage: React.FC = () => {
         {key: "copy", icon: <CopyOutlined/>, label: "复制图片", onClick: copyEditorImage},
     ];
     const pageStyle = pageHeight ? {"--mind-page-height": `${pageHeight}px`} as React.CSSProperties : undefined;
+    const openVersionHistory = () => {
+        setVersionFilter(currentVersionRecord?.saveType || "manual");
+        setVersionPreview(undefined);
+        setVersionOpen(true);
+    };
     const closeEditor = () => {
         setSelectedId(undefined);
         setVersionOpen(false);
+        setVersionPreview(undefined);
     };
     const editorContent = selectedDocument ? (
         <div className={`${styles.editor} ${styles.editorFullscreen}`}>
@@ -2278,7 +2848,12 @@ const MindPage: React.FC = () => {
                         </button>
                     </Dropdown>
                     <Tooltip title="版本记录">
-                        <button className={styles.editorToolButton} type="button" onClick={() => setVersionOpen(true)}>
+                        <button
+                            className={styles.editorToolButton}
+                            type="button"
+                            aria-label="版本记录"
+                            onClick={openVersionHistory}
+                        >
                             <HistoryOutlined/>
                         </button>
                     </Tooltip>
@@ -2554,33 +3129,135 @@ const MindPage: React.FC = () => {
 
             <Drawer
                 title="版本记录"
+                rootClassName={styles.versionDrawer}
                 open={versionOpen}
-                onClose={() => setVersionOpen(false)}
+                onClose={() => {
+                    setVersionOpen(false);
+                    setVersionPreview(undefined);
+                }}
                 destroyOnHidden
             >
-                {versionItems.length <= 0 ? (
-                    <div className={styles.versionList}>
-                        <div className="version">
-                            <div className="main">
-                                <div className="name">暂无版本记录</div>
-                                <div className="desc">手动保存后会生成版本快照。</div>
+                <div className={styles.versionList}>
+                    <div className="version-filter">
+                        <Segmented
+                            value={versionFilter}
+                            options={[
+                                {label: "手动保存", value: "manual"},
+                                {label: "自动保存", value: "auto"},
+                            ]}
+                            onChange={(value) => setVersionFilter(value as MindVersionSaveType)}
+                        />
+                    </div>
+
+                    {filteredVersionItems.length <= 0 ? (
+                        <div className="empty">
+                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无数据"/>
+                        </div>
+                    ) : (
+                        <ol className="timeline" aria-label="历史版本">
+                            {filteredVersionItems.map((item) => {
+                                const isCurrent = item.id === currentVersionRecord?.id;
+                                return (
+                                    <li
+                                        className={`version${isCurrent ? " current" : ""}`}
+                                        key={item.id}
+                                        aria-current={isCurrent ? "true" : undefined}
+                                    >
+                                        <div className="axis" aria-hidden="true">
+                                            <span className="dot"/>
+                                            <span className="line"/>
+                                        </div>
+                                        <div
+                                            className="body"
+                                            onClick={() => setVersionPreview(item)}
+                                        >
+                                            <div className="head">
+                                                <div className="meta">
+                                                    <span className="snapshot-version">v{item.version}</span>
+                                                    {isCurrent && <span className="current-label">当前版本</span>}
+                                                </div>
+                                                <Tooltip title={item.createTime}>
+                                                    <span className="snapshot-time">{getTimeText(item.createTime)}</span>
+                                                </Tooltip>
+                                            </div>
+                                            <div className="snapshot-text">{item.remark}</div>
+                                            <div className="snapshot-extra">
+                                                <div className="snapshot-stats">
+                                                    <span>{item.nodeCount} 个节点</span>
+                                                    <span>{item.depth} 层</span>
+                                                </div>
+                                                <Button
+                                                    className="preview-button"
+                                                    type="link"
+                                                    size="small"
+                                                    icon={<EyeOutlined/>}
+                                                    aria-label={`预览 v${item.version}`}
+                                                    onClick={(event) => {
+                                                        event.stopPropagation();
+                                                        setVersionPreview(item);
+                                                    }}
+                                                >
+                                                    预览
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ol>
+                    )}
+                </div>
+            </Drawer>
+
+            <Modal
+                title={versionPreview ? `预览 v${versionPreview.version}` : "版本预览"}
+                rootClassName={styles.versionPreviewModal}
+                open={Boolean(versionPreview)}
+                width={900}
+                centered
+                okText="恢复"
+                cancelText="返回"
+                onOk={() => {
+                    if (versionPreview) {
+                        confirmRestoreVersion(versionPreview);
+                    }
+                }}
+                onCancel={() => setVersionPreview(undefined)}
+                afterOpenChange={(open) => {
+                    if (!open) {
+                        return;
+                    }
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => versionPreviewRef.current?.fitView());
+                    });
+                }}
+                destroyOnHidden
+            >
+                {versionPreview && (
+                    <div className={styles.versionPreview}>
+                        <div className="preview-meta">
+                            <div className="preview-remark">{versionPreview.remark}</div>
+                            <div className="preview-details">
+                                <span>{versionPreview.createTime}</span>
+                                <span>{versionPreview.nodeCount} 个节点</span>
+                                <span>{versionPreview.depth} 层</span>
                             </div>
                         </div>
-                    </div>
-                ) : (
-                    <div className={styles.versionList}>
-                        {versionItems.map((item) => (
-                            <div className="version" key={item.id}>
-                                <div className="main">
-                                    <div className="name">版本 v{item.version}</div>
-                                    <div className="desc">{item.remark} · {item.nodeCount} 节点 · {item.depth} 层 · {item.createTime}</div>
-                                </div>
-                                <Button size="small" onClick={() => restoreVersion(item)}>恢复</Button>
-                            </div>
-                        ))}
+                        <div ref={versionPreviewCanvasRef} className="preview-canvas">
+                            <Mind
+                                key={versionPreview.id}
+                                ref={versionPreviewRef}
+                                defaultValue={cloneValue(versionPreview.value)}
+                                height="100%"
+                                readOnly
+                                showControls
+                                showMiniMap={false}
+                                shortcuts={false}
+                            />
+                        </div>
                     </div>
                 )}
-            </Drawer>
+            </Modal>
 
             <Modal
                 title="新建导图"
