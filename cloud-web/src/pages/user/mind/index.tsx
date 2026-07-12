@@ -385,7 +385,7 @@ const downloadDataUrl = (dataUrl: string, filename: string) => {
 const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
     page: css`
         --mind-page-height: calc(100dvh - 177px);
-        --mind-library-min-height: calc(var(--mind-page-height) - 84px);
+        --mind-library-min-height: calc(var(--mind-page-height) - 63px);
         min-height: var(--mind-library-min-height);
 
         @supports not (height: 100dvh) {
@@ -455,7 +455,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         flex-direction: column;
         min-width: 0;
         min-height: 0;
-        padding: 10px;
+        padding: 10px 4px 10px 10px;
 
         @media (max-width: 900px) {
             position: static;
@@ -536,7 +536,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         flex: 1;
         min-height: 0;
         overflow-y: scroll;
-        padding: 0 3px 0 0;
+        padding: 0 2px 0 0;
         scrollbar-color: ${token.colorBorderSecondary} transparent;
         scrollbar-width: thin;
 
@@ -738,7 +738,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         flex: 1;
         width: 100%;
         background: ${token.colorBgContainer};
-        padding: 0 10px 24px;
+        padding: 0 6px 24px;
 
         &.empty {
             display: flex;
@@ -908,7 +908,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         justify-content: space-between;
         gap: 16px;
         min-width: 0;
-        padding: 16px 16px 12px;
+        padding: 16px 12px 12px;
         background: ${token.colorBgContainer};
 
         @media (max-width: 640px) {
@@ -932,13 +932,13 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             padding: 0 11px;
             border: 1px solid transparent;
             border-radius: ${token.borderRadiusSM}px;
-            background: ${token.colorFillQuaternary};
+            background: color-mix(in srgb, ${token.colorFillTertiary} 45%, ${token.colorFillQuaternary});
             box-shadow: none;
             transition: border-color 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
         }
 
         &.ant-input-affix-wrapper:hover {
-            background: color-mix(in srgb, ${token.colorFillQuaternary}, ${token.colorBgContainer} 44%);
+            background: color-mix(in srgb, ${token.colorFillTertiary} 65%, ${token.colorFillQuaternary});
         }
 
         &.ant-input-affix-wrapper-focused {
@@ -2293,7 +2293,7 @@ const MindPage: React.FC = () => {
                             <Dropdown
                                 trigger={["click"]}
                                 placement="bottomRight"
-                                overlayClassName={styles.sortDropdown}
+                                classNames={{root: styles.sortDropdown}}
                                 menu={{
                                     selectable: true,
                                     selectedKeys: [sortType],
@@ -2378,7 +2378,11 @@ const MindPage: React.FC = () => {
                                                 variant: "filled",
                                                 size: "small",
                                                 className: styles.pageSizeSelect,
-                                                popupClassName: styles.pageSizeDropdown,
+                                                classNames: {
+                                                    popup: {
+                                                        root: styles.pageSizeDropdown,
+                                                    },
+                                                },
                                             }}
                                             pageSizeOptions={[10, 20, 50, 100]}
                                             showTotal={(total, range) => `第 ${range[0]}-${range[1]} 条 / 共 ${total} 条`}
