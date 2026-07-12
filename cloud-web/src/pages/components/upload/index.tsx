@@ -78,6 +78,12 @@ interface ChunkUploadOptions extends BaseUploadOptions {
 
 interface SelectUploadFileOptions {
     accept?: string;
+    signal?: AbortSignal;
+}
+
+interface UploadFileSelection {
+    file?: File;
+    release: () => void;
 }
 
 type WakeSimpleUploadOptions = Omit<SimpleUploadOptions, "file"> & {
@@ -391,7 +397,9 @@ const buildHeaders = (headers?: Record<string, string>) => {
         ...getHeaders(),
         ...(headers || {}),
     };
-    return Object.fromEntries(Object.entries(data).filter(([, value]) => value !== undefined && value !== null && value !== ""));
+    return Object.fromEntries(Object.entries(data).filter(([key, value]) => {
+        return key.toLowerCase() !== "content-type" && value !== undefined && value !== null && value !== "";
+    }));
 };
 
 const requestForm = (options: RequestFormOptions): Promise<API.Response> => {
@@ -469,16 +477,43 @@ const requestForm = (options: RequestFormOptions): Promise<API.Response> => {
     });
 };
 
-const readBlob = async (blob: Blob): Promise<Uint8Array> => {
-    if (typeof blob.arrayBuffer === "function") {
-        return new Uint8Array(await blob.arrayBuffer());
+const throwIfUploadCanceled = (signal?: AbortSignal) => {
+    if (signal?.aborted) {
+        throw new Error("上传已取消");
     }
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
-        reader.onerror = () => reject(reader.error || new Error("读取文件失败"));
-        reader.readAsArrayBuffer(blob);
-    });
+};
+
+const readBlobBuffer = async (blob: Blob, signal?: AbortSignal): Promise<ArrayBuffer> => {
+    try {
+        throwIfUploadCanceled(signal);
+        let buffer: ArrayBuffer;
+        if (typeof blob.arrayBuffer === "function") {
+            buffer = await blob.arrayBuffer();
+        } else {
+            buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result as ArrayBuffer);
+                reader.onerror = () => reject(reader.error || new Error("读取文件失败"));
+                reader.readAsArrayBuffer(blob);
+            });
+        }
+        throwIfUploadCanceled(signal);
+        return buffer;
+    } catch (error) {
+        if (signal?.aborted || (error instanceof Error && error.message === "上传已取消")) {
+            throw new Error("上传已取消");
+        }
+        throw new Error("读取所选文件失败，请确认图库原图已下载完成后重试");
+    }
+};
+
+const readBlob = async (blob: Blob, signal?: AbortSignal): Promise<Uint8Array> => {
+    return new Uint8Array(await readBlobBuffer(blob, signal));
+};
+
+// Detach lazy file-provider data before XMLHttpRequest serializes the multipart body.
+const materializeBlob = async (blob: Blob, signal?: AbortSignal) => {
+    return new Blob([await readBlobBuffer(blob, signal)], {type: blob.type});
 };
 
 const yieldToBrowser = () => new Promise<void>((resolve) => {
@@ -493,14 +528,16 @@ const getFileMd5 = async (
     file: File,
     onProgress?: (loaded: number, total: number) => void,
     hashChunkSize: number = DEFAULT_HASH_CHUNK_SIZE,
+    signal?: AbortSignal,
 ) => {
     const md5 = new Md5();
     const chunkSize = Math.max(1, hashChunkSize);
     let loaded = 0;
 
     while (loaded < file.size) {
+        throwIfUploadCanceled(signal);
         const end = Math.min(loaded + chunkSize, file.size);
-        const chunk = await readBlob(file.slice(loaded, end));
+        const chunk = await readBlob(file.slice(loaded, end), signal);
         md5.update(chunk);
         loaded = end;
         onProgress?.(loaded, file.size);
@@ -992,12 +1029,13 @@ async function simpleUpload(options: SimpleUploadOptions): Promise<UploadResult>
     }
 
     try {
+        const signal = getRequestSignal(options);
         const startInfo = createStartInfo("simple", file, sceneId);
 
         options.onStart?.(startInfo);
         const formData = createFormData();
         appendFormValue(formData, "scene_id", sceneId);
-        formData.append("file", file, file.name);
+        formData.append("file", await materializeBlob(file, signal), file.name);
 
         const response = await requestForm({
             url: options.url || SIMPLE_UPLOAD_URL,
@@ -1005,7 +1043,7 @@ async function simpleUpload(options: SimpleUploadOptions): Promise<UploadResult>
             headers: options.headers,
             timeout: options.timeout,
             withCredentials: options.withCredentials,
-            signal: getRequestSignal(options),
+            signal,
             onUploadProgress: (event) => {
                 emitProgress(
                     startInfo,
@@ -1043,6 +1081,7 @@ async function chunkUpload(options: ChunkUploadOptions): Promise<UploadResult> {
     }
 
     try {
+        const signal = getRequestSignal(options);
         const chunkSize = normalizeChunkSize(options.chunkSize);
         const startInfo = createStartInfo("chunk", file, sceneId, chunkSize);
 
@@ -1051,7 +1090,7 @@ async function chunkUpload(options: ChunkUploadOptions): Promise<UploadResult> {
         const cachedHash = options.hash || getCachedFileHash(hashKey);
         const hash = cachedHash || await getFileMd5(file, (loaded, total) => {
             emitProgress(startInfo, "hash", loaded, options, {total});
-        }, options.hashChunkSize);
+        }, options.hashChunkSize, signal);
         setCachedFileHash(hashKey, hash);
         emitProgress(startInfo, "hash", file.size, options, {hash});
 
@@ -1078,7 +1117,7 @@ async function chunkUpload(options: ChunkUploadOptions): Promise<UploadResult> {
                     headers: options.headers,
                     timeout: options.timeout,
                     withCredentials: options.withCredentials,
-                    signal: getRequestSignal(options),
+                    signal,
                 });
                 const statusData = statusResponse?.data || {};
                 uploadedParts = normalizeUploadedParts(statusData?.uploaded_parts);
@@ -1111,7 +1150,7 @@ async function chunkUpload(options: ChunkUploadOptions): Promise<UploadResult> {
                 headers: options.headers,
                 timeout: options.timeout,
                 withCredentials: options.withCredentials,
-                signal: getRequestSignal(options),
+                signal,
             });
             initData = initResponse?.data || {};
         }
@@ -1154,7 +1193,7 @@ async function chunkUpload(options: ChunkUploadOptions): Promise<UploadResult> {
                 });
                 continue;
             }
-            const chunk = file.slice(start, end);
+            const chunk = await materializeBlob(file.slice(start, end, file.type), signal);
             const formData = createFormData();
             appendFormValue(formData, "scene_id", sceneId);
             appendFormValue(formData, "step", "upload");
@@ -1169,7 +1208,7 @@ async function chunkUpload(options: ChunkUploadOptions): Promise<UploadResult> {
                 headers: options.headers,
                 timeout: options.timeout,
                 withCredentials: options.withCredentials,
-                signal: getRequestSignal(options),
+                signal,
                 onUploadProgress: (event) => {
                     const loaded = Math.min(uploadedBytes + Math.min(event.loaded || 0, end - start), file.size);
                     emitProgress(startInfo, "upload", loaded, options, {
@@ -1200,7 +1239,7 @@ async function chunkUpload(options: ChunkUploadOptions): Promise<UploadResult> {
             headers: options.headers,
             timeout: options.timeout,
             withCredentials: options.withCredentials,
-            signal: getRequestSignal(options),
+            signal,
         });
         const finishData = finishResponse?.data || {};
         const result: UploadResult = {
@@ -1220,10 +1259,8 @@ async function chunkUpload(options: ChunkUploadOptions): Promise<UploadResult> {
     }
 }
 
-/**
- * 唤醒文件选择。
- */
-function selectUploadFile(options: SelectUploadFileOptions = {}): Promise<File | undefined> {
+/** Keep the picker mounted while consumers read file-provider-backed selections. */
+function selectUploadFile(options: SelectUploadFileOptions = {}): Promise<UploadFileSelection> {
     return new Promise((resolve, reject) => {
         if (typeof document === "undefined") {
             reject(new Error("当前环境不支持文件选择"));
@@ -1232,9 +1269,26 @@ function selectUploadFile(options: SelectUploadFileOptions = {}): Promise<File |
 
         const input = document.createElement("input");
         let settled = false;
+        let released = false;
+        let focusTimer: number | undefined;
 
-        const cleanup = () => {
+        const cleanupHandlers = () => {
             window.removeEventListener("focus", onFocus);
+            input.removeEventListener("cancel", onCancel);
+            options.signal?.removeEventListener("abort", onAbort);
+            input.onchange = null;
+            if (focusTimer !== undefined) {
+                window.clearTimeout(focusTimer);
+                focusTimer = undefined;
+            }
+        };
+
+        const release = () => {
+            if (released) {
+                return;
+            }
+            released = true;
+            cleanupHandlers();
             input.remove();
         };
 
@@ -1243,16 +1297,27 @@ function selectUploadFile(options: SelectUploadFileOptions = {}): Promise<File |
                 return;
             }
             settled = true;
-            cleanup();
-            resolve(file);
+            cleanupHandlers();
+            resolve({file, release});
         };
 
         const onFocus = () => {
-            setTimeout(() => {
+            focusTimer = window.setTimeout(() => {
                 if (!settled && (!input.files || input.files.length <= 0)) {
                     done();
                 }
-            }, 300);
+            }, 2000);
+        };
+
+        const onCancel = () => done();
+
+        const onAbort = () => {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            release();
+            reject(new Error("上传已取消"));
         };
 
         input.type = "file";
@@ -1261,62 +1326,55 @@ function selectUploadFile(options: SelectUploadFileOptions = {}): Promise<File |
             input.accept = options.accept;
         }
         input.onchange = () => done(input.files?.[0]);
+        input.addEventListener("cancel", onCancel, {once: true});
+        options.signal?.addEventListener("abort", onAbort, {once: true});
         document.body.appendChild(input);
-        setTimeout(() => window.addEventListener("focus", onFocus, {once: true}), 0);
+        if (options.signal?.aborted) {
+            onAbort();
+            return;
+        }
+        window.addEventListener("focus", onFocus, {once: true});
         input.click();
     });
 }
 
+async function withUploadFile<T>(
+    selectedFile: File | undefined,
+    options: SelectUploadFileOptions,
+    handler: (file: File) => Promise<T>,
+): Promise<T | undefined> {
+    const selection = selectedFile
+        ? {file: selectedFile, release: () => undefined}
+        : await selectUploadFile(options);
+    try {
+        if (!selection.file) {
+            return undefined;
+        }
+        return await handler(selection.file);
+    } finally {
+        selection.release();
+    }
+}
+
 async function wakeSimpleUpload(options: WakeSimpleUploadOptions): Promise<UploadResult | undefined> {
     const {accept, file: selectedFile, ...rest} = options;
-    let file = selectedFile;
-    if (!file) {
-        file = await selectUploadFile({accept});
-    }
-    if (!file) {
-        return undefined;
-    }
-    return simpleUpload({
-        ...rest,
-        file,
-    });
+    return withUploadFile(selectedFile, {accept, signal: rest.signal}, (file) => simpleUpload({...rest, file}));
 }
 
 async function wakeChunkUpload(options: WakeChunkUploadOptions): Promise<UploadResult | undefined> {
     const {accept, file: selectedFile, ...rest} = options;
-    let file = selectedFile;
-    if (!file) {
-        file = await selectUploadFile({accept});
-    }
-    if (!file) {
-        return undefined;
-    }
-    return chunkUpload({
-        ...rest,
-        file,
-    });
+    return withUploadFile(selectedFile, {accept, signal: rest.signal}, (file) => chunkUpload({...rest, file}));
 }
 
 async function wakeUpload(options: WakeUploadOptions): Promise<UploadResult | undefined> {
     const {accept, file: selectedFile, mode, ...rest} = options;
-    let file = selectedFile;
-    if (!file) {
-        file = await selectUploadFile({accept});
-    }
-    if (!file) {
-        return undefined;
-    }
-    const uploadMode = mode || (file.size > AUTO_CHUNK_SIZE_LIMIT ? "chunk" : "simple");
-    if (uploadMode === "chunk") {
-        return chunkUpload({
-            ...rest,
-            file,
-        });
-    }
-    return simpleUpload({
-        ...rest,
-        file,
-    } as any);
+    return withUploadFile(selectedFile, {accept, signal: rest.signal}, async (file) => {
+        const uploadMode = mode || (file.size > AUTO_CHUNK_SIZE_LIMIT ? "chunk" : "simple");
+        if (uploadMode === "chunk") {
+            return chunkUpload({...rest, file});
+        }
+        return simpleUpload({...rest, file} as any);
+    });
 }
 
 export const Upload = forwardRef<UploadRef>((_, ref): any => {
