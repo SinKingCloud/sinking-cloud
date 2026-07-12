@@ -393,6 +393,8 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         }
     `,
     library: css`
+        container-name: mind-library;
+        container-type: inline-size;
         min-width: 0;
         min-height: inherit;
     `,
@@ -411,7 +413,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             padding: 0 !important;
         }
 
-        @media (max-width: 900px) {
+        @container mind-library (max-width: 780px) {
             > .ant-card-body {
                 grid-template-columns: 1fr;
                 grid-template-rows: auto auto auto minmax(0, 1fr);
@@ -433,7 +435,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         align-self: stretch;
         overflow: hidden;
 
-        @media (max-width: 900px) {
+        @container mind-library (max-width: 780px) {
             grid-column: 1;
             grid-row: 2;
             width: 100%;
@@ -457,7 +459,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         min-height: 0;
         padding: 10px 4px 10px 10px;
 
-        @media (max-width: 900px) {
+        @container mind-library (max-width: 780px) {
             position: static;
         }
 
@@ -469,7 +471,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         flex: none;
         padding-top: 8px;
 
-        @media (max-width: 640px) {
+        @container mind-library (max-width: 780px) {
             display: none;
         }
     `,
@@ -520,7 +522,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             font-size: 10px;
         }
 
-        @media (max-width: 640px) {
+        @container mind-library (max-width: 780px) {
             min-height: 34px;
             padding: 0 9px;
 
@@ -557,7 +559,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             background: ${token.colorTextQuaternary};
         }
 
-        @media (max-width: 640px) {
+        @container mind-library (max-width: 780px) {
             overflow-x: auto;
             overflow-y: hidden;
             padding: 0;
@@ -573,7 +575,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
         flex-direction: column;
         gap: 4px;
 
-        @media (max-width: 640px) {
+        @container mind-library (max-width: 780px) {
             flex-direction: row;
             gap: 6px;
             min-width: max-content;
@@ -673,7 +675,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             color: ${token.colorTextTertiary};
         }
 
-        @media (max-width: 640px) {
+        @container mind-library (max-width: 780px) {
             flex: 0 0 auto;
             min-height: 34px;
             padding: 0 8px 0 9px;
@@ -717,7 +719,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             padding: 0 !important;
         }
 
-        @media (max-width: 900px) {
+        @container mind-library (max-width: 780px) {
             display: contents;
 
             > .ant-row {
@@ -729,7 +731,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
     contentPanel: css`
         display: contents;
 
-        @media (max-width: 900px) {
+        @container mind-library (max-width: 780px) {
             display: contents;
         }
     `,
@@ -840,7 +842,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             font-size: 11px;
         }
 
-        @media (max-width: 900px) {
+        @container mind-library (max-width: 780px) {
             padding: 12px;
         }
     `,
@@ -916,7 +918,7 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
             padding: 12px 12px 10px;
         }
 
-        @media (max-width: 900px) {
+        @container mind-library (max-width: 780px) {
             grid-column: 1;
             grid-row: 3;
         }
@@ -2349,7 +2351,7 @@ const MindPage: React.FC = () => {
                                                         </div>
                                                         <div className="desc">{item.description || "暂无描述"}</div>
                                                         <div className="meta">
-                                                            <span>{item.nodeCount} 节点</span>
+                                                            <span>{item.shared ? "已分享" : "仅自己可见"}</span>
                                                             <Tooltip title={item.updateTime}>
                                                                 <span>{getTimeText(item.updateTime)}</span>
                                                             </Tooltip>
