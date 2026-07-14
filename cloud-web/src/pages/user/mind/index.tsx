@@ -2267,11 +2267,11 @@ const useStyles = createStyles(({css, token, isDarkMode}: any) => ({
 const MindPage: React.FC = () => {
     const {styles} = useStyles();
     const {message, modal} = App.useApp();
-    const pageRef = useRef<HTMLDivElement>(null);
-    const categoryScrollRef = useRef<HTMLDivElement>(null);
-    const editorRef = useRef<MindRef>(null);
-    const versionPreviewRef = useRef<MindRef>(null);
-    const versionPreviewCanvasRef = useRef<HTMLDivElement>(null);
+    const pageRef = useRef<HTMLDivElement | null>(null);
+    const categoryScrollRef = useRef<HTMLDivElement | null>(null);
+    const editorRef = useRef<MindRef | null>(null);
+    const versionPreviewRef = useRef<MindRef | null>(null);
+    const versionPreviewCanvasRef = useRef<HTMLDivElement | null>(null);
     const versionSequenceRef = useRef<Record<string, number>>(Object.fromEntries(
         initialDocuments.map((record) => [record.id, record.version]),
     ));
@@ -2858,7 +2858,7 @@ const MindPage: React.FC = () => {
                         </button>
                     </Tooltip>
                     <Tooltip title={selectedDocument.shared ? "关闭分享" : "开启分享"}>
-                        <button className={styles.editorToolButton} type="button" onClick={() => toggleShare(selectedDocument)}>
+                        <button className={styles.editorToolButton} type="button" onClick={() => toggleShare(selectedDocument as any)}>
                             <ShareAltOutlined/>
                         </button>
                     </Tooltip>
@@ -3088,7 +3088,7 @@ const MindPage: React.FC = () => {
                                                         root: styles.pageSizeDropdown,
                                                     },
                                                 },
-                                            }}
+                                            } as any}
                                             pageSizeOptions={[10, 20, 50, 100]}
                                             showTotal={(total, range) => `第 ${range[0]}-${range[1]} 条 / 共 ${total} 条`}
                                             onChange={(nextPage, nextPageSize) => {
