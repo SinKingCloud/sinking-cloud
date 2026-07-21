@@ -4,23 +4,23 @@ go 1.25.0
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260712012508-7bd79099f916
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260721071049-38c96ad3bbb0
 	github.com/wenlng/go-captcha/v2 v2.0.5
 )
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
-	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260712012508-7bd79099f916 // indirect
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260721071049-38c96ad3bbb0 // indirect
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868 // indirect
 	github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.5 // indirect
 	github.com/alibabacloud-go/cloudauth-20190307/v4 v4.13.4 // indirect
 	github.com/alibabacloud-go/cloudauth-20221125 v1.3.0 // indirect
-	github.com/alibabacloud-go/darabonba-openapi/v2 v2.2.3 // indirect
+	github.com/alibabacloud-go/darabonba-openapi/v2 v2.2.4 // indirect
 	github.com/alibabacloud-go/debug v1.0.1 // indirect
-	github.com/alibabacloud-go/dm-20151123/v2 v2.11.0 // indirect
+	github.com/alibabacloud-go/dm-20151123/v2 v2.11.1 // indirect
 	github.com/alibabacloud-go/dysmsapi-20170525/v5 v5.6.0 // indirect
-	github.com/alibabacloud-go/tea v1.5.2 // indirect
+	github.com/alibabacloud-go/tea v1.5.3 // indirect
 	github.com/alibabacloud-go/tea-utils/v2 v2.0.9 // indirect
 	github.com/aliyun/credentials-go v1.4.12 // indirect
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394 // indirect
@@ -49,7 +49,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/magiconair/properties v1.8.10 // indirect
-	github.com/mattn/go-isatty v0.0.22 // indirect
+	github.com/mattn/go-isatty v0.0.23 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
@@ -78,10 +78,10 @@ require (
 	gorm.io/driver/postgres v1.6.0 // indirect
 	gorm.io/gorm v1.31.2 // indirect
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
-	modernc.org/libc v1.74.1 // indirect
+	modernc.org/libc v1.74.3 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.53.0 // indirect
+	modernc.org/sqlite v1.54.0 // indirect
 )
 
 replace github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common => ../../cloud-common
