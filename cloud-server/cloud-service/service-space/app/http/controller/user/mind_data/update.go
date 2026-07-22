@@ -22,7 +22,12 @@ func (Controller) Update(c *context.Context) {
 	}
 	data := &mindDataRepository.UpdateMindData{}
 	if form.TypeId != "" {
-		data.TypeId, _ = strconv.ParseInt(form.TypeId, 10, 64)
+		typeId, err := strconv.ParseInt(form.TypeId, 10, 64)
+		if err != nil {
+			c.Error("导图分类ID参数错误")
+			return
+		}
+		data.TypeId = typeId
 	}
 	if form.Title != "" {
 		data.Title = form.Title

@@ -11,17 +11,17 @@ import (
 
 // Interface 仓储接口
 type Interface interface {
-	Create(data *model.BalanceLog, tx ...*gorm.DB) error                                                 //创建数据
-	FindById(id int64) (*model.BalanceLog, error)                                                        //通过ID查询数据
-	Select(where *SelectBalanceLog, page *page.Query) (list []*model.BalanceLog, total int64, err error) //查询数据
+	Create(data *model.BalanceLog, tx ...*gorm.DB) error                                        //创建数据
+	FindById(id int64) (*model.BalanceLog, error)                                               //通过ID查询数据
+	Select(where *SelectBalanceLog, query *page.Query) (*page.Result[*model.BalanceLog], error) //查询数据
 }
 
 // Repository 仓储
 type Repository struct {
-	*repository.Repository
+	*repository.Repository[*model.BalanceLog]
 }
 
 // NewRepository 创建仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Repository: repository.NewRepository(db, &model.BalanceLog{})}
+	return &Repository{Repository: repository.NewRepository[*model.BalanceLog](db)}
 }

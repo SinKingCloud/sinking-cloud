@@ -6,8 +6,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
-func (r *Repository) Select(where *SelectOrder, page *page.Query) (list []*Order, total int64, err error) {
-	offset := page.PageSize * (page.Page - 1)
+func (r *Repository) Select(where *SelectOrder, queryPage *page.Query) (*page.Result[*Order], error) {
 	query := r.Database.Db.Model(&model.Order{})
 	if where != nil {
 		if where.Id != "" {
@@ -59,6 +58,5 @@ func (r *Repository) Select(where *SelectOrder, page *page.Query) (list []*Order
 			query = query.Where("update_time <= ?", where.UpdateTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(page.PageSize).Offset(offset).Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).Find(&list).Error
-	return
+	return r.Repository.SelectPage(query, queryPage)
 }

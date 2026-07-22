@@ -53,62 +53,32 @@ func (c *Context) ValidatorPath(data interface{}) (bool, string) {
 }
 
 // ValidatePage 验证分页和排序参数，并返回分页查询对象。
-// 可选参数按类型匹配：int 参数依次表示 defaultPage、defaultPageSize；string 参数依次表示 defaultField、defaultType、allowField。
-// 例如 ValidatePage("id", "desc", "id,create_time") 表示默认按 id 倒序，并且只允许 id、create_time 排序。
-// defaultField 和 defaultType 默认为空；allowField 为空字符串或 "*" 时不限制排序字段；请求中的排序字段不在 allowField 内时，会回退到 defaultField。
-func (c *Context) ValidatePage(args ...interface{}) *page.Query {
-	defaultPage := 1
+// allowField 表示普通分页允许的排序字段，cursorAllowField 表示游标分页允许的排序字段。
+// 例如 ValidatePage("id", "desc", "id,status,create_time,update_time", "id,create_time,update_time") 表示 status 仅允许普通分页使用。
+// defaultField 和 defaultType 可以传空；白名单为空字符串或 "*" 时不限制排序字段；请求中的排序字段不在对应白名单内时，会回退到 defaultField。
+// page 大于 0 时使用页码分页，否则使用游标分页。
+func (c *Context) ValidatePage(defaultField, defaultType, allowField, cursorAllowField string, pageSize ...int) *page.Query {
 	defaultPageSize := 20
-	defaultField := ""
-	defaultType := ""
-	allowField := defaultField
-	intIndex := 0
-	stringIndex := 0
-	for _, arg := range args {
-		switch value := arg.(type) {
-		case int:
-			if intIndex == 0 {
-				defaultPage = value
-			}
-			if intIndex == 1 {
-				defaultPageSize = value
-			}
-			intIndex++
-		case string:
-			if value == "" {
-				continue
-			}
-			if stringIndex == 0 {
-				defaultField = value
-				allowField = value
-			}
-			if stringIndex == 1 {
-				defaultType = strings.ToLower(value)
-			}
-			if stringIndex == 2 {
-				allowField = value
-			}
-			stringIndex++
-		}
-	}
-	if defaultPage <= 0 {
-		defaultPage = 1
+	if len(pageSize) > 0 {
+		defaultPageSize = pageSize[0]
 	}
 	if defaultPageSize <= 0 || defaultPageSize > 1000 {
 		defaultPageSize = 20
 	}
+	defaultType = strings.ToLower(defaultType)
 	if defaultType != "" && defaultType != "desc" && defaultType != "asc" {
 		defaultType = "desc"
 	}
 	var pageInfo struct {
-		Page     int    `json:"page" label:"页码编号"`
-		PageSize int    `json:"page_size" label:"每页数量"`
-		Field    string `json:"order_by_field" label:"排序字段"`
-		Type     string `json:"order_by_type" label:"排序类型"`
+		Page         int    `json:"page" label:"页码编号"`
+		PageSize     int    `json:"page_size" label:"每页数量"`
+		Field        string `json:"order_by_field" label:"排序字段"`
+		Type         string `json:"order_by_type" label:"排序类型"`
+		CursorId     string `json:"cursor_id" label:"分页游标排序值"`
+		CursorLastId string `json:"cursor_last_id" label:"分页游标定位值"`
 	}
 	if c.BindAll(&pageInfo) != nil {
 		return &page.Query{
-			Page:         defaultPage,
 			PageSize:     defaultPageSize,
 			OrderByField: defaultField,
 			OrderByType:  defaultType,
@@ -119,9 +89,8 @@ func (c *Context) ValidatePage(args ...interface{}) *page.Query {
 		PageSize:     pageInfo.PageSize,
 		OrderByField: pageInfo.Field,
 		OrderByType:  strings.ToLower(pageInfo.Type),
-	}
-	if query.Page <= 0 {
-		query.Page = defaultPage
+		CursorId:     pageInfo.CursorId,
+		CursorLastId: pageInfo.CursorLastId,
 	}
 	if query.PageSize <= 0 || query.PageSize > 1000 {
 		query.PageSize = defaultPageSize
@@ -135,15 +104,22 @@ func (c *Context) ValidatePage(args ...interface{}) *page.Query {
 	if query.OrderByType != "" && query.OrderByType != "desc" && query.OrderByType != "asc" {
 		query.OrderByType = defaultType
 	}
-	if allowField == "" || allowField == "*" {
-		return query
+	if cursorAllowField == "" {
+		cursorAllowField = allowField
 	}
-	fields := strings.Fields(strings.ReplaceAll(allowField, ",", " "))
-	for _, v := range fields {
-		if v == query.OrderByField {
-			return query
+	isAllowed := func(fields string) bool {
+		if fields == "" || fields == "*" {
+			return true
 		}
+		for _, field := range strings.Fields(strings.ReplaceAll(fields, ",", " ")) {
+			if field == query.OrderByField {
+				return true
+			}
+		}
+		return false
 	}
-	query.OrderByField = defaultField
+	if !isAllowed(allowField) || (query.IsCursor() && !isAllowed(cursorAllowField)) {
+		query.OrderByField = defaultField
+	}
 	return query
 }

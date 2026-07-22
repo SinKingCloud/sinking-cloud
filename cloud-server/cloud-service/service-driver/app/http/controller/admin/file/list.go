@@ -5,12 +5,11 @@ import (
 	"service-driver/app/service"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
 // List 列表数据
 func (Controller) List(c *context.Context) {
-	query := c.ValidatePage("id", "desc", "id,create_time,update_time")
+	query := c.ValidatePage("id", "desc", "id,create_time,update_time", "id,create_time,update_time")
 	var form struct {
 		ChannelId       string `json:"channel_id" default:"" validate:"omitempty,numeric" label:"通道ID"`
 		SceneId         string `json:"scene_id" default:"" validate:"omitempty,numeric" label:"场景ID"`
@@ -62,10 +61,10 @@ func (Controller) List(c *context.Context) {
 	if form.UpdateTimeEnd != "" {
 		where.UpdateTimeEnd = form.UpdateTimeEnd
 	}
-	data, total, err := service.File.Select(where, query)
+	data, err := service.File.Select(where, query)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, data))
+	c.SuccessWithData("获取数据成功", data)
 }

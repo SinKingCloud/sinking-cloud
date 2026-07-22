@@ -10,21 +10,21 @@ import (
 )
 
 // SelectSessionByUserId 查询用户会话列表
-func (s *service) SelectSessionByUserId(userId int64, where *sessionRepository.SelectSession, page *page.Query) ([]*Session, int64, error) {
+func (s *service) SelectSessionByUserId(userId int64, where *sessionRepository.SelectSession, queryPage *page.Query) (*page.Result[*Session], error) {
 	if userId <= 0 {
-		return nil, 0, errors.New("用户ID错误")
+		return nil, errors.New("用户ID错误")
 	}
 	if where == nil {
 		where = &sessionRepository.SelectSession{}
 	}
 	where.UserId = userId
-	sessions, total, err := s.repositorySession.Select(where, page)
+	result, err := s.repositorySession.Select(where, queryPage)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	data := make([]*Session, 0, len(sessions))
-	for _, item := range sessions {
-		data = append(data, &Session{
+	sessions := make([]*Session, 0, len(result.List))
+	for _, item := range result.List {
+		sessions = append(sessions, &Session{
 			Token:      item.Token,
 			Device:     item.Device,
 			Ip:         item.Ip,
@@ -34,7 +34,15 @@ func (s *service) SelectSessionByUserId(userId int64, where *sessionRepository.S
 			UpdateTime: item.UpdateTime,
 		})
 	}
-	return data, total, nil
+	return &page.Result[*Session]{
+		Total:            result.Total,
+		Page:             result.Page,
+		PageSize:         result.PageSize,
+		List:             sessions,
+		HasMore:          result.HasMore,
+		NextCursorId:     result.NextCursorId,
+		NextCursorLastId: result.NextCursorLastId,
+	}, nil
 }
 
 // LogoutByUserIdAndTokens 根据用户ID和token集合注销会话

@@ -17,26 +17,26 @@ import (
 )
 
 // Select 查询数据
-func (s *service) Select(where *channel.SelectChannel, page *page.Query) (list []*channel.Channel, total int64, err error) {
+func (s *service) Select(where *channel.SelectChannel, query *page.Query) (*page.Result[*channel.Channel], error) {
 	if where.Status != "" {
 		status, err := strconv.Atoi(where.Status)
 		if err != nil {
-			return nil, 0, errors.New("状态参数错误")
+			return nil, errors.New("状态参数错误")
 		}
 		if _, ok := channel_status.Map()[status]; !ok {
-			return nil, 0, errors.New("状态参数不合法")
+			return nil, errors.New("状态参数不合法")
 		}
 	}
 	if where.Type != "" {
 		Type, err := strconv.Atoi(where.Type)
 		if err != nil {
-			return nil, 0, errors.New("类型参数错误")
+			return nil, errors.New("类型参数错误")
 		}
 		if _, ok := channel_type.Map()[Type]; !ok {
-			return nil, 0, errors.New("类型参数不合法")
+			return nil, errors.New("类型参数不合法")
 		}
 	}
-	return s.repositoryChannel.Select(where, page)
+	return s.repositoryChannel.Select(where, query)
 }
 
 // GetIdNameMap 获取id name映射

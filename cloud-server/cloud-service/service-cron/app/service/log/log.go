@@ -9,7 +9,7 @@ import (
 
 // Service 接口
 type Service interface {
-	SelectByTaskId(id int64, page *page.Query) (list []*model.Log, total int64, err error)
+	SelectByTaskId(id int64, query *page.Query) (*page.Result[*model.Log], error)
 }
 
 // Session服务

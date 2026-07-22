@@ -5,12 +5,11 @@ import (
 	"service-pay/app/service"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
 // List 订单日志
 func (Controller) List(c *context.Context) {
-	query := c.ValidatePage("id", "desc", "id,order_id,operator_id,operator_type,type,create_time")
+	query := c.ValidatePage("id", "desc", "id,order_id,operator_id,operator_type,type,create_time", "id,create_time")
 	var form struct {
 		OrderId         string `json:"order_id" default:"" validate:"omitempty,numeric" label:"订单ID"`
 		OperatorId      string `json:"operator_id" default:"" validate:"omitempty,numeric" label:"操作人ID"`
@@ -42,10 +41,10 @@ func (Controller) List(c *context.Context) {
 	if form.CreateTimeEnd != "" {
 		where.CreateTimeEnd = form.CreateTimeEnd
 	}
-	data, total, err := service.Order.SelectLog(where, query)
+	data, err := service.Order.SelectLog(where, query)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, data))
+	c.SuccessWithData("获取数据成功", data)
 }

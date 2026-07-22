@@ -9,9 +9,9 @@ import (
 )
 
 // SelectByTaskId 查询数据
-func (s *service) SelectByTaskId(id int64, page *page.Query) (list []*model.Log, total int64, err error) {
+func (s *service) SelectByTaskId(id int64, query *page.Query) (*page.Result[*model.Log], error) {
 	where := &log.SelectLog{
 		TaskId: strconv.FormatInt(id, 10),
 	}
-	return s.repositoryLog.Select(where, page)
+	return s.repositoryLog.Select(where, query)
 }

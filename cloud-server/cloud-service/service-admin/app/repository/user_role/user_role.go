@@ -20,10 +20,10 @@ type Interface interface {
 
 // Repository 仓储
 type Repository struct {
-	*repository.Repository
+	*repository.Repository[*model.UserRole]
 }
 
 // NewRepository 创建仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Repository: repository.NewRepository(db, &model.UserRole{})}
+	return &Repository{Repository: repository.NewRepository[*model.UserRole](db)}
 }

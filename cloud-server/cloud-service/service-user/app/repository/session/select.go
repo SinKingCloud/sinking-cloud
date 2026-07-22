@@ -10,8 +10,7 @@ import (
 )
 
 // Select 查询会话列表
-func (r *Repository) Select(where *SelectSession, page *page.Query) (list []*model.Session, total int64, err error) {
-	offset := page.PageSize * (page.Page - 1)
+func (r *Repository) Select(where *SelectSession, queryPage *page.Query) (*page.Result[*model.Session], error) {
 	query := r.Database.Db.Model(&model.Session{})
 	if where != nil {
 		if where.UserId > 0 {
@@ -45,8 +44,7 @@ func (r *Repository) Select(where *SelectSession, page *page.Query) (list []*mod
 			query = query.Where("expire_time <= ?", where.ExpireTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(page.PageSize).Offset(offset).Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).Find(&list).Error
-	return
+	return r.Repository.SelectPage(query, queryPage, "token")
 }
 
 // SelectUnExpireTokensByUserIds 根据userid列表查询所有未过期的tokens

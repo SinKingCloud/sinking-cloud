@@ -256,8 +256,8 @@ func (s *service) CheckUserHasPermission(userId int64, path string) error {
 }
 
 // SelectPermission 查询权限数据
-func (s *service) SelectPermission(where *permission.SelectPermission, page *page.Query) ([]*model.Permission, int64, error) {
-	return s.repositoryPermission.Select(where, page)
+func (s *service) SelectPermission(where *permission.SelectPermission, queryPage *page.Query) (*page.Result[*model.Permission], error) {
+	return s.repositoryPermission.Select(where, queryPage)
 }
 
 // UpdatePermissionByIds 批量更新权限数据
@@ -691,53 +691,54 @@ func (s *service) GetMenuOrControlInfoById(id int64) (interface{}, error) {
 }
 
 // GetPageControlsByMenuId 获取页面控件
-func (s *service) GetPageControlsByMenuId(id int64, where *menu2.SelectMenu, page *page.Query) ([]*Control, int64, error) {
+func (s *service) GetPageControlsByMenuId(id int64, where *menu2.SelectMenu, queryPage *page.Query) (*page.Result[*Control], error) {
 	var controls []*Control
 	if id <= 0 {
-		return controls, 0, nil
+		return page.New(queryPage, 0, controls), nil
 	}
 	if where == nil {
 		where = &menu2.SelectMenu{}
 	}
 	where.ParentId = strconv.FormatInt(id, 10)
 	where.Type = strconv.Itoa(int(menu_type.Control))
-	menus, total, err := s.repositoryMenu.Select(where, page)
+	result, err := s.repositoryMenu.Select(where, queryPage)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	if len(menus) == 0 {
-		return controls, total, nil
-	}
+	menus := result.List
 	n := len(menus)
-	menuIds := make([]int64, 0, n)
-	for _, item := range menus {
-		if item == nil || item.Id <= 0 {
-			continue
-		}
-		menuIds = append(menuIds, item.Id)
-	}
-	menuPermissions, err := s.repositoryMenuPermission.SelectByMenuIds(menuIds)
-	if err != nil {
-		return nil, 0, err
-	}
 	permissionCodeMap := make(map[int64][]string, n)
-	tempMap := make(map[int64]map[string]struct{}, n)
-	for _, item := range menuPermissions {
-		if item == nil || item.MenuId <= 0 || item.PermissionCode == "" {
-			continue
+	if n > 0 {
+		menuIds := make([]int64, 0, n)
+		for _, item := range menus {
+			if item == nil || item.Id <= 0 {
+				continue
+			}
+			menuIds = append(menuIds, item.Id)
 		}
-		if _, ok := tempMap[item.MenuId]; !ok {
-			tempMap[item.MenuId] = make(map[string]struct{}, 5)
+		menuPermissions, err := s.repositoryMenuPermission.SelectByMenuIds(menuIds)
+		if err != nil {
+			return nil, err
 		}
-		if _, ok := tempMap[item.MenuId][item.PermissionCode]; ok {
-			continue
+		tempMap := make(map[int64]map[string]struct{}, n)
+		for _, item := range menuPermissions {
+			if item == nil || item.MenuId <= 0 || item.PermissionCode == "" {
+				continue
+			}
+			if _, ok := tempMap[item.MenuId]; !ok {
+				tempMap[item.MenuId] = make(map[string]struct{}, 5)
+			}
+			if _, ok := tempMap[item.MenuId][item.PermissionCode]; ok {
+				continue
+			}
+			tempMap[item.MenuId][item.PermissionCode] = struct{}{}
+			permissionCodeMap[item.MenuId] = append(permissionCodeMap[item.MenuId], item.PermissionCode)
 		}
-		tempMap[item.MenuId][item.PermissionCode] = struct{}{}
-		permissionCodeMap[item.MenuId] = append(permissionCodeMap[item.MenuId], item.PermissionCode)
 	}
-	controls = make([]*Control, 0, len(menus))
-	for _, item := range menus {
+	controls = make([]*Control, 0, len(result.List))
+	for _, item := range result.List {
 		if item == nil || item.Id <= 0 {
+			controls = append(controls, nil)
 			continue
 		}
 		controls = append(controls, &Control{
@@ -751,7 +752,15 @@ func (s *service) GetPageControlsByMenuId(id int64, where *menu2.SelectMenu, pag
 			UpdateTime:      item.UpdateTime,
 		})
 	}
-	return controls, total, nil
+	return &page.Result[*Control]{
+		Total:            result.Total,
+		Page:             result.Page,
+		PageSize:         result.PageSize,
+		List:             controls,
+		HasMore:          result.HasMore,
+		NextCursorId:     result.NextCursorId,
+		NextCursorLastId: result.NextCursorLastId,
+	}, nil
 }
 
 // DeleteMenuOrControlByIds 根据ID列表删除菜单或控件数据
@@ -1235,17 +1244,17 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 }
 
 // SelectRole 查询角色数据
-func (s *service) SelectRole(where *role.SelectRole, page *page.Query) ([]*model.Role, int64, error) {
+func (s *service) SelectRole(where *role.SelectRole, queryPage *page.Query) (*page.Result[*model.Role], error) {
 	if where.Status != "" {
 		status, err := strconv.Atoi(where.Status)
 		if err != nil {
-			return nil, 0, errors.New("状态参数错误")
+			return nil, errors.New("状态参数错误")
 		}
 		if _, ok := role_status.Map()[status]; !ok {
-			return nil, 0, errors.New("状态参数不合法")
+			return nil, errors.New("状态参数不合法")
 		}
 	}
-	return s.repositoryRole.Select(where, page)
+	return s.repositoryRole.Select(where, queryPage)
 }
 
 // UpdateRole 更新角色

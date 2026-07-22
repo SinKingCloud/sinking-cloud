@@ -5,12 +5,11 @@ import (
 	"service-admin/app/service"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
 // List 用户列表
 func (Controller) List(c *context.Context) {
-	query := c.ValidatePage("id", "desc", "id,create_time,update_time")
+	query := c.ValidatePage("id", "desc", "id,create_time,update_time", "id,create_time,update_time")
 	var form struct {
 		Account         string `json:"account" default:"" validate:"omitempty,alphanum" label:"账号"`
 		Phone           string `json:"phone" default:"" validate:"omitempty,numeric" label:"手机号"`
@@ -54,10 +53,10 @@ func (Controller) List(c *context.Context) {
 	if form.UpdateTimeEnd != "" {
 		where.UpdateTimeEnd = form.UpdateTimeEnd
 	}
-	data, total, err := service.User.Select(where, query)
+	data, err := service.User.Select(where, query)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, data))
+	c.SuccessWithData("获取数据成功", data)
 }

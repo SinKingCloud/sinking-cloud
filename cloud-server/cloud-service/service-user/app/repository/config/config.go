@@ -16,10 +16,10 @@ type Interface interface {
 
 // Repository 配置仓储
 type Repository struct {
-	*repository.Repository
+	*repository.Repository[*model.Config]
 }
 
 // NewRepository 创建仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Repository: repository.NewRepository(db, &model.Config{})}
+	return &Repository{Repository: repository.NewRepository[*model.Config](db)}
 }

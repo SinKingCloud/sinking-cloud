@@ -40,77 +40,81 @@ func (s *service) FindById(id int64) (*model.Order, error) {
 }
 
 // Select 查询订单列表
-func (s *service) Select(where *orderRepository.SelectOrder, page *page.Query) (list []*orderRepository.Order, total int64, err error) {
+func (s *service) Select(where *orderRepository.SelectOrder, queryPage *page.Query) (*page.Result[*orderRepository.Order], error) {
 	if where != nil {
 		if where.Id != "" {
 			orderId, err := strconv.ParseInt(where.Id, 10, 64)
 			if err != nil || orderId <= 0 {
-				return nil, 0, errors.New("订单ID错误")
+				return nil, errors.New("订单ID错误")
 			}
 		}
 		if where.UserId != "" {
 			userId, err := strconv.ParseInt(where.UserId, 10, 64)
 			if err != nil || userId <= 0 {
-				return nil, 0, errors.New("用户ID错误")
+				return nil, errors.New("用户ID错误")
 			}
 		}
 		if where.ChannelId != "" {
 			channelId, err := strconv.ParseInt(where.ChannelId, 10, 64)
 			if err != nil || channelId <= 0 {
-				return nil, 0, errors.New("通道ID错误")
+				return nil, errors.New("通道ID错误")
 			}
 		}
 		if where.Type != "" {
 			key, err := strconv.Atoi(where.Type)
 			if err != nil {
-				return nil, 0, errors.New("订单类型参数错误")
+				return nil, errors.New("订单类型参数错误")
 			}
 			if _, ok := order_type.Map()[key]; !ok {
-				return nil, 0, errors.New("订单类型参数不合法")
+				return nil, errors.New("订单类型参数不合法")
 			}
 		}
 		if where.Status != "" {
 			key, err := strconv.Atoi(where.Status)
 			if err != nil {
-				return nil, 0, errors.New("订单状态参数错误")
+				return nil, errors.New("订单状态参数错误")
 			}
 			if _, ok := order_status.Map()[key]; !ok {
-				return nil, 0, errors.New("订单状态参数不合法")
+				return nil, errors.New("订单状态参数不合法")
 			}
 		}
 		if where.PayStatus != "" {
 			key, err := strconv.Atoi(where.PayStatus)
 			if err != nil {
-				return nil, 0, errors.New("支付状态参数错误")
+				return nil, errors.New("支付状态参数错误")
 			}
 			if _, ok := order_pay_status.Map()[key]; !ok {
-				return nil, 0, errors.New("支付状态参数不合法")
+				return nil, errors.New("支付状态参数不合法")
 			}
 		}
 		if where.PayType != "" {
 			if _, ok := pay_type.Map()[where.PayType]; !ok {
-				return nil, 0, errors.New("支付类型参数不合法")
+				return nil, errors.New("支付类型参数不合法")
 			}
 		}
 	}
-	return s.orderRepository.Select(where, page)
+	return s.orderRepository.Select(where, queryPage)
 }
 
 // SelectByUserId 查询用户订单列表
-func (s *service) SelectByUserId(userId int64, where *orderRepository.SelectOrder, page *page.Query) (list []*UserOrder, total int64, err error) {
+func (s *service) SelectByUserId(userId int64, where *orderRepository.SelectOrder, queryPage *page.Query) (*page.Result[*UserOrder], error) {
 	if userId <= 0 {
-		return nil, 0, errors.New("用户ID错误")
+		return nil, errors.New("用户ID错误")
 	}
 	if where == nil {
 		where = &orderRepository.SelectOrder{}
 	}
 	where.UserId = strconv.FormatInt(userId, 10)
-	items, total, err := s.Select(where, page)
+	items, err := s.Select(where, queryPage)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	list = make([]*UserOrder, 0, len(items))
-	for _, item := range items {
+	list := make([]*UserOrder, 0, len(items.List))
+	for _, item := range items.List {
+		if item == nil {
+			list = append(list, nil)
+			continue
+		}
 		list = append(list, &UserOrder{
 			Id:           item.Id,
 			Name:         item.Name,
@@ -128,32 +132,40 @@ func (s *service) SelectByUserId(userId int64, where *orderRepository.SelectOrde
 			UpdateTime:   item.UpdateTime,
 		})
 	}
-	return list, total, nil
+	return &page.Result[*UserOrder]{
+		Total:            items.Total,
+		Page:             items.Page,
+		PageSize:         items.PageSize,
+		List:             list,
+		HasMore:          items.HasMore,
+		NextCursorId:     items.NextCursorId,
+		NextCursorLastId: items.NextCursorLastId,
+	}, nil
 }
 
 // SelectLog 查询订单日志
-func (s *service) SelectLog(where *orderLogRepository.SelectOrderLog, page *page.Query) (list []*orderLogRepository.OrderLog, total int64, err error) {
+func (s *service) SelectLog(where *orderLogRepository.SelectOrderLog, queryPage *page.Query) (*page.Result[*orderLogRepository.OrderLog], error) {
 	if where != nil {
 		if where.OperatorType != "" {
 			key, err := strconv.Atoi(where.OperatorType)
 			if err != nil {
-				return nil, 0, errors.New("操作人类型参数错误")
+				return nil, errors.New("操作人类型参数错误")
 			}
 			if _, ok := order_log_operator_type.Map()[key]; !ok {
-				return nil, 0, errors.New("操作人类型参数不合法")
+				return nil, errors.New("操作人类型参数不合法")
 			}
 		}
 		if where.Type != "" {
 			key, err := strconv.Atoi(where.Type)
 			if err != nil {
-				return nil, 0, errors.New("日志类型参数错误")
+				return nil, errors.New("日志类型参数错误")
 			}
 			if _, ok := order_log_type.Map()[key]; !ok {
-				return nil, 0, errors.New("日志类型参数不合法")
+				return nil, errors.New("日志类型参数不合法")
 			}
 		}
 	}
-	return s.orderLogRepository.Select(where, page)
+	return s.orderLogRepository.Select(where, queryPage)
 }
 
 // FindLogById 根据ID查询日志

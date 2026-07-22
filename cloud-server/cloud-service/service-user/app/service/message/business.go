@@ -207,9 +207,9 @@ func (s *service) Clear(userId int64) error {
 }
 
 // SelectByUserId 查询用户消息列表
-func (s *service) SelectByUserId(userId int64, where *repositoryMessage.SelectMessage, page *page.Query) ([]*Message, int64, error) {
+func (s *service) SelectByUserId(userId int64, where *repositoryMessage.SelectMessage, queryPage *page.Query) (*page.Result[*Message], error) {
 	if userId <= 0 {
-		return nil, 0, errors.New("用户信息错误")
+		return nil, errors.New("用户信息错误")
 	}
 	if where == nil {
 		where = &repositoryMessage.SelectMessage{}
@@ -218,22 +218,23 @@ func (s *service) SelectByUserId(userId int64, where *repositoryMessage.SelectMe
 	if where.Status != "" {
 		status, err := strconv.Atoi(where.Status)
 		if err != nil {
-			return nil, 0, errors.New("消息状态参数错误")
+			return nil, errors.New("消息状态参数错误")
 		}
 		if _, ok := message_status.Map()[status]; !ok {
-			return nil, 0, errors.New("消息状态参数不合法")
+			return nil, errors.New("消息状态参数不合法")
 		}
 	}
-	list, total, err := s.repositoryMessage.Select(where, page)
+	items, err := s.repositoryMessage.Select(where, queryPage)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	result := make([]*Message, 0, len(list))
-	for _, item := range list {
+	list := make([]*Message, 0, len(items.List))
+	for _, item := range items.List {
 		if item == nil {
+			list = append(list, nil)
 			continue
 		}
-		result = append(result, &Message{
+		list = append(list, &Message{
 			Id:         item.Id,
 			Title:      item.Title,
 			Status:     item.Status,
@@ -242,7 +243,15 @@ func (s *service) SelectByUserId(userId int64, where *repositoryMessage.SelectMe
 			UpdateTime: item.UpdateTime,
 		})
 	}
-	return result, total, nil
+	return &page.Result[*Message]{
+		Total:            items.Total,
+		Page:             items.Page,
+		PageSize:         items.PageSize,
+		List:             list,
+		HasMore:          items.HasMore,
+		NextCursorId:     items.NextCursorId,
+		NextCursorLastId: items.NextCursorLastId,
+	}, nil
 }
 
 // GetInfoByUserId 查询用户消息详情，未读消息会自动标记为已读。

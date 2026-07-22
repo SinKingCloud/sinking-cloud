@@ -228,39 +228,48 @@ func (s *service) UpdateByIds(ids []int64, data *user.UpdateUser) error {
 }
 
 // Select 查询用户列表
-func (s *service) Select(where *user.SelectUser, page *page.Query) ([]*User, int64, error) {
+func (s *service) Select(where *user.SelectUser, queryPage *page.Query) (*page.Result[*User], error) {
 	if where.RealAuthStatus != "" {
 		status, err := strconv.Atoi(where.RealAuthStatus)
 		if err != nil {
-			return nil, 0, errors.New("实名状态参数错误")
+			return nil, errors.New("实名状态参数错误")
 		}
 		if _, ok := real_auth_status.Map()[status]; !ok {
-			return nil, 0, errors.New("实名状态参数不合法")
+			return nil, errors.New("实名状态参数不合法")
 		}
 	}
 	if where.Status != "" {
 		status, err := strconv.Atoi(where.Status)
 		if err != nil {
-			return nil, 0, errors.New("状态参数错误")
+			return nil, errors.New("状态参数错误")
 		}
 		if _, ok := user_status.Map()[status]; !ok {
-			return nil, 0, errors.New("状态参数不合法")
+			return nil, errors.New("状态参数不合法")
 		}
 	}
-	list, total, err := s.repositoryUser.Select(where, page)
+	items, err := s.repositoryUser.Select(where, queryPage)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	data := make([]*User, 0, len(list))
-	for _, item := range list {
+	list := make([]*User, 0, len(items.List))
+	for _, item := range items.List {
 		if item == nil {
+			list = append(list, nil)
 			continue
 		}
-		data = append(data, &User{
+		list = append(list, &User{
 			User: item,
 		})
 	}
-	return data, total, nil
+	return &page.Result[*User]{
+		Total:            items.Total,
+		Page:             items.Page,
+		PageSize:         items.PageSize,
+		List:             list,
+		HasMore:          items.HasMore,
+		NextCursorId:     items.NextCursorId,
+		NextCursorLastId: items.NextCursorLastId,
+	}, nil
 }
 
 // SetUserVerifyStatus 设置用户安全验证状态

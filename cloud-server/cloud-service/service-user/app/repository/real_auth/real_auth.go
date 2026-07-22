@@ -16,10 +16,10 @@ type Interface interface {
 
 // Repository 实名认证仓储
 type Repository struct {
-	*repository.Repository
+	*repository.Repository[*model.RealAuth]
 }
 
 // NewRepository 创建仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Repository: repository.NewRepository(db, &model.RealAuth{})}
+	return &Repository{Repository: repository.NewRepository[*model.RealAuth](db)}
 }

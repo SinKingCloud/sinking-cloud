@@ -16,15 +16,15 @@ type Interface interface {
 	FindById(id int64) (*model.Task, error)
 	SelectAll() ([]*model.Task, error)
 	UpdateById(id int64, data *UpdateTask) error
-	Select(where *SelectTask, page *page.Query) (list []*Task, total int64, err error)
+	Select(where *SelectTask, query *page.Query) (*page.Result[*Task], error)
 }
 
 // Repository 仓储
 type Repository struct {
-	*repository.Repository
+	*repository.Repository[*Task]
 }
 
 // NewRepository 创建仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Repository: repository.NewRepository(db, &model.Task{})}
+	return &Repository{Repository: repository.NewRepository[*Task](db)}
 }

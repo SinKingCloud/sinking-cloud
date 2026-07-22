@@ -11,19 +11,19 @@ import (
 )
 
 // SelectSessionByUserId 查询用户会话列表
-func (s *service) SelectSessionByUserId(userId int64, where *sessionRepository.SelectSession, page *page.Query) ([]*model.Session, int64, error) {
+func (s *service) SelectSessionByUserId(userId int64, where *sessionRepository.SelectSession, queryPage *page.Query) (*page.Result[*model.Session], error) {
 	if userId <= 0 {
-		return nil, 0, errors.New("用户ID错误")
+		return nil, errors.New("用户ID错误")
 	}
 	if where == nil {
 		where = &sessionRepository.SelectSession{}
 	}
 	where.UserId = userId
-	list, total, err := s.repositorySession.Select(where, page)
+	result, err := s.repositorySession.Select(where, queryPage)
 	if err != nil {
-		return nil, 0, errors.Join(errors.New("查询会话失败"), err)
+		return nil, errors.Join(errors.New("查询会话失败"), err)
 	}
-	return list, total, nil
+	return result, nil
 }
 
 // LogoutByUserIdAndTokens 根据用户ID和token集合注销会话

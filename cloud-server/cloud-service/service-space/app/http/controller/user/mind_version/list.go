@@ -5,12 +5,11 @@ import (
 	"strconv"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
 // List 导图版本列表
 func (Controller) List(c *context.Context) {
-	query := c.ValidatePage("id", "desc", "id,create_time,update_time")
+	query := c.ValidatePage("id", "desc", "id,create_time,update_time", "id,create_time,update_time")
 	var form struct {
 		DataId int64  `json:"data_id" validate:"required,min=1" label:"导图ID"`
 		Type   string `json:"type" default:"" validate:"required,numeric" label:"版本类型"`
@@ -24,10 +23,10 @@ func (Controller) List(c *context.Context) {
 		c.Error("版本类型参数错误")
 		return
 	}
-	data, total, err := service.Mind.SelectVersions(c.GetUserInfo().Id, form.DataId, versionType, query)
+	data, err := service.Mind.SelectVersions(c.GetUserInfo().Id, form.DataId, versionType, query)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, data))
+	c.SuccessWithData("获取数据成功", data)
 }

@@ -15,7 +15,7 @@ type Interface interface {
 	FindByIdAndDataId(id int64, dataId int64, tx ...*gorm.DB) (*model.MindVersion, error)
 	FindLatestByDataId(dataId int64, tx ...*gorm.DB) (*model.MindVersion, error)
 	FindLatestIdByDataId(dataId int64) (int64, error)
-	Select(where *SelectMindVersion, queryPage *page.Query) (list []*MindVersion, total int64, err error)
+	Select(where *SelectMindVersion, queryPage *page.Query) (*page.Result[*MindVersion], error)
 	UpdateByIdAndDataId(id int64, dataId int64, data *UpdateMindVersion, tx ...*gorm.DB) error
 	DeleteByDataIds(dataIds []int64, tx ...*gorm.DB) error
 	DeleteOldByDataIdAndType(dataId int64, versionType int, limit int, tx ...*gorm.DB) error
@@ -23,10 +23,10 @@ type Interface interface {
 
 // Repository 导图版本仓储
 type Repository struct {
-	*repository.Repository
+	*repository.Repository[*MindVersion]
 }
 
 // NewRepository 创建仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Repository: repository.NewRepository(db, &model.MindVersion{})}
+	return &Repository{Repository: repository.NewRepository[*MindVersion](db)}
 }

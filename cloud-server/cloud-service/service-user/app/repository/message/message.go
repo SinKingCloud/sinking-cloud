@@ -18,15 +18,15 @@ type Interface interface {
 	FindByIdAndUserId(id int64, userId int64) (*model.Message, error)
 	UpdateByIdAndUserId(id int64, userId int64, data *UpdateMessage, tx ...*gorm.DB) error
 	UpdateByIdsAndUserId(ids []int64, userId int64, data *UpdateMessage, tx ...*gorm.DB) error
-	Select(where *SelectMessage, page *page.Query) (list []*Message, total int64, err error)
+	Select(where *SelectMessage, query *page.Query) (*page.Result[*Message], error)
 }
 
 // Repository 消息仓储
 type Repository struct {
-	*repository.Repository
+	*repository.Repository[*Message]
 }
 
 // NewRepository 创建仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Repository: repository.NewRepository(db, &model.Message{})}
+	return &Repository{Repository: repository.NewRepository[*Message](db)}
 }

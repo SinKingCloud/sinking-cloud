@@ -19,15 +19,15 @@ type Interface interface {
 	Create(user *model.User) error
 	UpdateById(id int64, data *UpdateUser, tx ...*gorm.DB) error
 	UpdateByIds(ids []int64, data *UpdateUser) error
-	Select(where *SelectUser, page *page.Query) (list []*User, total int64, err error)
+	Select(where *SelectUser, query *page.Query) (*page.Result[*User], error)
 }
 
 // Repository 用户仓储
 type Repository struct {
-	*repository.Repository
+	*repository.Repository[*User]
 }
 
 // NewRepository 创建仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Repository: repository.NewRepository(db, &model.User{})}
+	return &Repository{Repository: repository.NewRepository[*User](db)}
 }

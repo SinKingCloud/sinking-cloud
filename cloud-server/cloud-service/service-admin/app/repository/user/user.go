@@ -16,7 +16,7 @@ type Interface interface {
 	ExistsByAccount(account string) (bool, error)
 	FindById(id int64) (*model.User, error)
 	FindByIdentifier(identifier string) (*model.User, error)
-	Select(where *SelectUser, page *page.Query) ([]*User, int64, error)
+	Select(where *SelectUser, queryPage *page.Query) (*page.Result[*User], error)
 	Create(user *model.User) error
 	UpdateById(id int64, data *UpdateUser) error
 	DeleteById(id int64, tx ...*gorm.DB) error
@@ -24,10 +24,10 @@ type Interface interface {
 
 // Repository 仓储
 type Repository struct {
-	*repository.Repository
+	*repository.Repository[*User]
 }
 
 // NewRepository 创建仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Repository: repository.NewRepository(db, &model.User{})}
+	return &Repository{Repository: repository.NewRepository[*User](db)}
 }

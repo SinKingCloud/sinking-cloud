@@ -21,10 +21,10 @@ type Interface interface {
 
 // Repository 仓储
 type Repository struct {
-	*repository.Repository
+	*repository.Repository[*model.MenuPermission]
 }
 
 // NewRepository 创建仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Repository: repository.NewRepository(db, &model.MenuPermission{})}
+	return &Repository{Repository: repository.NewRepository[*model.MenuPermission](db)}
 }

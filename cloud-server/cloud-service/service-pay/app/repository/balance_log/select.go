@@ -7,8 +7,7 @@ import (
 )
 
 // Select 查询数据
-func (r *Repository) Select(where *SelectBalanceLog, page *page.Query) (list []*model.BalanceLog, total int64, err error) {
-	offset := page.PageSize * (page.Page - 1)
+func (r *Repository) Select(where *SelectBalanceLog, queryPage *page.Query) (*page.Result[*model.BalanceLog], error) {
 	query := r.Database.Db.Model(&model.BalanceLog{})
 	if where != nil {
 		if where.UserId != "" {
@@ -24,6 +23,5 @@ func (r *Repository) Select(where *SelectBalanceLog, page *page.Query) (list []*
 			query = query.Where("create_time <= ?", where.CreateTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(page.PageSize).Offset(offset).Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).Find(&list).Error
-	return
+	return r.Repository.SelectPage(query, queryPage)
 }

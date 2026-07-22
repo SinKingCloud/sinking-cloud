@@ -5,12 +5,11 @@ import (
 	"service-user/app/service"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
 // List 消息列表
 func (Controller) List(c *context.Context) {
-	query := c.ValidatePage("id", "desc", "id,status,read_time,create_time,update_time")
+	query := c.ValidatePage("id", "desc", "id,status,read_time,create_time,update_time", "id,create_time,update_time")
 	var form struct {
 		Title           string `json:"title" default:"" validate:"omitempty,max=100" label:"消息标题"`
 		Status          string `json:"status" default:"" validate:"omitempty,numeric" label:"消息状态"`
@@ -50,10 +49,10 @@ func (Controller) List(c *context.Context) {
 	if form.UpdateTimeEnd != "" {
 		where.UpdateTimeEnd = form.UpdateTimeEnd
 	}
-	data, total, err := service.Message.SelectByUserId(c.GetUserInfo().Id, where, query)
+	data, err := service.Message.SelectByUserId(c.GetUserInfo().Id, where, query)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, data))
+	c.SuccessWithData("获取数据成功", data)
 }

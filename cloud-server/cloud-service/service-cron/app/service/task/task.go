@@ -23,7 +23,7 @@ import (
 type Service interface {
 	Close()
 	FindById(id int64, refresh bool) (*model.Task, error)
-	Select(where *task.SelectTask, page *page.Query) (list []*task.Task, total int64, err error)
+	Select(where *task.SelectTask, query *page.Query) (*page.Result[*task.Task], error)
 	Create(data *model.Task) error
 	DeleteByIds(ids []int64) error
 	UpdateById(id int64, data *task.UpdateTask) error

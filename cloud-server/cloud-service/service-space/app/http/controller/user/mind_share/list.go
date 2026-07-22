@@ -4,12 +4,11 @@ import (
 	"service-space/app/service"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
 // List 导图分享列表
 func (Controller) List(c *context.Context) {
-	query := c.ValidatePage("id", "desc", "id,status,expire_time,create_time,update_time")
+	query := c.ValidatePage("id", "desc", "id,status,expire_time,create_time,update_time", "id,create_time,update_time")
 	var form struct {
 		DataId int64 `json:"data_id" validate:"required,min=1" label:"导图ID"`
 	}
@@ -17,10 +16,10 @@ func (Controller) List(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	data, total, err := service.Mind.SelectSharesByUserId(c.GetUserInfo().Id, form.DataId, query)
+	data, err := service.Mind.SelectSharesByUserId(c.GetUserInfo().Id, form.DataId, query)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, data))
+	c.SuccessWithData("获取数据成功", data)
 }

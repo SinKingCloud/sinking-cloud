@@ -156,30 +156,34 @@ func (s *service) OperateMoneyCount(userId int64, money float64) error {
 }
 
 // SelectLog 查询用户余额明细
-func (s *service) SelectLog(where *balance_log.SelectBalanceLog, page *page.Query) (list []*Log, total int64, err error) {
+func (s *service) SelectLog(where *balance_log.SelectBalanceLog, queryPage *page.Query) (*page.Result[*Log], error) {
 	if where == nil {
-		return nil, 0, errors.New("参数错误")
+		return nil, errors.New("参数错误")
 	}
 	if where.UserId != "" {
-		if _, err = strconv.ParseInt(where.UserId, 10, 64); err != nil {
-			return nil, 0, errors.New("用户ID格式错误")
+		if _, err := strconv.ParseInt(where.UserId, 10, 64); err != nil {
+			return nil, errors.New("用户ID格式错误")
 		}
 	}
 	if where.Type != "" {
 		logType, err := strconv.Atoi(where.Type)
 		if err != nil {
-			return nil, 0, errors.New("类型参数错误")
+			return nil, errors.New("类型参数错误")
 		}
 		if _, ok := balance_log_type.Map()[logType]; !ok {
-			return nil, 0, errors.New("类型参数不合法")
+			return nil, errors.New("类型参数不合法")
 		}
 	}
-	items, total, err := s.balanceLogRepository.Select(where, page)
+	items, err := s.balanceLogRepository.Select(where, queryPage)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	list = make([]*Log, 0, len(items))
-	for _, item := range items {
+	list := make([]*Log, 0, len(items.List))
+	for _, item := range items.List {
+		if item == nil {
+			list = append(list, nil)
+			continue
+		}
 		list = append(list, &Log{
 			Id:           item.Id,
 			Type:         item.Type,
@@ -192,7 +196,15 @@ func (s *service) SelectLog(where *balance_log.SelectBalanceLog, page *page.Quer
 			CreateTime:   item.CreateTime,
 		})
 	}
-	return list, total, nil
+	return &page.Result[*Log]{
+		Total:            items.Total,
+		Page:             items.Page,
+		PageSize:         items.PageSize,
+		List:             list,
+		HasMore:          items.HasMore,
+		NextCursorId:     items.NextCursorId,
+		NextCursorLastId: items.NextCursorLastId,
+	}, nil
 }
 
 // CreateRechargeOrder 创建充值订单

@@ -50,8 +50,7 @@ func (r *Repository) SelectIdNameMap() (map[int64]string, error) {
 }
 
 // Select 查询数据
-func (r *Repository) Select(where *SelectRole, page *page.Query) (list []*model.Role, total int64, err error) {
-	offset := page.PageSize * (page.Page - 1)
+func (r *Repository) Select(where *SelectRole, queryPage *page.Query) (*page.Result[*model.Role], error) {
 	query := r.Database.Db.Model(&model.Role{})
 	if where != nil {
 		if where.Name != "" {
@@ -73,6 +72,5 @@ func (r *Repository) Select(where *SelectRole, page *page.Query) (list []*model.
 			query = query.Where("update_time <= ?", where.UpdateTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(page.PageSize).Offset(offset).Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).Find(&list).Error
-	return
+	return r.Repository.SelectPage(query, queryPage)
 }

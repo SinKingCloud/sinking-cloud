@@ -8,11 +8,10 @@ import (
 )
 
 // Select 查询导图数据列表，不查询 value 字段
-func (r *Repository) Select(where *SelectMindData, queryPage *page.Query) (list []*MindData, total int64, err error) {
+func (r *Repository) Select(where *SelectMindData, queryPage *page.Query) (*page.Result[*MindData], error) {
 	if queryPage == nil {
-		return []*MindData{}, 0, nil
+		return page.New(queryPage, 0, make([]*MindData, 0)), nil
 	}
-	offset := queryPage.PageSize * (queryPage.Page - 1)
 	query := r.Database.Db.Model(&model.MindData{})
 	if where != nil {
 		if where.UserId > 0 {
@@ -29,6 +28,5 @@ func (r *Repository) Select(where *SelectMindData, queryPage *page.Query) (list 
 			))
 		}
 	}
-	err = query.Count(&total).Limit(queryPage.PageSize).Offset(offset).Order(r.GetOrderBy(queryPage.OrderByField, queryPage.OrderByType)).Find(&list).Error
-	return
+	return r.Repository.SelectPage(query, queryPage)
 }

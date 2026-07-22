@@ -5,12 +5,11 @@ import (
 	"service-admin/app/service"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
 // Controls 控件列表
 func (Controller) Controls(c *context.Context) {
-	query := c.ValidatePage("id", "asc", "id,status,create_time,update_time")
+	query := c.ValidatePage("id", "asc", "id,status,create_time,update_time", "id,create_time,update_time")
 	var form struct {
 		Id              int64  `json:"id" default:"" validate:"numeric,min=1" label:"页面ID"`
 		Code            string `json:"code" default:"" validate:"omitempty" label:"标识"`
@@ -51,10 +50,10 @@ func (Controller) Controls(c *context.Context) {
 	if form.UpdateTimeEnd != "" {
 		where.UpdateTimeEnd = form.UpdateTimeEnd
 	}
-	list, total, err := service.Rbac.GetPageControlsByMenuId(form.Id, where, query)
+	list, err := service.Rbac.GetPageControlsByMenuId(form.Id, where, query)
 	if err != nil {
 		c.Error("获取数据失败")
 		return
 	}
-	c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, list))
+	c.SuccessWithData("获取数据成功", list)
 }

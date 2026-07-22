@@ -13,15 +13,15 @@ import (
 type Interface interface {
 	Create(data *model.Log) error
 	DeleteByTaskIds(taskIds []int64, tx ...*gorm.DB) error
-	Select(where *SelectLog, page *page.Query) (list []*model.Log, total int64, err error)
+	Select(where *SelectLog, query *page.Query) (*page.Result[*model.Log], error)
 }
 
 // Repository 仓储
 type Repository struct {
-	*repository.Repository
+	*repository.Repository[*model.Log]
 }
 
 // NewRepository 创建仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Repository: repository.NewRepository(db, &model.Log{})}
+	return &Repository{Repository: repository.NewRepository[*model.Log](db)}
 }

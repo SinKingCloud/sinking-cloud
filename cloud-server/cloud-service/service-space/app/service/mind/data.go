@@ -22,7 +22,7 @@ func (s *service) CreateData(userId int64, typeId int64, title string, describe 
 	if userId <= 0 {
 		return nil, errors.New("用户信息错误")
 	}
-	if typeId < int64(mind_type.All) {
+	if typeId < 0 {
 		return nil, errors.New("导图分类参数错误")
 	}
 	title = strings.TrimSpace(title)
@@ -33,6 +33,21 @@ func (s *service) CreateData(userId int64, typeId int64, title string, describe 
 	if err != nil {
 		return nil, err
 	}
+	settings := s.configService.GetSystemConfig(constant.MindGroup, false)
+	createMax, _ := strconv.ParseInt(strings.TrimSpace(settings[constant.MindCreateMax]), 10, 64)
+	if createMax != 0 && createMax < 10 {
+		createMax = 10
+	}
+	if createMax > 10000 {
+		createMax = 10000
+	}
+	if createMax > 0 {
+		lockKey := constant.LockMindDataCreate + strconv.FormatInt(userId, 10)
+		if !s.cache.Lock(lockKey, constant.LockTimeMindDataCreate) {
+			return nil, errors.New("系统繁忙,请稍候重试")
+		}
+		defer s.cache.UnLock(lockKey)
+	}
 	data := &model.MindData{
 		Id:       str.GetSnowWorkIns().GetId(),
 		UserId:   userId,
@@ -42,13 +57,22 @@ func (s *service) CreateData(userId int64, typeId int64, title string, describe 
 		Value:    valueText,
 	}
 	err = s.database.Transaction(func(tx *gorm.DB) error {
-		if typeId > int64(mind_type.Other) {
+		if _, ok := mind_type.Map()[int(typeId)]; !ok {
 			typeInfo, err := s.mindTypeRepository.FindByIdAndUserId(typeId, userId, tx)
 			if err != nil {
 				return errors.Join(errors.New("获取导图分类失败"), err)
 			}
 			if typeInfo == nil || typeInfo.Id <= 0 {
 				return errors.New("导图分类不存在")
+			}
+		}
+		if createMax > 0 {
+			total, err := s.mindDataRepository.CountByUserId(userId, tx)
+			if err != nil {
+				return errors.Join(errors.New("获取导图数量失败"), err)
+			}
+			if total >= createMax {
+				return errors.New("导图数量已达到上限")
 			}
 		}
 		if err = s.mindDataRepository.Create(data, tx); err != nil {
@@ -84,12 +108,28 @@ func (s *service) CopyData(userId int64, id int64) (*Data, error) {
 	if userId <= 0 || id <= 0 {
 		return nil, errors.New("参数错误")
 	}
+	settings := s.configService.GetSystemConfig(constant.MindGroup, false)
+	createMax, _ := strconv.ParseInt(strings.TrimSpace(settings[constant.MindCreateMax]), 10, 64)
+	if createMax != 0 && createMax < 10 {
+		createMax = 10
+	}
+	if createMax > 10000 {
+		createMax = 10000
+	}
+	if createMax > 0 {
+		createLockKey := constant.LockMindDataCreate + strconv.FormatInt(userId, 10)
+		if !s.cache.Lock(createLockKey, constant.LockTimeMindDataCreate) {
+			return nil, errors.New("系统繁忙,请稍候重试")
+		}
+		defer s.cache.UnLock(createLockKey)
+	}
 	lockKey := constant.LockMindDataOperate + strconv.FormatInt(id, 10)
 	if !s.cache.Lock(lockKey, constant.LockTimeMindDataOperate) {
 		return nil, errors.New("系统繁忙,请稍候重试")
 	}
 	defer s.cache.UnLock(lockKey)
 	var data *model.MindData
+	presetTypes := mind_type.Map()
 	for attempt := 0; attempt < 3; attempt++ {
 		var snapshot *model.MindData
 		err := s.database.Transaction(func(tx *gorm.DB) error {
@@ -105,7 +145,7 @@ func (s *service) CopyData(userId int64, id int64) (*Data, error) {
 		}
 		retry := false
 		err = s.database.Transaction(func(tx *gorm.DB) error {
-			if snapshot.TypeId > int64(mind_type.Other) {
+			if _, isPresetType := presetTypes[int(snapshot.TypeId)]; !isPresetType {
 				typeInfo, err := s.mindTypeRepository.FindByIdAndUserId(snapshot.TypeId, userId, tx)
 				if err != nil {
 					return errors.Join(errors.New("获取导图分类失败"), err)
@@ -125,6 +165,15 @@ func (s *service) CopyData(userId int64, id int64) (*Data, error) {
 			if info.TypeId != snapshot.TypeId {
 				retry = true
 				return nil
+			}
+			if createMax > 0 {
+				total, err := s.mindDataRepository.CountByUserId(userId, tx)
+				if err != nil {
+					return errors.Join(errors.New("获取导图数量失败"), err)
+				}
+				if total >= createMax {
+					return errors.New("导图数量已达到上限")
+				}
 			}
 			data = &model.MindData{
 				Id:       str.GetSnowWorkIns().GetId(),
@@ -232,42 +281,43 @@ func (s *service) GetDataInfoByUserId(userId int64, id int64) (*Data, error) {
 }
 
 // SelectDataByUserId 查询用户导图数据列表
-func (s *service) SelectDataByUserId(userId int64, where *mindDataRepository.SelectMindData, query *page.Query) ([]*Data, int64, error) {
+func (s *service) SelectDataByUserId(userId int64, where *mindDataRepository.SelectMindData, query *page.Query) (*page.Result[*Data], error) {
 	if userId <= 0 {
-		return nil, 0, errors.New("用户信息错误")
+		return nil, errors.New("用户信息错误")
 	}
 	if query == nil {
-		return nil, 0, errors.New("分页参数错误")
+		return nil, errors.New("分页参数错误")
 	}
 	if where == nil {
 		where = &mindDataRepository.SelectMindData{}
 	}
 	where.UserId = userId
 	where.Keyword = strings.TrimSpace(where.Keyword)
-	list, total, err := s.mindDataRepository.Select(where, query)
+	data, err := s.mindDataRepository.Select(where, query)
 	if err != nil {
-		return nil, 0, errors.Join(errors.New("查询导图失败"), err)
+		return nil, errors.Join(errors.New("查询导图失败"), err)
 	}
-	ids := make([]int64, 0, len(list))
-	for _, item := range list {
+	ids := make([]int64, 0, len(data.List))
+	for _, item := range data.List {
 		if item != nil && item.Id > 0 {
 			ids = append(ids, item.Id)
 		}
 	}
 	sharedDataIds, err := s.mindShareRepository.SelectValidDataIds(ids)
 	if err != nil {
-		return nil, 0, errors.Join(errors.New("获取分享信息失败"), err)
+		return nil, errors.Join(errors.New("获取分享信息失败"), err)
 	}
 	sharedMap := make(map[int64]bool, len(sharedDataIds))
 	for _, dataId := range sharedDataIds {
 		sharedMap[dataId] = true
 	}
-	result := make([]*Data, 0, len(list))
-	for _, item := range list {
+	list := make([]*Data, 0, len(data.List))
+	for _, item := range data.List {
 		if item == nil {
+			list = append(list, nil)
 			continue
 		}
-		result = append(result, &Data{
+		list = append(list, &Data{
 			Id:         item.Id,
 			TypeId:     item.TypeId,
 			Title:      item.Title,
@@ -277,7 +327,15 @@ func (s *service) SelectDataByUserId(userId int64, where *mindDataRepository.Sel
 			UpdateTime: item.UpdateTime,
 		})
 	}
-	return result, total, nil
+	return &page.Result[*Data]{
+		Total:            data.Total,
+		Page:             data.Page,
+		PageSize:         data.PageSize,
+		List:             list,
+		HasMore:          data.HasMore,
+		NextCursorId:     data.NextCursorId,
+		NextCursorLastId: data.NextCursorLastId,
+	}, nil
 }
 
 // UpdateData 更新导图数据信息
@@ -288,9 +346,14 @@ func (s *service) UpdateData(userId int64, id int64, data *mindDataRepository.Up
 	update := &mindDataRepository.UpdateMindData{}
 	var typeId int64
 	hasTypeId := false
+	isPresetType := false
 	if data.TypeId != nil {
 		value, ok := data.TypeId.(int64)
-		if !ok || value < int64(mind_type.All) {
+		if !ok {
+			return errors.New("导图分类参数错误")
+		}
+		_, isPresetType = mind_type.Map()[int(value)]
+		if !isPresetType && value <= 0 {
 			return errors.New("导图分类参数错误")
 		}
 		typeId = value
@@ -315,7 +378,7 @@ func (s *service) UpdateData(userId int64, id int64, data *mindDataRepository.Up
 		}
 		update.Describe = strings.TrimSpace(value)
 	}
-	if hasTypeId && typeId > int64(mind_type.Other) {
+	if hasTypeId && !isPresetType {
 		typeLockKey := constant.LockMindTypeOperate + strconv.FormatInt(userId, 10)
 		if !s.cache.Lock(typeLockKey, constant.LockTimeMindTypeOperate) {
 			return errors.New("系统繁忙,请稍候重试")

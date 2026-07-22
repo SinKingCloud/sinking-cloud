@@ -20,15 +20,15 @@ type Interface interface {
 	SelectCodeNameMap() (map[string]string, error)
 	SelectByCodes(codes []string) ([]*model.Permission, error)
 	SelectByIds(ids []int64) ([]*model.Permission, error)
-	Select(where *SelectPermission, page *page.Query) (list []*model.Permission, total int64, err error)
+	Select(where *SelectPermission, queryPage *page.Query) (*page.Result[*model.Permission], error)
 }
 
 // Repository 仓储
 type Repository struct {
-	*repository.Repository
+	*repository.Repository[*model.Permission]
 }
 
 // NewRepository 创建仓储
 func NewRepository(db *database.Database) *Repository {
-	return &Repository{Repository: repository.NewRepository(db, &model.Permission{})}
+	return &Repository{Repository: repository.NewRepository[*model.Permission](db)}
 }

@@ -183,25 +183,25 @@ func (s *service) DeleteShare(userId int64, dataId int64, id int64) error {
 }
 
 // SelectSharesByUserId 查询用户导图分享列表
-func (s *service) SelectSharesByUserId(userId int64, dataId int64, query *page.Query) ([]*model.MindShare, int64, error) {
+func (s *service) SelectSharesByUserId(userId int64, dataId int64, query *page.Query) (*page.Result[*model.MindShare], error) {
 	if userId <= 0 || dataId <= 0 {
-		return nil, 0, errors.New("参数错误")
+		return nil, errors.New("参数错误")
 	}
 	if query == nil {
-		return nil, 0, errors.New("分页参数错误")
+		return nil, errors.New("分页参数错误")
 	}
 	exists, err := s.mindDataRepository.ExistsByIdAndUserId(dataId, userId)
 	if err != nil {
-		return nil, 0, errors.Join(errors.New("获取导图失败"), err)
+		return nil, errors.Join(errors.New("获取导图失败"), err)
 	}
 	if !exists {
-		return nil, 0, errors.New("导图不存在")
+		return nil, errors.New("导图不存在")
 	}
-	list, total, err := s.mindShareRepository.SelectByDataId(dataId, query)
+	data, err := s.mindShareRepository.SelectByDataId(dataId, query)
 	if err != nil {
-		return nil, 0, errors.Join(errors.New("查询导图分享失败"), err)
+		return nil, errors.Join(errors.New("查询导图分享失败"), err)
 	}
-	return list, total, nil
+	return data, nil
 }
 
 // GetDataByShareCode 通过分享码获取公开导图

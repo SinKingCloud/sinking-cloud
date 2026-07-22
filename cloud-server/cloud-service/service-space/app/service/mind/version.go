@@ -248,40 +248,41 @@ func (s *service) RestoreVersion(userId int64, dataId int64, id int64) (*Data, e
 }
 
 // SelectVersions 查询导图版本列表
-func (s *service) SelectVersions(userId int64, dataId int64, versionType int, query *page.Query) ([]*Version, int64, error) {
+func (s *service) SelectVersions(userId int64, dataId int64, versionType int, query *page.Query) (*page.Result[*Version], error) {
 	if userId <= 0 || dataId <= 0 {
-		return nil, 0, errors.New("参数错误")
+		return nil, errors.New("参数错误")
 	}
 	if query == nil {
-		return nil, 0, errors.New("分页参数错误")
+		return nil, errors.New("分页参数错误")
 	}
 	if _, ok := mind_version_type.Map()[versionType]; !ok {
-		return nil, 0, errors.New("版本类型参数错误")
+		return nil, errors.New("版本类型参数错误")
 	}
 	exists, err := s.mindDataRepository.ExistsByIdAndUserId(dataId, userId)
 	if err != nil {
-		return nil, 0, errors.Join(errors.New("获取导图失败"), err)
+		return nil, errors.Join(errors.New("获取导图失败"), err)
 	}
 	if !exists {
-		return nil, 0, errors.New("导图不存在")
+		return nil, errors.New("导图不存在")
 	}
-	list, total, err := s.mindVersionRepository.Select(&mindVersionRepository.SelectMindVersion{
+	data, err := s.mindVersionRepository.Select(&mindVersionRepository.SelectMindVersion{
 		DataId: dataId,
 		Type:   strconv.Itoa(versionType),
 	}, query)
 	if err != nil {
-		return nil, 0, errors.Join(errors.New("查询导图版本失败"), err)
+		return nil, errors.Join(errors.New("查询导图版本失败"), err)
 	}
 	latestId, err := s.mindVersionRepository.FindLatestIdByDataId(dataId)
 	if err != nil {
-		return nil, 0, errors.Join(errors.New("获取最新版本失败"), err)
+		return nil, errors.Join(errors.New("获取最新版本失败"), err)
 	}
-	result := make([]*Version, 0, len(list))
-	for _, item := range list {
+	list := make([]*Version, 0, len(data.List))
+	for _, item := range data.List {
 		if item == nil {
+			list = append(list, nil)
 			continue
 		}
-		result = append(result, &Version{
+		list = append(list, &Version{
 			Id:         item.Id,
 			DataId:     item.DataId,
 			Type:       item.Type,
@@ -291,7 +292,15 @@ func (s *service) SelectVersions(userId int64, dataId int64, versionType int, qu
 			UpdateTime: item.UpdateTime,
 		})
 	}
-	return result, total, nil
+	return &page.Result[*Version]{
+		Total:            data.Total,
+		Page:             data.Page,
+		PageSize:         data.PageSize,
+		List:             list,
+		HasMore:          data.HasMore,
+		NextCursorId:     data.NextCursorId,
+		NextCursorLastId: data.NextCursorLastId,
+	}, nil
 }
 
 // sameValue 判断导图内容是否一致

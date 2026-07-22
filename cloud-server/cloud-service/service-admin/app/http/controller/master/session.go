@@ -5,12 +5,11 @@ import (
 	"service-admin/app/service"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
-	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 )
 
 // Session 会话列表
 func (Controller) Session(c *context.Context) {
-	query := c.ValidatePage("create_time", "desc", "create_time,update_time,expire_time")
+	query := c.ValidatePage("create_time", "desc", "create_time,update_time,expire_time", "create_time,update_time")
 	var form struct {
 		Id              int64  `json:"id" default:"" validate:"required,min=1" label:"用户ID"`
 		Device          string `json:"device" default:"" validate:"omitempty,max=100" label:"登录设备"`
@@ -55,10 +54,10 @@ func (Controller) Session(c *context.Context) {
 	if form.ExpireTimeEnd != "" {
 		where.ExpireTimeEnd = form.ExpireTimeEnd
 	}
-	data, total, err := service.Auth.SelectSessionByUserId(form.Id, where, query)
+	data, err := service.Auth.SelectSessionByUserId(form.Id, where, query)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("获取数据成功", page.NewPage(total, query.Page, query.PageSize, data))
+	c.SuccessWithData("获取数据成功", data)
 }

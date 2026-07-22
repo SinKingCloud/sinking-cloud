@@ -15,17 +15,17 @@ import (
 )
 
 // Select 查询数据
-func (s *service) Select(where *file.SelectFile, page *page.Query) (list []*model.File, total int64, err error) {
+func (s *service) Select(where *file.SelectFile, query *page.Query) (*page.Result[*model.File], error) {
 	if where.Status != "" {
 		status, err := strconv.Atoi(where.Status)
 		if err != nil {
-			return nil, 0, errors.New("状态参数错误")
+			return nil, errors.New("状态参数错误")
 		}
 		if _, ok := file_status.Map()[status]; !ok {
-			return nil, 0, errors.New("状态参数不合法")
+			return nil, errors.New("状态参数不合法")
 		}
 	}
-	return s.repositoryFile.Select(where, page)
+	return s.repositoryFile.Select(where, query)
 }
 
 // GetUrlByHash 根据 hash 获取文件公开地址。

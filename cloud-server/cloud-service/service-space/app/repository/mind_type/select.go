@@ -7,12 +7,10 @@ import (
 )
 
 // SelectByUserId 根据用户ID查询自定义导图分类
-func (r *Repository) SelectByUserId(userId int64, queryPage *page.Query) (list []*model.MindType, total int64, err error) {
+func (r *Repository) SelectByUserId(userId int64, queryPage *page.Query) (*page.Result[*model.MindType], error) {
 	if userId <= 0 || queryPage == nil {
-		return []*model.MindType{}, 0, nil
+		return page.New(queryPage, 0, make([]*model.MindType, 0)), nil
 	}
-	offset := queryPage.PageSize * (queryPage.Page - 1)
 	query := r.Database.Db.Model(&model.MindType{}).Where("user_id = ?", userId)
-	err = query.Count(&total).Limit(queryPage.PageSize).Offset(offset).Order(r.GetOrderBy(queryPage.OrderByField, queryPage.OrderByType)).Find(&list).Error
-	return
+	return r.Repository.SelectPage(query, queryPage)
 }

@@ -37,31 +37,28 @@ func (s *service) GetInfo(userId int64, refresh bool) (user *model.User, err err
 }
 
 // Select 查询用户列表
-func (s *service) Select(where *user.SelectUser, page *page.Query) ([]*User, int64, error) {
+func (s *service) Select(where *user.SelectUser, queryPage *page.Query) (*page.Result[*User], error) {
 	if where.Status != "" {
 		status, err := strconv.Atoi(where.Status)
 		if err != nil {
-			return nil, 0, errors.New("状态参数错误")
+			return nil, errors.New("状态参数错误")
 		}
 		if _, ok := user_status.Map()[status]; !ok {
-			return nil, 0, errors.New("状态参数不合法")
+			return nil, errors.New("状态参数不合法")
 		}
 	}
-	list, total, err := s.repositoryUser.Select(where, page)
+	result, err := s.repositoryUser.Select(where, queryPage)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
+	list := result.List
 	userIds := make([]int64, 0, len(list))
-	data := make([]*User, 0, len(list))
 	for _, item := range list {
 		userIds = append(userIds, item.Id)
-		data = append(data, &User{
-			User: item,
-		})
 	}
 	items, err := s.repositoryUserRole.SelectByUserIds(userIds)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	roleMap := make(map[int64][]int64, len(userIds))
 	for _, item := range items {
@@ -74,10 +71,19 @@ func (s *service) Select(where *user.SelectUser, page *page.Query) ([]*User, int
 		}
 		roleMap[item.UserId] = append(roleMap[item.UserId], item.RoleId)
 	}
-	for _, item := range data {
-		item.RoleIds = roleMap[item.Id]
+	users := make([]*User, 0, len(result.List))
+	for _, item := range result.List {
+		users = append(users, &User{User: item, RoleIds: roleMap[item.Id]})
 	}
-	return data, total, nil
+	return &page.Result[*User]{
+		Total:            result.Total,
+		Page:             result.Page,
+		PageSize:         result.PageSize,
+		List:             users,
+		HasMore:          result.HasMore,
+		NextCursorId:     result.NextCursorId,
+		NextCursorLastId: result.NextCursorLastId,
+	}, nil
 }
 
 // Create 创建用户

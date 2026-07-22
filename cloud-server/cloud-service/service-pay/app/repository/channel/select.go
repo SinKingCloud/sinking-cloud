@@ -28,8 +28,7 @@ func (r *Repository) SelectIdNameMap() (map[int64]string, error) {
 }
 
 // Select 查询数据
-func (r *Repository) Select(where *SelectChannel, page *page.Query) (list []*Channel, total int64, err error) {
-	offset := page.PageSize * (page.Page - 1)
+func (r *Repository) Select(where *SelectChannel, queryPage *page.Query) (*page.Result[*Channel], error) {
 	query := r.Database.Db.Model(&model.Channel{})
 	if where != nil {
 		if where.Type != "" {
@@ -57,6 +56,5 @@ func (r *Repository) Select(where *SelectChannel, page *page.Query) (list []*Cha
 			query = query.Where("update_time <= ?", where.UpdateTimeEnd)
 		}
 	}
-	err = query.Count(&total).Limit(page.PageSize).Offset(offset).Order(r.GetOrderBy(page.OrderByField, page.OrderByType)).Find(&list).Error
-	return
+	return r.Repository.SelectPage(query, queryPage)
 }

@@ -10,14 +10,12 @@ import (
 )
 
 // SelectByDataId 根据导图数据ID查询分享列表
-func (r *Repository) SelectByDataId(dataId int64, queryPage *page.Query) (list []*model.MindShare, total int64, err error) {
+func (r *Repository) SelectByDataId(dataId int64, queryPage *page.Query) (*page.Result[*model.MindShare], error) {
 	if dataId <= 0 || queryPage == nil {
-		return []*model.MindShare{}, 0, nil
+		return page.New(queryPage, 0, make([]*model.MindShare, 0)), nil
 	}
-	offset := queryPage.PageSize * (queryPage.Page - 1)
 	query := r.Database.Db.Model(&model.MindShare{}).Where("data_id = ?", dataId)
-	err = query.Count(&total).Limit(queryPage.PageSize).Offset(offset).Order(r.GetOrderBy(queryPage.OrderByField, queryPage.OrderByType)).Find(&list).Error
-	return
+	return r.Repository.SelectPage(query, queryPage)
 }
 
 // SelectValidDataIds 查询存在有效分享的数据ID集合

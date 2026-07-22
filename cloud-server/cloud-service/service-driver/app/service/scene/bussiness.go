@@ -15,32 +15,32 @@ import (
 )
 
 // Select 查询数据
-func (s *service) Select(where *scene.SelectScene, page *page.Query) (list []*model.Scene, total int64, err error) {
+func (s *service) Select(where *scene.SelectScene, query *page.Query) (*page.Result[*model.Scene], error) {
 	if where.Status != "" {
 		status, err := strconv.Atoi(where.Status)
 		if err != nil {
-			return nil, 0, errors.New("状态参数错误")
+			return nil, errors.New("状态参数错误")
 		}
 		if _, ok := scene_status.Map()[status]; !ok {
-			return nil, 0, errors.New("状态参数不合法")
+			return nil, errors.New("状态参数不合法")
 		}
 	}
 	if where.Login != "" {
 		login, err := strconv.Atoi(where.Login)
 		if err != nil {
-			return nil, 0, errors.New("登录限制参数错误")
+			return nil, errors.New("登录限制参数错误")
 		}
 		if _, ok := scene_login.Map()[login]; !ok {
-			return nil, 0, errors.New("登录限制参数不合法")
+			return nil, errors.New("登录限制参数不合法")
 		}
 	}
 	if where.ChannelId != "" {
-		_, err = strconv.Atoi(where.ChannelId)
+		_, err := strconv.Atoi(where.ChannelId)
 		if err != nil {
-			return nil, 0, errors.New("通道参数错误")
+			return nil, errors.New("通道参数错误")
 		}
 	}
-	return s.repositoryScene.Select(where, page)
+	return s.repositoryScene.Select(where, query)
 }
 
 // GetIdNameMap 获取id name映射

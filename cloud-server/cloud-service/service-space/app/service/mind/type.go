@@ -79,7 +79,7 @@ func (s *service) DeleteType(userId int64, id int64) error {
 	if userId <= 0 || id <= 0 {
 		return errors.New("参数错误")
 	}
-	if id <= int64(mind_type.Other) {
+	if _, ok := mind_type.Map()[int(id)]; ok {
 		return errors.New("预设分类不能删除")
 	}
 	lockKey := constant.LockMindTypeOperate + strconv.FormatInt(userId, 10)
@@ -106,30 +106,39 @@ func (s *service) DeleteType(userId int64, id int64) error {
 }
 
 // SelectTypes 查询自定义导图分类列表
-func (s *service) SelectTypes(userId int64, query *page.Query) ([]*Type, int64, error) {
+func (s *service) SelectTypes(userId int64, query *page.Query) (*page.Result[*Type], error) {
 	if userId <= 0 {
-		return nil, 0, errors.New("用户信息错误")
+		return nil, errors.New("用户信息错误")
 	}
 	if query == nil {
-		return nil, 0, errors.New("分页参数错误")
+		return nil, errors.New("分页参数错误")
 	}
-	list, total, err := s.mindTypeRepository.SelectByUserId(userId, query)
+	data, err := s.mindTypeRepository.SelectByUserId(userId, query)
 	if err != nil {
-		return nil, 0, errors.Join(errors.New("查询导图分类失败"), err)
+		return nil, errors.Join(errors.New("查询导图分类失败"), err)
 	}
-	result := make([]*Type, 0, len(list))
-	for _, item := range list {
+	list := make([]*Type, 0, len(data.List))
+	for _, item := range data.List {
 		if item == nil {
+			list = append(list, nil)
 			continue
 		}
-		result = append(result, &Type{
+		list = append(list, &Type{
 			Id:         item.Id,
 			Name:       item.Name,
 			CreateTime: item.CreateTime,
 			UpdateTime: item.UpdateTime,
 		})
 	}
-	return result, total, nil
+	return &page.Result[*Type]{
+		Total:            data.Total,
+		Page:             data.Page,
+		PageSize:         data.PageSize,
+		List:             list,
+		HasMore:          data.HasMore,
+		NextCursorId:     data.NextCursorId,
+		NextCursorLastId: data.NextCursorLastId,
+	}, nil
 }
 
 // UpdateType 更新自定义导图分类
@@ -137,7 +146,7 @@ func (s *service) UpdateType(userId int64, id int64, name string) error {
 	if userId <= 0 || id <= 0 {
 		return errors.New("参数错误")
 	}
-	if id <= int64(mind_type.Other) {
+	if _, ok := mind_type.Map()[int(id)]; ok {
 		return errors.New("预设分类不能修改")
 	}
 	name = strings.TrimSpace(name)
