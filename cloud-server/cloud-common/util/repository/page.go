@@ -100,10 +100,15 @@ func (r *Repository[T]) SelectPage(query *gorm.DB, queryPage *page.Query, custom
 	}
 	var total int64
 	if !cursorMode {
+		const maxPageOffset int64 = 500000
+		pageIndex := int64(queryPage.Page - 1)
+		if pageIndex > maxPageOffset/int64(queryPage.PageSize) {
+			return nil, errors.New("分页位置过深，请使用游标分页")
+		}
 		if err := query.Count(&total).Error; err != nil {
 			return nil, err
 		}
-		query = query.Offset(queryPage.PageSize * (queryPage.Page - 1))
+		query = query.Offset(int(pageIndex * int64(queryPage.PageSize)))
 	}
 	if field != cursorLastFieldName {
 		query = query.Clauses(clause.OrderBy{Columns: []clause.OrderByColumn{
