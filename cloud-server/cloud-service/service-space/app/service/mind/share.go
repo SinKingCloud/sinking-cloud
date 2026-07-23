@@ -120,6 +120,25 @@ func (s *service) UpdateShare(userId int64, dataId int64, id int64, data *mindSh
 		}
 		update.Status = value
 	}
+	if data.ExpireTime != nil {
+		value, ok := data.ExpireTime.(string)
+		if !ok {
+			return errors.New("分享过期时间错误")
+		}
+		value = strings.TrimSpace(value)
+		var expireAt str.DateTime
+		if value != "" {
+			timeValue, err := time.ParseInLocation("2006-01-02 15:04:05", value, time.Local)
+			if err != nil {
+				return errors.New("分享过期时间格式错误")
+			}
+			if !timeValue.After(time.Now()) {
+				return errors.New("分享过期时间必须晚于当前时间")
+			}
+			expireAt = str.DateTime(timeValue)
+		}
+		update.ExpireTime = expireAt
+	}
 	if data.Remark != nil {
 		value, ok := data.Remark.(string)
 		if !ok {

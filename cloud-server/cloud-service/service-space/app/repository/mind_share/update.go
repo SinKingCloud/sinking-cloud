@@ -17,6 +17,9 @@ func (r *Repository) UpdateByIdAndDataId(id int64, dataId int64, data *UpdateMin
 	if data.Status != nil {
 		updates["status"] = data.Status
 	}
+	if data.ExpireTime != nil {
+		updates["expire_time"] = data.ExpireTime
+	}
 	if data.Remark != nil {
 		updates["remark"] = data.Remark
 	}

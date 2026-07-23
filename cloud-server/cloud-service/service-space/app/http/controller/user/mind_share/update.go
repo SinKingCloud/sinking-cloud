@@ -11,10 +11,11 @@ import (
 // Update 更新导图分享
 func (Controller) Update(c *context.Context) {
 	var form struct {
-		DataId int64   `json:"data_id" validate:"required,min=1" label:"导图ID"`
-		Id     int64   `json:"id" validate:"required,min=1" label:"分享ID"`
-		Status string  `json:"status" default:"" validate:"omitempty,numeric" label:"分享状态"`
-		Remark *string `json:"remark" validate:"omitempty,max=60" label:"备注"`
+		DataId     int64   `json:"data_id" validate:"required,min=1" label:"导图ID"`
+		Id         int64   `json:"id" validate:"required,min=1" label:"分享ID"`
+		Status     string  `json:"status" default:"" validate:"omitempty,numeric" label:"分享状态"`
+		ExpireTime *string `json:"expire_time" validate:"omitempty" label:"到期时间"`
+		Remark     *string `json:"remark" validate:"omitempty,max=60" label:"备注"`
 	}
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
@@ -28,6 +29,9 @@ func (Controller) Update(c *context.Context) {
 			return
 		}
 		data.Status = status
+	}
+	if form.ExpireTime != nil {
+		data.ExpireTime = *form.ExpireTime
 	}
 	if form.Remark != nil {
 		data.Remark = *form.Remark
