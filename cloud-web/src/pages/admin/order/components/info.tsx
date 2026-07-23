@@ -237,14 +237,14 @@ const useStyles: any = createStyles(({css, token}: any, props: any = {}): any =>
         timeSection: css`
             grid-column: 1 / -1;
 
-            .infoList {
+            && > .infoList {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
                 gap: 6px 16px;
             }
 
             @media (max-width: 430px) {
-                .infoList {
+                && > .infoList {
                     grid-template-columns: minmax(0, 1fr);
                 }
             }

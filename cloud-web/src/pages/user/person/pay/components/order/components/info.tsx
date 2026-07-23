@@ -134,13 +134,13 @@ const useStyles: any = createStyles(({token}: any): any => ({
     },
     timeSection: {
         gridColumn: "1 / -1",
-        ".infoList": {
+        "&& > .infoList": {
             display: "grid",
             gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
             gap: "6px 16px",
         },
         "@media (max-width: 430px)": {
-            ".infoList": {
+            "&& > .infoList": {
                 gridTemplateColumns: "minmax(0, 1fr)",
             },
         },
