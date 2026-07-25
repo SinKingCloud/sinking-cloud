@@ -1,4 +1,4 @@
-package share
+package mind
 
 type Controller struct {
 }

@@ -9,6 +9,8 @@ import (
 
 // loadApi 加载公开API
 func loadApi(s *sinking_web.Engine) {
-	share := s.Group("/share")
-	share.ANY("/info", context.HandleFunc(controller.Api.Share.Info)) //分享导图详情
+	mind := s.Group("/mind")
+	{
+		mind.ANY("/share", context.HandleFunc(controller.Api.Mind.Share)) //分享导图详情
+	}
 }

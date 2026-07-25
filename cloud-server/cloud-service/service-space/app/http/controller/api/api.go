@@ -1,7 +1,7 @@
 package api
 
-import "service-space/app/http/controller/api/share"
+import "service-space/app/http/controller/api/mind"
 
 type Controller struct {
-	Share share.Controller
+	Mind mind.Controller
 }

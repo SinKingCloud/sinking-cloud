@@ -1,4 +1,4 @@
-package share
+package mind
 
 import (
 	"service-space/app/service"
@@ -6,8 +6,8 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
-// Info 分享导图详情
-func (Controller) Info(c *context.Context) {
+// Share 获取公开导图分享
+func (Controller) Share(c *context.Context) {
 	var form struct {
 		Code string `json:"code" default:"" validate:"required,len=8" label:"分享码"`
 	}
@@ -15,10 +15,10 @@ func (Controller) Info(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	info, err := service.Mind.GetDataByShareCode(form.Code)
+	data, err := service.Mind.GetDataByShareCode(form.Code)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
-	c.SuccessWithData("获取数据成功", info)
+	c.SuccessWithData("获取数据成功", data)
 }
