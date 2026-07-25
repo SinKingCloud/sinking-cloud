@@ -299,11 +299,13 @@ export type MindProps = {
     onChange?: (value: MindValue, stats: MindStats) => void;
     /** onChange 的别名，便于业务语义化监听。 */
     onDataChange?: (value: MindValue, stats: MindStats) => void;
+    /** 内容进入待保存状态时触发。 */
+    onDirty?: () => void;
     /** 保存回调，手动保存、快捷键保存和自动保存都会触发。 */
     onSave?: (value: MindValue, stats: MindStats, reason: MindSaveReason) => void | Promise<void>;
     /** 是否启用自动保存，默认 false。 */
     autoSave?: boolean;
-    /** 自动保存防抖时间，默认 4000ms。 */
+    /** 自动保存最小间隔，默认 4000ms。 */
     autoSaveDelay?: number;
     /** 是否启用内置快捷键，默认 true。 */
     shortcuts?: boolean;
@@ -1234,23 +1236,6 @@ export const mindValueToMarkdown = (value?: MindValue) => {
     };
     walk(root, 1);
     return lines.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd();
-};
-
-/** 生成大数据量测试用思维导图，默认 120 个节点。 */
-export const createMindBenchmarkValue = (count = 120): MindValue => {
-    const total = Math.max(1, Math.floor(count));
-    const nodes: MindNode[] = [createDefaultMindNode()];
-    for (let index = 1; index < total; index += 1) {
-        const parentIndex = Math.max(0, Math.floor((index - 1) / 3));
-        nodes.push(createMindNode({
-            id: `node_${index}`,
-            parentId: nodes[parentIndex]?.id || rootId,
-            title: `测试节点 ${index}`,
-            description: index % 5 === 0 ? "用于验证 100+ 节点拖拽、整理和缩放性能" : undefined,
-            color: palette[index % palette.length],
-        }));
-    }
-    return sanitizeMindValue({nodes});
 };
 
 const getTextLines = (text?: string, lineChars = 14) => {
@@ -2838,6 +2823,7 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         createId = getDefaultId,
         onChange,
         onDataChange,
+        onDirty,
         onSave,
         autoSave = false,
         autoSaveDelay = 4000,
@@ -2890,9 +2876,12 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     const selectedIdsRef = useRef<string[]>([]);
     const historyRef = useRef<FlowNode[][]>([]);
     const pendingEmitRef = useRef(false);
-    const autoSaveReadyRef = useRef(false);
     const autoSaveTimerRef = useRef<number | undefined>(undefined);
     const scheduleAutoSaveRef = useRef<() => void>(() => undefined);
+    const onDirtyRef = useRef(onDirty);
+    const onSaveRef = useRef(onSave);
+    const saveMindRef = useRef<(reason?: MindSaveReason) => Promise<void>>(async () => undefined);
+    const autoSaveOptionsRef = useRef({autoSave, autoSaveDelay, readOnly});
     const draggingRef = useRef(false);
     const dragMovedRef = useRef(false);
     const dragSubtreeIdsRef = useRef<Set<string>>(new Set());
@@ -2959,6 +2948,22 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     useEffect(() => {
         miniMapVisibleRef.current = currentShowMiniMap;
     }, [currentShowMiniMap]);
+
+    useEffect(() => {
+        onDirtyRef.current = onDirty;
+    }, [onDirty]);
+
+    useEffect(() => {
+        onSaveRef.current = onSave;
+    }, [onSave]);
+
+    useEffect(() => {
+        autoSaveOptionsRef.current = {autoSave, autoSaveDelay, readOnly};
+        if (!autoSave || readOnly) {
+            window.clearTimeout(autoSaveTimerRef.current);
+            autoSaveTimerRef.current = undefined;
+        }
+    }, [autoSave, autoSaveDelay, readOnly]);
 
     useEffect(() => {
         if (hasControlledValue) {
@@ -3862,8 +3867,12 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
 
     const saveMind = useCallback(async (reason: MindSaveReason = "manual") => {
         const nextValue = getCurrentMindValue();
-        await onSave?.(nextValue, getMindStats(nextValue), reason);
-    }, [getCurrentMindValue, onSave]);
+        await onSaveRef.current?.(nextValue, getMindStats(nextValue), reason);
+    }, [getCurrentMindValue]);
+
+    useEffect(() => {
+        saveMindRef.current = saveMind;
+    }, [saveMind]);
 
     const replaceMindValue = useCallback((nextValue: MindValue) => {
         if (readOnly) {
@@ -4021,31 +4030,36 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
     }, []);
 
     const scheduleAutoSave = useCallback(() => {
-        if (!autoSave || !onSave || readOnly) {
+        onDirtyRef.current?.();
+        const options = autoSaveOptionsRef.current;
+        if (!options.autoSave || !onSaveRef.current || options.readOnly) {
             return;
         }
-        window.clearTimeout(autoSaveTimerRef.current);
+        if (autoSaveTimerRef.current !== undefined) {
+            return;
+        }
         autoSaveTimerRef.current = window.setTimeout(() => {
-            saveMind("auto").catch((error) => {
+            autoSaveTimerRef.current = undefined;
+            const latestOptions = autoSaveOptionsRef.current;
+            if (!latestOptions.autoSave || latestOptions.readOnly) {
+                return;
+            }
+            saveMindRef.current("auto").catch((error) => {
                 message.error(error instanceof Error ? error.message : "自动保存失败");
             });
-        }, Math.max(500, autoSaveDelay));
-    }, [autoSave, autoSaveDelay, message, onSave, readOnly, saveMind]);
+        }, Math.max(500, options.autoSaveDelay));
+    }, [message]);
 
     useEffect(() => {
         scheduleAutoSaveRef.current = scheduleAutoSave;
     }, [scheduleAutoSave]);
 
     useEffect(() => {
-        if (!autoSaveReadyRef.current) {
-            autoSaveReadyRef.current = true;
+        if (dataRevision <= 0) {
             return;
         }
-        scheduleAutoSave();
-        return () => {
-            window.clearTimeout(autoSaveTimerRef.current);
-        };
-    }, [dataRevision, scheduleAutoSave]);
+        scheduleAutoSaveRef.current();
+    }, [dataRevision]);
 
     const runEditorShortcut = useCallback((action: "child" | "sibling" | "save", nodeId: string) => {
         if (action === "save") {
@@ -4329,7 +4343,10 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
         if (readOnly || node.id === rootId) {
             clearDropParent();
             if (!readOnly && dragMovedRef.current) {
-                window.requestAnimationFrame(() => emitChange(nodesRef.current));
+                window.requestAnimationFrame(() => {
+                    emitChange(nodesRef.current);
+                    setDataRevision((revision) => revision + 1);
+                });
             }
             return;
         }
@@ -4365,7 +4382,10 @@ const Mind = forwardRef<MindRef, MindProps>((props, ref) => {
                 }
             }
             if (dragMovedRef.current) {
-                window.requestAnimationFrame(() => emitChange(nodesRef.current));
+                window.requestAnimationFrame(() => {
+                    emitChange(nodesRef.current);
+                    setDataRevision((revision) => revision + 1);
+                });
             }
             return;
         }

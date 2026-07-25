@@ -200,15 +200,22 @@ export const admin = [
 /**
  * 首页系统路由
  */
-export const indexPath = "index";
+export const indexName = "index";
 export const index = [
     {
-        path: "index",
+        path: "/",
         component: "@/pages/index/index",
         title: "系统首页",
         name: "index.index",
         icon: 'FileTextOutlined',
         hideInMenu: false,
+    },
+    {
+        path: "mind/:code",
+        component: "@/pages/index/mind",
+        name: "index.mind",
+        title: "导图分享",
+        hideInMenu: true,
     },
 ];
 /**
@@ -220,36 +227,8 @@ export default [
      */
     {
         path: "/",
-        name: "redirect." + indexPath,
+        name: indexName,
         title: index[0]?.title,
-        routes: [
-            {
-                path: "/",
-                component: index[0]?.component,
-                title: index[0]?.title,
-                name: index[0]?.name,
-                hideInMenu: true,
-            },
-            {
-                path: '/' + userPath + '/login',
-                component: '@/pages/user/login',
-                name: "user.login",
-                title: "帐号登录",
-                hideInMenu: true,
-            },
-            {
-                path: '/' + adminPath + '/login',
-                component: '@/pages/admin/login',
-                name: "admin.login",
-                title: "后台登录",
-                hideInMenu: true,
-            },
-        ],
-    },
-    {
-        path: indexPath,
-        name: indexPath,
-        title: "系统首页",
         routes: index,
     },
     /**
@@ -260,6 +239,13 @@ export default [
         name: userPath,
         title: "用户系统",
         routes: [
+            {
+                path: "login",
+                component: "@/pages/user/login",
+                name: "user.login",
+                title: "帐号登录",
+                hideInMenu: true,
+            },
             ...user,
             {
                 path: "",
@@ -275,6 +261,13 @@ export default [
         name: adminPath,
         title: "后台网站",
         routes: [
+            {
+                path: "login",
+                component: "@/pages/admin/login",
+                name: "admin.login",
+                title: "后台登录",
+                hideInMenu: true,
+            },
             ...admin,
             {
                 path: "",

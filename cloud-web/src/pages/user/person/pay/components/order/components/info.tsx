@@ -573,7 +573,7 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref): React.ReactNode => {
         if (logs.length === 0) {
             return (
                 <div className="empty-wrap">
-                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无日志"/>
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
                 </div>
             );
         }

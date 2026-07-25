@@ -8,15 +8,7 @@ import useEnum from "@/utils/enum";
 import useControl from "@/utils/control";
 import {AdminControlCode} from "@/utils/permission";
 import AceEditor from "@/pages/components/ace-editor";
-import {
-    createCron,
-    deleteCron,
-    getCronLog,
-    getCronInfo,
-    getCronList,
-    runCron,
-    updateCron
-} from "@/service/admin/cron";
+import {createCron, deleteCron, getCronInfo, getCronList, getCronLog, runCron, updateCron} from "@/service/admin/cron";
 
 const AcePath = defaultSettings?.basePath + "ace/" || "/ace/";
 
@@ -216,7 +208,7 @@ export default (): React.ReactNode => {
             okText: "确 定",
             okButtonProps: {danger: true, type: "default"},
             cancelText: "取 消",
-            maskClosable: true,
+            mask: {closable: true},
             onOk: () => deleteCron({
                 body: {ids: nextIds},
                 onSuccess: (res: any) => {

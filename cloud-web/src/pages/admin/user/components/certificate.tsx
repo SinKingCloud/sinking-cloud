@@ -472,13 +472,13 @@ const Certificate = forwardRef<CertificateRef, CertificateProps>(({control}, ref
                             </div>
                         ) : (
                             <div className={styles.mediaEmpty}>
-                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无留存资料"/>
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
                             </div>
                         )}
                     </div>
                 </div>
             ) : (
-                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无实名信息"/>
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
             )}
         </ProModal>
     );

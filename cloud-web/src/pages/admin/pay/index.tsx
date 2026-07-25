@@ -179,7 +179,7 @@ export default (): React.ReactNode => {
             okText: "确 定",
             okButtonProps: {danger: true, type: "default"},
             cancelText: "取 消",
-            maskClosable: true,
+            mask: {closable: true},
             onOk: async () => {
                 await deletePayChannel({
                     body: {

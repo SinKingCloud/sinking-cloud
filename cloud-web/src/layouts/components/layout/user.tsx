@@ -547,7 +547,7 @@ const RightTop: React.FC = () => {
                         </div>
                         <div className="message-body">
                             {notice.list.length <= 0 ? (
-                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无消息"/>
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
                             ) : notice.list.map((item) => (
                                 <div key={item.id} className={messageItem} onClick={() => openNotice(item)}>
                                     <div className="item-title">

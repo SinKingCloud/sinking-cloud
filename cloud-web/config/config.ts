@@ -12,6 +12,7 @@ export default defineConfig({
         '@umijs/plugins/dist/model',
     ],
     model: {},
+    mfsu: false,
     favicons: [
         defaultSettings?.favicons?.toString(),
     ],

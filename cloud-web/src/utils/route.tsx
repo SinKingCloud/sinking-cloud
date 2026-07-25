@@ -1,12 +1,5 @@
 import {history} from 'umi';
-import route, {
-    user,
-    userPath,
-    index,
-    indexPath,
-    admin,
-    adminPath,
-} from '../../config/routes'
+import route, {admin, adminPath, index, indexName, user, userPath,} from '../../config/routes'
 import React from "react"
 import {Icon} from "sinking-antd";
 
@@ -171,50 +164,28 @@ export function getParentList(data: any[], name: string, cacheKey = "default"): 
  * 当前访问系统path
  */
 export function getCurrentPath(pathName: any): any {
-    if (pathName == "/" || pathName == "") {
-        pathName = "/index/index";
-    }
-    let mode = "";
-    const regex = /\/([^/]+)\//; // 正则表达式匹配 / 之间的内容
-    const matches = pathName.match(regex); // 匹配结果数组
-    if (matches && matches.length >= 2) {
-        mode = matches[1];
-    }
+    const mode = String(pathName || "").split("/").filter(Boolean)[0] || indexName;
     if (mode == userPath) {
         return '/' + userPath;
-    }
-    if (mode == indexPath) {
-        return '/' + indexPath;
     }
     if (mode == adminPath) {
         return '/' + adminPath;
     }
-    return '/' + indexPath;
+    return '/' + indexName;
 }
 
 /**
  * 当前访问系统路由
  */
 export function getCurrentMenus(pathName: any, hideMenu = true): any {
-    if (pathName == "/" || pathName == "") {
-        pathName = "/index/index";
-    }
-    let mode = "";
-    const regex = /\/([^/]+)\//; // 正则表达式匹配 / 之间的内容
-    const matches = pathName.match(regex); // 匹配结果数组
-    if (matches && matches.length >= 2) {
-        mode = matches[1];
-    }
+    const mode = String(pathName || "").split("/").filter(Boolean)[0] || indexName;
     if (mode == userPath) {
         return getMenuItems(user, '/' + userPath, hideMenu);
-    }
-    if (mode == indexPath) {
-        return getMenuItems(index, '/' + indexPath, hideMenu);
     }
     if (mode == adminPath) {
         return getMenuItems(admin, '/' + adminPath, hideMenu);
     }
-    return [];
+    return getMenuItems(index, '/', hideMenu);
 }
 
 

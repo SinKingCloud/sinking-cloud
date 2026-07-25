@@ -5,14 +5,7 @@ import {buildOptions, buildValueEnum, dateRangeTransform, emptyTableData, getDat
 import useControl from "@/utils/control";
 import {AdminControlCode} from "@/utils/permission";
 import useEnum, {clearEnumCache} from "@/utils/enum";
-import {
-    createRole,
-    deleteRole,
-    getRoleInfo,
-    getRoleList,
-    getRoleMenu,
-    updateRole
-} from "@/service/admin/role";
+import {createRole, deleteRole, getRoleInfo, getRoleList, getRoleMenu, updateRole} from "@/service/admin/role";
 
 export default (): React.ReactNode => {
     const {message, modal} = App.useApp();
@@ -479,7 +472,7 @@ export default (): React.ReactNode => {
                                             onCheck={onMenuCheck as any}
                                         />
                                     ) : (
-                                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无菜单项"/>
+                                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
                                     )}
                                 </Spin>
                             </Form.Item>
