@@ -4,6 +4,34 @@
 import {AdminPageCode} from "../src/utils/permission";
 
 export const userPath = "user";
+export const spacePath = "space";
+export const workspace = {
+    path: `/${spacePath}`,
+    title: "工作空间",
+    name: "user.space",
+    icon: 'icon-order',
+    hideInMenu: false,
+    routes: [
+        {
+            path: "mind",
+            component: "@/pages/user/space/mind",
+            title: "思维导图",
+            name: "user.space.mind",
+            icon: '•',
+        },
+        {
+            path: "test",
+            component: "@/pages/user/space/test",
+            title: "测试页面",
+            name: "user.space.test",
+            icon: '•',
+        },
+        {
+            path: "",
+            redirect: "mind",
+        },
+    ]
+};
 export const user = [
     {
         path: "index",
@@ -12,26 +40,6 @@ export const user = [
         icon: 'icon-home',
         hideInMenu: false,
         component: "@/pages/user/index",
-    },
-    {
-        path: "mind",
-        title: "思维导图",
-        name: "user.mind",
-        icon: 'icon-order',
-        hideInMenu: false,
-        routes: [
-            {
-                path: "index",
-                component: "@/pages/user/mind",
-                title: "我的导图",
-                name: "user.mind.index",
-                icon: '•',
-            },
-            {
-                path: "",
-                redirect: "index",
-            },
-        ]
     },
     {
         path: "person",
@@ -82,6 +90,7 @@ export const user = [
         ]
     },
 ];
+export const userMenu = [user[0], workspace, ...user.slice(1)];
 export const adminPath = "admin";
 export const admin = [
     {
@@ -253,6 +262,7 @@ export default [
             },
         ],
     },
+    workspace,
     /**
      * admin路由
      */

@@ -4,7 +4,7 @@ import {createStyles} from "antd-style";
 import {useParams} from "umi";
 import Mind, {type MindRef, type MindValue} from "@/pages/components/mind";
 import {getMindShare} from "@/service/user/mind";
-import {getResponseData, getTimeText, parseMindValue} from "@/pages/user/mind/utils";
+import {getResponseData, getTimeText, parseMindValue} from "@/pages/user/space/mind/utils";
 import {historyPush} from "@/utils/route";
 
 type SharedMindData = {
