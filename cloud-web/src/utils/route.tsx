@@ -1,5 +1,5 @@
 import {history} from 'umi';
-import route, {admin, adminPath, index, indexName, spacePath, userMenu, userPath,} from '../../config/routes'
+import route, {admin, adminPath, index, indexName, user, userPath,} from '../../config/routes'
 import React from "react"
 import {Icon} from "sinking-antd";
 
@@ -165,7 +165,7 @@ export function getParentList(data: any[], name: string, cacheKey = "default"): 
  */
 export function getCurrentPath(pathName: any): any {
     const mode = String(pathName || "").split("/").filter(Boolean)[0] || indexName;
-    if (mode == userPath || mode == spacePath) {
+    if (mode == userPath) {
         return '/' + userPath;
     }
     if (mode == adminPath) {
@@ -179,8 +179,8 @@ export function getCurrentPath(pathName: any): any {
  */
 export function getCurrentMenus(pathName: any, hideMenu = true): any {
     const mode = String(pathName || "").split("/").filter(Boolean)[0] || indexName;
-    if (mode == userPath || mode == spacePath) {
-        return getMenuItems(userMenu, '/' + userPath, hideMenu);
+    if (mode == userPath) {
+        return getMenuItems(user, '/' + userPath, hideMenu);
     }
     if (mode == adminPath) {
         return getMenuItems(admin, '/' + adminPath, hideMenu);
