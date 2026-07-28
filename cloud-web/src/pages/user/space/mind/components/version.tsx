@@ -60,7 +60,7 @@ const Version: React.FC<VersionProps> = ({
             </div>
 
             {loading && items.length <= 0 ? (
-                <div className="empty"><Spin size="small"/></div>
+                <div className="empty"><Spin/></div>
             ) : items.length <= 0 ? (
                 <div className="empty">
                     <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}>
@@ -121,7 +121,7 @@ const Version: React.FC<VersionProps> = ({
                 </ol>
             )}
             {loading && items.length > 0 && (
-                <div style={{display: "flex", justifyContent: "center", padding: 12}}><Spin size="small"/></div>
+                <div style={{display: "flex", justifyContent: "center", padding: 12}}><Spin/></div>
             )}
             {loadFailed && items.length > 0 && document && (
                 <div style={{display: "flex", justifyContent: "center", padding: 12}}>

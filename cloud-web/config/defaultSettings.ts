@@ -5,7 +5,7 @@ export default ({
     title: "云上豁者", // 网站标题
     name: "豁者云网络", // 网站名称
     contact: "sinkingcloud@qq.com", // 联系方式
-    gateway: "http://127.0.0.1:1000", // API 网关地址
+    gateway: "http://192.168.31.23:1000", // API 网关地址
     version: "1.0", // 版本号
     basePath: '/', // 基础路径
     favicons: '/favicon.ico', // 网站图标
