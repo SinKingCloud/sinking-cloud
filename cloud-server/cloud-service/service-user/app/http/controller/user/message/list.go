@@ -9,7 +9,7 @@ import (
 
 // List 消息列表
 func (Controller) List(c *context.Context) {
-	query := c.ValidatePage("id", "desc", "id,status,read_time,create_time,update_time", "id,create_time,update_time")
+	query := c.ValidatePage("id", "desc", "id,create_time,update_time", "id,status,read_time,create_time,update_time")
 	var form struct {
 		Title           string `json:"title" default:"" validate:"omitempty,max=100" label:"消息标题"`
 		Status          string `json:"status" default:"" validate:"omitempty,numeric" label:"消息状态"`

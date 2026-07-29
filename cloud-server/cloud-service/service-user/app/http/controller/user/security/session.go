@@ -9,7 +9,7 @@ import (
 
 // Session 会话列表
 func (Controller) Session(c *context.Context) {
-	query := c.ValidatePage("create_time", "desc", "create_time,update_time,expire_time", "create_time,update_time")
+	query := c.ValidatePage("create_time", "desc", "create_time,update_time", "create_time,update_time,expire_time")
 	var form struct {
 		Device          string `json:"device" default:"" validate:"omitempty,max=100" label:"设备"`
 		Ip              string `json:"ip" default:"" validate:"omitempty,max=50" label:"IP"`

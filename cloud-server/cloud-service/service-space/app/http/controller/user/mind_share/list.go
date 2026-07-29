@@ -8,7 +8,7 @@ import (
 
 // List 导图分享列表
 func (Controller) List(c *context.Context) {
-	query := c.ValidatePage("id", "desc", "id,status,expire_time,create_time,update_time", "id,create_time,update_time")
+	query := c.ValidatePage("id", "desc", "id,create_time,update_time")
 	var form struct {
 		DataId int64 `json:"data_id" validate:"required,min=1" label:"导图ID"`
 	}

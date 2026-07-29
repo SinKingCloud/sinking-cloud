@@ -53,18 +53,14 @@ func (c *Context) ValidatorPath(data interface{}) (bool, string) {
 }
 
 // ValidatePage 验证分页和排序参数，并返回分页查询对象。
-// allowField 表示普通分页允许的排序字段，cursorAllowField 表示游标分页允许的排序字段。
-// 例如 ValidatePage("id", "desc", "id,status,create_time,update_time", "id,create_time,update_time") 表示 status 仅允许普通分页使用。
-// defaultField 和 defaultType 可以传空；白名单为空字符串或 "*" 时不限制排序字段；请求中的排序字段不在对应白名单内时，会回退到 defaultField。
-// page 大于 0 时使用页码分页，否则使用游标分页。
-func (c *Context) ValidatePage(defaultField, defaultType, allowField, cursorAllowField string, pageSize ...int) *page.Query {
-	defaultPageSize := 20
-	if len(pageSize) > 0 {
-		defaultPageSize = pageSize[0]
-	}
-	if defaultPageSize <= 0 || defaultPageSize > 1000 {
-		defaultPageSize = 20
-	}
+// cursorAllowField 表示游标分页允许的排序字段，pageAllowField 表示普通分页允许的排序字段。
+// 不传 pageAllowField 或传入空字符串时，普通分页沿用游标分页的排序字段。
+// 例如 ValidatePage("id", "desc", "id,create_time,update_time", "id,status,create_time,update_time") 表示普通分页还允许使用 status 排序。
+// defaultField 和 defaultType 可以传空；游标白名单为空字符串或 "*" 时不限制排序字段；请求中的排序字段不在对应白名单内时，会回退到 defaultField。
+// page 大于 0 时使用普通分页，否则使用游标分页。
+func (c *Context) ValidatePage(defaultField, defaultType, cursorAllowField string, pageAllowFields ...string) *page.Query {
+	const defaultPageSize = 20
+	pageAllowField := strings.Join(pageAllowFields, ",")
 	defaultType = strings.ToLower(defaultType)
 	if defaultType != "" && defaultType != "desc" && defaultType != "asc" {
 		defaultType = "desc"
@@ -104,9 +100,6 @@ func (c *Context) ValidatePage(defaultField, defaultType, allowField, cursorAllo
 	if query.OrderByType != "" && query.OrderByType != "desc" && query.OrderByType != "asc" {
 		query.OrderByType = defaultType
 	}
-	if cursorAllowField == "" {
-		cursorAllowField = allowField
-	}
 	isAllowed := func(fields string) bool {
 		if fields == "" || fields == "*" {
 			return true
@@ -118,7 +111,11 @@ func (c *Context) ValidatePage(defaultField, defaultType, allowField, cursorAllo
 		}
 		return false
 	}
-	if !isAllowed(allowField) || (query.IsCursor() && !isAllowed(cursorAllowField)) {
+	allowField := cursorAllowField
+	if !query.IsCursor() && pageAllowField != "" {
+		allowField = pageAllowField
+	}
+	if !isAllowed(allowField) {
 		query.OrderByField = defaultField
 	}
 	return query

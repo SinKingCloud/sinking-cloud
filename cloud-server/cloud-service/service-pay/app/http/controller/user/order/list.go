@@ -9,7 +9,7 @@ import (
 
 // List 订单列表
 func (Controller) List(c *context.Context) {
-	query := c.ValidatePage("id", "desc", "id,type,status,pay_status,pay_type,pay_time,expired_time,complete_time,create_time,update_time", "id,create_time,update_time")
+	query := c.ValidatePage("id", "desc", "id,create_time,update_time", "id,type,status,pay_status,pay_type,pay_time,expired_time,complete_time,create_time,update_time")
 	var form struct {
 		Id                string `json:"id" default:"" validate:"omitempty,numeric" label:"订单ID"`
 		Type              string `json:"type" default:"" validate:"omitempty,numeric" label:"订单类型"`

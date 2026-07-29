@@ -10,7 +10,7 @@ import (
 
 // Log 订单日志
 func (Controller) Log(c *context.Context) {
-	query := c.ValidatePage("id", "desc", "id,type,create_time", "id,create_time")
+	query := c.ValidatePage("id", "desc", "id,create_time", "id,type,create_time")
 	var form struct {
 		OrderId         int64  `json:"order_id" default:"0" validate:"numeric,min=1" label:"订单ID"`
 		Type            string `json:"type" default:"" validate:"omitempty,numeric" label:"日志类型"`

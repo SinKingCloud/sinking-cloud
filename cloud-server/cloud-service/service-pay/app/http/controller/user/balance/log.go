@@ -10,7 +10,7 @@ import (
 
 // Log 余额明细
 func (Controller) Log(c *context.Context) {
-	query := c.ValidatePage("id", "desc", "id,type,money,create_time", "id,create_time")
+	query := c.ValidatePage("id", "desc", "id,create_time", "id,type,money,create_time")
 	var form struct {
 		Type            string `json:"type" default:"" validate:"omitempty,numeric" label:"类型"`
 		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
