@@ -36,7 +36,7 @@ export function ago(string: string) {
         result = parseInt(String(hourC)) + "小时前"
     } else if (dayC < 7) {
         result = parseInt(String(dayC)) + "天前"
-    } else if (weekC < 4) {
+    } else if (dayC < 30) {
         result = parseInt(String(weekC)) + "周前"
     } else if (monthC < 6) {
         result = parseInt(String(monthC)) + "月前"

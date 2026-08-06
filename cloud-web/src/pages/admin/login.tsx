@@ -1,10 +1,9 @@
-
-import {App, Button, Checkbox, Form, Input, Tabs, Avatar, Spin} from 'antd';
-import React, {useRef, useState, useEffect} from 'react';
+import {App, Avatar, Button, Checkbox, Form, Input, Spin, Tabs} from 'antd';
+import React, {useEffect, useRef, useState} from 'react';
 import {Body, Icon, useTheme} from 'sinking-antd';
 import {useModel} from "umi";
 import {login, logout} from "@/service/common/login";
-import {setLoginToken, deleteHeader} from "@/utils/auth";
+import {deleteHeader, setLoginToken} from "@/utils/auth";
 import Captcha, {CaptchaRef} from "@/pages/components/captcha";
 import {sendSms} from "@/service/common/sms";
 import {sendMail} from "@/service/common/mail";
@@ -162,7 +161,7 @@ export default () => {
                 `,
                 tabsWrapper: css`
                     .ant-tabs-nav {
-                        margin-bottom: ${isCompact ? 10 : 0}px !important;
+                        margin-bottom: ${token.marginSM}px !important;
                         height: ${isCompact ? 48 : 60}px !important;
 
                         &::before {
@@ -218,7 +217,7 @@ export default () => {
 
                     .ant-tabs-ink-bar {
                         position: absolute;
-                        bottom: 0;
+                        bottom: 5px !important;
                         height: 4px !important;
                         width: 55px !important;
                         border-radius: ${token.borderRadiusSM}px !important;
@@ -241,7 +240,7 @@ export default () => {
                         height: ${isCompact ? 40 : 45}px;
                         font-size: ${token.fontSize}px;
                         background: ${isDarkMode ? token.colorBgElevated : 'rgb(255, 255, 255)'};
-                        border: ${isDarkMode ? `1px solid ${token.colorBorder}` : 'none'};
+                        border: 1px solid ${isDarkMode ? token.colorBorder : 'transparent'};
                         border-radius: ${token.borderRadiusLG}px;
                         box-shadow: ${isDarkMode ? `0 2px 8px rgba(0,0,0,0.15)` : 'rgba(0, 0, 0, 0.05) 0 7px 25px 0'};
                         padding: 0 ${token.paddingLG}px;
@@ -253,8 +252,9 @@ export default () => {
 
                         &:focus-within {
                             box-shadow: ${isDarkMode
-                                    ? `0 4px 12px rgba(0,0,0,0.3), 0 0 0 2px ${token.colorPrimaryBg}`
-                                    : `rgba(0, 0, 0, 0.08) 0 10px 30px 0, 0 0 0 2px ${token.colorPrimaryBg}`};
+                                    ? `0 4px 12px rgba(0,0,0,0.3)`
+                                    : `rgba(0, 0, 0, 0.08) 0 10px 30px 0`};
+                            outline: none;
                         }
 
                         &.ant-input-status-error,
@@ -266,6 +266,14 @@ export default () => {
 
                             .ant-input {
                                 border-color: transparent !important;
+                            }
+
+                            &:focus,
+                            &:focus-within,
+                            &.ant-input-affix-wrapper-focused {
+                                box-shadow: ${isDarkMode
+                                        ? `0 4px 12px rgba(0,0,0,0.3)`
+                                        : `rgba(0, 0, 0, 0.08) 0 10px 30px 0`} !important;
                             }
                         }
 

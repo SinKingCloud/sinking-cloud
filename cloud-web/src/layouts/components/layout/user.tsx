@@ -45,6 +45,10 @@ const useRightTopStyles = createStyles(({css, token, isDarkMode}: any): any => {
             }
         `,
         box: css`
+            &.ant-popover {
+                filter: none !important;
+            }
+
             .ant-popover-container {
                 padding: 0 !important;
                 box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.15) !important;
@@ -170,6 +174,7 @@ const useRightTopStyles = createStyles(({css, token, isDarkMode}: any): any => {
         messageBox: css`
             &.ant-popover {
                 max-width: calc(100vw - 24px);
+                filter: none !important;
             }
 
             .ant-popover-content,

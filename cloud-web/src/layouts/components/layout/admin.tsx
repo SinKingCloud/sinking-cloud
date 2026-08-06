@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from "react";
-import {useLocation, useModel, Outlet, history, useSelectedRoutes} from "umi";
+import {history, Outlet, useLocation, useModel, useSelectedRoutes} from "umi";
 import {
     clearRouteCache,
     getFirstMenuWithoutChildren,
@@ -53,6 +53,10 @@ const useRightTopStyles = createStyles(({css, token, isDarkMode}: any): any => {
             }
         `,
         box: css`
+            &.ant-popover {
+                filter: none !important;
+            }
+
             .ant-popover-container {
                 padding: 0 !important;
                 box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.15) !important;
