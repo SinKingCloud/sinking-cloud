@@ -10,14 +10,14 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.3.2",
-    "@umijs/plugins": "^4.7.1",
+    "@umijs/plugins": "^4.7.2",
     "@xyflow/react": "^12.11.2",
-    "antd": "^6.5.3",
+    "antd": "^6.5.4",
     "antd-style": "^4.1.0",
     "go-captcha-react": "^1.0.5",
     "html-to-image": "^1.11.13",
-    "sinking-antd": "^1.1.4",
-    "umi": "^4.7.1",
+    "sinking-antd": "^1.1.6",
+    "umi": "^4.7.2",
     "umi-request": "^1.4.0"
   },
   "devDependencies": {
