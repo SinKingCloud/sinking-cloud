@@ -47,7 +47,7 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
     return {
         page: css`
             width: 100%;
-            max-width: 1440px;
+            max-width: 1450px;
             margin: 0 auto;
             display: grid;
             gap: ${isCompactMode ? 10 : 12}px;

@@ -40,7 +40,7 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
     return {
         pageRow: css`
             width: 100%;
-            max-width: 1440px;
+            max-width: 1450px;
             margin: 0 auto;
         `,
         overview: css`

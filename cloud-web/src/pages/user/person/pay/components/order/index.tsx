@@ -29,7 +29,7 @@ const enumTag = (data: any, colors: Record<string, string>, value: any) => (
 const useStyles: any = createStyles((): any => ({
     page: {
         width: "100%",
-        maxWidth: 1440,
+        maxWidth: 1450,
         margin: "0 auto",
     },
     loadingWrap: {

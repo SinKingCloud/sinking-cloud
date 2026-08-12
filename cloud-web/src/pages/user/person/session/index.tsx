@@ -21,7 +21,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any) => {
             flex-wrap: nowrap;
             gap: ${compact ? 12 : 14}px;
             width: 100%;
-            max-width: 1440px;
+            max-width: 1450px;
             margin: 0 auto;
         `,
         hero: css`

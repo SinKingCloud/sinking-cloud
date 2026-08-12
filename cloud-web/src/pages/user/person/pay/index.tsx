@@ -36,7 +36,7 @@ const RechargePanel = React.memo((props: {embedded?: boolean}): React.ReactEleme
 const useStyles = createStyles(({css, token}: any): any => ({
     page: css`
         width: 100%;
-        max-width: 1440px;
+        max-width: 1450px;
         margin: 0 auto;
     `,
     navCard: css`

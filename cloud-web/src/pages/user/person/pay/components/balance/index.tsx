@@ -44,7 +44,7 @@ const useStyles = createStyles(({token, css, isDarkMode}: any, props: any = {}) 
     return {
         layout: css`
             width: 100%;
-            max-width: 1440px;
+            max-width: 1450px;
             margin: 0 auto !important;
         `,
         loadingWrap: css`
