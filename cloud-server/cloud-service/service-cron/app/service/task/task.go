@@ -21,6 +21,7 @@ import (
 
 // Service service接口
 type Service interface {
+	Start()
 	Close()
 	FindById(id int64, refresh bool) (*model.Task, error)
 	Select(where *task.SelectTask, query *page.Query) (*page.Result[*task.Task], error)
@@ -89,6 +90,6 @@ func NewService(
 	if registerQueue != nil {
 		registerQueue.SetConsumer(ins.consumeRegisterMessage)
 	}
-	ins.start()
+	ins.Start()
 	return ins
 }

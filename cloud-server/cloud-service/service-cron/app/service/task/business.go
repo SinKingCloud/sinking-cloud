@@ -20,8 +20,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// start 启动任务
-func (s *service) start() {
+// Start 启动任务
+func (s *service) Start() {
 	if s.closed.Load() || !s.started.CompareAndSwap(false, true) {
 		return
 	}
