@@ -14,11 +14,11 @@ func (r *Repository) UpdateByIdAndDataId(id int64, dataId int64, data *UpdateMin
 		return nil
 	}
 	updates := make(map[string]interface{})
-	if data.Value != "" {
-		updates["value"] = data.Value
+	if data.Value != nil {
+		updates["value"] = *data.Value
 	}
 	if data.Remark != nil {
-		updates["remark"] = data.Remark
+		updates["remark"] = *data.Remark
 	}
 	if len(updates) == 0 {
 		return nil

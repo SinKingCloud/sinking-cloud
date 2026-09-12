@@ -20,7 +20,12 @@ func (Controller) Update(c *context.Context) {
 	}
 	data := &file.UpdateFile{}
 	if form.Status != "" {
-		data.Status, _ = strconv.Atoi(form.Status)
+		status, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		data.Status = &status
 	}
 	err := service.File.UpdateByIds(form.Ids, data)
 	if err != nil {

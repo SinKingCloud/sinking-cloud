@@ -16,28 +16,14 @@ import (
 
 // Select 查询数据
 func (s *service) Select(where *scene.SelectScene, query *page.Query) (*page.Result[*model.Scene], error) {
-	if where.Status != "" {
-		status, err := strconv.Atoi(where.Status)
-		if err != nil {
-			return nil, errors.New("状态参数错误")
-		}
-		if _, ok := scene_status.Map()[status]; !ok {
+	if where.Status != nil {
+		if _, ok := scene_status.Map()[*where.Status]; !ok {
 			return nil, errors.New("状态参数不合法")
 		}
 	}
-	if where.Login != "" {
-		login, err := strconv.Atoi(where.Login)
-		if err != nil {
-			return nil, errors.New("登录限制参数错误")
-		}
-		if _, ok := scene_login.Map()[login]; !ok {
+	if where.Login != nil {
+		if _, ok := scene_login.Map()[*where.Login]; !ok {
 			return nil, errors.New("登录限制参数不合法")
-		}
-	}
-	if where.ChannelId != "" {
-		_, err := strconv.Atoi(where.ChannelId)
-		if err != nil {
-			return nil, errors.New("通道参数错误")
 		}
 	}
 	return s.repositoryScene.Select(where, query)
@@ -88,45 +74,25 @@ func (s *service) UpdateById(id int64, data *scene.UpdateScene) error {
 	}
 	update := &scene.UpdateScene{}
 	if data.Name != nil {
-		if _, ok := data.Name.(string); !ok {
-			return errors.New("场景名称不合法")
-		}
 		update.Name = data.Name
 	}
 	if data.AllowExt != nil {
-		if _, ok := data.AllowExt.(string); !ok {
-			return errors.New("允许类型不合法")
-		}
 		update.AllowExt = data.AllowExt
 	}
 	if data.Remark != nil {
-		if _, ok := data.Remark.(string); !ok {
-			return errors.New("场景备注不合法")
-		}
 		update.Remark = data.Remark
 	}
 	if data.MaxSize != nil {
-		if _, ok := data.MaxSize.(int64); !ok {
-			return errors.New("文件最大限制不合法")
-		}
 		update.MaxSize = data.MaxSize
 	}
 	if data.Login != nil {
-		if value, ok := data.Login.(int); ok {
-			if _, ok = scene_login.Map()[value]; !ok {
-				return errors.New("登录限制不合法")
-			}
-		} else {
+		if _, ok := scene_login.Map()[*data.Login]; !ok {
 			return errors.New("登录限制不合法")
 		}
 		update.Login = data.Login
 	}
 	if data.Status != nil {
-		if value, ok := data.Status.(int); ok {
-			if _, ok = scene_status.Map()[value]; !ok {
-				return errors.New("场景状态不合法")
-			}
-		} else {
+		if _, ok := scene_status.Map()[*data.Status]; !ok {
 			return errors.New("场景状态不合法")
 		}
 		update.Status = data.Status

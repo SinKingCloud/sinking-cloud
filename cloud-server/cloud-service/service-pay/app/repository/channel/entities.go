@@ -14,20 +14,20 @@ type Channel struct {
 }
 
 type SelectChannel struct {
-	Name            string
-	Type            string
-	Plugin          string
-	Status          string
-	CreateTimeStart string
-	CreateTimeEnd   string
-	UpdateTimeStart string
-	UpdateTimeEnd   string
+	Name            *string
+	Type            *string
+	Plugin          *int
+	Status          *int
+	CreateTimeStart *string
+	CreateTimeEnd   *string
+	UpdateTimeStart *string
+	UpdateTimeEnd   *string
 }
 
 type UpdateChannel struct {
-	Type   interface{}
-	Plugin interface{}
-	Name   interface{}
-	Config interface{}
-	Status interface{}
+	Type   *string
+	Plugin *int
+	Name   *string
+	Config *string
+	Status *int
 }

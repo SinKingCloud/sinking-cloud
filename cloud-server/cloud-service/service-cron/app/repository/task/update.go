@@ -14,22 +14,22 @@ func (r *Repository) UpdateById(id int64, data *UpdateTask) error {
 	}
 	updates := make(map[string]interface{})
 	if data.Type != nil {
-		updates["type"] = data.Type
+		updates["type"] = *data.Type
 	}
 	if data.Name != nil {
-		updates["name"] = data.Name
+		updates["name"] = *data.Name
 	}
 	if data.Spec != nil {
-		updates["spec"] = data.Spec
+		updates["spec"] = *data.Spec
 	}
 	if data.Script != nil {
-		updates["script"] = data.Script
+		updates["script"] = *data.Script
 	}
 	if data.Concurrent != nil {
-		updates["concurrent"] = data.Concurrent
+		updates["concurrent"] = *data.Concurrent
 	}
 	if data.Status != nil {
-		updates["status"] = data.Status
+		updates["status"] = *data.Status
 	}
 	if len(updates) == 0 {
 		return nil

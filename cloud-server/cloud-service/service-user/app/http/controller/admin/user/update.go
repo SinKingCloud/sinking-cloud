@@ -29,31 +29,47 @@ func (Controller) Update(c *context.Context) {
 	}
 	data := &user.UpdateUser{}
 	if form.Account != "" {
-		data.Account = form.Account
+		data.Account = &form.Account
 	}
 	if form.Phone != "" {
-		data.Phone = form.Phone
+		data.Phone = &form.Phone
 	}
 	if form.Email != "" {
-		data.Email = form.Email
+		data.Email = &form.Email
 	}
 	if form.Password != "" {
-		data.Password = str.NewStringTool(form.Password).GetPassword()
+		password := str.NewStringTool(form.Password).GetPassword()
+		data.Password = &password
 	}
 	if form.Avatar != "" {
-		data.Avatar = form.Avatar
+		data.Avatar = &form.Avatar
 	}
 	if form.NickName != "" {
-		data.NickName = form.NickName
+		data.NickName = &form.NickName
 	}
 	if form.RealAuthType != "" {
-		data.RealAuthType, _ = strconv.Atoi(form.RealAuthType)
+		realAuthType, err := strconv.Atoi(form.RealAuthType)
+		if err != nil {
+			c.Error("实名类型参数错误")
+			return
+		}
+		data.RealAuthType = &realAuthType
 	}
 	if form.RealAuthStatus != "" {
-		data.RealAuthStatus, _ = strconv.Atoi(form.RealAuthStatus)
+		realAuthStatus, err := strconv.Atoi(form.RealAuthStatus)
+		if err != nil {
+			c.Error("实名状态参数错误")
+			return
+		}
+		data.RealAuthStatus = &realAuthStatus
 	}
 	if form.Status != "" {
-		data.Status, _ = strconv.Atoi(form.Status)
+		status, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		data.Status = &status
 	}
 	var err error
 	if len(form.Ids) == 1 {

@@ -32,16 +32,21 @@ func (Controller) Log(c *context.Context) {
 		return
 	}
 	where := &order_log.SelectOrderLog{
-		OrderId: strconv.FormatInt(form.OrderId, 10),
+		OrderId: &form.OrderId,
 	}
 	if form.Type != "" {
-		where.Type = form.Type
+		types, err := strconv.Atoi(form.Type)
+		if err != nil {
+			c.Error("日志类型参数错误")
+			return
+		}
+		where.Type = &types
 	}
 	if form.CreateTimeStart != "" {
-		where.CreateTimeStart = form.CreateTimeStart
+		where.CreateTimeStart = &form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where.CreateTimeEnd = form.CreateTimeEnd
+		where.CreateTimeEnd = &form.CreateTimeEnd
 	}
 	data, err := service.Order.SelectLog(where, query)
 	if err != nil {

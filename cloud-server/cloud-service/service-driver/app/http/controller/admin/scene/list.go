@@ -3,6 +3,7 @@ package scene
 import (
 	"service-driver/app/repository/scene"
 	"service-driver/app/service"
+	"strconv"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
@@ -27,31 +28,46 @@ func (Controller) List(c *context.Context) {
 	}
 	where := &scene.SelectScene{}
 	if form.Name != "" {
-		where.Name = form.Name
+		where.Name = &form.Name
 	}
 	if form.ChannelId != "" {
-		where.ChannelId = form.ChannelId
+		channelId, err := strconv.ParseInt(form.ChannelId, 10, 64)
+		if err != nil {
+			c.Error("通道ID参数错误")
+			return
+		}
+		where.ChannelId = &channelId
 	}
 	if form.Login != "" {
-		where.Login = form.Login
+		login, err := strconv.Atoi(form.Login)
+		if err != nil {
+			c.Error("登录限制参数错误")
+			return
+		}
+		where.Login = &login
 	}
 	if form.Status != "" {
-		where.Status = form.Status
+		status, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		where.Status = &status
 	}
 	if form.Remark != "" {
-		where.Remark = form.Remark
+		where.Remark = &form.Remark
 	}
 	if form.CreateTimeStart != "" {
-		where.CreateTimeStart = form.CreateTimeStart
+		where.CreateTimeStart = &form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where.CreateTimeEnd = form.CreateTimeEnd
+		where.CreateTimeEnd = &form.CreateTimeEnd
 	}
 	if form.UpdateTimeStart != "" {
-		where.UpdateTimeStart = form.UpdateTimeStart
+		where.UpdateTimeStart = &form.UpdateTimeStart
 	}
 	if form.UpdateTimeEnd != "" {
-		where.UpdateTimeEnd = form.UpdateTimeEnd
+		where.UpdateTimeEnd = &form.UpdateTimeEnd
 	}
 	data, err := service.Scene.Select(where, query)
 	if err != nil {

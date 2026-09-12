@@ -188,8 +188,8 @@ func (s *service) RegisterPermission(name string, code string, path string) erro
 			clearPaths = append(clearPaths, record.Path)
 		}
 		if err = s.repositoryPermission.UpdateByCode(code, &permission.UpdatePermission{
-			Name: perm.Name,
-			Path: perm.Path,
+			Name: &perm.Name,
+			Path: &perm.Path,
 		}); err != nil {
 			return err
 		}
@@ -280,10 +280,8 @@ func (s *service) UpdatePermissionByIds(ids []int64, data *permission.UpdatePerm
 		}
 		paths = append(paths, item.Path)
 	}
-	if data.Path != "" {
-		if value, ok := data.Path.(string); ok {
-			paths = append(paths, value)
-		}
+	if data.Path != nil && *data.Path != "" {
+		paths = append(paths, *data.Path)
 	}
 	s.clearCacheWithPermissions(paths)
 	s.clearCacheWithEnums([]string{"permission"})
@@ -699,8 +697,9 @@ func (s *service) GetPageControlsByMenuId(id int64, where *menu2.SelectMenu, que
 	if where == nil {
 		where = &menu2.SelectMenu{}
 	}
-	where.ParentId = strconv.FormatInt(id, 10)
-	where.Type = strconv.Itoa(int(menu_type.Control))
+	where.ParentId = &id
+	controlType := int(menu_type.Control)
+	where.Type = &controlType
 	result, err := s.repositoryMenu.Select(where, queryPage)
 	if err != nil {
 		return nil, err
@@ -999,17 +998,8 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 		defer s.cache.UnLock(constant.LockMenuOperate)
 	}
 	if data.Status != nil {
-		if value, ok := data.Status.(int); ok {
-			if _, ok = menu_status.Map()[value]; !ok {
-				return errors.New("状态数据不合法")
-			}
-		} else {
+		if _, ok := menu_status.Map()[*data.Status]; !ok {
 			return errors.New("状态数据不合法")
-		}
-	}
-	if data.Sort != nil {
-		if _, ok := data.Sort.(int); !ok {
-			return errors.New("排序数据不合法")
 		}
 	}
 	info, err := s.repositoryMenu.FindById(id)
@@ -1024,10 +1014,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 	hasUpdateData := false
 	newParentId := int64(-1)
 	if data.ParentId != nil {
-		parentId, ok := data.ParentId.(int64)
-		if !ok {
-			return errors.New("父级数据不合法")
-		}
+		parentId := *data.ParentId
 		if parentId <= 0 {
 			parentId = 0
 		}
@@ -1062,7 +1049,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 			targetMap := make(map[int64]struct{}, len(menus))
 			var loadChildren func(menuId int64)
 			loadChildren = func(menuId int64) {
-				if _, ok = targetMap[menuId]; ok {
+				if _, ok := targetMap[menuId]; ok {
 					return
 				}
 				targetMap[menuId] = struct{}{}
@@ -1071,7 +1058,7 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 				}
 			}
 			loadChildren(info.Id)
-			if _, ok = targetMap[parentId]; ok {
+			if _, ok := targetMap[parentId]; ok {
 				return errors.New("父级不能是自己的子级")
 			}
 		} else if info.Type == menu_type.Control {
@@ -1084,11 +1071,8 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 		hasUpdateData = true
 	}
 	if data.Status != nil {
-		statusValue, ok := data.Status.(int)
-		if !ok {
-			return errors.New("状态数据不合法")
-		}
-		if _, ok = status[statusValue]; !ok {
+		statusValue := *data.Status
+		if _, ok := status[statusValue]; !ok {
 			return errors.New("状态数据不合法")
 		}
 		hasUpdateData = true
@@ -1245,12 +1229,8 @@ func (s *service) UpdateMenuOrControl(id int64, data *menu2.UpdateMenu, permissi
 
 // SelectRole 查询角色数据
 func (s *service) SelectRole(where *role.SelectRole, queryPage *page.Query) (*page.Result[*model.Role], error) {
-	if where.Status != "" {
-		status, err := strconv.Atoi(where.Status)
-		if err != nil {
-			return nil, errors.New("状态参数错误")
-		}
-		if _, ok := role_status.Map()[status]; !ok {
+	if where != nil && where.Status != nil {
+		if _, ok := role_status.Map()[*where.Status]; !ok {
 			return nil, errors.New("状态参数不合法")
 		}
 	}
@@ -1263,11 +1243,7 @@ func (s *service) UpdateRole(id int64, data *role.UpdateRole, menuIds *[]int64) 
 		return errors.New("参数错误")
 	}
 	if data.Status != nil {
-		if value, ok := data.Status.(int); ok {
-			if _, ok = role_status.Map()[value]; !ok {
-				return errors.New("状态数据不合法")
-			}
-		} else {
+		if _, ok := role_status.Map()[*data.Status]; !ok {
 			return errors.New("状态数据不合法")
 		}
 	}
@@ -1290,10 +1266,7 @@ func (s *service) UpdateRole(id int64, data *role.UpdateRole, menuIds *[]int64) 
 	hasUpdateData := false
 	nameChanged := false
 	if data.Name != nil {
-		name, ok := data.Name.(string)
-		if !ok {
-			return errors.New("名称数据不合法")
-		}
+		name := *data.Name
 		if name == "" {
 			return errors.New("名称不能为空")
 		}
@@ -1305,11 +1278,8 @@ func (s *service) UpdateRole(id int64, data *role.UpdateRole, menuIds *[]int64) 
 		}
 	}
 	if data.Status != nil {
-		status, ok := data.Status.(int)
-		if !ok {
-			return errors.New("状态数据不合法")
-		}
-		if _, ok = role_status.Map()[status]; !ok {
+		status := *data.Status
+		if _, ok := role_status.Map()[status]; !ok {
 			return errors.New("状态数据不合法")
 		}
 		if status == info.Status {

@@ -111,40 +111,21 @@ func (s *service) UpdateShare(userId int64, dataId int64, id int64, data *mindSh
 	}
 	update := &mindShareRepository.UpdateMindShare{}
 	if data.Status != nil {
-		value, ok := data.Status.(int)
-		if !ok {
+		if _, ok := mind_share_status.Map()[*data.Status]; !ok {
 			return errors.New("分享状态错误")
 		}
-		if _, ok := mind_share_status.Map()[value]; !ok {
-			return errors.New("分享状态错误")
-		}
-		update.Status = value
+		update.Status = data.Status
 	}
 	if data.ExpireTime != nil {
-		value, ok := data.ExpireTime.(string)
-		if !ok {
-			return errors.New("分享过期时间错误")
+		expireAt := time.Time(*data.ExpireTime)
+		if !expireAt.IsZero() && !expireAt.After(time.Now()) {
+			return errors.New("分享过期时间必须晚于当前时间")
 		}
-		value = strings.TrimSpace(value)
-		var expireAt str.DateTime
-		if value != "" {
-			timeValue, err := time.ParseInLocation("2006-01-02 15:04:05", value, time.Local)
-			if err != nil {
-				return errors.New("分享过期时间格式错误")
-			}
-			if !timeValue.After(time.Now()) {
-				return errors.New("分享过期时间必须晚于当前时间")
-			}
-			expireAt = str.DateTime(timeValue)
-		}
-		update.ExpireTime = expireAt
+		update.ExpireTime = data.ExpireTime
 	}
 	if data.Remark != nil {
-		value, ok := data.Remark.(string)
-		if !ok {
-			return errors.New("分享备注错误")
-		}
-		update.Remark = strings.TrimSpace(value)
+		value := strings.TrimSpace(*data.Remark)
+		update.Remark = &value
 	}
 	lockKey := constant.LockMindDataOperate + strconv.FormatInt(dataId, 10)
 	if !s.cache.Lock(lockKey, constant.LockTimeMindDataOperate) {

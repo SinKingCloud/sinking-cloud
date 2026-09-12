@@ -41,16 +41,16 @@ func (r *Repository) update(db *gorm.DB, data *UpdateMindData) error {
 	}
 	updates := make(map[string]interface{})
 	if data.TypeId != nil {
-		updates["type_id"] = data.TypeId
+		updates["type_id"] = *data.TypeId
 	}
 	if data.Title != nil {
-		updates["title"] = data.Title
+		updates["title"] = *data.Title
 	}
 	if data.Describe != nil {
-		updates["describe"] = data.Describe
+		updates["describe"] = *data.Describe
 	}
-	if data.Value != "" {
-		updates["value"] = data.Value
+	if data.Value != nil {
+		updates["value"] = *data.Value
 	}
 	if len(updates) == 0 {
 		return nil

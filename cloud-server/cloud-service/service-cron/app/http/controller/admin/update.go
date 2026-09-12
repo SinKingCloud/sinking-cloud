@@ -25,22 +25,37 @@ func (Controller) Update(c *context.Context) {
 	}
 	data := &task.UpdateTask{}
 	if form.Name != "" {
-		data.Name = form.Name
+		data.Name = &form.Name
 	}
 	if form.Type != "" {
-		data.Type, _ = strconv.Atoi(form.Type)
+		value, err := strconv.Atoi(form.Type)
+		if err != nil {
+			c.Error("类型参数错误")
+			return
+		}
+		data.Type = &value
 	}
 	if form.Spec != "" {
-		data.Spec = form.Spec
+		data.Spec = &form.Spec
 	}
 	if form.Script != "" {
-		data.Script = form.Script
+		data.Script = &form.Script
 	}
 	if form.Status != "" {
-		data.Status, _ = strconv.Atoi(form.Status)
+		value, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		data.Status = &value
 	}
 	if form.Concurrent != "" {
-		data.Concurrent, _ = strconv.Atoi(form.Concurrent)
+		value, err := strconv.Atoi(form.Concurrent)
+		if err != nil {
+			c.Error("并发配置参数错误")
+			return
+		}
+		data.Concurrent = &value
 	}
 	err := service.Task.UpdateById(form.Id, data)
 	if err != nil {

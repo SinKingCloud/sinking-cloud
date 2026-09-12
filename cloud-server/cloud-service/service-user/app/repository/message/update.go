@@ -56,10 +56,10 @@ func (r *Repository) update(db *gorm.DB, data *UpdateMessage) error {
 	}
 	updates := make(map[string]interface{})
 	if data.Status != nil {
-		updates["status"] = data.Status
+		updates["status"] = *data.Status
 	}
 	if data.ReadTime != nil {
-		updates["read_time"] = data.ReadTime
+		updates["read_time"] = *data.ReadTime
 	}
 	if len(updates) == 0 {
 		return nil

@@ -4,8 +4,11 @@ import (
 	mindShareRepository "service-space/app/repository/mind_share"
 	"service-space/app/service"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
 // Update 更新导图分享
@@ -28,13 +31,27 @@ func (Controller) Update(c *context.Context) {
 			c.Error("分享状态不合法")
 			return
 		}
-		data.Status = status
+		data.Status = &status
 	}
 	if form.ExpireTime != nil {
-		data.ExpireTime = *form.ExpireTime
+		value := strings.TrimSpace(*form.ExpireTime)
+		var expireAt str.DateTime
+		if value != "" {
+			expireTime, err := time.ParseInLocation("2006-01-02 15:04:05", value, time.Local)
+			if err != nil {
+				c.Error("分享过期时间格式错误")
+				return
+			}
+			if expireTime.IsZero() {
+				c.Error("分享过期时间必须晚于当前时间")
+				return
+			}
+			expireAt = str.DateTime(expireTime)
+		}
+		data.ExpireTime = &expireAt
 	}
 	if form.Remark != nil {
-		data.Remark = *form.Remark
+		data.Remark = form.Remark
 	}
 	if err := service.Mind.UpdateShare(c.GetUserInfo().Id, form.DataId, form.Id, data); err != nil {
 		c.Error(err.Error())

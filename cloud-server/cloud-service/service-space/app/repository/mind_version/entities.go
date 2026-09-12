@@ -14,12 +14,12 @@ type MindVersion struct {
 
 // SelectMindVersion 导图版本查询
 type SelectMindVersion struct {
-	DataId int64
-	Type   string
+	DataId *int64
+	Type   *int
 }
 
 // UpdateMindVersion 导图版本更新
 type UpdateMindVersion struct {
-	Value  string
-	Remark interface{}
+	Value  *string
+	Remark *string
 }

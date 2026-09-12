@@ -3,6 +3,7 @@ package menu
 import (
 	"service-admin/app/repository/menu"
 	"service-admin/app/service"
+	"strconv"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
@@ -27,28 +28,33 @@ func (Controller) Controls(c *context.Context) {
 	}
 	where := &menu.SelectMenu{}
 	if form.Code != "" {
-		where.Code = form.Code
+		where.Code = &form.Code
 	}
 	if form.Name != "" {
-		where.Name = form.Name
+		where.Name = &form.Name
 	}
 	if form.Icon != "" {
-		where.Icon = form.Icon
+		where.Icon = &form.Icon
 	}
 	if form.Status != "" {
-		where.Status = form.Status
+		value, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		where.Status = &value
 	}
 	if form.CreateTimeStart != "" {
-		where.CreateTimeStart = form.CreateTimeStart
+		where.CreateTimeStart = &form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where.CreateTimeEnd = form.CreateTimeEnd
+		where.CreateTimeEnd = &form.CreateTimeEnd
 	}
 	if form.UpdateTimeStart != "" {
-		where.UpdateTimeStart = form.UpdateTimeStart
+		where.UpdateTimeStart = &form.UpdateTimeStart
 	}
 	if form.UpdateTimeEnd != "" {
-		where.UpdateTimeEnd = form.UpdateTimeEnd
+		where.UpdateTimeEnd = &form.UpdateTimeEnd
 	}
 	list, err := service.Rbac.GetPageControlsByMenuId(form.Id, where, query)
 	if err != nil {

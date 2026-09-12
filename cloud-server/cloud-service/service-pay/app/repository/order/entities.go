@@ -24,31 +24,31 @@ type Order struct {
 }
 
 type SelectOrder struct {
-	Id                string
-	UserId            string
-	ChannelId         string
-	Type              string
-	Status            string
-	TradeNo           string
-	PayStatus         string
-	PayType           string
-	PayTimeStart      string
-	PayTimeEnd        string
-	CompleteTimeStart string
-	CompleteTimeEnd   string
-	CreateTimeStart   string
-	CreateTimeEnd     string
-	UpdateTimeStart   string
-	UpdateTimeEnd     string
+	Id                *int64
+	UserId            *int64
+	ChannelId         *int64
+	Type              *int
+	Status            *int
+	TradeNo           *string
+	PayStatus         *int
+	PayType           *string
+	PayTimeStart      *string
+	PayTimeEnd        *string
+	CompleteTimeStart *string
+	CompleteTimeEnd   *string
+	CreateTimeStart   *string
+	CreateTimeEnd     *string
+	UpdateTimeStart   *string
+	UpdateTimeEnd     *string
 }
 
 type UpdateOrder struct {
-	Status       interface{}
-	TradeNo      interface{}
-	PayAmount    interface{}
-	RefundAmount interface{}
-	PayStatus    interface{}
-	PayType      interface{}
-	PayTime      interface{}
-	CompleteTime interface{}
+	Status       *int
+	TradeNo      *string
+	PayAmount    *float64
+	RefundAmount *float64
+	PayStatus    *int
+	PayType      *string
+	PayTime      *str.DateTime
+	CompleteTime *str.DateTime
 }

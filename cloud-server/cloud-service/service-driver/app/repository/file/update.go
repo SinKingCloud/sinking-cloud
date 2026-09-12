@@ -15,7 +15,7 @@ func (r *Repository) UpdateByIds(ids []int64, perm *UpdateFile) error {
 	}
 	updates := make(map[string]interface{})
 	if perm.Status != nil {
-		updates["status"] = perm.Status
+		updates["status"] = *perm.Status
 	}
 	if len(updates) == 0 {
 		return nil

@@ -15,15 +15,15 @@ type MindData struct {
 
 // SelectMindData 导图数据查询
 type SelectMindData struct {
-	UserId  int64
-	TypeId  int64
-	Keyword string
+	UserId  *int64
+	TypeId  *int64
+	Keyword *string
 }
 
 // UpdateMindData 导图数据更新
 type UpdateMindData struct {
-	TypeId   interface{}
-	Title    interface{}
-	Describe interface{}
-	Value    string
+	TypeId   *int64
+	Title    *string
+	Describe *string
+	Value    *string
 }

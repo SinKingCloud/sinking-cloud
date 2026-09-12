@@ -38,12 +38,8 @@ func (s *service) GetInfo(userId int64, refresh bool) (user *model.User, err err
 
 // Select 查询用户列表
 func (s *service) Select(where *user.SelectUser, queryPage *page.Query) (*page.Result[*User], error) {
-	if where.Status != "" {
-		status, err := strconv.Atoi(where.Status)
-		if err != nil {
-			return nil, errors.New("状态参数错误")
-		}
-		if _, ok := user_status.Map()[status]; !ok {
+	if where != nil && where.Status != nil {
+		if _, ok := user_status.Map()[*where.Status]; !ok {
 			return nil, errors.New("状态参数不合法")
 		}
 	}
@@ -126,10 +122,7 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 	}
 	hasUpdateData := false
 	if data.Account != nil {
-		account, ok := data.Account.(string)
-		if !ok {
-			return errors.New("账号数据不合法")
-		}
+		account := *data.Account
 		if account == "" {
 			return errors.New("账号不能为空")
 		}
@@ -143,10 +136,7 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		}
 	}
 	if data.Phone != nil {
-		phone, ok := data.Phone.(string)
-		if !ok {
-			return errors.New("手机号数据不合法")
-		}
+		phone := *data.Phone
 		if phone == "" {
 			return errors.New("手机号不能为空")
 		}
@@ -160,10 +150,7 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		}
 	}
 	if data.Email != nil {
-		email, ok := data.Email.(string)
-		if !ok {
-			return errors.New("邮箱数据不合法")
-		}
+		email := *data.Email
 		if email == "" {
 			return errors.New("邮箱不能为空")
 		}
@@ -177,20 +164,14 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		}
 	}
 	if data.Password != nil {
-		password, ok := data.Password.(string)
-		if !ok {
-			return errors.New("密码数据不合法")
-		}
+		password := *data.Password
 		if password == "" {
 			return errors.New("密码不能为空")
 		}
 		hasUpdateData = true
 	}
 	if data.Avatar != nil {
-		avatar, ok := data.Avatar.(string)
-		if !ok {
-			return errors.New("头像数据不合法")
-		}
+		avatar := *data.Avatar
 		if avatar == info.Avatar {
 			data.Avatar = nil
 		} else {
@@ -198,10 +179,7 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		}
 	}
 	if data.NickName != nil {
-		nickName, ok := data.NickName.(string)
-		if !ok {
-			return errors.New("昵称数据不合法")
-		}
+		nickName := *data.NickName
 		if nickName == info.NickName {
 			data.NickName = nil
 		} else {
@@ -209,11 +187,8 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		}
 	}
 	if data.Status != nil {
-		status, ok := data.Status.(int)
-		if !ok {
-			return errors.New("状态数据不合法")
-		}
-		if _, ok = user_status.Map()[status]; !ok {
+		status := *data.Status
+		if _, ok := user_status.Map()[status]; !ok {
 			return errors.New("状态数据不合法")
 		}
 		if status == info.Status {

@@ -4,21 +4,21 @@ import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str
 
 // SelectMessage 消息查询
 type SelectMessage struct {
-	UserId          int64
-	Title           string
-	Status          string
-	ReadTimeStart   string
-	ReadTimeEnd     string
-	CreateTimeStart string
-	CreateTimeEnd   string
-	UpdateTimeStart string
-	UpdateTimeEnd   string
+	UserId          *int64
+	Title           *string
+	Status          *int
+	ReadTimeStart   *string
+	ReadTimeEnd     *string
+	CreateTimeStart *string
+	CreateTimeEnd   *string
+	UpdateTimeStart *string
+	UpdateTimeEnd   *string
 }
 
 // UpdateMessage 消息更新
 type UpdateMessage struct {
-	Status   interface{}
-	ReadTime interface{}
+	Status   *int
+	ReadTime *str.DateTime
 }
 
 // Message 消息列表展示数据，不包含 content 字段。

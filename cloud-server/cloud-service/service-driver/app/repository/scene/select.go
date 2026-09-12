@@ -31,32 +31,32 @@ func (r *Repository) SelectIdNameMap() (map[int64]string, error) {
 func (r *Repository) Select(where *SelectScene, queryPage *page.Query) (*page.Result[*model.Scene], error) {
 	query := r.Database.Db.Model(&model.Scene{})
 	if where != nil {
-		if where.ChannelId != "" {
-			query = query.Where("channel_id = ?", where.ChannelId)
+		if where.ChannelId != nil {
+			query = query.Where("channel_id = ?", *where.ChannelId)
 		}
-		if where.Status != "" {
-			query = query.Where("status = ?", where.Status)
+		if where.Status != nil {
+			query = query.Where("status = ?", *where.Status)
 		}
-		if where.Login != "" {
-			query = query.Where("login = ?", where.Login)
+		if where.Login != nil {
+			query = query.Where("login = ?", *where.Login)
 		}
-		if where.Name != "" {
-			query = query.Where("name LIKE ?", "%"+where.Name+"%")
+		if where.Name != nil {
+			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
 		}
-		if where.Remark != "" {
-			query = query.Where("remark LIKE ?", "%"+where.Remark+"%")
+		if where.Remark != nil {
+			query = query.Where("remark LIKE ?", "%"+*where.Remark+"%")
 		}
-		if where.CreateTimeStart != "" {
-			query = query.Where("create_time >= ?", where.CreateTimeStart)
+		if where.CreateTimeStart != nil {
+			query = query.Where("create_time >= ?", *where.CreateTimeStart)
 		}
-		if where.CreateTimeEnd != "" {
-			query = query.Where("create_time <= ?", where.CreateTimeEnd)
+		if where.CreateTimeEnd != nil {
+			query = query.Where("create_time <= ?", *where.CreateTimeEnd)
 		}
-		if where.UpdateTimeStart != "" {
-			query = query.Where("update_time >= ?", where.UpdateTimeStart)
+		if where.UpdateTimeStart != nil {
+			query = query.Where("update_time >= ?", *where.UpdateTimeStart)
 		}
-		if where.UpdateTimeEnd != "" {
-			query = query.Where("update_time <= ?", where.UpdateTimeEnd)
+		if where.UpdateTimeEnd != nil {
+			query = query.Where("update_time <= ?", *where.UpdateTimeEnd)
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage)

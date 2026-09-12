@@ -25,19 +25,34 @@ func (Controller) Update(c *context.Context) {
 	}
 	data := &menu.UpdateMenu{}
 	if form.ParentId != "" {
-		data.ParentId, _ = strconv.ParseInt(form.ParentId, 10, 64)
+		value, err := strconv.ParseInt(form.ParentId, 10, 64)
+		if err != nil {
+			c.Error("父级参数错误")
+			return
+		}
+		data.ParentId = &value
 	}
 	if form.Name != "" {
-		data.Name = form.Name
+		data.Name = &form.Name
 	}
 	if form.Icon != "" {
-		data.Icon = form.Icon
+		data.Icon = &form.Icon
 	}
 	if form.Sort != "" {
-		data.Sort, _ = strconv.Atoi(form.Sort)
+		value, err := strconv.Atoi(form.Sort)
+		if err != nil {
+			c.Error("排序参数错误")
+			return
+		}
+		data.Sort = &value
 	}
 	if form.Status != "" {
-		data.Status, _ = strconv.Atoi(form.Status)
+		value, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		data.Status = &value
 	}
 	err := service.Rbac.UpdateMenuOrControl(form.Id, data, form.PermissionCodes)
 	if err != nil {

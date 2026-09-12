@@ -16,10 +16,10 @@ func (r *Repository) UpdateById(id int64, data *UpdateRole, tx ...*gorm.DB) erro
 	}
 	updates := make(map[string]interface{})
 	if data.Name != nil {
-		updates["name"] = data.Name
+		updates["name"] = *data.Name
 	}
 	if data.Status != nil {
-		updates["status"] = data.Status
+		updates["status"] = *data.Status
 	}
 	if len(updates) == 0 {
 		return nil

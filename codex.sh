@@ -7,7 +7,7 @@ ACCOUNTS=(
   "2|https://api.bi8bo.cn|sk-7ae012fb31c664e16413fd482e1e5da950cf2a4871c1e0dcb78de05d64c0ab5c"
   "3|https://new.sharedchat.cc/codex|sk-673afe2647954384af2e9f3a1420a50a"
   "4|https://new.sharedchat.cc/codex|sk-2038bac55b3211f18dcf00163e012d40"
-  "5|https://www.mlyapi.com|sk-08006246047fe4134e2fe0e58d26d9c5fa54068fda30b21bc9102e54982a61f4"
+  "5|https://www.mlyapi.com/v1|sk-9843db8cf5e9a5f857d902472dae8bce4d55f4462fa4f5aa1f230e1fd0fa8f37"
   "6|https://3x.ink|sk-33b506abcf6f3673da2a78c3f968e0c117ec35d8377526f0b12c9da7f997a4e7"
 )
 # ======================================================================

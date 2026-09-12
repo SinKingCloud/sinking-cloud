@@ -3,6 +3,7 @@ package file
 import (
 	"service-driver/app/repository/file"
 	"service-driver/app/service"
+	"strconv"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
@@ -29,37 +30,52 @@ func (Controller) List(c *context.Context) {
 	}
 	where := &file.SelectFile{}
 	if form.ChannelId != "" {
-		where.ChannelId = form.ChannelId
+		channelId, err := strconv.ParseInt(form.ChannelId, 10, 64)
+		if err != nil {
+			c.Error("通道ID参数错误")
+			return
+		}
+		where.ChannelId = &channelId
 	}
 	if form.SceneId != "" {
-		where.SceneId = form.SceneId
+		sceneId, err := strconv.ParseInt(form.SceneId, 10, 64)
+		if err != nil {
+			c.Error("场景ID参数错误")
+			return
+		}
+		where.SceneId = &sceneId
 	}
 	if form.Ext != "" {
-		where.Ext = form.Ext
+		where.Ext = &form.Ext
 	}
 	if form.Hash != "" {
-		where.Hash = form.Hash
+		where.Hash = &form.Hash
 	}
 	if form.Status != "" {
-		where.Status = form.Status
+		status, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		where.Status = &status
 	}
 	if form.Name != "" {
-		where.Name = form.Name
+		where.Name = &form.Name
 	}
 	if form.Path != "" {
-		where.Path = form.Path
+		where.Path = &form.Path
 	}
 	if form.CreateTimeStart != "" {
-		where.CreateTimeStart = form.CreateTimeStart
+		where.CreateTimeStart = &form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where.CreateTimeEnd = form.CreateTimeEnd
+		where.CreateTimeEnd = &form.CreateTimeEnd
 	}
 	if form.UpdateTimeStart != "" {
-		where.UpdateTimeStart = form.UpdateTimeStart
+		where.UpdateTimeStart = &form.UpdateTimeStart
 	}
 	if form.UpdateTimeEnd != "" {
-		where.UpdateTimeEnd = form.UpdateTimeEnd
+		where.UpdateTimeEnd = &form.UpdateTimeEnd
 	}
 	data, err := service.File.Select(where, query)
 	if err != nil {

@@ -26,8 +26,9 @@ func (Controller) Password(c *context.Context) {
 		c.Error("请先完成安全验证")
 		return
 	}
+	password := str.NewStringTool(form.Password).GetPassword()
 	if err = service.User.UpdateById(c.GetUserInfo().Id, &user.UpdateUser{
-		Password: str.NewStringTool(form.Password).GetPassword(),
+		Password: &password,
 	}); err == nil {
 		c.Success("修改密码成功")
 	} else {

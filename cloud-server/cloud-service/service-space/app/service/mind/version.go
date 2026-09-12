@@ -68,7 +68,7 @@ func (s *service) SaveData(userId int64, id int64, versionType int, remark strin
 		if versionType == mind_version_type.Auto && s.sameValue(info.Value, valueText) && latest != nil {
 			savedVersion = latest
 		} else {
-			if err = s.mindDataRepository.UpdateByIdAndUserId(id, userId, &mindDataRepository.UpdateMindData{Value: valueText}, tx); err != nil {
+			if err = s.mindDataRepository.UpdateByIdAndUserId(id, userId, &mindDataRepository.UpdateMindData{Value: &valueText}, tx); err != nil {
 				return errors.Join(errors.New("保存导图失败"), err)
 			}
 			merged := false
@@ -77,8 +77,8 @@ func (s *service) SaveData(userId int64, id int64, versionType int, remark strin
 				interval := time.Now().Sub(snapshotTime)
 				if interval >= 0 && interval < 10*time.Second {
 					if err = s.mindVersionRepository.UpdateByIdAndDataId(latest.Id, id, &mindVersionRepository.UpdateMindVersion{
-						Value:  valueText,
-						Remark: remark,
+						Value:  &valueText,
+						Remark: &remark,
 					}, tx); err != nil {
 						return errors.Join(errors.New("更新自动保存版本失败"), err)
 					}
@@ -201,7 +201,7 @@ func (s *service) RestoreVersion(userId int64, dataId int64, id int64) (*Data, e
 				return errors.Join(errors.New("备份当前导图失败"), err)
 			}
 		}
-		if err = s.mindDataRepository.UpdateByIdAndUserId(dataId, userId, &mindDataRepository.UpdateMindData{Value: version.Value}, tx); err != nil {
+		if err = s.mindDataRepository.UpdateByIdAndUserId(dataId, userId, &mindDataRepository.UpdateMindData{Value: &version.Value}, tx); err != nil {
 			return errors.Join(errors.New("恢复导图失败"), err)
 		}
 		info.Value = version.Value
@@ -266,8 +266,8 @@ func (s *service) SelectVersions(userId int64, dataId int64, versionType int, qu
 		return nil, errors.New("导图不存在")
 	}
 	data, err := s.mindVersionRepository.Select(&mindVersionRepository.SelectMindVersion{
-		DataId: dataId,
-		Type:   strconv.Itoa(versionType),
+		DataId: &dataId,
+		Type:   &versionType,
 	}, query)
 	if err != nil {
 		return nil, errors.Join(errors.New("查询导图版本失败"), err)

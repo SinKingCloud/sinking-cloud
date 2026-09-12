@@ -26,7 +26,7 @@ func (Controller) Account(c *context.Context) {
 		return
 	}
 	if err = service.User.UpdateById(c.GetUserInfo().Id, &user.UpdateUser{
-		Account: form.Account,
+		Account: &form.Account,
 	}); err == nil {
 		c.Success("修改账号成功")
 	} else {

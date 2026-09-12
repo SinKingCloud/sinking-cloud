@@ -14,10 +14,10 @@ type OrderLog struct {
 }
 
 type SelectOrderLog struct {
-	OrderId         string
-	OperatorId      string
-	OperatorType    string
-	Type            string
-	CreateTimeStart string
-	CreateTimeEnd   string
+	OrderId         *int64
+	OperatorId      *int64
+	OperatorType    *int
+	Type            *int
+	CreateTimeStart *string
+	CreateTimeEnd   *string
 }

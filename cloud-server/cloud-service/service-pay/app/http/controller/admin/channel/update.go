@@ -22,13 +22,18 @@ func (Controller) Update(c *context.Context) {
 	}
 	data := &channel.UpdateChannel{}
 	if form.Name != "" {
-		data.Name = form.Name
+		data.Name = &form.Name
 	}
 	if form.Config != "" {
-		data.Config = form.Config
+		data.Config = &form.Config
 	}
 	if form.Status != "" {
-		data.Status, _ = strconv.Atoi(form.Status)
+		status, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		data.Status = &status
 	}
 	err := service.Channel.UpdateById(form.Id, data)
 	if err != nil {

@@ -3,6 +3,7 @@ package admin
 import (
 	"service-cron/app/repository/task"
 	"service-cron/app/service"
+	"strconv"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
@@ -26,28 +27,43 @@ func (Controller) List(c *context.Context) {
 	}
 	where := &task.SelectTask{}
 	if form.Name != "" {
-		where.Name = form.Name
+		where.Name = &form.Name
 	}
 	if form.Type != "" {
-		where.Type = form.Type
+		value, err := strconv.Atoi(form.Type)
+		if err != nil {
+			c.Error("类型参数错误")
+			return
+		}
+		where.Type = &value
 	}
 	if form.Status != "" {
-		where.Status = form.Status
+		value, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		where.Status = &value
 	}
 	if form.Concurrent != "" {
-		where.Concurrent = form.Concurrent
+		value, err := strconv.Atoi(form.Concurrent)
+		if err != nil {
+			c.Error("并发配置参数错误")
+			return
+		}
+		where.Concurrent = &value
 	}
 	if form.CreateTimeStart != "" {
-		where.CreateTimeStart = form.CreateTimeStart
+		where.CreateTimeStart = &form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where.CreateTimeEnd = form.CreateTimeEnd
+		where.CreateTimeEnd = &form.CreateTimeEnd
 	}
 	if form.UpdateTimeStart != "" {
-		where.UpdateTimeStart = form.UpdateTimeStart
+		where.UpdateTimeStart = &form.UpdateTimeStart
 	}
 	if form.UpdateTimeEnd != "" {
-		where.UpdateTimeEnd = form.UpdateTimeEnd
+		where.UpdateTimeEnd = &form.UpdateTimeEnd
 	}
 	data, err := service.Task.Select(where, query)
 	if err != nil {

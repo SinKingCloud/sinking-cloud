@@ -20,10 +20,10 @@ func (Controller) List(c *context.Context) {
 	}
 	where := &mindDataRepository.SelectMindData{}
 	if form.TypeId > 0 {
-		where.TypeId = form.TypeId
+		where.TypeId = &form.TypeId
 	}
 	if form.Keyword != "" {
-		where.Keyword = form.Keyword
+		where.Keyword = &form.Keyword
 	}
 	data, err := service.Mind.SelectDataByUserId(c.GetUserInfo().Id, where, query)
 	if err != nil {

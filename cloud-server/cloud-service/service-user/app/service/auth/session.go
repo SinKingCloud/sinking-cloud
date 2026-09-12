@@ -18,7 +18,7 @@ func (s *service) SelectSessionByUserId(userId int64, where *sessionRepository.S
 	if where == nil {
 		where = &sessionRepository.SelectSession{}
 	}
-	where.UserId = userId
+	where.UserId = &userId
 	result, err := s.repositorySession.Select(where, queryPage)
 	if err != nil {
 		return nil, errors.Join(errors.New("查询会话失败"), err)

@@ -13,35 +13,35 @@ import (
 func (r *Repository) Select(where *SelectSession, queryPage *page.Query) (*page.Result[*model.Session], error) {
 	query := r.Database.Db.Model(&model.Session{})
 	if where != nil {
-		if where.UserId > 0 {
-			query = query.Where("user_id = ?", where.UserId)
+		if where.UserId != nil {
+			query = query.Where("user_id = ?", *where.UserId)
 		}
-		if where.Device != "" {
-			query = query.Where("device LIKE ?", "%"+where.Device+"%")
+		if where.Device != nil {
+			query = query.Where("device LIKE ?", "%"+*where.Device+"%")
 		}
-		if where.Ip != "" {
-			query = query.Where("ip LIKE ?", "%"+where.Ip+"%")
+		if where.Ip != nil {
+			query = query.Where("ip LIKE ?", "%"+*where.Ip+"%")
 		}
-		if where.Location != "" {
-			query = query.Where("location LIKE ?", "%"+where.Location+"%")
+		if where.Location != nil {
+			query = query.Where("location LIKE ?", "%"+*where.Location+"%")
 		}
-		if where.CreateTimeStart != "" {
-			query = query.Where("create_time >= ?", where.CreateTimeStart)
+		if where.CreateTimeStart != nil {
+			query = query.Where("create_time >= ?", *where.CreateTimeStart)
 		}
-		if where.CreateTimeEnd != "" {
-			query = query.Where("create_time <= ?", where.CreateTimeEnd)
+		if where.CreateTimeEnd != nil {
+			query = query.Where("create_time <= ?", *where.CreateTimeEnd)
 		}
-		if where.UpdateTimeStart != "" {
-			query = query.Where("update_time >= ?", where.UpdateTimeStart)
+		if where.UpdateTimeStart != nil {
+			query = query.Where("update_time >= ?", *where.UpdateTimeStart)
 		}
-		if where.UpdateTimeEnd != "" {
-			query = query.Where("update_time <= ?", where.UpdateTimeEnd)
+		if where.UpdateTimeEnd != nil {
+			query = query.Where("update_time <= ?", *where.UpdateTimeEnd)
 		}
-		if where.ExpireTimeStart != "" {
-			query = query.Where("expire_time >= ?", where.ExpireTimeStart)
+		if where.ExpireTimeStart != nil {
+			query = query.Where("expire_time >= ?", *where.ExpireTimeStart)
 		}
-		if where.ExpireTimeEnd != "" {
-			query = query.Where("expire_time <= ?", where.ExpireTimeEnd)
+		if where.ExpireTimeEnd != nil {
+			query = query.Where("expire_time <= ?", *where.ExpireTimeEnd)
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage, "token")

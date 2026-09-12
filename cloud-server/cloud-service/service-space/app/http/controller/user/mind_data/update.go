@@ -27,13 +27,13 @@ func (Controller) Update(c *context.Context) {
 			c.Error("导图分类ID参数错误")
 			return
 		}
-		data.TypeId = typeId
+		data.TypeId = &typeId
 	}
 	if form.Title != "" {
-		data.Title = form.Title
+		data.Title = &form.Title
 	}
 	if form.Describe != nil {
-		data.Describe = *form.Describe
+		data.Describe = form.Describe
 	}
 	if err := service.Mind.UpdateData(c.GetUserInfo().Id, form.Id, data); err != nil {
 		c.Error(err.Error())

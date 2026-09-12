@@ -95,7 +95,8 @@ func (s *service) DeleteType(userId int64, id int64) error {
 		if info == nil || info.Id <= 0 {
 			return errors.New("导图分类不存在")
 		}
-		if err = s.mindDataRepository.UpdateByTypeIdAndUserId(id, userId, &mindDataRepository.UpdateMindData{TypeId: int64(mind_type.All)}, tx); err != nil {
+		typeId := int64(mind_type.All)
+		if err = s.mindDataRepository.UpdateByTypeIdAndUserId(id, userId, &mindDataRepository.UpdateMindData{TypeId: &typeId}, tx); err != nil {
 			return errors.Join(errors.New("更新导图分类失败"), err)
 		}
 		if err = s.mindTypeRepository.DeleteByIdAndUserId(id, userId, tx); err != nil {

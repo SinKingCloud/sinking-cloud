@@ -22,16 +22,21 @@ func (Controller) Log(c *context.Context) {
 		return
 	}
 	where := &balance_log.SelectBalanceLog{
-		UserId: strconv.FormatInt(form.UserId, 10),
+		UserId: &form.UserId,
 	}
 	if form.Type != "" {
-		where.Type = form.Type
+		types, err := strconv.Atoi(form.Type)
+		if err != nil {
+			c.Error("类型参数错误")
+			return
+		}
+		where.Type = &types
 	}
 	if form.CreateTimeStart != "" {
-		where.CreateTimeStart = form.CreateTimeStart
+		where.CreateTimeStart = &form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where.CreateTimeEnd = form.CreateTimeEnd
+		where.CreateTimeEnd = &form.CreateTimeEnd
 	}
 	data, err := service.Balance.SelectLog(where, query)
 	if err != nil {

@@ -3,6 +3,7 @@ package message
 import (
 	repositoryMessage "service-user/app/repository/message"
 	"service-user/app/service"
+	"strconv"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
@@ -26,28 +27,33 @@ func (Controller) List(c *context.Context) {
 	}
 	where := &repositoryMessage.SelectMessage{}
 	if form.Title != "" {
-		where.Title = form.Title
+		where.Title = &form.Title
 	}
 	if form.Status != "" {
-		where.Status = form.Status
+		status, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("消息状态参数错误")
+			return
+		}
+		where.Status = &status
 	}
 	if form.ReadTimeStart != "" {
-		where.ReadTimeStart = form.ReadTimeStart
+		where.ReadTimeStart = &form.ReadTimeStart
 	}
 	if form.ReadTimeEnd != "" {
-		where.ReadTimeEnd = form.ReadTimeEnd
+		where.ReadTimeEnd = &form.ReadTimeEnd
 	}
 	if form.CreateTimeStart != "" {
-		where.CreateTimeStart = form.CreateTimeStart
+		where.CreateTimeStart = &form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where.CreateTimeEnd = form.CreateTimeEnd
+		where.CreateTimeEnd = &form.CreateTimeEnd
 	}
 	if form.UpdateTimeStart != "" {
-		where.UpdateTimeStart = form.UpdateTimeStart
+		where.UpdateTimeStart = &form.UpdateTimeStart
 	}
 	if form.UpdateTimeEnd != "" {
-		where.UpdateTimeEnd = form.UpdateTimeEnd
+		where.UpdateTimeEnd = &form.UpdateTimeEnd
 	}
 	data, err := service.Message.SelectByUserId(c.GetUserInfo().Id, where, query)
 	if err != nil {

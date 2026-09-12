@@ -27,25 +27,31 @@ func (Controller) Update(c *context.Context) {
 	}
 	data := &user.UpdateUser{}
 	if form.Account != "" {
-		data.Account = form.Account
+		data.Account = &form.Account
 	}
 	if form.Phone != "" {
-		data.Phone = form.Phone
+		data.Phone = &form.Phone
 	}
 	if form.Email != "" {
-		data.Email = form.Email
+		data.Email = &form.Email
 	}
 	if form.Password != "" {
-		data.Password = str.NewStringTool(form.Password).GetPassword()
+		password := str.NewStringTool(form.Password).GetPassword()
+		data.Password = &password
 	}
 	if form.Avatar != "" {
-		data.Avatar = form.Avatar
+		data.Avatar = &form.Avatar
 	}
 	if form.NickName != "" {
-		data.NickName = form.NickName
+		data.NickName = &form.NickName
 	}
 	if form.Status != "" {
-		data.Status, _ = strconv.Atoi(form.Status)
+		value, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		data.Status = &value
 	}
 	err := service.User.UpdateById(form.Id, data)
 	if err != nil {

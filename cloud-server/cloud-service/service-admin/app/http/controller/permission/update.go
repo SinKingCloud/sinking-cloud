@@ -20,10 +20,10 @@ func (Controller) Update(c *context.Context) {
 	}
 	data := &permission.UpdatePermission{}
 	if form.Name != "" {
-		data.Name = form.Name
+		data.Name = &form.Name
 	}
 	if form.Path != "" {
-		data.Path = form.Path
+		data.Path = &form.Path
 	}
 	err := service.Rbac.UpdatePermissionByIds(form.Ids, data)
 	if err != nil {

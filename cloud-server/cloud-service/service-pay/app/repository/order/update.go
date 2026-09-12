@@ -15,28 +15,28 @@ func (r *Repository) UpdateById(id int64, data *UpdateOrder, tx ...*gorm.DB) err
 	}
 	updates := make(map[string]interface{})
 	if data.Status != nil {
-		updates["status"] = data.Status
+		updates["status"] = *data.Status
 	}
 	if data.TradeNo != nil {
-		updates["trade_no"] = data.TradeNo
+		updates["trade_no"] = *data.TradeNo
 	}
 	if data.PayAmount != nil {
-		updates["pay_amount"] = data.PayAmount
+		updates["pay_amount"] = *data.PayAmount
 	}
 	if data.RefundAmount != nil {
-		updates["refund_amount"] = data.RefundAmount
+		updates["refund_amount"] = *data.RefundAmount
 	}
 	if data.PayStatus != nil {
-		updates["pay_status"] = data.PayStatus
+		updates["pay_status"] = *data.PayStatus
 	}
 	if data.PayType != nil {
-		updates["pay_type"] = data.PayType
+		updates["pay_type"] = *data.PayType
 	}
 	if data.PayTime != nil {
-		updates["pay_time"] = data.PayTime
+		updates["pay_time"] = *data.PayTime
 	}
 	if data.CompleteTime != nil {
-		updates["complete_time"] = data.CompleteTime
+		updates["complete_time"] = *data.CompleteTime
 	}
 	if len(updates) == 0 {
 		return nil

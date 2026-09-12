@@ -15,31 +15,31 @@ func (r *Repository) UpdateById(id int64, data *UpdateUser, tx ...*gorm.DB) erro
 	}
 	updates := make(map[string]interface{})
 	if data.Account != nil {
-		updates["account"] = data.Account
+		updates["account"] = *data.Account
 	}
 	if data.Phone != nil {
-		updates["phone"] = data.Phone
+		updates["phone"] = *data.Phone
 	}
 	if data.Email != nil {
-		updates["email"] = data.Email
+		updates["email"] = *data.Email
 	}
 	if data.Password != nil {
-		updates["password"] = data.Password
+		updates["password"] = *data.Password
 	}
 	if data.Avatar != nil {
-		updates["avatar"] = data.Avatar
+		updates["avatar"] = *data.Avatar
 	}
 	if data.NickName != nil {
-		updates["nick_name"] = data.NickName
+		updates["nick_name"] = *data.NickName
 	}
 	if data.RealAuthType != nil {
-		updates["real_auth_type"] = data.RealAuthType
+		updates["real_auth_type"] = *data.RealAuthType
 	}
 	if data.RealAuthStatus != nil {
-		updates["real_auth_status"] = data.RealAuthStatus
+		updates["real_auth_status"] = *data.RealAuthStatus
 	}
 	if data.Status != nil {
-		updates["status"] = data.Status
+		updates["status"] = *data.Status
 	}
 	if len(updates) == 0 {
 		return nil
@@ -59,31 +59,31 @@ func (r *Repository) UpdateByIds(ids []int64, data *UpdateUser) error {
 	}
 	updates := make(map[string]interface{})
 	if data.Account != nil {
-		updates["account"] = data.Account
+		updates["account"] = *data.Account
 	}
 	if data.Phone != nil {
-		updates["phone"] = data.Phone
+		updates["phone"] = *data.Phone
 	}
 	if data.Email != nil {
-		updates["email"] = data.Email
+		updates["email"] = *data.Email
 	}
 	if data.Password != nil {
-		updates["password"] = data.Password
+		updates["password"] = *data.Password
 	}
 	if data.Avatar != nil {
-		updates["avatar"] = data.Avatar
+		updates["avatar"] = *data.Avatar
 	}
 	if data.NickName != nil {
-		updates["nick_name"] = data.NickName
+		updates["nick_name"] = *data.NickName
 	}
 	if data.RealAuthType != nil {
-		updates["real_auth_type"] = data.RealAuthType
+		updates["real_auth_type"] = *data.RealAuthType
 	}
 	if data.RealAuthStatus != nil {
-		updates["real_auth_status"] = data.RealAuthStatus
+		updates["real_auth_status"] = *data.RealAuthStatus
 	}
 	if data.Status != nil {
-		updates["status"] = data.Status
+		updates["status"] = *data.Status
 	}
 	if len(updates) == 0 {
 		return nil

@@ -32,7 +32,7 @@ func (Controller) Phone(c *context.Context) {
 		return
 	}
 	if err = service.User.UpdateById(c.GetUserInfo().Id, &user.UpdateUser{
-		Phone: form.Phone,
+		Phone: &form.Phone,
 	}); err == nil {
 		c.Success("修改手机号成功")
 	} else {

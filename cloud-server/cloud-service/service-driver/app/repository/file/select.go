@@ -32,38 +32,38 @@ func (r *Repository) SelectChannelIdSceneIdHashPathByIds(ids []int64) ([]*model.
 func (r *Repository) Select(where *SelectFile, queryPage *page.Query) (*page.Result[*model.File], error) {
 	query := r.Database.Db.Model(&model.File{})
 	if where != nil {
-		if where.ChannelId != "" {
-			query = query.Where("channel_id = ?", where.ChannelId)
+		if where.ChannelId != nil {
+			query = query.Where("channel_id = ?", *where.ChannelId)
 		}
-		if where.SceneId != "" {
-			query = query.Where("scene_id = ?", where.SceneId)
+		if where.SceneId != nil {
+			query = query.Where("scene_id = ?", *where.SceneId)
 		}
-		if where.Ext != "" {
-			query = query.Where("ext = ?", where.Ext)
+		if where.Ext != nil {
+			query = query.Where("ext = ?", *where.Ext)
 		}
-		if where.Hash != "" {
-			query = query.Where("hash = ?", where.Hash)
+		if where.Hash != nil {
+			query = query.Where("hash = ?", *where.Hash)
 		}
-		if where.Status != "" {
-			query = query.Where("status = ?", where.Status)
+		if where.Status != nil {
+			query = query.Where("status = ?", *where.Status)
 		}
-		if where.Name != "" {
-			query = query.Where("name LIKE ?", "%"+where.Name+"%")
+		if where.Name != nil {
+			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
 		}
-		if where.Path != "" {
-			query = query.Where("path LIKE ?", where.Path+"%")
+		if where.Path != nil {
+			query = query.Where("path LIKE ?", *where.Path+"%")
 		}
-		if where.CreateTimeStart != "" {
-			query = query.Where("create_time >= ?", where.CreateTimeStart)
+		if where.CreateTimeStart != nil {
+			query = query.Where("create_time >= ?", *where.CreateTimeStart)
 		}
-		if where.CreateTimeEnd != "" {
-			query = query.Where("create_time <= ?", where.CreateTimeEnd)
+		if where.CreateTimeEnd != nil {
+			query = query.Where("create_time <= ?", *where.CreateTimeEnd)
 		}
-		if where.UpdateTimeStart != "" {
-			query = query.Where("update_time >= ?", where.UpdateTimeStart)
+		if where.UpdateTimeStart != nil {
+			query = query.Where("update_time >= ?", *where.UpdateTimeStart)
 		}
-		if where.UpdateTimeEnd != "" {
-			query = query.Where("update_time <= ?", where.UpdateTimeEnd)
+		if where.UpdateTimeEnd != nil {
+			query = query.Where("update_time <= ?", *where.UpdateTimeEnd)
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage)

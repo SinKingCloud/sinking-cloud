@@ -3,6 +3,7 @@ package user
 import (
 	"service-user/app/repository/user"
 	"service-user/app/service"
+	"strconv"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
@@ -29,37 +30,52 @@ func (Controller) List(c *context.Context) {
 	}
 	where := &user.SelectUser{}
 	if form.Account != "" {
-		where.Account = form.Account
+		where.Account = &form.Account
 	}
 	if form.Phone != "" {
-		where.Phone = form.Phone
+		where.Phone = &form.Phone
 	}
 	if form.Email != "" {
-		where.Email = form.Email
+		where.Email = &form.Email
 	}
 	if form.NickName != "" {
-		where.NickName = form.NickName
+		where.NickName = &form.NickName
 	}
 	if form.RealAuthType != "" {
-		where.RealAuthType = form.RealAuthType
+		realAuthType, err := strconv.Atoi(form.RealAuthType)
+		if err != nil {
+			c.Error("实名类型参数错误")
+			return
+		}
+		where.RealAuthType = &realAuthType
 	}
 	if form.RealAuthStatus != "" {
-		where.RealAuthStatus = form.RealAuthStatus
+		realAuthStatus, err := strconv.Atoi(form.RealAuthStatus)
+		if err != nil {
+			c.Error("实名状态参数错误")
+			return
+		}
+		where.RealAuthStatus = &realAuthStatus
 	}
 	if form.Status != "" {
-		where.Status = form.Status
+		status, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		where.Status = &status
 	}
 	if form.CreateTimeStart != "" {
-		where.CreateTimeStart = form.CreateTimeStart
+		where.CreateTimeStart = &form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where.CreateTimeEnd = form.CreateTimeEnd
+		where.CreateTimeEnd = &form.CreateTimeEnd
 	}
 	if form.UpdateTimeStart != "" {
-		where.UpdateTimeStart = form.UpdateTimeStart
+		where.UpdateTimeStart = &form.UpdateTimeStart
 	}
 	if form.UpdateTimeEnd != "" {
-		where.UpdateTimeEnd = form.UpdateTimeEnd
+		where.UpdateTimeEnd = &form.UpdateTimeEnd
 	}
 	data, err := service.User.Select(where, query)
 	if err != nil {

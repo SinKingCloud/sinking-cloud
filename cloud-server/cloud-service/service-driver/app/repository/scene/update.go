@@ -14,25 +14,25 @@ func (r *Repository) UpdateById(id int64, data *UpdateScene) error {
 	}
 	updates := make(map[string]interface{})
 	if data.Name != nil {
-		updates["name"] = data.Name
+		updates["name"] = *data.Name
 	}
 	if data.MaxSize != nil {
-		updates["max_size"] = data.MaxSize
+		updates["max_size"] = *data.MaxSize
 	}
 	if data.AllowExt != nil {
-		updates["allow_ext"] = data.AllowExt
+		updates["allow_ext"] = *data.AllowExt
 	}
 	if data.Login != nil {
-		updates["login"] = data.Login
+		updates["login"] = *data.Login
 	}
 	if data.ChannelId != nil {
-		updates["channel_id"] = data.ChannelId
+		updates["channel_id"] = *data.ChannelId
 	}
 	if data.Remark != nil {
-		updates["remark"] = data.Remark
+		updates["remark"] = *data.Remark
 	}
 	if data.Status != nil {
-		updates["status"] = data.Status
+		updates["status"] = *data.Status
 	}
 	if len(updates) == 0 {
 		return nil

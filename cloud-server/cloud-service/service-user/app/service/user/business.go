@@ -58,10 +58,7 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 	}
 	hasUpdateData := false
 	if data.Account != nil {
-		account, ok := data.Account.(string)
-		if !ok {
-			return errors.New("账号数据不合法")
-		}
+		account := *data.Account
 		if account == "" {
 			return errors.New("账号不能为空")
 		}
@@ -75,10 +72,7 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		}
 	}
 	if data.Phone != nil {
-		phone, ok := data.Phone.(string)
-		if !ok {
-			return errors.New("手机号数据不合法")
-		}
+		phone := *data.Phone
 		if phone == "" {
 			return errors.New("手机号不能为空")
 		}
@@ -92,10 +86,7 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		}
 	}
 	if data.Email != nil {
-		email, ok := data.Email.(string)
-		if !ok {
-			return errors.New("邮箱数据不合法")
-		}
+		email := *data.Email
 		if email == "" {
 			return errors.New("邮箱不能为空")
 		}
@@ -109,20 +100,14 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		}
 	}
 	if data.Password != nil {
-		password, ok := data.Password.(string)
-		if !ok {
-			return errors.New("密码数据不合法")
-		}
+		password := *data.Password
 		if password == "" {
 			return errors.New("密码不能为空")
 		}
 		hasUpdateData = true
 	}
 	if data.Avatar != nil {
-		avatar, ok := data.Avatar.(string)
-		if !ok {
-			return errors.New("头像数据不合法")
-		}
+		avatar := *data.Avatar
 		if avatar == info.Avatar {
 			data.Avatar = nil
 		} else {
@@ -130,10 +115,7 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		}
 	}
 	if data.NickName != nil {
-		nickName, ok := data.NickName.(string)
-		if !ok {
-			return errors.New("昵称数据不合法")
-		}
+		nickName := *data.NickName
 		if nickName == info.NickName {
 			data.NickName = nil
 		} else {
@@ -141,11 +123,8 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		}
 	}
 	if data.RealAuthType != nil {
-		realAuthType, ok := data.RealAuthType.(int)
-		if !ok {
-			return errors.New("实名类型数据不合法")
-		}
-		if _, ok = real_auth_type.Map()[realAuthType]; !ok {
+		realAuthType := *data.RealAuthType
+		if _, ok := real_auth_type.Map()[realAuthType]; !ok {
 			return errors.New("实名类型数据不合法")
 		}
 		if realAuthType == info.RealAuthType {
@@ -155,11 +134,8 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		}
 	}
 	if data.RealAuthStatus != nil {
-		realAuthStatus, ok := data.RealAuthStatus.(int)
-		if !ok {
-			return errors.New("实名状态数据不合法")
-		}
-		if _, ok = real_auth_status.Map()[realAuthStatus]; !ok {
+		realAuthStatus := *data.RealAuthStatus
+		if _, ok := real_auth_status.Map()[realAuthStatus]; !ok {
 			return errors.New("实名状态数据不合法")
 		}
 		if realAuthStatus == info.RealAuthStatus {
@@ -169,11 +145,8 @@ func (s *service) UpdateById(id int64, data *user.UpdateUser) error {
 		}
 	}
 	if data.Status != nil {
-		status, ok := data.Status.(int)
-		if !ok {
-			return errors.New("状态数据不合法")
-		}
-		if _, ok = user_status.Map()[status]; !ok {
+		status := *data.Status
+		if _, ok := user_status.Map()[status]; !ok {
 			return errors.New("状态数据不合法")
 		}
 		if status == info.Status {
@@ -229,21 +202,13 @@ func (s *service) UpdateByIds(ids []int64, data *user.UpdateUser) error {
 
 // Select 查询用户列表
 func (s *service) Select(where *user.SelectUser, queryPage *page.Query) (*page.Result[*User], error) {
-	if where.RealAuthStatus != "" {
-		status, err := strconv.Atoi(where.RealAuthStatus)
-		if err != nil {
-			return nil, errors.New("实名状态参数错误")
-		}
-		if _, ok := real_auth_status.Map()[status]; !ok {
+	if where != nil && where.RealAuthStatus != nil {
+		if _, ok := real_auth_status.Map()[*where.RealAuthStatus]; !ok {
 			return nil, errors.New("实名状态参数不合法")
 		}
 	}
-	if where.Status != "" {
-		status, err := strconv.Atoi(where.Status)
-		if err != nil {
-			return nil, errors.New("状态参数错误")
-		}
-		if _, ok := user_status.Map()[status]; !ok {
+	if where != nil && where.Status != nil {
+		if _, ok := user_status.Map()[*where.Status]; !ok {
 			return nil, errors.New("状态参数不合法")
 		}
 	}
@@ -532,9 +497,10 @@ func (s *service) VerifyRealAuth(certifyId string) (*RealAuthInfo, *aliyun.FaceQ
 	}
 	if authInfo != nil && authInfo.Status == real_auth_status.Authed {
 		if userInfo.RealAuthStatus != real_auth_status.Authed {
+			status := real_auth_status.Authed
 			if err = s.repositoryUser.UpdateById(userId, &user.UpdateUser{
-				RealAuthType:   authInfo.Type,
-				RealAuthStatus: real_auth_status.Authed,
+				RealAuthType:   &authInfo.Type,
+				RealAuthStatus: &status,
 			}); err != nil {
 				return nil, nil, errors.Join(errors.New("更新用户实名状态失败"), err)
 			}
@@ -578,21 +544,24 @@ func (s *service) VerifyRealAuth(certifyId string) (*RealAuthInfo, *aliyun.FaceQ
 		if authInfo.Status == real_auth_status.Authed {
 			return nil
 		}
+		filesValue := string(filesData)
+		status := real_auth_status.Authed
+		authTime := str.DateTime(time.Now())
 		if err = s.repositoryRealAuth.UpdateById(authInfo.Id, &repositoryRealAuth.UpdateRealAuth{
-			Type:        process.Type,
-			CompanyName: process.CompanyName,
-			CompanyNo:   process.CompanyNo,
-			CardName:    process.CardName,
-			CardNo:      process.CardNo,
-			Files:       string(filesData),
-			Status:      real_auth_status.Authed,
-			AuthTime:    str.DateTime(time.Now()),
+			Type:        &process.Type,
+			CompanyName: &process.CompanyName,
+			CompanyNo:   &process.CompanyNo,
+			CardName:    &process.CardName,
+			CardNo:      &process.CardNo,
+			Files:       &filesValue,
+			Status:      &status,
+			AuthTime:    &authTime,
 		}, tx); err != nil {
 			return errors.Join(errors.New("更新实名记录失败"), err)
 		}
 		if err = s.repositoryUser.UpdateById(userId, &user.UpdateUser{
-			RealAuthType:   process.Type,
-			RealAuthStatus: real_auth_status.Authed,
+			RealAuthType:   &process.Type,
+			RealAuthStatus: &status,
 		}, tx); err != nil {
 			return errors.Join(errors.New("更新用户实名状态失败"), err)
 		}

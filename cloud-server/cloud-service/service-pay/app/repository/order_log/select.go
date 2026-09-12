@@ -10,23 +10,23 @@ import (
 func (r *Repository) Select(where *SelectOrderLog, queryPage *page.Query) (*page.Result[*OrderLog], error) {
 	query := r.Database.Db.Model(&model.OrderLog{})
 	if where != nil {
-		if where.OrderId != "" {
-			query = query.Where("order_id = ?", where.OrderId)
+		if where.OrderId != nil {
+			query = query.Where("order_id = ?", *where.OrderId)
 		}
-		if where.OperatorId != "" {
-			query = query.Where("operator_id = ?", where.OperatorId)
+		if where.OperatorId != nil {
+			query = query.Where("operator_id = ?", *where.OperatorId)
 		}
-		if where.OperatorType != "" {
-			query = query.Where("operator_type = ?", where.OperatorType)
+		if where.OperatorType != nil {
+			query = query.Where("operator_type = ?", *where.OperatorType)
 		}
-		if where.Type != "" {
-			query = query.Where("type = ?", where.Type)
+		if where.Type != nil {
+			query = query.Where("type = ?", *where.Type)
 		}
-		if where.CreateTimeStart != "" {
-			query = query.Where("create_time >= ?", where.CreateTimeStart)
+		if where.CreateTimeStart != nil {
+			query = query.Where("create_time >= ?", *where.CreateTimeStart)
 		}
-		if where.CreateTimeEnd != "" {
-			query = query.Where("create_time <= ?", where.CreateTimeEnd)
+		if where.CreateTimeEnd != nil {
+			query = query.Where("create_time <= ?", *where.CreateTimeEnd)
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage)

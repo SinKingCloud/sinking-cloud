@@ -1,7 +1,7 @@
 package log
 
 type SelectLog struct {
-	TaskId          string
-	CreateTimeStart string
-	CreateTimeEnd   string
+	TaskId          *int64
+	CreateTimeStart *string
+	CreateTimeEnd   *string
 }

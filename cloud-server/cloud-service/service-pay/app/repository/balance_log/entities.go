@@ -1,8 +1,8 @@
 package balance_log
 
 type SelectBalanceLog struct {
-	UserId          string
-	Type            string
-	CreateTimeStart string
-	CreateTimeEnd   string
+	UserId          *int64
+	Type            *int
+	CreateTimeStart *string
+	CreateTimeEnd   *string
 }

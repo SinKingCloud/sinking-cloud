@@ -160,17 +160,8 @@ func (s *service) SelectLog(where *balance_log.SelectBalanceLog, queryPage *page
 	if where == nil {
 		return nil, errors.New("参数错误")
 	}
-	if where.UserId != "" {
-		if _, err := strconv.ParseInt(where.UserId, 10, 64); err != nil {
-			return nil, errors.New("用户ID格式错误")
-		}
-	}
-	if where.Type != "" {
-		logType, err := strconv.Atoi(where.Type)
-		if err != nil {
-			return nil, errors.New("类型参数错误")
-		}
-		if _, ok := balance_log_type.Map()[logType]; !ok {
+	if where.Type != nil {
+		if _, ok := balance_log_type.Map()[*where.Type]; !ok {
 			return nil, errors.New("类型参数不合法")
 		}
 	}

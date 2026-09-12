@@ -97,30 +97,18 @@ func (s *service) FindById(id int64, refresh bool) (data *model.Task, err error)
 
 // Select 查询任务列表
 func (s *service) Select(where *repositoryTask.SelectTask, query *page.Query) (*page.Result[*repositoryTask.Task], error) {
-	if where.Status != "" {
-		status, err := strconv.Atoi(where.Status)
-		if err != nil {
-			return nil, errors.New("状态参数错误")
-		}
-		if _, ok := task_status.Map()[status]; !ok {
+	if where != nil && where.Status != nil {
+		if _, ok := task_status.Map()[*where.Status]; !ok {
 			return nil, errors.New("状态参数不合法")
 		}
 	}
-	if where.Type != "" {
-		Type, err := strconv.Atoi(where.Type)
-		if err != nil {
-			return nil, errors.New("类型参数错误")
-		}
-		if _, ok := task_type.Map()[Type]; !ok {
+	if where != nil && where.Type != nil {
+		if _, ok := task_type.Map()[*where.Type]; !ok {
 			return nil, errors.New("类型参数不合法")
 		}
 	}
-	if where.Concurrent != "" {
-		Concurrent, err := strconv.Atoi(where.Concurrent)
-		if err != nil {
-			return nil, errors.New("并发参数错误")
-		}
-		if _, ok := task_concurrent.Map()[Concurrent]; !ok {
+	if where != nil && where.Concurrent != nil {
+		if _, ok := task_concurrent.Map()[*where.Concurrent]; !ok {
 			return nil, errors.New("并发参数不合法")
 		}
 	}
@@ -195,45 +183,33 @@ func (s *service) UpdateById(id int64, data *repositoryTask.UpdateTask) error {
 		return errors.New("更新数据不能为空")
 	}
 	if data.Type != nil {
-		if value, ok := data.Type.(int); ok {
-			if _, ok = task_type.Map()[value]; !ok {
-				return errors.New("任务类型不合法")
-			}
-		} else {
+		if _, ok := task_type.Map()[*data.Type]; !ok {
 			return errors.New("任务类型不合法")
 		}
 	}
 	if data.Status != nil {
-		if value, ok := data.Status.(int); ok {
-			if _, ok = task_status.Map()[value]; !ok {
-				return errors.New("任务状态不合法")
-			}
-		} else {
+		if _, ok := task_status.Map()[*data.Status]; !ok {
 			return errors.New("任务状态不合法")
 		}
 	}
 	if data.Concurrent != nil {
-		if value, ok := data.Concurrent.(int); ok {
-			if _, ok = task_concurrent.Map()[value]; !ok {
-				return errors.New("并发配置不合法")
-			}
-		} else {
+		if _, ok := task_concurrent.Map()[*data.Concurrent]; !ok {
 			return errors.New("并发配置不合法")
 		}
 	}
 	if data.Name != nil {
-		if value, ok := data.Name.(string); !ok || value == "" {
+		if *data.Name == "" {
 			return errors.New("任务名称不合法")
 		}
 	}
 	if data.Script != nil {
-		if value, ok := data.Script.(string); !ok || value == "" {
+		if *data.Script == "" {
 			return errors.New("任务内容不合法")
 		}
 	}
 	if data.Spec != nil {
-		value, ok := data.Spec.(string)
-		if !ok || value == "" {
+		value := *data.Spec
+		if value == "" {
 			return errors.New("任务表达式不合法")
 		}
 		if err := s.cron.Validate(value); err != nil {
@@ -348,12 +324,12 @@ func (s *service) register(id int64, Type int, name string, spec string, script 
 		}
 		if update {
 			err = s.UpdateById(id, &repositoryTask.UpdateTask{
-				Type:       Type,
-				Name:       name,
-				Spec:       spec,
-				Script:     script,
-				Concurrent: concurrent,
-				Status:     status,
+				Type:       &Type,
+				Name:       &name,
+				Spec:       &spec,
+				Script:     &script,
+				Concurrent: &concurrent,
+				Status:     &status,
 			})
 		} else {
 			err = nil

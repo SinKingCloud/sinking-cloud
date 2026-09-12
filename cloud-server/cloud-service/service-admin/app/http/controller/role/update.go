@@ -22,10 +22,15 @@ func (Controller) Update(c *context.Context) {
 	}
 	data := &role.UpdateRole{}
 	if form.Name != "" {
-		data.Name = form.Name
+		data.Name = &form.Name
 	}
 	if form.Status != "" {
-		data.Status, _ = strconv.Atoi(form.Status)
+		value, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		data.Status = &value
 	}
 	err := service.Rbac.UpdateRole(form.Id, data, form.MenuIds)
 	if err != nil {

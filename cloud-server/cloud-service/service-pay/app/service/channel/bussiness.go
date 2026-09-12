@@ -23,21 +23,13 @@ import (
 
 // Select 查询数据
 func (s *service) Select(where *channel.SelectChannel, queryPage *page.Query) (*page.Result[*channel.Channel], error) {
-	if where.Status != "" {
-		status, err := strconv.Atoi(where.Status)
-		if err != nil {
-			return nil, errors.New("状态参数错误")
-		}
-		if _, ok := channel_status.Map()[status]; !ok {
+	if where.Status != nil {
+		if _, ok := channel_status.Map()[*where.Status]; !ok {
 			return nil, errors.New("状态参数不合法")
 		}
 	}
-	if where.Plugin != "" {
-		plugin, err := strconv.Atoi(where.Plugin)
-		if err != nil {
-			return nil, errors.New("类型参数错误")
-		}
-		if _, ok := channel_plugin.Map()[plugin]; !ok {
+	if where.Plugin != nil {
+		if _, ok := channel_plugin.Map()[*where.Plugin]; !ok {
 			return nil, errors.New("类型参数不合法")
 		}
 	}
@@ -142,31 +134,20 @@ func (s *service) UpdateById(id int64, data *channel.UpdateChannel) error {
 	}
 	update := &channel.UpdateChannel{}
 	if data.Name != nil {
-		if _, ok := data.Name.(string); !ok {
-			return errors.New("通道名称字段不合法")
-		}
 		update.Name = data.Name
 	}
 	if data.Status != nil {
-		if value, ok := data.Status.(int); ok {
-			if _, ok = channel_status.Map()[value]; !ok {
-				return errors.New("通道状态字段不合法")
-			}
-		} else {
+		if _, ok := channel_status.Map()[*data.Status]; !ok {
 			return errors.New("通道状态字段不合法")
 		}
 		update.Status = data.Status
 	}
 	if data.Config != nil {
-		value, ok := data.Config.(string)
-		if !ok {
-			return errors.New("通道配置内容不合法")
-		}
-		value, err = s.checkSetting(value, info.Plugin)
+		value, err := s.checkSetting(*data.Config, info.Plugin)
 		if err != nil {
 			return errors.Join(errors.New("设置不正确"), err)
 		}
-		update.Config = value
+		update.Config = &value
 	}
 	err = s.repositoryChannel.UpdateById(id, update)
 	if err != nil {

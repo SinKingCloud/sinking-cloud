@@ -28,31 +28,31 @@ func (Controller) Session(c *context.Context) {
 	}
 	where := &session.SelectSession{}
 	if form.Device != "" {
-		where.Device = form.Device
+		where.Device = &form.Device
 	}
 	if form.Ip != "" {
-		where.Ip = form.Ip
+		where.Ip = &form.Ip
 	}
 	if form.Location != "" {
-		where.Location = form.Location
+		where.Location = &form.Location
 	}
 	if form.CreateTimeStart != "" {
-		where.CreateTimeStart = form.CreateTimeStart
+		where.CreateTimeStart = &form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where.CreateTimeEnd = form.CreateTimeEnd
+		where.CreateTimeEnd = &form.CreateTimeEnd
 	}
 	if form.UpdateTimeStart != "" {
-		where.UpdateTimeStart = form.UpdateTimeStart
+		where.UpdateTimeStart = &form.UpdateTimeStart
 	}
 	if form.UpdateTimeEnd != "" {
-		where.UpdateTimeEnd = form.UpdateTimeEnd
+		where.UpdateTimeEnd = &form.UpdateTimeEnd
 	}
 	if form.ExpireTimeStart != "" {
-		where.ExpireTimeStart = form.ExpireTimeStart
+		where.ExpireTimeStart = &form.ExpireTimeStart
 	}
 	if form.ExpireTimeEnd != "" {
-		where.ExpireTimeEnd = form.ExpireTimeEnd
+		where.ExpireTimeEnd = &form.ExpireTimeEnd
 	}
 	data, err := service.Auth.SelectSessionByUserId(form.Id, where, query)
 	if err != nil {

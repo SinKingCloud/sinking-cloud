@@ -1,4 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
+import type {MenuProps} from "antd";
 import {
     App,
     AutoComplete,
@@ -21,7 +22,6 @@ import {
     Tag,
     Typography,
 } from "antd";
-import type {MenuProps} from "antd";
 import {Body, getAllIconNames, Icon, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 
 import {createStyles} from "antd-style";
@@ -792,7 +792,7 @@ export default (): React.ReactNode => {
                                                           ].filter(Boolean) as any,
                                                       }}
                                                       trigger={["hover"]}
-                                                      arrow
+                                                      arrow={{pointAtCenter: true}}
                                                       placement="bottomRight">
                                                       <Button className={styles.infoActionBtn}
                                                               size="small">操作</Button>

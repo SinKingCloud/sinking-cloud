@@ -16,12 +16,8 @@ import (
 
 // Select 查询数据
 func (s *service) Select(where *file.SelectFile, query *page.Query) (*page.Result[*model.File], error) {
-	if where.Status != "" {
-		status, err := strconv.Atoi(where.Status)
-		if err != nil {
-			return nil, errors.New("状态参数错误")
-		}
-		if _, ok := file_status.Map()[status]; !ok {
+	if where.Status != nil {
+		if _, ok := file_status.Map()[*where.Status]; !ok {
 			return nil, errors.New("状态参数不合法")
 		}
 	}
@@ -90,11 +86,7 @@ func (s *service) UpdateByIds(ids []int64, data *file.UpdateFile) error {
 	}
 	update := &file.UpdateFile{}
 	if data.Status != nil {
-		if value, ok := data.Status.(int); ok {
-			if _, ok = file_status.Map()[value]; !ok {
-				return errors.New("文件状态不合法")
-			}
-		} else {
+		if _, ok := file_status.Map()[*data.Status]; !ok {
 			return errors.New("文件状态不合法")
 		}
 		update.Status = data.Status

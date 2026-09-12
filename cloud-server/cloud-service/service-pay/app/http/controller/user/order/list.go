@@ -3,6 +3,7 @@ package order
 import (
 	"service-pay/app/repository/order"
 	"service-pay/app/service"
+	"strconv"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
@@ -32,43 +33,63 @@ func (Controller) List(c *context.Context) {
 	u := c.GetUserInfo()
 	where := &order.SelectOrder{}
 	if form.Id != "" {
-		where.Id = form.Id
+		id, err := strconv.ParseInt(form.Id, 10, 64)
+		if err != nil {
+			c.Error("订单ID参数错误")
+			return
+		}
+		where.Id = &id
 	}
 	if form.Type != "" {
-		where.Type = form.Type
+		types, err := strconv.Atoi(form.Type)
+		if err != nil {
+			c.Error("订单类型参数错误")
+			return
+		}
+		where.Type = &types
 	}
 	if form.Status != "" {
-		where.Status = form.Status
+		status, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("订单状态参数错误")
+			return
+		}
+		where.Status = &status
 	}
 	if form.PayStatus != "" {
-		where.PayStatus = form.PayStatus
+		payStatus, err := strconv.Atoi(form.PayStatus)
+		if err != nil {
+			c.Error("支付状态参数错误")
+			return
+		}
+		where.PayStatus = &payStatus
 	}
 	if form.PayType != "" {
-		where.PayType = form.PayType
+		where.PayType = &form.PayType
 	}
 	if form.PayTimeStart != "" {
-		where.PayTimeStart = form.PayTimeStart
+		where.PayTimeStart = &form.PayTimeStart
 	}
 	if form.PayTimeEnd != "" {
-		where.PayTimeEnd = form.PayTimeEnd
+		where.PayTimeEnd = &form.PayTimeEnd
 	}
 	if form.CompleteTimeStart != "" {
-		where.CompleteTimeStart = form.CompleteTimeStart
+		where.CompleteTimeStart = &form.CompleteTimeStart
 	}
 	if form.CompleteTimeEnd != "" {
-		where.CompleteTimeEnd = form.CompleteTimeEnd
+		where.CompleteTimeEnd = &form.CompleteTimeEnd
 	}
 	if form.CreateTimeStart != "" {
-		where.CreateTimeStart = form.CreateTimeStart
+		where.CreateTimeStart = &form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where.CreateTimeEnd = form.CreateTimeEnd
+		where.CreateTimeEnd = &form.CreateTimeEnd
 	}
 	if form.UpdateTimeStart != "" {
-		where.UpdateTimeStart = form.UpdateTimeStart
+		where.UpdateTimeStart = &form.UpdateTimeStart
 	}
 	if form.UpdateTimeEnd != "" {
-		where.UpdateTimeEnd = form.UpdateTimeEnd
+		where.UpdateTimeEnd = &form.UpdateTimeEnd
 	}
 	data, err := service.Order.SelectByUserId(u.Id, where, query)
 	if err != nil {

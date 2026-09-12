@@ -32,7 +32,7 @@ func (Controller) Email(c *context.Context) {
 		return
 	}
 	if err = service.User.UpdateById(c.GetUserInfo().Id, &user.UpdateUser{
-		Email: form.Mail,
+		Email: &form.Mail,
 	}); err == nil {
 		c.Success("修改邮箱成功")
 	} else {

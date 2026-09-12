@@ -138,9 +138,10 @@ func (s *service) Read(userId int64, ids []int64) error {
 		return errors.New("消息列表不能为空")
 	}
 	readTime := str.DateTime(time.Now())
+	status := message_status.Read
 	if err := s.repositoryMessage.UpdateByIdsAndUserId(readIds, userId, &repositoryMessage.UpdateMessage{
-		Status:   message_status.Read,
-		ReadTime: readTime,
+		Status:   &status,
+		ReadTime: &readTime,
 	}); err != nil {
 		return err
 	}
@@ -154,9 +155,10 @@ func (s *service) ReadAll(userId int64) error {
 		return errors.New("用户信息错误")
 	}
 	readTime := str.DateTime(time.Now())
+	status := message_status.Read
 	if err := s.repositoryMessage.UpdateByIdsAndUserId(nil, userId, &repositoryMessage.UpdateMessage{
-		Status:   message_status.Read,
-		ReadTime: readTime,
+		Status:   &status,
+		ReadTime: &readTime,
 	}); err != nil {
 		return err
 	}
@@ -214,13 +216,9 @@ func (s *service) SelectByUserId(userId int64, where *repositoryMessage.SelectMe
 	if where == nil {
 		where = &repositoryMessage.SelectMessage{}
 	}
-	where.UserId = userId
-	if where.Status != "" {
-		status, err := strconv.Atoi(where.Status)
-		if err != nil {
-			return nil, errors.New("消息状态参数错误")
-		}
-		if _, ok := message_status.Map()[status]; !ok {
+	where.UserId = &userId
+	if where.Status != nil {
+		if _, ok := message_status.Map()[*where.Status]; !ok {
 			return nil, errors.New("消息状态参数不合法")
 		}
 	}
@@ -268,9 +266,10 @@ func (s *service) GetInfoByUserId(userId int64, id int64) (*Message, error) {
 	}
 	if info.Status == message_status.Unread {
 		readTime := str.DateTime(time.Now())
+		status := message_status.Read
 		err = s.repositoryMessage.UpdateByIdAndUserId(info.Id, userId, &repositoryMessage.UpdateMessage{
-			Status:   message_status.Read,
-			ReadTime: readTime,
+			Status:   &status,
+			ReadTime: &readTime,
 		})
 		if err != nil {
 			return nil, err

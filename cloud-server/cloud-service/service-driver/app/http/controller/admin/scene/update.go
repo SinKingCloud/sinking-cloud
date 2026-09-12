@@ -25,22 +25,37 @@ func (Controller) Update(c *context.Context) {
 	}
 	data := &scene.UpdateScene{}
 	if form.Name != "" {
-		data.Name = form.Name
+		data.Name = &form.Name
 	}
 	if form.MaxSize != "" {
-		data.MaxSize, _ = strconv.ParseInt(form.MaxSize, 10, 64)
+		maxSize, err := strconv.ParseInt(form.MaxSize, 10, 64)
+		if err != nil {
+			c.Error("最大限制(KB)参数错误")
+			return
+		}
+		data.MaxSize = &maxSize
 	}
 	if form.AllowExt != "" {
-		data.AllowExt = form.AllowExt
+		data.AllowExt = &form.AllowExt
 	}
 	if form.Remark != "" {
-		data.Remark = form.Remark
+		data.Remark = &form.Remark
 	}
 	if form.Login != "" {
-		data.Login, _ = strconv.Atoi(form.Login)
+		login, err := strconv.Atoi(form.Login)
+		if err != nil {
+			c.Error("登录限制参数错误")
+			return
+		}
+		data.Login = &login
 	}
 	if form.Status != "" {
-		data.Status, _ = strconv.Atoi(form.Status)
+		status, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		data.Status = &status
 	}
 	err := service.Scene.UpdateById(form.Id, data)
 	if err != nil {

@@ -291,8 +291,17 @@ func (s *service) SelectDataByUserId(userId int64, where *mindDataRepository.Sel
 	if where == nil {
 		where = &mindDataRepository.SelectMindData{}
 	}
-	where.UserId = userId
-	where.Keyword = strings.TrimSpace(where.Keyword)
+	where.UserId = &userId
+	if where.TypeId != nil && *where.TypeId <= 0 {
+		where.TypeId = nil
+	}
+	if where.Keyword != nil {
+		keyword := strings.TrimSpace(*where.Keyword)
+		where.Keyword = nil
+		if keyword != "" {
+			where.Keyword = &keyword
+		}
+	}
 	data, err := s.mindDataRepository.Select(where, query)
 	if err != nil {
 		return nil, errors.Join(errors.New("查询导图失败"), err)
@@ -344,47 +353,32 @@ func (s *service) UpdateData(userId int64, id int64, data *mindDataRepository.Up
 		return errors.New("参数错误")
 	}
 	update := &mindDataRepository.UpdateMindData{}
-	var typeId int64
-	hasTypeId := false
 	isPresetType := false
 	if data.TypeId != nil {
-		value, ok := data.TypeId.(int64)
-		if !ok {
+		_, isPresetType = mind_type.Map()[int(*data.TypeId)]
+		if !isPresetType && *data.TypeId <= 0 {
 			return errors.New("导图分类参数错误")
 		}
-		_, isPresetType = mind_type.Map()[int(value)]
-		if !isPresetType && value <= 0 {
-			return errors.New("导图分类参数错误")
-		}
-		typeId = value
-		hasTypeId = true
-		update.TypeId = value
+		update.TypeId = data.TypeId
 	}
 	if data.Title != nil {
-		value, ok := data.Title.(string)
-		if !ok {
-			return errors.New("导图标题参数错误")
-		}
-		value = strings.TrimSpace(value)
+		value := strings.TrimSpace(*data.Title)
 		if value == "" {
 			return errors.New("导图标题不能为空")
 		}
-		update.Title = value
+		update.Title = &value
 	}
 	if data.Describe != nil {
-		value, ok := data.Describe.(string)
-		if !ok {
-			return errors.New("导图描述参数错误")
-		}
-		update.Describe = strings.TrimSpace(value)
+		value := strings.TrimSpace(*data.Describe)
+		update.Describe = &value
 	}
-	if hasTypeId && !isPresetType {
+	if data.TypeId != nil && !isPresetType {
 		typeLockKey := constant.LockMindTypeOperate + strconv.FormatInt(userId, 10)
 		if !s.cache.Lock(typeLockKey, constant.LockTimeMindTypeOperate) {
 			return errors.New("系统繁忙,请稍候重试")
 		}
 		defer s.cache.UnLock(typeLockKey)
-		typeInfo, err := s.mindTypeRepository.FindByIdAndUserId(typeId, userId)
+		typeInfo, err := s.mindTypeRepository.FindByIdAndUserId(*data.TypeId, userId)
 		if err != nil {
 			return errors.Join(errors.New("获取导图分类失败"), err)
 		}

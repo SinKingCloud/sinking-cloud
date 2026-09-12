@@ -14,16 +14,16 @@ func (r *Repository) UpdateById(id int64, perm *UpdateChannel) error {
 	}
 	updates := make(map[string]interface{})
 	if perm.Type != nil {
-		updates["type"] = perm.Type
+		updates["type"] = *perm.Type
 	}
 	if perm.Name != nil {
-		updates["name"] = perm.Name
+		updates["name"] = *perm.Name
 	}
 	if perm.Config != nil {
-		updates["config"] = perm.Config
+		updates["config"] = *perm.Config
 	}
 	if perm.Status != nil {
-		updates["status"] = perm.Status
+		updates["status"] = *perm.Status
 	}
 	if len(updates) == 0 {
 		return nil

@@ -14,14 +14,14 @@ func (r *Repository) Select(where *SelectMindData, queryPage *page.Query) (*page
 	}
 	query := r.Database.Db.Model(&model.MindData{})
 	if where != nil {
-		if where.UserId > 0 {
-			query = query.Where("user_id = ?", where.UserId)
+		if where.UserId != nil {
+			query = query.Where("user_id = ?", *where.UserId)
 		}
-		if where.TypeId > 0 {
-			query = query.Where("type_id = ?", where.TypeId)
+		if where.TypeId != nil {
+			query = query.Where("type_id = ?", *where.TypeId)
 		}
-		if where.Keyword != "" {
-			keyword := "%" + where.Keyword + "%"
+		if where.Keyword != nil {
+			keyword := "%" + *where.Keyword + "%"
 			query = query.Where(clause.Or(
 				clause.Like{Column: clause.Column{Name: "title"}, Value: keyword},
 				clause.Like{Column: clause.Column{Name: "describe"}, Value: keyword},

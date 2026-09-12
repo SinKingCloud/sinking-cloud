@@ -15,28 +15,28 @@ func (r *Repository) UpdateById(id int64, data *UpdateRealAuth, tx ...*gorm.DB) 
 	}
 	updates := make(map[string]interface{})
 	if data.Type != nil {
-		updates["type"] = data.Type
+		updates["type"] = *data.Type
 	}
 	if data.CompanyName != nil {
-		updates["company_name"] = data.CompanyName
+		updates["company_name"] = *data.CompanyName
 	}
 	if data.CompanyNo != nil {
-		updates["company_no"] = data.CompanyNo
+		updates["company_no"] = *data.CompanyNo
 	}
 	if data.CardName != nil {
-		updates["card_name"] = data.CardName
+		updates["card_name"] = *data.CardName
 	}
 	if data.CardNo != nil {
-		updates["card_no"] = data.CardNo
+		updates["card_no"] = *data.CardNo
 	}
 	if data.Files != nil {
-		updates["files"] = data.Files
+		updates["files"] = *data.Files
 	}
 	if data.Status != nil {
-		updates["status"] = data.Status
+		updates["status"] = *data.Status
 	}
 	if data.AuthTime != nil {
-		updates["auth_time"] = data.AuthTime
+		updates["auth_time"] = *data.AuthTime
 	}
 	if len(updates) == 0 {
 		return nil

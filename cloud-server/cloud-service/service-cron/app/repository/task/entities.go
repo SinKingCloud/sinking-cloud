@@ -4,24 +4,24 @@ import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str
 
 // SelectTask 任务查询
 type SelectTask struct {
-	Type            string
-	Name            string
-	Status          string
-	Concurrent      string
-	CreateTimeStart string
-	CreateTimeEnd   string
-	UpdateTimeStart string
-	UpdateTimeEnd   string
+	Type            *int
+	Name            *string
+	Status          *int
+	Concurrent      *int
+	CreateTimeStart *string
+	CreateTimeEnd   *string
+	UpdateTimeStart *string
+	UpdateTimeEnd   *string
 }
 
 // UpdateTask 任务更新
 type UpdateTask struct {
-	Type       interface{}
-	Name       interface{}
-	Spec       interface{}
-	Script     interface{}
-	Concurrent interface{}
-	Status     interface{}
+	Type       *int
+	Name       *string
+	Spec       *string
+	Script     *string
+	Concurrent *int
+	Status     *int
 }
 
 // Task 计划任务

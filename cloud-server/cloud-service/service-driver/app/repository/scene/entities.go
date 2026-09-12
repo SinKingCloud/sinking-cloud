@@ -1,23 +1,23 @@
 package scene
 
 type SelectScene struct {
-	Name            string
-	ChannelId       string
-	Status          string
-	Login           string
-	Remark          string
-	CreateTimeStart string
-	CreateTimeEnd   string
-	UpdateTimeStart string
-	UpdateTimeEnd   string
+	Name            *string
+	ChannelId       *int64
+	Status          *int
+	Login           *int
+	Remark          *string
+	CreateTimeStart *string
+	CreateTimeEnd   *string
+	UpdateTimeStart *string
+	UpdateTimeEnd   *string
 }
 
 type UpdateScene struct {
-	Name      interface{}
-	MaxSize   interface{}
-	AllowExt  interface{}
-	Login     interface{}
-	ChannelId interface{}
-	Remark    interface{}
-	Status    interface{}
+	Name      *string
+	MaxSize   *int64
+	AllowExt  *string
+	Login     *int
+	ChannelId *int64
+	Remark    *string
+	Status    *int
 }

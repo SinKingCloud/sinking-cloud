@@ -3,6 +3,7 @@ package log
 import (
 	"service-pay/app/repository/order_log"
 	"service-pay/app/service"
+	"strconv"
 
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
@@ -24,22 +25,42 @@ func (Controller) List(c *context.Context) {
 	}
 	where := &order_log.SelectOrderLog{}
 	if form.OrderId != "" {
-		where.OrderId = form.OrderId
+		orderId, err := strconv.ParseInt(form.OrderId, 10, 64)
+		if err != nil {
+			c.Error("订单ID参数错误")
+			return
+		}
+		where.OrderId = &orderId
 	}
 	if form.OperatorId != "" {
-		where.OperatorId = form.OperatorId
+		operatorId, err := strconv.ParseInt(form.OperatorId, 10, 64)
+		if err != nil {
+			c.Error("操作人ID参数错误")
+			return
+		}
+		where.OperatorId = &operatorId
 	}
 	if form.OperatorType != "" {
-		where.OperatorType = form.OperatorType
+		operatorType, err := strconv.Atoi(form.OperatorType)
+		if err != nil {
+			c.Error("操作人类型参数错误")
+			return
+		}
+		where.OperatorType = &operatorType
 	}
 	if form.Type != "" {
-		where.Type = form.Type
+		types, err := strconv.Atoi(form.Type)
+		if err != nil {
+			c.Error("日志类型参数错误")
+			return
+		}
+		where.Type = &types
 	}
 	if form.CreateTimeStart != "" {
-		where.CreateTimeStart = form.CreateTimeStart
+		where.CreateTimeStart = &form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where.CreateTimeEnd = form.CreateTimeEnd
+		where.CreateTimeEnd = &form.CreateTimeEnd
 	}
 	data, err := service.Order.SelectLog(where, query)
 	if err != nil {

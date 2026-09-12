@@ -16,19 +16,19 @@ func (r *Repository) UpdateById(id int64, data *UpdateMenu, tx ...*gorm.DB) erro
 	}
 	updates := make(map[string]interface{})
 	if data.ParentId != nil {
-		updates["parent_id"] = data.ParentId
+		updates["parent_id"] = *data.ParentId
 	}
 	if data.Name != nil {
-		updates["name"] = data.Name
+		updates["name"] = *data.Name
 	}
 	if data.Icon != nil {
-		updates["icon"] = data.Icon
+		updates["icon"] = *data.Icon
 	}
 	if data.Sort != nil {
-		updates["sort"] = data.Sort
+		updates["sort"] = *data.Sort
 	}
 	if data.Status != nil {
-		updates["status"] = data.Status
+		updates["status"] = *data.Status
 	}
 	if len(updates) == 0 {
 		return nil

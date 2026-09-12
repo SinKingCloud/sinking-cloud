@@ -10,14 +10,14 @@ import (
 func (r *Repository) Select(where *SelectLog, queryPage *page.Query) (*page.Result[*model.Log], error) {
 	query := r.Database.Db.Model(&model.Log{})
 	if where != nil {
-		if where.TaskId != "" {
-			query = query.Where("task_id = ?", where.TaskId)
+		if where.TaskId != nil {
+			query = query.Where("task_id = ?", *where.TaskId)
 		}
-		if where.CreateTimeStart != "" {
-			query = query.Where("create_time >= ?", where.CreateTimeStart)
+		if where.CreateTimeStart != nil {
+			query = query.Where("create_time >= ?", *where.CreateTimeStart)
 		}
-		if where.CreateTimeEnd != "" {
-			query = query.Where("create_time <= ?", where.CreateTimeEnd)
+		if where.CreateTimeEnd != nil {
+			query = query.Where("create_time <= ?", *where.CreateTimeEnd)
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage)

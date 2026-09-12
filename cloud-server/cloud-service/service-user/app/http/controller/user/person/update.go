@@ -19,10 +19,10 @@ func (Controller) Update(c *context.Context) {
 	}
 	data := &user.UpdateUser{}
 	if form.Avatar != "" {
-		data.Avatar = form.Avatar
+		data.Avatar = &form.Avatar
 	}
 	if form.NickName != "" {
-		data.NickName = form.NickName
+		data.NickName = &form.NickName
 	}
 	if err := service.User.UpdateById(c.GetUserInfo().Id, data); err == nil {
 		c.Success("修改成功")
