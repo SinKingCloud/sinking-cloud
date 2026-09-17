@@ -1,6 +1,6 @@
 import React, {useRef, useState} from 'react';
 import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
-import {App, Button, Col, Dropdown, Form, Input, Result, Row, Select, Spin} from "antd";
+import {App, Button, Col, Dropdown, Form, Input, Result, Row, Select, Spin, Tooltip, Typography} from "antd";
 import {createStyles} from "antd-style";
 import defaultSettings from "@/../config/defaultSettings";
 import {buildOptions, buildValueEnum, dateRangeTransform, emptyTableData, getData, normalizeIds} from "@/utils/page";
@@ -9,6 +9,8 @@ import useControl from "@/utils/control";
 import {AdminControlCode} from "@/utils/permission";
 import AceEditor from "@/pages/components/ace-editor";
 import {createCron, deleteCron, getCronInfo, getCronList, getCronLog, runCron, updateCron} from "@/service/admin/cron";
+import Schedule from "./components/schedule";
+import {describeSchedule, parseSchedule} from "./utils";
 
 const AcePath = defaultSettings?.basePath + "ace/" || "/ace/";
 
@@ -83,6 +85,7 @@ export default (): React.ReactNode => {
         form.resetFields();
         form.setFieldsValue({
             type: 0,
+            spec: "0 */5 * * * *",
             status: 0,
             concurrent: 0,
         });
@@ -158,7 +161,7 @@ export default (): React.ReactNode => {
         }
         const body: any = {
             name: values?.name,
-            spec: values?.spec,
+            spec: String(values?.spec || "").trim(),
             script,
         };
         if (isEditMode) {
@@ -315,12 +318,18 @@ export default (): React.ReactNode => {
             valueEnum: typeValueEnum,
         },
         {
-            title: "任务表达式",
+            title: "执行周期",
             dataIndex: "spec",
-            tip: "任务表达式",
+            tip: "执行周期",
             valueType: "text",
-            copyable: true,
             hideInSearch: true,
+            render: (_: any, record: any) => (
+                <Tooltip title={record?.spec}>
+                    <Typography.Text copyable={{text: record?.spec || ""}}>
+                        {describeSchedule(parseSchedule(record?.spec))}
+                    </Typography.Text>
+                </Tooltip>
+            ),
         },
         {
             title: "允许并发",
@@ -460,20 +469,10 @@ export default (): React.ReactNode => {
                             </div>
                         ) : (
                             <>
-                                <Row gutter={16}>
-                                    <Col xs={24} sm={12}>
-                                        <Form.Item name="name" label="任务名称"
-                                                   rules={[{required: true, message: "请输入任务名称"}]}>
-                                            <Input placeholder="请输入任务名称" maxLength={100} showCount/>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col xs={24} sm={12}>
-                                        <Form.Item name="spec" label="任务表达式"
-                                                   rules={[{required: true, message: "请输入任务表达式"}]}>
-                                            <Input placeholder="请输入任务表达式，例如 */5 * * * *"/>
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
+                                <Form.Item name="name" label="任务名称"
+                                           rules={[{required: true, message: "请输入任务名称"}]}>
+                                    <Input placeholder="请输入任务名称" maxLength={100} showCount/>
+                                </Form.Item>
                                 <Row gutter={16}>
                                     <Col xs={24} sm={8}>
                                         <Form.Item name="type" label="任务类型"
@@ -501,6 +500,10 @@ export default (): React.ReactNode => {
                                         </Form.Item>
                                     </Col>
                                 </Row>
+                                <Form.Item name="spec" label="执行周期"
+                                           rules={[{required: true, whitespace: true, message: "请设置执行周期"}]}>
+                                    <Schedule/>
+                                </Form.Item>
                                 {isScriptTask ? (
                                     <Form.Item label="任务内容" required>
                                         <AceEditor
@@ -509,7 +512,7 @@ export default (): React.ReactNode => {
                                             showPrintMargin={false}
                                             theme="monokai"
                                             width="100%"
-                                            height={420}
+                                            height={260}
                                             acePath={AcePath}
                                             onChange={(value: string) => setScriptContent(value)}
                                             className={styles?.ace}
