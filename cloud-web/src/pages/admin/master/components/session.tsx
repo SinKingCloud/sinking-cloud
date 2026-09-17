@@ -1,10 +1,10 @@
 import React, {forwardRef, useImperativeHandle, useRef, useState} from "react";
-import {App, Button, Space, Typography} from "antd";
-import {ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
+import {App, Button, Grid, Typography} from "antd";
 import {createStyles} from "antd-style";
-import {getData} from "@/utils/page";
+import type {ModalTableProps, ModalTableRef} from "sinking-antd";
+import {ModalTable, Title} from "sinking-antd";
+import {emptyTableData, getData} from "@/utils/page";
 import {getMasterSessionList, logoutMasterSession} from "@/service/admin/master";
-import {dateRangeTransform, emptyTableData} from "@/utils/page";
 import {AdminControlCode} from "@/utils/permission";
 
 export type MasterSessionRef = {
@@ -15,33 +15,69 @@ type MasterSessionProps = {
     control: any;
 };
 
-const useStyles: any = createStyles(({css}: any) => ({
-    timeColumn: css`
-        min-width: 180px;
-    `,
-    timeRow: css`
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        white-space: nowrap;
-    `,
-    labelText: css`
-        flex: none;
-        min-width: 40px;
-        font-size: 12px;
-    `,
-    smallText: css`
-        flex: 1;
-        min-width: 0;
-        font-size: 12px;
+const useStyles = createStyles(({css, token}) => ({
+    table: css`
+        && .ant-table-thead > tr > th {
+            font-size: ${token.fontSizeSM + 1}px;
+        }
+
+        && .ant-table-tbody > tr > td,
+        && .ant-table-tbody .ant-typography,
+        && .ant-table-tbody .ant-btn {
+            font-size: ${token.fontSizeSM + 1}px;
+        }
+
+        .session-source {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .session-source .ant-typography {
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        && .session-location.ant-typography {
+            font-size: ${token.fontSizeSM}px;
+        }
+
+        .session-time {
+            font-size: ${token.fontSizeSM}px;
+            color: ${token.colorTextSecondary};
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .session-time-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            line-height: 18px;
+        }
+
+        .session-time-label {
+            flex: none;
+            color: ${token.colorTextTertiary};
+        }
+
+        .ant-typography-copy {
+            margin-inline-start: 6px;
+            font-size: ${token.fontSizeSM}px;
+            color: ${token.colorTextTertiary};
+        }
+
+        .ant-typography-copy:hover { color: ${token.colorPrimary}; }
     `,
 }));
 
 const MasterSession = forwardRef<MasterSessionRef, MasterSessionProps>(({control}, ref) => {
     const {message, modal} = App.useApp();
     const {styles} = useStyles();
-    const modalRef = useRef<ProModalRef>({} as ProModalRef);
-    const tableRef = useRef<ProTableRef>({} as ProTableRef);
+    const screens = Grid.useBreakpoint();
+    const tableRef = useRef<ModalTableRef | null>(null);
     const [userInfo, setUserInfo] = useState<any>();
     const hasSessionControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_SESSION);
     const hasLogoutControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_LOGOUT);
@@ -53,8 +89,7 @@ const MasterSession = forwardRef<MasterSessionRef, MasterSessionProps>(({control
                 return;
             }
             setUserInfo(record || {});
-            modalRef.current?.show();
-            setTimeout(() => tableRef.current?.refreshTableData?.(), 0);
+            tableRef.current?.show();
         },
     }));
 
@@ -84,7 +119,7 @@ const MasterSession = forwardRef<MasterSessionRef, MasterSessionProps>(({control
                         tokens: nextTokens,
                     },
                     onSuccess: (res: any) => {
-                        tableRef.current?.refreshTableData?.();
+                        tableRef.current?.reload();
                         tableRef.current?.clearSelectedRows?.();
                         message?.success(res?.message || "注销成功");
                     },
@@ -96,70 +131,55 @@ const MasterSession = forwardRef<MasterSessionRef, MasterSessionProps>(({control
         } as any);
     };
 
-    const columns: any[] = [
+    const columns: ModalTableProps["columns"] = [
         {
             title: "登录设备",
             dataIndex: "device",
-            tip: "登录设备",
-            valueType: "text",
-            copyable: true,
+            width: 180,
+            render: (value: string) => (
+                <Typography.Text copyable={value ? {text: value} : false}>{value || "-"}</Typography.Text>
+            ),
         },
         {
-            title: "登录IP",
+            title: "登录来源",
             dataIndex: "ip",
-            tip: "登录IP",
-            valueType: "text",
-            copyable: true,
-        },
-        {
-            title: "登录地点",
-            dataIndex: "location",
-            tip: "登录地点",
-            valueType: "text",
-            copyable: true,
-        },
-        {
-            title: "登录时间",
-            dataIndex: "create_time",
-            tip: "登录时间",
-            valueType: "dateRange",
-            sorter: true,
-            hideInTable: true,
-            transform: dateRangeTransform("create_time"),
-        },
-        {
-            title: "过期时间",
-            dataIndex: "expire_time",
-            tip: "会话过期时间",
-            valueType: "dateRange",
-            sorter: true,
-            hideInTable: true,
-            transform: dateRangeTransform("expire_time"),
+            width: 190,
+            render: (value: string, record: any) => (
+                <div className="session-source">
+                    <Typography.Text className="session-ip" copyable={value ? {text: value} : false}>
+                        {value || "-"}
+                    </Typography.Text>
+                    <Typography.Text className="session-location" type="secondary"
+                                     copyable={record?.location ? {text: record.location} : false}>
+                        {record?.location || "-"}
+                    </Typography.Text>
+                </div>
+            ),
         },
         {
             title: "相关时间",
-            dataIndex: "time_info",
-            tip: "登录时间/过期时间",
-            hideInSearch: true,
-            render: (_: any, record: any) => (
-                <Space orientation="vertical" size={2} className={styles.timeColumn}>
-                    <div className={styles.timeRow}>
-                        <Typography.Text type="secondary" className={styles.labelText}>登录:</Typography.Text>
-                        <Typography.Text className={styles.smallText}>{record?.create_time || "-"}</Typography.Text>
+            dataIndex: "create_time",
+            width: 205,
+            sorter: true,
+            showSorterTooltip: {title: "按登录时间排序"},
+            render: (_: unknown, record: any) => (
+                <div className="session-source session-time">
+                    <div className="session-time-row">
+                        <span className="session-time-label">登录于:</span>
+                        <span>{record?.create_time || "-"}</span>
                     </div>
-                    <div className={styles.timeRow}>
-                        <Typography.Text type="secondary" className={styles.labelText}>过期:</Typography.Text>
-                        <Typography.Text className={styles.smallText}>{record?.expire_time || "-"}</Typography.Text>
+                    <div className="session-time-row">
+                        <span className="session-time-label">过期于:</span>
+                        <span>{record?.expire_time || "-"}</span>
                     </div>
-                </Space>
+                </div>
             ),
         },
         ...(hasLogoutControl ? [{
             title: "操作",
-            valueType: "option",
             key: "option",
-            width: 100,
-            hideInSearch: true,
+            width: 80,
+            fixed: "right" as const,
             render: (_: any, record: any) => (
                 <Button size="small" danger onClick={() => logoutSession([record?.token])}>
                     注销
@@ -169,48 +189,61 @@ const MasterSession = forwardRef<MasterSessionRef, MasterSessionProps>(({control
     ];
 
     return (
-        <ProModal
-            ref={modalRef}
+        <ModalTable
+            ref={tableRef}
+            className={styles.table}
             title={<Title>登录会话</Title>}
-            width={910}
+            width={780}
+            minHeight={440}
+            scrollMode="modal"
             modalProps={{
-                footer: null,
                 style: {
-                    top: 100,
-                    paddingBottom: 100,
+                    top: screens.md ? 100 : 24,
+                    paddingBottom: screens.md ? 100 : 24,
+                    maxWidth: "calc(100vw - 24px)",
                 },
-                mask: {
-                    closable: true,
-                },
-                destroyOnHidden: false,
                 afterClose: () => {
                     setUserInfo(undefined);
-                    tableRef.current?.clearSelectedRows?.();
                 },
-            } as any}>
-            <ProTable
-                ref={tableRef}
-                rowKey="token"
-                columns={columns}
-                defaultPage={1}
-                defaultPageSize={10}
-                rowSelection={hasLogoutControl ? {
-                    fixed: true,
-                    rightExtra: [
-                        <Button key="logout" type="primary" danger ghost
-                                onClick={() => logoutSession(tableRef.current?.getSelectedRowKeys?.() as any)}>
-                            批量注销
-                        </Button>,
-                    ],
-                } : false}
-                request={(params, sort) => {
-                    if (!hasSessionControl || !userInfo?.id) {
-                        return Promise.resolve(emptyTableData);
-                    }
-                    return getData({...params, id: Number(userInfo.id)}, sort, getMasterSessionList);
-                }}
-            />
-        </ProModal>
+            }}
+            rowKey="token"
+            columns={columns}
+            scroll={{x: hasLogoutControl ? 700 : 576}}
+            defaultPageSize={10}
+            defaultSort={{create_time: "descend"}}
+            params={{id: Number(userInfo?.id)}}
+            requestEnabled={hasSessionControl && !!userInfo?.id}
+            request={(params, sort) => {
+                if (!hasSessionControl || !userInfo?.id) {
+                    return Promise.resolve(emptyTableData);
+                }
+                return getData({...params}, sort, getMasterSessionList);
+            }}
+            search={{
+                placeholder: "搜索登录设备",
+                ariaLabel: "搜索会话",
+                maxLength: 100,
+                fields: [
+                    {value: "device", label: "设备", placeholder: "搜索登录设备"},
+                    {value: "ip", label: "IP", placeholder: "搜索登录 IP", maxLength: 50},
+                    {value: "location", label: "地点", placeholder: "搜索登录地点"},
+                ],
+            }}
+            filters={[{type: "date", name: "create_time", label: "登录时间筛选"}]}
+            toolbar={{refresh: {ariaLabel: "刷新会话列表"}}}
+            rowSelection={hasLogoutControl ? {
+                fixed: true,
+                columnWidth: 44,
+                actions: (keys) => [{
+                    key: "logout",
+                    type: "button",
+                    label: "批量注销",
+                    icon: "LogoutOutlined",
+                    danger: true,
+                    onClick: () => logoutSession(keys),
+                }],
+            } : false}
+            pagination={{unit: "条"}}/>
     );
 });
 
