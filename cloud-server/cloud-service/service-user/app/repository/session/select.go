@@ -16,6 +16,10 @@ func (r *Repository) Select(where *SelectSession, queryPage *page.Query) (*page.
 		if where.UserId != nil {
 			query = query.Where("user_id = ?", *where.UserId)
 		}
+		if where.Keyword != nil {
+			keyword := "%" + *where.Keyword + "%"
+			query = query.Where("(device LIKE ? OR ip LIKE ? OR location LIKE ?)", keyword, keyword, keyword)
+		}
 		if where.Device != nil {
 			query = query.Where("device LIKE ?", "%"+*where.Device+"%")
 		}

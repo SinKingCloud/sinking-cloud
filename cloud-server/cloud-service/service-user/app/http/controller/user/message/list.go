@@ -12,7 +12,9 @@ import (
 func (Controller) List(c *context.Context) {
 	query := c.ValidatePage("id", "desc", "id,create_time,update_time", "id,status,read_time,create_time,update_time")
 	var form struct {
+		Keyword         string `json:"keyword" default:"" validate:"omitempty,max=100" label:"关键词"`
 		Title           string `json:"title" default:"" validate:"omitempty,max=100" label:"消息标题"`
+		Content         string `json:"content" default:"" validate:"omitempty,max=100" label:"消息内容"`
 		Status          string `json:"status" default:"" validate:"omitempty,numeric" label:"消息状态"`
 		ReadTimeStart   string `json:"read_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"已读起始时间"`
 		ReadTimeEnd     string `json:"read_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"已读结束时间"`
@@ -26,8 +28,14 @@ func (Controller) List(c *context.Context) {
 		return
 	}
 	where := &repositoryMessage.SelectMessage{}
+	if form.Keyword != "" {
+		where.Keyword = &form.Keyword
+	}
 	if form.Title != "" {
 		where.Title = &form.Title
+	}
+	if form.Content != "" {
+		where.Content = &form.Content
 	}
 	if form.Status != "" {
 		status, err := strconv.Atoi(form.Status)

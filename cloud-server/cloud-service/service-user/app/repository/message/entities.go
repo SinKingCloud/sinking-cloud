@@ -5,7 +5,9 @@ import "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str
 // SelectMessage 消息查询
 type SelectMessage struct {
 	UserId          *int64
+	Keyword         *string
 	Title           *string
+	Content         *string
 	Status          *int
 	ReadTimeStart   *string
 	ReadTimeEnd     *string

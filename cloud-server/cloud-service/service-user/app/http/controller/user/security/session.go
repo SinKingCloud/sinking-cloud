@@ -11,6 +11,7 @@ import (
 func (Controller) Session(c *context.Context) {
 	query := c.ValidatePage("create_time", "desc", "create_time,update_time", "create_time,update_time,expire_time")
 	var form struct {
+		Keyword         string `json:"keyword" default:"" validate:"omitempty,max=100" label:"关键词"`
 		Device          string `json:"device" default:"" validate:"omitempty,max=100" label:"设备"`
 		Ip              string `json:"ip" default:"" validate:"omitempty,max=50" label:"IP"`
 		Location        string `json:"location" default:"" validate:"omitempty,max=100" label:"登录地点"`
@@ -26,6 +27,9 @@ func (Controller) Session(c *context.Context) {
 		return
 	}
 	where := &sessionRepository.SelectSession{}
+	if form.Keyword != "" {
+		where.Keyword = &form.Keyword
+	}
 	if form.Device != "" {
 		where.Device = &form.Device
 	}

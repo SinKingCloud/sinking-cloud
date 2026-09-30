@@ -13,8 +13,15 @@ func (r *Repository) Select(where *SelectMessage, queryPage *page.Query) (*page.
 		if where.UserId != nil {
 			query = query.Where("user_id = ?", *where.UserId)
 		}
+		if where.Keyword != nil {
+			keyword := "%" + *where.Keyword + "%"
+			query = query.Where("(title LIKE ? OR content LIKE ?)", keyword, keyword)
+		}
 		if where.Title != nil {
 			query = query.Where("title LIKE ?", "%"+*where.Title+"%")
+		}
+		if where.Content != nil {
+			query = query.Where("content LIKE ?", "%"+*where.Content+"%")
 		}
 		if where.Status != nil {
 			query = query.Where("status = ?", *where.Status)
