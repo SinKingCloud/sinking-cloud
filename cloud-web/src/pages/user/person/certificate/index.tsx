@@ -40,10 +40,6 @@ const STEP_ITEMS = [
 
 const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props: any = {}) => {
     const isCompactMode = props?.isCompactMode || false;
-    const panelBg = isDarkMode
-        ? `linear-gradient(135deg, color-mix(in srgb, ${token.colorPrimary} 8%, ${token.colorBgContainer}) 0%, ${token.colorBgContainer} 100%)`
-        : token.colorFillAlter;
-
     return {
         page: css`
             width: 100%;
@@ -73,51 +69,21 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
             position: relative;
             display: grid;
             grid-template-columns: minmax(0, 1fr) 260px;
+            align-items: center;
             gap: ${isCompactMode ? 16 : 20}px;
-            padding: ${isCompactMode ? "20px" : "26px"};
+            min-height: ${isCompactMode ? 159 : 185}px;
+            padding: ${isCompactMode ? 20 : 26}px;
             overflow: hidden;
-            border-bottom: 1px solid ${token.colorBorderSecondary};
-            background: ${panelBg};
+            background: ${isDarkMode
+                ? `linear-gradient(135deg, color-mix(in srgb, ${token.colorPrimary} 9%, ${token.colorBgContainer}) 0%, ${token.colorBgContainer} 100%)`
+                : token.colorFillAlter};
             isolation: isolate;
-
-            &::before {
-                content: '';
-                position: absolute;
-                inset: -120px -160px;
-                background: radial-gradient(circle at 16% 20%, ${token.colorPrimaryBgHover} 0%, transparent 34%),
-                radial-gradient(circle at 82% 28%, ${token.colorPrimaryBg} 0%, transparent 32%),
-                radial-gradient(circle at 70% 92%, ${token.colorPrimaryBorder} 0%, transparent 36%);
-                opacity: ${isDarkMode ? 0.32 : 0.68};
-                filter: blur(2px);
-                transform: rotate(-6deg);
-                z-index: -2;
-            }
-
-            &::after {
-                content: '';
-                position: absolute;
-                right: -190px;
-                bottom: -220px;
-                width: 560px;
-                height: 560px;
-                border-radius: 50%;
-                background: radial-gradient(circle, ${token.colorPrimaryBgHover} 0%, transparent 48%),
-                conic-gradient(from 36deg, transparent 0 14%, ${token.colorPrimaryBorder} 22%, transparent 38%, ${token.colorPrimaryBgHover} 56%, transparent 76%, ${token.colorPrimaryBg} 88%, transparent 100%);
-                filter: blur(58px);
-                opacity: ${isDarkMode ? 0.16 : 0.36};
-                z-index: -1;
-            }
-
-            ${responsive.mobile} {
-                grid-template-columns: 1fr;
-                gap: ${isCompactMode ? 14 : 16}px;
-                padding: ${isCompactMode ? 18 : 20}px;
-            }
 
             @media (max-width: 900px) {
                 grid-template-columns: 1fr;
+                min-height: auto;
                 gap: ${isCompactMode ? 14 : 16}px;
-                padding: ${isCompactMode ? "18px" : "20px"};
+                padding: ${isCompactMode ? 18 : 20}px;
             }
         `,
         heroMain: css`
@@ -126,11 +92,10 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
             min-width: 0;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             gap: ${isCompactMode ? 8 : 10}px;
 
-            .hero-title {
-                min-width: 0;
+            h1 {
+                margin: 0;
                 color: ${token.colorText};
                 font-size: ${isCompactMode ? 26 : 28}px;
                 font-weight: 700;
@@ -138,29 +103,102 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
                 letter-spacing: 0;
             }
 
-            .desc {
+            p {
                 max-width: 600px;
+                margin: 0;
                 color: ${token.colorTextSecondary};
                 font-size: 13px;
                 line-height: 22px;
             }
 
-            ${responsive.mobile} {
-                .hero-title {
-                    font-size: ${isCompactMode ? 23 : 24}px;
-                    line-height: ${isCompactMode ? 31 : 32}px;
-                }
-            }
-
             @media (max-width: 560px) {
-                .hero-title {
+                h1 {
                     font-size: ${isCompactMode ? 22 : 23}px;
                     line-height: ${isCompactMode ? 30 : 31}px;
                 }
 
-                .desc {
+                p {
                     font-size: 12px;
                     line-height: 20px;
+                }
+            }
+        `,
+        headerDecor: css`
+            position: absolute;
+            z-index: 0;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+
+            .header-ambient,
+            .header-shine,
+            .header-watermark {
+                position: absolute;
+                pointer-events: none;
+            }
+
+            .header-ambient {
+                inset: 0;
+                z-index: 0;
+            }
+
+            .header-ambient::before {
+                content: '';
+                position: absolute;
+                inset: -78px;
+                background:
+                    linear-gradient(135deg,
+                        ${isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 42%, transparent)` : token.colorPrimaryBgHover} 0%,
+                        ${isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 22%, transparent)` : token.colorPrimaryBg} 44%,
+                        transparent 76%),
+                    linear-gradient(30deg, transparent 18%,
+                        ${isDarkMode ? "rgba(34,211,238,0.16)" : token.colorPrimaryBg} 72%, transparent 100%);
+                opacity: ${isDarkMode ? 0.42 : 0.58};
+                filter: blur(24px);
+                transform: rotate(-7deg) translate3d(-18px, -12px, 0);
+                -webkit-mask-image: linear-gradient(135deg, rgba(0,0,0,0.82), rgba(0,0,0,0.34) 58%, transparent 100%);
+                mask-image: linear-gradient(135deg, rgba(0,0,0,0.82), rgba(0,0,0,0.34) 58%, transparent 100%);
+            }
+
+            .header-shine {
+                inset: 0;
+                z-index: 1;
+                opacity: ${isDarkMode ? 0.20 : 0.34};
+                background: linear-gradient(110deg, transparent 16%,
+                    ${isDarkMode ? "rgba(34,211,238,0.18)" : "rgba(255,255,255,0.70)"} 58%, transparent 96%);
+                mix-blend-mode: ${isDarkMode ? "screen" : "normal"};
+            }
+
+            .header-watermark {
+                right: -78px;
+                bottom: -104px;
+                z-index: 1;
+                color: ${token.colorPrimary};
+                font-size: 320px;
+                line-height: 1;
+                opacity: ${isDarkMode ? 0.17 : 0.14};
+                transform: rotate(-24deg);
+                filter: blur(20px);
+            }
+
+            @media (max-width: 900px) {
+                .header-watermark {
+                    right: -62px;
+                    bottom: -90px;
+                    font-size: 260px;
+                }
+            }
+
+            @media (max-width: 560px) {
+                .header-ambient::before {
+                    inset: -54px;
+                }
+
+                .header-watermark {
+                    right: -48px;
+                    bottom: -68px;
+                    font-size: 210px;
+                    filter: blur(18px);
                 }
             }
         `,
@@ -218,17 +256,6 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
                 width: 100%;
                 height: 100%;
                 display: block;
-            }
-
-            .visual-icon::before {
-                content: '';
-                position: absolute;
-                inset: -34px;
-                border-radius: 50%;
-                background: radial-gradient(circle, ${token.colorPrimaryBgHover}, transparent 68%);
-                filter: blur(24px);
-                opacity: ${isDarkMode ? 0.18 : 0.32};
-                z-index: -1;
             }
 
             @media (max-width: 900px) {
@@ -1145,12 +1172,15 @@ export default (): React.ReactNode => {
             />
             <Row className={styles.page}>
                 <Card className={styles.shell} variant="borderless" styles={{body: {padding: 0}}}>
-                    <div className={styles.hero}>
+                    <section className={styles.hero}>
+<div className={styles.headerDecor} aria-hidden="true">
+                            <span className="header-ambient"/>
+                            <span className="header-shine"/>
+                            <span className="header-watermark"><Icon type="SafetyCertificateOutlined"/></span>
+                        </div>
                         <div className={styles.heroMain}>
-                            <div className="hero-title">实名认证</div>
-                            <div className="desc">
-                                依据真实身份完成账户核验，用于提升账户安全等级，并满足资金、订单等关键业务的合规校验要求。
-                            </div>
+                            <h1>实名认证</h1>
+                            <p>依据真实身份完成账户核验，用于提升账户安全等级，并满足资金、订单等关键业务的合规校验要求。</p>
                         </div>
                         <div className={styles.heroVisual}>
                             <div className="visual-info">
@@ -1219,7 +1249,7 @@ export default (): React.ReactNode => {
                                 </svg>
                             </div>
                         </div>
-                    </div>
+                    </section>
                     <div className={styles.workspace}>
                         <div className={styles.guide}>
                             <div className="guide-title">认证流程</div>

@@ -1,8 +1,9 @@
-import React, {useEffect, useRef, useState} from "react";
-import {App, Button, Card, Dropdown, Space, Spin, Tabs, Tag, Tooltip} from "antd";
+import React, {useRef, useState} from "react";
+import {App, Button, Dropdown, Spin, Tag, Tooltip} from "antd";
 import {createStyles} from "antd-style";
-import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
-import {getData} from "@/utils/page";
+import type {PageTableProps, PageTableRef, ProModalRef} from "sinking-antd";
+import {Body, Icon, PageTable, ProModal, Title, useTheme} from "sinking-antd";
+import {getParams} from "@/utils/page";
 import {ago} from "@/utils/time";
 import {
     clearMessage,
@@ -15,15 +16,7 @@ import {
 
 const MESSAGE_STATUS_UNREAD = 0;
 const MESSAGE_STATUS_READ = 1;
-const MESSAGE_TAB_ALL = "all";
-const MESSAGE_TAB_UNREAD = "unread";
-const MESSAGE_TAB_READ = "read";
 const statusText: Record<string, string> = {"0": "未读", "1": "已读"};
-const messageTabs = [
-    {key: MESSAGE_TAB_ALL, label: "全部消息"},
-    {key: MESSAGE_TAB_UNREAD, label: "未读消息"},
-    {key: MESSAGE_TAB_READ, label: "已读消息"},
-];
 
 type UserMessage = {
     id: number | string;
@@ -35,65 +28,173 @@ type UserMessage = {
     update_time?: string;
 };
 
-const useStyles = createStyles(({css, token, isDarkMode}: any): any => ({
+const useStyles = createStyles(({css, token, isDarkMode}: any, {isCompactMode}: {isCompactMode: boolean}): any => ({
     page: css`
         width: 100%;
         max-width: 1450px;
         margin: 0 auto;
     `,
-    navCard: css`
-        margin-bottom: 12px;
+    header: css`
+        position: relative;
+        display: flex;
+        align-items: center;
+        min-height: ${isCompactMode ? 159 : 185}px;
+        padding: ${isCompactMode ? 20 : 26}px;
+        overflow: hidden;
+        background: ${isDarkMode
+            ? `linear-gradient(135deg, color-mix(in srgb, ${token.colorPrimary} 9%, ${token.colorBgContainer}) 0%, ${token.colorBgContainer} 100%)`
+            : token.colorFillAlter};
+        isolation: isolate;
 
-        .ant-card-body {
-            padding: 0 15px;
+        @media (max-width: 900px) {
+            min-height: auto;
+            padding: ${isCompactMode ? 18 : 20}px;
         }
     `,
-    tabs: css`
-        width: 100%;
+    headerMain: css`
+        position: relative;
+        z-index: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: ${isCompactMode ? 8 : 10}px;
 
-        .ant-tabs-nav {
+        h1 {
             margin: 0;
+            color: ${token.colorText};
+            font-size: ${isCompactMode ? 26 : 28}px;
+            font-weight: 700;
+            line-height: ${isCompactMode ? 34 : 36}px;
+            letter-spacing: 0;
         }
 
-        .ant-tabs-nav::before {
-            display: none;
-        }
-
-        .ant-tabs-nav-list {
-            gap: 18px;
-        }
-
-        .ant-tabs-tab {
-            margin: 0 !important;
-            padding: 15px 0;
+        p {
+            max-width: 600px;
+            margin: 0;
             color: ${token.colorTextSecondary};
+            font-size: 13px;
+            line-height: 22px;
         }
 
-        .ant-tabs-tab + .ant-tabs-tab {
-            margin-left: 0;
+        @media (max-width: 560px) {
+            h1 {
+                font-size: ${isCompactMode ? 22 : 23}px;
+                line-height: ${isCompactMode ? 30 : 31}px;
+            }
+
+            p {
+                font-size: 12px;
+                line-height: 20px;
+            }
+        }
+    `,
+    headerDecor: css`
+        position: absolute;
+        z-index: 0;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+
+        .header-ambient,
+        .header-shine,
+        .header-watermark {
+            position: absolute;
+            pointer-events: none;
         }
 
-        .ant-tabs-tab-btn {
-            font-size: ${token.fontSize}px;
-            font-weight: 400;
-            line-height: 20px;
+        .header-ambient {
+            inset: 0;
+            z-index: 0;
         }
 
-        .ant-tabs-ink-bar {
-            height: 3px !important;
-            border-radius: ${token.borderRadius}px;
+        .header-ambient::before {
+            content: '';
+            position: absolute;
+            inset: -78px;
+            background:
+                linear-gradient(135deg,
+                    ${isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 42%, transparent)` : token.colorPrimaryBgHover} 0%,
+                    ${isDarkMode ? `color-mix(in srgb, ${token.colorPrimary} 22%, transparent)` : token.colorPrimaryBg} 44%,
+                    transparent 76%),
+                linear-gradient(30deg, transparent 18%,
+                    ${isDarkMode ? "rgba(34,211,238,0.16)" : token.colorPrimaryBg} 72%, transparent 100%);
+            opacity: ${isDarkMode ? 0.42 : 0.58};
+            filter: blur(24px);
+            transform: rotate(-7deg) translate3d(-18px, -12px, 0);
+            -webkit-mask-image: linear-gradient(135deg, rgba(0,0,0,0.82), rgba(0,0,0,0.34) 58%, transparent 100%);
+            mask-image: linear-gradient(135deg, rgba(0,0,0,0.82), rgba(0,0,0,0.34) 58%, transparent 100%);
         }
 
-        .ant-tabs-content-holder {
-            display: none;
+        .header-shine {
+            inset: 0;
+            z-index: 1;
+            opacity: ${isDarkMode ? 0.20 : 0.34};
+            background: linear-gradient(110deg, transparent 16%,
+                ${isDarkMode ? "rgba(34,211,238,0.18)" : "rgba(255,255,255,0.70)"} 58%, transparent 96%);
+            mix-blend-mode: ${isDarkMode ? "screen" : "normal"};
+        }
+
+        .header-watermark {
+            right: -78px;
+            bottom: -104px;
+            z-index: 1;
+            color: ${token.colorPrimary};
+            font-size: 320px;
+            line-height: 1;
+            opacity: ${isDarkMode ? 0.17 : 0.14};
+            transform: rotate(-24deg);
+            filter: blur(20px);
+        }
+
+        @media (max-width: 900px) {
+            .header-watermark {
+                right: -62px;
+                bottom: -90px;
+                font-size: 260px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .header-ambient::before {
+                inset: -54px;
+            }
+
+            .header-watermark {
+                right: -48px;
+                bottom: -68px;
+                font-size: 210px;
+                filter: blur(18px);
+            }
         }
     `,
     messageTitle: css`
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
+        width: 100%;
         min-width: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: ${token.colorTextSecondary};
+        font: inherit;
+        line-height: 22px;
+        text-align: left;
         cursor: pointer;
+
+        &.unread {
+            color: ${token.colorText};
+        }
+
+        &:hover {
+            color: ${token.colorPrimary};
+        }
+
+        &:focus-visible {
+            outline: 2px solid ${token.colorPrimaryBorder};
+            outline-offset: 4px;
+            border-radius: ${token.borderRadiusSM}px;
+        }
 
         span:last-child {
             overflow: hidden;
@@ -106,12 +207,11 @@ const useStyles = createStyles(({css, token, isDarkMode}: any): any => ({
             height: 7px;
             border-radius: 50%;
             flex: 0 0 auto;
-            background: ${token.colorTextQuaternary};
+            background: transparent;
         }
 
         .unread-dot.unread {
             background: ${token.colorPrimary};
-            box-shadow: 0 0 0 3px ${isDarkMode ? "rgba(22,119,255,0.16)" : token.colorPrimaryBg};
         }
     `,
     statusTag: css`
@@ -227,11 +327,10 @@ const formatAgoTime = (value: any) => {
 
 export default (): React.ReactNode => {
     const {message, modal} = App.useApp();
-    const {styles} = useStyles();
-    const tableRef = useRef<ProTableRef>({} as ProTableRef);
-    const detailModalRef = useRef<ProModalRef>({} as ProModalRef);
-    const statusReadyRef = useRef(false);
-    const [activeStatus, setActiveStatus] = useState(MESSAGE_TAB_ALL);
+    const theme = useTheme();
+    const {styles} = useStyles({isCompactMode: theme?.isCompactTheme?.() || false});
+    const tableRef = useRef<PageTableRef<UserMessage> | null>(null);
+    const detailModalRef = useRef<ProModalRef | null>(null);
     const [detailLoading, setDetailLoading] = useState(false);
     const [detail, setDetail] = useState<UserMessage>();
 
@@ -284,7 +383,7 @@ export default (): React.ReactNode => {
 
     const markAllRead = () => {
         modal.confirm({
-            title: "一键已读",
+            title: "全部已读",
             content: "确定将所有站内消息标记为已读吗？",
             okText: "确定",
             cancelText: "取消",
@@ -343,30 +442,30 @@ export default (): React.ReactNode => {
         } as any);
     };
 
-    useEffect(() => {
-        if (!statusReadyRef.current) {
-            statusReadyRef.current = true;
-            return;
-        }
-        refreshTable(true);
-    }, [activeStatus]);
-
-    const columns = [
+    const columns: PageTableProps<UserMessage>["columns"] = [
         {
             title: "标题",
             dataIndex: "title",
-            width: 220,
+            width: 320,
+            ellipsis: {showTitle: false},
             render: (_: any, record: UserMessage) => (
-                <div className={styles.messageTitle} onClick={() => openDetail(record)}>
-                    <span className={`unread-dot ${isUnread(record?.status) ? "unread" : ""}`}/>
-                    <span>{record?.title || "未命名消息"}</span>
-                </div>
+                <Tooltip title={record.title || "未命名消息"}>
+                    <button
+                        type="button"
+                        className={`${styles.messageTitle} ${isUnread(record.status) ? "unread" : ""}`}
+                        onClick={() => openDetail(record)}
+                    >
+                        <span className={`unread-dot ${isUnread(record.status) ? "unread" : ""}`} aria-hidden="true"/>
+                        <span>{record.title || "未命名消息"}</span>
+                    </button>
+                </Tooltip>
             ),
         },
         {
             title: "创建于",
             dataIndex: "create_time",
             width: 120,
+            sorter: true,
             render: (value: any, record: UserMessage) => {
                 const time = normalizeTime(record?.create_time || value);
                 return (
@@ -380,6 +479,7 @@ export default (): React.ReactNode => {
             title: "阅读于",
             dataIndex: "read_time",
             width: 120,
+            sorter: true,
             render: (value: any, record: UserMessage) => {
                 const time = normalizeTime(record?.read_time || value);
                 return (
@@ -401,9 +501,11 @@ export default (): React.ReactNode => {
         },
         {
             title: "操作",
-            valueType: "option",
             key: "option",
-            width: 86,
+            width: 80,
+            align: "center",
+            fixed: "right",
+            className: "action-cell",
             render: (_: any, record: UserMessage) => {
                 const items = [
                     {
@@ -419,107 +521,109 @@ export default (): React.ReactNode => {
                     },
                 ];
                 return (
-                    <Dropdown menu={{items}} trigger={["click"]} placement="bottom" arrow>
-                        <Button size="small">操作</Button>
+                    <Dropdown menu={{items}} trigger={["click"]} placement="bottom" arrow={{pointAtCenter: true}}>
+                        <Button size="small" aria-label="消息操作">操作</Button>
                     </Dropdown>
                 );
             },
         },
-    ] as any;
+    ];
 
     return (
         <Body>
-            <div className={styles.page}>
-                <Card className={styles.navCard} variant="borderless">
-                    <Tabs
-                        className={styles.tabs}
-                        activeKey={activeStatus}
-                        onChange={(value) => {
-                            if (value !== activeStatus) {
-                                setActiveStatus(value);
-                            }
-                        }}
-                        items={messageTabs as any}
-                    />
-                </Card>
-                <ProTable
-                    ref={tableRef}
-                    rowKey="id"
-                    title={<Title>站内消息</Title>}
-                    extra={(
-                        <Dropdown
-                            trigger={["click"]}
-                            placement="bottom"
-                            arrow
-                            menu={{
+            <PageTable<UserMessage>
+                ref={tableRef}
+                ariaLabel="站内消息"
+                rootClassName={styles.page}
+                rowKey="id"
+                columns={columns}
+                scroll={{x: 760}}
+                defaultPage={1}
+                defaultPageSize={10}
+                defaultSort={{id: "descend"}}
+                hero={<section className={styles.header}>
+                    <div className={styles.headerDecor} aria-hidden="true">
+                        <span className="header-ambient"/>
+                        <span className="header-shine"/>
+                        <span className="header-watermark"><Icon type="MailOutlined"/></span>
+                    </div>
+                    <div className={styles.headerMain}>
+                        <h1>站内消息</h1>
+                        <p>账户通知、业务提醒与系统消息集中呈现，重要动态及时掌握。</p>
+                    </div>
+                </section>}
+                search={{
+                    ariaLabel: "搜索消息",
+                    placeholder: "搜索消息标题或内容",
+                    maxLength: 100,
+                    fields: [
+                        {value: "keyword", label: "全部", placeholder: "搜索消息标题或内容"},
+                        {value: "title", label: "标题", placeholder: "搜索消息标题"},
+                        {value: "content", label: "内容", placeholder: "搜索消息内容"},
+                    ],
+                }}
+                filters={[
+                    {
+                        type: "select",
+                        name: "status",
+                        label: "消息状态筛选",
+                        icon: "MailOutlined",
+                        allLabel: "全部消息",
+                        options: [
+                            {value: String(MESSAGE_STATUS_UNREAD), label: "未读消息"},
+                            {value: String(MESSAGE_STATUS_READ), label: "已读消息"},
+                        ],
+                        onChange: () => tableRef.current?.clearSelectedRows(),
+                    },
+                ]}
+                toolbar={{
+                    refresh: {ariaLabel: "刷新消息列表"},
+                    actions: [
+                        {
+                            key: "operate",
+                            type: "button",
+                            label: "操作消息",
+                            icon: "SettingOutlined",
+                            menu: {
                                 items: [
-                                    {
-                                        key: "read-all",
-                                        label: "一键已读",
-                                        onClick: markAllRead,
-                                    },
-                                    {
-                                        key: "clear",
-                                        danger: true,
-                                        label: "清空消息",
-                                        onClick: clearAllMessages,
-                                    },
+                                    {key: "read-all", label: "全部已读", onClick: markAllRead},
+                                    {key: "clear", label: "清空消息", danger: true, onClick: clearAllMessages},
                                 ],
-                            }}
-                        >
-                            <Button size="small" type="primary">操作</Button>
-                        </Dropdown>
-                    )}
-                    extraRefreshBtn={true}
-                    search={false}
-                    columns={columns}
-                    defaultPage={1}
-                    defaultPageSize={10}
-                    rowSelection={{
-                        fixed: true,
-                        rightExtra: (
-                            <Space wrap>
-                                <Button
-                                    key="read"
-                                    type="primary"
-                                    ghost
-                                    onClick={() => markRead(tableRef.current?.getSelectedRowKeys?.() as any)}
-                                >
-                                    批量已读
-                                </Button>
-                                <Button
-                                    key="delete"
-                                    type="primary"
-                                    danger
-                                    ghost
-                                    onClick={() => removeMessages(tableRef.current?.getSelectedRowKeys?.() as any)}
-                                >
-                                    批量删除
-                                </Button>
-                            </Space>
-                        ),
-                    }}
-                    request={(params: any) => {
-                        const status = activeStatus === MESSAGE_TAB_UNREAD
-                            ? String(MESSAGE_STATUS_UNREAD)
-                            : activeStatus === MESSAGE_TAB_READ
-                                ? String(MESSAGE_STATUS_READ)
-                                : undefined;
-                        return getData({
-                            ...(status !== undefined ? {status} : {}),
-                            ...params,
-                        }, {}, getMessageList);
-                    }}
-                    paginationAffix={true}
-                    selectionAffix={true}
-                    {...({
-                        tableProps: {
-                            scroll: {x: "max-content"},
-                            rowClassName: (record: UserMessage) => isUnread(record?.status) ? "unread-row" : "read-row",
+                            },
                         },
-                    } as any)}
-                />
-            </div>
+                    ],
+                }}
+                rowSelection={{
+                    fixed: true,
+                    actions: (keys) => [
+                        {
+                            key: "read",
+                            type: "button",
+                            label: "批量已读",
+                            icon: "CheckOutlined",
+                            onClick: () => markRead(keys),
+                        },
+                        {
+                            key: "delete",
+                            type: "button",
+                            label: "批量删除",
+                            icon: "DeleteOutlined",
+                            danger: true,
+                            onClick: () => removeMessages(keys),
+                        },
+                    ],
+                }}
+                request={async (params, sort) => {
+                    const response = await getMessageList({body: getParams(params, sort)});
+                    if (response?.code !== 200) {
+                        throw new Error(response?.message || "获取站内消息列表失败");
+                    }
+                    return {data: response.data?.list, total: response.data?.total ?? 0, success: true};
+                }}
+                onRequestError={(error) => message.error(error.message)}
+                pagination={{unit: "条"}}
+                paginationAffix={{offsetBottom: 15}}
+            />
             <ProModal
                 ref={detailModalRef}
                 title={<Title>消息详情</Title>}
@@ -529,6 +633,7 @@ export default (): React.ReactNode => {
                 modalProps={{
                     footer: null,
                     destroyOnHidden: true,
+                    mask: {closable: true},
                 } as any}
             >
                 {detailLoading ? (
