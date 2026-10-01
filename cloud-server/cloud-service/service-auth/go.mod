@@ -4,14 +4,14 @@ go 1.26.0
 
 require (
 	github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common v0.0.0
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260927045123-4f43fcb3834b
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20261001111349-2d40917e1e8c
 	github.com/wenlng/go-captcha/v2 v2.0.5
 )
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
-	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20260927045123-4f43fcb3834b // indirect
+	github.com/SinKingCloud/sinking-go/sinking-consul/client v0.0.0-20261001112908-f106009f4ecb // indirect
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868 // indirect
 	github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.5 // indirect
 	github.com/alibabacloud-go/cloudauth-20190307/v4 v4.14.0 // indirect
@@ -52,7 +52,7 @@ require (
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/ncruces/go-strftime v1.0.0 // indirect
+	github.com/ncruces/go-strftime v1.1.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.4.3 // indirect
 	github.com/redis/go-redis/v9 v9.22.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
@@ -81,7 +81,7 @@ require (
 	modernc.org/libc v1.77.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
-	modernc.org/sqlite v1.60.0 // indirect
+	modernc.org/sqlite v1.60.1 // indirect
 )
 
 replace github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common => ../../cloud-common
