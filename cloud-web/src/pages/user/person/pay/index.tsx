@@ -220,6 +220,8 @@ const useStyles = createStyles(({css, token, isDarkMode}, {isCompactMode}: {isCo
         z-index: 2;
         max-width: 100%;
         font-size: 13px;
+        -webkit-user-select: none;
+        user-select: none;
 
         &.ant-segmented {
             display: block;
