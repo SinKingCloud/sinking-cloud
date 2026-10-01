@@ -238,11 +238,19 @@ const useStyles = createStyles(({css, token, isDarkMode}, {isCompactMode}: {isCo
             align-items: center;
             justify-content: center;
             flex: none;
-            width: 40px;
-            height: 40px;
+            width: ${isCompactMode ? 56 : 64}px;
+            height: ${isCompactMode ? 45 : 51}px;
             color: ${token.colorPrimary};
-            font-size: 30px;
-            opacity: ${isDarkMode ? 0.8 : 0.7};
+        }
+
+        .current-symbol svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .current-symbol .connection-surface {
+            fill: ${token.colorBgContainer};
         }
 
         .current-identity {
@@ -468,7 +476,22 @@ export default function Index(): React.ReactNode {
                                 </Typography.Text>
                             </div>
                             <div className="current-symbol">
-                                <Icon type={/iOS|iPhone|iPad|Android|Mobile|Phone/i.test(currentSession.device || "") ? "MobileOutlined" : "LaptopOutlined"}/>
+                                <svg viewBox="0 0 80 64" fill="none" aria-hidden="true">
+                                    {/iOS|iPhone|iPad|Android|Mobile|Phone/i.test(currentSession.device || "") ? <>
+                                        <rect x="23" y="5" width="31" height="53" rx="7" fill="currentColor" fillOpacity="0.06" stroke="currentColor" strokeOpacity="0.42" strokeWidth="1.5"/>
+                                        <rect x="27" y="12" width="23" height="37" rx="3" stroke="currentColor" strokeOpacity="0.14"/>
+                                        <path d="M34 9H43M35 53H42" stroke="currentColor" strokeOpacity="0.44" strokeWidth="1.5" strokeLinecap="round"/>
+                                        <path d="M32 22H43M32 28H40" stroke="currentColor" strokeOpacity="0.22" strokeWidth="1.5" strokeLinecap="round"/>
+                                    </> : <>
+                                        <rect x="9" y="11" width="53" height="36" rx="5" fill="currentColor" fillOpacity="0.06" stroke="currentColor" strokeOpacity="0.42" strokeWidth="1.5"/>
+                                        <rect x="13" y="15" width="45" height="28" rx="2.5" stroke="currentColor" strokeOpacity="0.14"/>
+                                        <path d="M5 48H66L62 53H9L5 48Z" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeOpacity="0.38" strokeWidth="1.5" strokeLinejoin="round"/>
+                                        <path d="M29 48H41M20 25H43M20 32H35" stroke="currentColor" strokeOpacity="0.25" strokeWidth="1.5" strokeLinecap="round"/>
+                                    </>}
+                                    <circle className="connection-surface" cx="63" cy="45" r="12"/>
+                                    <circle cx="63" cy="45" r="12" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeOpacity="0.38" strokeWidth="1.4"/>
+                                    <path d="M61 46.5L60 47.5A2.8 2.8 0 0 1 56 43.5L59 40.5A2.8 2.8 0 0 1 63 40.5M65 43.5L66 42.5A2.8 2.8 0 0 1 70 46.5L67 49.5A2.8 2.8 0 0 1 63 49.5M60.5 47.5L65.5 42.5" stroke="currentColor" strokeOpacity="0.64" strokeWidth="1.5" strokeLinecap="round"/>
+                                </svg>
                             </div>
                         </div>
                         <div className="current-source">
