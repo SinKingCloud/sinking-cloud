@@ -32,7 +32,7 @@ func (Controller) Operate(c *context.Context) {
 	}
 	describe := "操作人ID:" + strconv.FormatInt(c.GetUserInfo().Id, 10)
 	if form.Describe != "" {
-		describe += "; " + form.Describe
+		describe += " 备注:" + form.Describe
 	}
 	err := service.Balance.OperateMoney(form.UserId, form.Money, form.IsOperateFrozen, logType, describe)
 	if err != nil {
