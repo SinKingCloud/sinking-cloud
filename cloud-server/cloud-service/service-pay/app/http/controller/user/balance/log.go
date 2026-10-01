@@ -12,6 +12,7 @@ import (
 func (Controller) Log(c *context.Context) {
 	query := c.ValidatePage("id", "desc", "id,create_time", "id,type,money,create_time")
 	var form struct {
+		Describe        string `json:"describe" default:"" validate:"omitempty,max=100" label:"描述"`
 		Type            string `json:"type" default:"" validate:"omitempty,numeric" label:"类型"`
 		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
 		CreateTimeEnd   string `json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
@@ -23,6 +24,9 @@ func (Controller) Log(c *context.Context) {
 	u := c.GetUserInfo()
 	where := &balance_log.SelectBalanceLog{
 		UserId: &u.Id,
+	}
+	if form.Describe != "" {
+		where.Describe = &form.Describe
 	}
 	if form.Type != "" {
 		types, err := strconv.Atoi(form.Type)

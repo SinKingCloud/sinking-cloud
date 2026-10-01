@@ -13,6 +13,9 @@ func (r *Repository) Select(where *SelectBalanceLog, queryPage *page.Query) (*pa
 		if where.UserId != nil {
 			query = query.Where("user_id = ?", *where.UserId)
 		}
+		if where.Describe != nil {
+			query = query.Where("cloud_balance_logs.describe LIKE ?", "%"+*where.Describe+"%")
+		}
 		if where.Type != nil {
 			query = query.Where("type = ?", *where.Type)
 		}
