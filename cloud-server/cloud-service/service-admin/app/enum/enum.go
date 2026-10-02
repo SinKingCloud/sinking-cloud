@@ -6,6 +6,7 @@ import (
 	"service-admin/app/enum/permission_code"
 	"service-admin/app/enum/role_name"
 	"service-admin/app/enum/role_status"
+	"service-admin/app/enum/user_log_type"
 	"service-admin/app/enum/user_status"
 )
 
@@ -13,6 +14,9 @@ import (
 var Data = map[string]interface{}{
 	"user": map[string]interface{}{
 		"status": user_status.Map(), //用户状态
+	},
+	"user_log": map[string]interface{}{
+		"type": user_log_type.Map(), //操作日志类型
 	},
 	"role": func() interface{} {
 		return map[string]interface{}{

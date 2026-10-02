@@ -24,6 +24,7 @@ func loadAdmin(s *sinking_web.Engine) {
 	person := g.Group("/person")
 	{
 		person.ANY("/info", context.HandleFunc(controller.Person.Info))     //个人信息
+		person.ANY("/log", context.HandleFunc(controller.Person.Log))       //操作日志
 		person.ANY("/update", context.HandleFunc(controller.Person.Update)) //修改资料
 	}
 	security := g.Group("/security")
@@ -63,6 +64,7 @@ func loadAdmin(s *sinking_web.Engine) {
 		ANY("/master/update", "修改管理员", controller.Master.Update)
 		ANY("/master/delete", "删除管理员", controller.Master.Delete)
 		ANY("/master/session", "管理员会话列表", controller.Master.Session)
+		ANY("/master/log", "管理员操作日志", controller.Master.Log)
 		ANY("/master/logout", "注销管理员会话", controller.Master.Logout)
 
 		ANY("/config/ui", "界面配置", controller.Config.Ui)

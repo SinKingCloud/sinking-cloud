@@ -13,6 +13,6 @@ const (
 	LockMenuOperate     = "LockMenuOperate" //菜单操作并发锁
 	LockTimeMenuOperate = 1 * 60 * 1000     //菜单操作并发锁最大时间
 
-	LockUserRoleAssign     = "LockUserRoleAssign_" //用户分配角色并发锁
-	LockTimeUserRoleAssign = 1 * 60 * 1000         //用户分配角色并发锁最大时间
+	LockUserOperate     = "LockUserOperate_" //用户操作并发锁
+	LockTimeUserOperate = 1 * 60 * 1000      //用户操作并发锁最大时间
 )

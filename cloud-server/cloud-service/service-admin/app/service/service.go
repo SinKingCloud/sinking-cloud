@@ -10,6 +10,7 @@ import (
 	"service-admin/app/repository/role_menu"
 	"service-admin/app/repository/session"
 	user2 "service-admin/app/repository/user"
+	"service-admin/app/repository/user_log"
 	"service-admin/app/repository/user_role"
 	"service-admin/app/service/auth"
 	"service-admin/app/service/config"
@@ -32,6 +33,7 @@ var (
 func Init() {
 	configRepository := config2.NewRepository(global.App.Database)
 	userRepository := user2.NewRepository(global.App.Database)
+	userLogRepository := user_log.NewRepository(global.App.Database)
 	roleRepository := role.NewRepository(global.App.Database)
 	sessionRepository := session.NewRepository(global.App.Database)
 	permissionRepository := permission.NewRepository(global.App.Database)
@@ -47,6 +49,6 @@ func Init() {
 	Config = config.NewService(configRepository, cache)
 	Auth = auth.NewService(authService, sessionRepository, userRepository, database, cache)
 	Rbac = rbac.NewService(roleRepository, permissionRepository, userRoleRepository, roleMenuRepository, menuRepository, menuPermRepository, database, cache, queue.Permission)
-	User = user.NewService(userRepository, sessionRepository, userRoleRepository, configRepository, Rbac, database, cache)
+	User = user.NewService(userRepository, userLogRepository, sessionRepository, userRoleRepository, configRepository, Rbac, database, cache, queue.UserLog)
 	Dashboard = dashboard.NewService(consul, cache)
 }

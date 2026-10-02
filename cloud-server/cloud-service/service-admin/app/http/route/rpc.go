@@ -15,6 +15,7 @@ func loadRpc(s *sinking_web.Engine) {
 	rpc.RegisterHandle(s)
 	rpc.RegisterFunc(constant.RpcGetEnumDataFunName, service2.Enum.GetDataHandler(enum.Data)) //获取枚举配置
 	rpc.RegisterFunc("GetUserInfo", rpc2.User.GetUserInfo)                                    //获取用户详情
+	rpc.RegisterFunc("CreateUserLog", rpc2.User.CreateUserLog)                                //创建用户操作日志
 	rpc.RegisterFunc("GetUserConfig", rpc2.Config.GetUserConfig)                              //获取用户配置
 	rpc.RegisterFunc("SetUserConfig", rpc2.Config.SetUserConfig)                              //更新用户配置
 	rpc.RegisterFunc("SetUserConfigs", rpc2.Config.SetUserConfigs)                            //批量更新用户配置

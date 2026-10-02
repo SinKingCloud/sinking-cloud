@@ -492,8 +492,8 @@ func (s *service) AssignRoleToUser(userId int64, roleIds []int64) error {
 	if userId <= 0 {
 		return errors.New("用户ID错误")
 	}
-	userLockKey := constant.LockUserRoleAssign + strconv.FormatInt(userId, 10)
-	if !s.cache.Lock(userLockKey, constant.LockTimeUserRoleAssign) {
+	userLockKey := constant.LockUserOperate + strconv.FormatInt(userId, 10)
+	if !s.cache.Lock(userLockKey, constant.LockTimeUserOperate) {
 		return errors.New("系统繁忙,请稍候重试")
 	}
 	defer s.cache.UnLock(userLockKey)

@@ -7,6 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/jwt"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/rpc"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
 
 // GetSystemUserInfo 获取系统用户信息
@@ -19,6 +20,27 @@ func (*Service) GetSystemUserInfo(userId int64, refresh bool) (user *SystemUser,
 		return nil, err
 	}
 	return user, nil
+}
+
+// CreateSystemUserLog 异步创建系统用户操作日志，成功表示消息已入队。
+func (*Service) CreateSystemUserLog(userId int64, requestId string, requestIp string, types int, title string, content string) error {
+	var result bool
+	err := rpc.InvokeFunc(constant.ServiceAdmin, "CreateUserLog", &CreateSystemUserLogParam{
+		Id:        str.GetSnowWorkIns().GetId(),
+		UserId:    userId,
+		RequestId: requestId,
+		RequestIp: requestIp,
+		Type:      types,
+		Title:     title,
+		Content:   content,
+	}, &result)
+	if err != nil {
+		return err
+	}
+	if !result {
+		return errors.New("创建用户操作日志失败")
+	}
+	return nil
 }
 
 // GetWebUserInfo 获取网站用户信息

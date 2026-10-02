@@ -212,8 +212,8 @@ func (s *service) DeleteById(id int64) error {
 	if id <= 0 {
 		return nil
 	}
-	lockKey := constant.LockUserRoleAssign + strconv.FormatInt(id, 10)
-	if !s.cache.Lock(lockKey, constant.LockTimeUserRoleAssign) {
+	lockKey := constant.LockUserOperate + strconv.FormatInt(id, 10)
+	if !s.cache.Lock(lockKey, constant.LockTimeUserOperate) {
 		return errors.New("系统繁忙,请稍候重试")
 	}
 	defer s.cache.UnLock(lockKey)
@@ -231,6 +231,10 @@ func (s *service) DeleteById(id int64) error {
 		err = s.repositoryConfig.DeleteByIdentId(configIdentId, tx)
 		if err != nil {
 			return errors.Join(errors.New("删除用户配置失败"), err)
+		}
+		err = s.repositoryUserLog.DeleteByUserId(id, tx)
+		if err != nil {
+			return errors.Join(errors.New("删除用户操作日志失败"), err)
 		}
 		err = s.repositoryUser.DeleteById(id, tx)
 		if err != nil {

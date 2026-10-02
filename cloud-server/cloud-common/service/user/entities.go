@@ -42,3 +42,14 @@ type GetSystemUserInfoParam struct {
 	UserId  int64 // 用户ID
 	Refresh bool  // 是否强制刷新缓存
 }
+
+// CreateSystemUserLogParam 创建系统用户操作日志请求参数
+type CreateSystemUserLogParam struct {
+	Id        int64
+	UserId    int64
+	RequestId string
+	RequestIp string
+	Type      int
+	Title     string
+	Content   string
+}
