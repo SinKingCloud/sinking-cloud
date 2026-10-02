@@ -15,7 +15,7 @@ func (r *Repository) Select(where *SelectUserLog, queryPage *page.Query) (*page.
 		}
 		if where.Keyword != nil {
 			keyword := "%" + *where.Keyword + "%"
-			query = query.Where("(request_ip LIKE ? OR location LIKE ? OR title LIKE ? OR content LIKE ?)", keyword, keyword, keyword, keyword, keyword)
+			query = query.Where("(request_id LIKE ? OR request_ip LIKE ? OR location LIKE ? OR title LIKE ? OR content LIKE ?)", keyword, keyword, keyword, keyword, keyword)
 		}
 		if where.RequestId != nil {
 			query = query.Where("request_id = ?", *where.RequestId)
