@@ -31,6 +31,11 @@ export async function getMasterSessionList(params: API.RequestParams = {}) {
     return get("/admin/master/session", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
 }
 
+/** 员工操作日志 */
+export async function getMasterLogList(params: API.RequestParams = {}) {
+    return get("/admin/master/log", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
+}
+
 /** 注销员工会话 */
 export async function logoutMasterSession(params: API.RequestParams = {}) {
     return post("/admin/master/logout", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);

@@ -41,6 +41,11 @@ export async function getSessionList(params: API.RequestParams = {}) {
     return get("/admin/security/session", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
 }
 
+/** 操作日志 */
+export async function getLogList(params: API.RequestParams = {}) {
+    return get("/admin/person/log", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
+}
+
 /** 注销会话 */
 export async function logoutSession(params: API.RequestParams = {}) {
     return post("/admin/security/logout", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);

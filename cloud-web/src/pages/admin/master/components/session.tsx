@@ -197,6 +197,7 @@ const MasterSession = forwardRef<MasterSessionRef, MasterSessionProps>(({control
             minHeight={440}
             scrollMode="modal"
             modalProps={{
+                mask: {closable: true},
                 style: {
                     top: screens.md ? 100 : 24,
                     paddingBottom: screens.md ? 100 : 24,
@@ -209,7 +210,7 @@ const MasterSession = forwardRef<MasterSessionRef, MasterSessionProps>(({control
             rowKey="token"
             columns={columns}
             scroll={{x: hasLogoutControl ? 700 : 576}}
-            defaultPageSize={10}
+            defaultPageSize={7}
             defaultSort={{create_time: "descend"}}
             params={{id: Number(userInfo?.id)}}
             requestEnabled={hasSessionControl && !!userInfo?.id}

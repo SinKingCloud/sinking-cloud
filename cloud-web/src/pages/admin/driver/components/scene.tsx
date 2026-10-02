@@ -2,15 +2,9 @@ import React, {useRef, useState} from "react";
 import {App, Button, Dropdown, Form, Input, InputNumber, Select} from "antd";
 import {ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {createStyles} from "antd-style";
-import {getData} from "@/utils/page";
+import {buildOptions, buildValueEnum, dateRangeTransform, getData} from "@/utils/page";
 import useEnum, {clearEnumCache} from "@/utils/enum";
-import {
-    createScene,
-    deleteScene,
-    getSceneList,
-    updateScene,
-} from "@/service/admin/driver";
-import {buildOptions, buildValueEnum, dateRangeTransform} from "@/utils/page";
+import {createScene, deleteScene, getSceneList, updateScene,} from "@/service/admin/driver";
 import {formatSizeFromKb} from "@/utils/string";
 import {AdminControlCode} from "@/utils/permission";
 
@@ -326,6 +320,7 @@ const SceneManage: React.FC<SceneManageProps> = ({control}) => {
                 onOk={form.submit}
                 width={420}
                 modalProps={{
+                    mask: {closable: true},
                     confirmLoading: submitLoading,
                     okText: "提交",
                     cancelText: "取消",

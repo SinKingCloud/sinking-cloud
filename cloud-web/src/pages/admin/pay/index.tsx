@@ -320,6 +320,7 @@ export default (): React.ReactNode => {
                     onOk={channelForm.submit}
                     width={420}
                     modalProps={{
+                        mask: {closable: true},
                         confirmLoading: channelSubmitting || channelInfoLoading,
                         forceRender: true,
                         okText: "提交",

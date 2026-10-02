@@ -672,6 +672,7 @@ export default (): React.ReactNode => {
             title: "确认删除",
             icon: <Icon type="ExclamationCircleOutlined"/>,
             content: "删除后数据不可恢复，确定要删除吗？",
+            mask: {closable: true},
             okButtonProps: {danger: true, type: "default"},
             onOk: async () => {
                 await deleteMenu({
@@ -793,7 +794,7 @@ export default (): React.ReactNode => {
                                                       }}
                                                       trigger={["hover"]}
                                                       arrow={{pointAtCenter: true}}
-                                                      placement="bottomRight">
+                                                      placement="bottom">
                                                       <Button className={styles.infoActionBtn}
                                                               size="small">操作</Button>
                                                   </Dropdown>
@@ -881,6 +882,7 @@ export default (): React.ReactNode => {
                     width={420}
                     onOk={form.submit}
                     modalProps={{
+                        mask: {closable: true},
                         confirmLoading: formSubmitting,
                         forceRender: true,
                         okText: "提交",

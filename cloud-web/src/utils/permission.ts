@@ -34,6 +34,7 @@ export const AdminControlCode = {
     SYSTEM_MASTER_DELETE: `${AdminPageCode.SYSTEM_MASTER}:delete`,
     SYSTEM_MASTER_ROLE: `${AdminPageCode.SYSTEM_MASTER}:role`,
     SYSTEM_MASTER_SESSION: `${AdminPageCode.SYSTEM_MASTER}:session`,
+    SYSTEM_MASTER_LOG: `${AdminPageCode.SYSTEM_MASTER}:log`,
     SYSTEM_MASTER_LOGOUT: `${AdminPageCode.SYSTEM_MASTER}:logout`,
     SYSTEM_ROLE_LIST: `${AdminPageCode.SYSTEM_ROLE}:list`,
     SYSTEM_ROLE_CREATE: `${AdminPageCode.SYSTEM_ROLE}:create`,

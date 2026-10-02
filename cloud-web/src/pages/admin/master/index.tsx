@@ -2,24 +2,15 @@ import React, {useRef} from "react";
 import {App, Avatar, Button, Dropdown, Result, Space, Typography} from "antd";
 import {Body, Icon, ProTable, ProTableRef, Title} from "sinking-antd";
 
-import {getData} from "@/utils/page";
+import {buildOptions, buildValueEnum, dateRangeTransform, emptyTableData, getData, normalizeIds} from "@/utils/page";
 import useControl from "@/utils/control";
 import {AdminControlCode} from "@/utils/permission";
 import useEnum from "@/utils/enum";
-import {
-    deleteMaster,
-    getMasterList,
-} from "@/service/admin/master";
+import {deleteMaster, getMasterList,} from "@/service/admin/master";
 import Info, {type InfoRef} from "./components/info";
 import MasterSession, {type MasterSessionRef} from "./components/session";
+import MasterLog, {type MasterLogRef} from "./components/log";
 import Role, {type RoleRef} from "./components/role";
-import {
-    buildOptions,
-    buildValueEnum,
-    dateRangeTransform,
-    emptyTableData,
-    normalizeIds,
-} from "@/utils/page";
 import {createStyles} from "antd-style";
 
 const useStyles: any = createStyles((): any => ({
@@ -49,7 +40,7 @@ const useStyles: any = createStyles((): any => ({
 export default (): React.ReactNode => {
     const {message, modal} = App.useApp();
     const {styles} = useStyles();
-    const [enumData, enumLoading] = useEnum(["admin.user", "admin.role"]) as any;
+    const [enumData, enumLoading] = useEnum(["admin.user", "admin.role", "admin.user_log"]) as any;
     const control = useControl();
     const hasListControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_LIST);
     const hasCreateControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_CREATE);
@@ -57,10 +48,12 @@ export default (): React.ReactNode => {
     const hasDeleteControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_DELETE);
     const hasRoleControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_ROLE);
     const hasSessionControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_SESSION);
+    const hasLogControl = control.hasControl(AdminControlCode.SYSTEM_MASTER_LOG);
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const infoRef = useRef<InfoRef>({} as InfoRef);
     const roleRef = useRef<RoleRef>({} as RoleRef);
     const sessionRef = useRef<MasterSessionRef>({} as MasterSessionRef);
+    const logRef = useRef<MasterLogRef>({} as MasterLogRef);
     const userStatus = enumData?.["admin.user"]?.status || {};
     const roleNames = enumData?.["admin.role"]?.names || {};
     const statusOptions = buildOptions(userStatus, true);
@@ -232,7 +225,7 @@ export default (): React.ReactNode => {
                 {label: "更新于:", value: record?.update_time},
             ], false),
         },
-        ...(hasUpdateControl || hasDeleteControl || hasRoleControl || hasSessionControl ? [{
+        ...(hasUpdateControl || hasDeleteControl || hasRoleControl || hasSessionControl || hasLogControl ? [{
             title: "操作",
             valueType: "option",
             key: "option",
@@ -254,6 +247,11 @@ export default (): React.ReactNode => {
                         key: "session",
                         label: "会话",
                         onClick: () => sessionRef.current?.open(record),
+                    } : null,
+                    hasLogControl ? {
+                        key: "log",
+                        label: "日志",
+                        onClick: () => logRef.current?.open(record),
                     } : null,
                     hasDeleteControl ? {
                         key: "delete",
@@ -312,6 +310,7 @@ export default (): React.ReactNode => {
                 />
                 <Role ref={roleRef} control={control} onSuccess={() => tableRef.current?.refreshTableData?.()}/>
                 <MasterSession ref={sessionRef} control={control}/>
+                <MasterLog ref={logRef} control={control} typeData={enumData?.["admin.user_log"]?.type || {}}/>
             </>}
         </Body>
     );

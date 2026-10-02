@@ -256,6 +256,12 @@ const RightTop: React.FC = () => {
                              </div>
                              <Icon type="RightOutlined"/>
                          </li>
+                         <li className={menuItem} onClick={() => historyPush("admin.person.log")}>
+                             <div className={menuItemLabel}><Icon type="FileTextOutlined"
+                                                                  className={menuItemLeadIcon}/>操作日志
+                             </div>
+                             <Icon type="RightOutlined"/>
+                         </li>
                          <li className={menuItem} onClick={confirmOutLogin}>
                              <div className={menuItemLabel}><Icon type="LogoutOutlined" className={menuItemLeadIcon}/>退出登录
                              </div>

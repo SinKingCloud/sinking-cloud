@@ -298,6 +298,7 @@ export default (): React.ReactNode => {
         modal.confirm({
             title: "删除角色",
             content: `确定删除选中的 ${nextIds.length} 个角色吗？`,
+            mask: {closable: true},
             okText: "确 定",
             okButtonProps: {danger: true, type: "default"},
             cancelText: "取 消",
@@ -437,6 +438,7 @@ export default (): React.ReactNode => {
                     onOk={form.submit}
                     width={560}
                     modalProps={{
+                        mask: {closable: true},
                         confirmLoading: formSubmitting || menuLoading || infoLoading,
                         forceRender: true,
                         okText: "提交",

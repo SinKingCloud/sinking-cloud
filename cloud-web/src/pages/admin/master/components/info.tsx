@@ -3,7 +3,7 @@ import React, {forwardRef, useImperativeHandle, useRef, useState} from "react";
 import {App, Avatar, Col, Form, Input, Row, Select} from "antd";
 import {Icon, ProModal, ProModalRef, Title} from "sinking-antd";
 import {createStyles} from "antd-style";
-import {SYSTEM_FILE_SCENE_ID, getUploadUrl} from "@/utils/upload";
+import {getUploadUrl, SYSTEM_FILE_SCENE_ID} from "@/utils/upload";
 import {Upload, type UploadRef} from "@/pages/components/upload";
 import {createMaster, updateMaster} from "@/service/admin/master";
 import {AdminControlCode} from "@/utils/permission";
@@ -237,6 +237,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({control, statusOptions, onSuccess}
             width={460}
             modalProps={{
                 confirmLoading: formSubmitting,
+                mask: {closable: true},
                 okText: "提交",
                 cancelText: "取消",
                 forceRender: true,

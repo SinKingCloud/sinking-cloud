@@ -198,6 +198,12 @@ export const admin = [
                 name: "admin.person.session",
             },
             {
+                path: "log",
+                component: "@/pages/admin/person/log",
+                title: "操作日志",
+                name: "admin.person.log",
+            },
+            {
                 path: "",
                 redirect: "info",
             },

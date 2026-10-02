@@ -2,16 +2,9 @@ import React, {useRef, useState} from "react";
 import {App, Button, Dropdown, Form, Input, Select, Spin} from "antd";
 import {ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {createStyles} from "antd-style";
-import {getData} from "@/utils/page";
+import {buildOptions, buildValueEnum, dateRangeTransform, getData} from "@/utils/page";
 import useEnum, {clearEnumCache} from "@/utils/enum";
-import {
-    createChannel,
-    deleteChannel,
-    getChannelInfo,
-    getChannelList,
-    updateChannel,
-} from "@/service/admin/driver";
-import {buildOptions, buildValueEnum, dateRangeTransform} from "@/utils/page";
+import {createChannel, deleteChannel, getChannelInfo, getChannelList, updateChannel,} from "@/service/admin/driver";
 import {normalizeConfig} from "@/utils/string";
 import {AdminControlCode} from "@/utils/permission";
 
@@ -304,6 +297,7 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
                 onOk={form.submit}
                 width={420}
                 modalProps={{
+                    mask: {closable: true},
                     confirmLoading: submitLoading || infoLoading,
                     forceRender: true,
                     okText: "提交",

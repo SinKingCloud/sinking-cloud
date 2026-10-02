@@ -4,12 +4,7 @@ import {App, Button, Dropdown, Form, Input, Result} from "antd";
 import {dateRangeTransform, emptyTableData, getData, normalizeIds} from "@/utils/page";
 import useControl from "@/utils/control";
 import {AdminControlCode} from "@/utils/permission";
-import {
-    createPermission,
-    deletePermission,
-    getPermissionList,
-    updatePermission
-} from "@/service/admin/permission";
+import {createPermission, deletePermission, getPermissionList, updatePermission} from "@/service/admin/permission";
 
 export default (): React.ReactNode => {
     const {message, modal} = App.useApp();
@@ -119,6 +114,7 @@ export default (): React.ReactNode => {
         modal.confirm({
             title: "删除权限",
             content: `确定删除选中的 ${nextIds.length} 条权限吗？`,
+            mask: {closable: true},
             okText: "确 定",
             okButtonProps: {danger: true, type: "default"},
             cancelText: "取 消",
@@ -265,6 +261,7 @@ export default (): React.ReactNode => {
                     onOk={form.submit}
                     width={350}
                     modalProps={{
+                        mask: {closable: true},
                         confirmLoading: formSubmitting,
                         forceRender: true,
                         okText: "提交",
