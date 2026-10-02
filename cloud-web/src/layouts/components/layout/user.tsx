@@ -636,9 +636,9 @@ const RightTop: React.FC = () => {
                              </div>
                              <Icon type="RightOutlined"/>
                          </li>
-                         <li className={menuItem} onClick={() => historyPush("user.person.session")}>
-                             <div className={menuItemLabel}><Icon type="DeploymentUnitOutlined"
-                                                                  className={menuItemLeadIcon}/>会话管理
+                         <li className={menuItem} onClick={() => historyPush("user.person.pay")}>
+                             <div className={menuItemLabel}><Icon type="WalletOutlined"
+                                                                  className={menuItemLeadIcon}/>财务管理
                              </div>
                              <Icon type="RightOutlined"/>
                          </li>
