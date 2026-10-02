@@ -4,6 +4,8 @@ import (
 	"service-admin/app/model"
 	"service-admin/app/service"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -24,6 +26,7 @@ func (Controller) Create(c *context.Context) {
 		Path: form.Path,
 	})
 	if err == nil {
+		_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventCreate, "创建权限", "创建权限["+form.Name+"]")
 		c.Success("创建数据成功")
 	} else {
 		c.Error(err.Error())

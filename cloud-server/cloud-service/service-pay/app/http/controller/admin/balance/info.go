@@ -1,9 +1,12 @@
 package balance
 
 import (
+	"fmt"
 	"service-pay/app/service"
 	"strconv"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
@@ -22,6 +25,7 @@ func (Controller) Info(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventShow, "查看用户余额", fmt.Sprintf("查看用户[%d]的余额", form.UserId))
 	c.SuccessWithData("获取数据成功", sinking_web.H{
 		"money":             strconv.FormatFloat(info.Money, 'f', 2, 64),
 		"frozen":            strconv.FormatFloat(info.Frozen, 'f', 2, 64),

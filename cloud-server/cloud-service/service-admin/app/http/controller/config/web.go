@@ -7,7 +7,7 @@ import (
 
 // Web 网站配置
 func (s Controller) Web(c *context.Context) {
-	s.config(c, constant.WebGroup, []string{
+	s.config(c, constant.WebGroup, "网站配置", []string{
 		constant.WebUrl,
 		constant.WebApi,
 		constant.WebName,

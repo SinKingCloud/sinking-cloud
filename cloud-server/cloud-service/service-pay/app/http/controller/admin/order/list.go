@@ -5,6 +5,8 @@ import (
 	"service-pay/app/service"
 	"strconv"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -117,5 +119,6 @@ func (Controller) List(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventShow, "查看系统订单列表", "查看系统订单列表")
 	c.SuccessWithData("获取数据成功", data)
 }

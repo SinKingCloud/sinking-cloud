@@ -5,6 +5,8 @@ import (
 	"service-admin/app/service"
 	"strconv"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -23,6 +25,7 @@ func (Controller) Log(c *context.Context) {
 		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
 		CreateTimeEnd   string `json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
 	}
+
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
@@ -67,5 +70,6 @@ func (Controller) Log(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventShow, "查看管理员操作日志", "查看管理员操作日志")
 	c.SuccessWithData("获取数据成功", data)
 }

@@ -4,6 +4,8 @@ import (
 	"service-pay/app/service"
 	"service-pay/app/service/channel"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -41,8 +43,10 @@ func (Controller) Pay(c *context.Context) {
 			c.Error(err.Error())
 			return
 		}
+		_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventEdit, "修改支付配置", "修改支付配置")
 		c.Success("更新配置成功")
 		return
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventShow, "查看支付配置", "查看支付配置")
 	c.SuccessWithData("获取数据成功", service.Channel.GetConfig(false))
 }

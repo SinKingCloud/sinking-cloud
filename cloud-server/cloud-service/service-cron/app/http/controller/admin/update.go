@@ -1,10 +1,13 @@
 package admin
 
 import (
+	"fmt"
 	"service-cron/app/repository/task"
 	"service-cron/app/service"
 	"strconv"
 
+	commonService "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -62,5 +65,6 @@ func (Controller) Update(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = commonService.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventEdit, "修改计划任务", fmt.Sprintf("修改计划任务[%d]", form.Id))
 	c.Success("更新数据成功")
 }

@@ -1,8 +1,11 @@
 package user
 
 import (
+	"fmt"
 	"service-user/app/service"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -21,5 +24,6 @@ func (Controller) Logout(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventLogin, "注销用户会话", fmt.Sprintf("注销用户[%d]的%d个会话", form.Id, len(form.Tokens)))
 	c.Success("注销会话成功")
 }

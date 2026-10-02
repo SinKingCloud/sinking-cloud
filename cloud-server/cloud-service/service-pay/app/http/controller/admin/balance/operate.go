@@ -1,10 +1,13 @@
 package balance
 
 import (
+	"fmt"
 	"service-pay/app/enum/balance_log_type"
 	"service-pay/app/service"
 	"strconv"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -39,5 +42,6 @@ func (Controller) Operate(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventEdit, balance_log_type.Map()[logType], fmt.Sprintf("%s：用户[%d]，金额[%.4f]", balance_log_type.Map()[logType], form.UserId, form.Money))
 	c.Success("操作成功")
 }

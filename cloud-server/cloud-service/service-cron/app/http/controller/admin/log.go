@@ -1,8 +1,11 @@
 package admin
 
 import (
+	"fmt"
 	"service-cron/app/service"
 
+	commonService "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -21,5 +24,6 @@ func (Controller) Log(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = commonService.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventShow, "查看计划任务执行日志", fmt.Sprintf("查看计划任务[%d]执行日志", form.Id))
 	c.SuccessWithData("获取数据成功", data)
 }

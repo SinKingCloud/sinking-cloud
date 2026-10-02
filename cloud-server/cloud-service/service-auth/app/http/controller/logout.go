@@ -4,6 +4,7 @@ import (
 	"service-auth/app/service"
 
 	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -24,6 +25,9 @@ func Logout(c *context.Context) {
 	if err = service.Auth.Logout(form.IsAdmin, u.Token); err != nil {
 		c.Error(err.Error())
 		return
+	}
+	if form.IsAdmin {
+		_ = service2.User.CreateSystemUserLog(u.Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventLogin, "管理员退出登录", "管理员退出登录")
 	}
 	c.Success("注销登录成功")
 }

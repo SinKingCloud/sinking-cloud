@@ -7,7 +7,7 @@ import (
 
 // Aliyun 阿里云配置
 func (s Controller) Aliyun(c *context.Context) {
-	s.config(c, constant.AliGroup, []string{
+	s.config(c, constant.AliGroup, "阿里云配置", []string{
 		constant.AliKey,
 		constant.AliSecret,
 		constant.AliSmsSign,

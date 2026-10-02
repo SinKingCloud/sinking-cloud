@@ -7,7 +7,7 @@ import (
 
 // Ui 界面配置
 func (s Controller) Ui(c *context.Context) {
-	s.config(c, constant.UiGroup, []string{
+	s.config(c, constant.UiGroup, "界面配置", []string{
 		constant.UiUserLayout,
 		constant.UiUserWaterMark,
 		constant.UiUserTheme,

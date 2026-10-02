@@ -2,7 +2,10 @@ package master
 
 import (
 	"service-admin/app/service"
+	"strconv"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -21,5 +24,6 @@ func (Controller) Logout(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventLogin, "注销管理员会话", "注销管理员["+strconv.FormatInt(form.Id, 10)+"]会话")
 	c.Success("注销会话成功")
 }

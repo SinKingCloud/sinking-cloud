@@ -6,8 +6,9 @@ import (
 	"service-admin/app/enum/permission_code"
 	"service-admin/app/enum/role_name"
 	"service-admin/app/enum/role_status"
-	"service-admin/app/enum/user_log_type"
 	"service-admin/app/enum/user_status"
+
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 )
 
 // Data 枚举信息

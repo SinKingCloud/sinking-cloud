@@ -1,10 +1,13 @@
 package channel
 
 import (
+	"fmt"
 	"service-pay/app/repository/channel"
 	"service-pay/app/service"
 	"strconv"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -40,5 +43,6 @@ func (Controller) Update(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventEdit, "修改支付通道", fmt.Sprintf("修改支付通道[%d]", form.Id))
 	c.Success("更新数据成功")
 }

@@ -1,8 +1,11 @@
 package file
 
 import (
+	"fmt"
 	"service-driver/app/service"
 
+	commonService "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -21,5 +24,10 @@ func (Controller) Delete(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	content := fmt.Sprintf("删除文件记录%v", form.Ids)
+	if form.Clear {
+		content += "，请求清理存储文件"
+	}
+	_ = commonService.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventDelete, "删除文件记录", content)
 	c.Success("更新数据成功")
 }

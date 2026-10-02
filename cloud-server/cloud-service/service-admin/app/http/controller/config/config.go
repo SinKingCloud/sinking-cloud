@@ -3,6 +3,8 @@ package config
 import (
 	"service-admin/app/service"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -10,7 +12,7 @@ type Controller struct {
 }
 
 // config 处理配置获取和更新
-func (Controller) config(c *context.Context, group string, keys []string) {
+func (Controller) config(c *context.Context, group string, name string, keys []string) {
 	var form struct {
 		Action string            `json:"action" default:"get" validate:"required,oneof=get set" label:"操作类型"`
 		Data   map[string]string `json:"data" default:"" label:"配置数据"`
@@ -31,6 +33,7 @@ func (Controller) config(c *context.Context, group string, keys []string) {
 			return
 		}
 		service.Config.SetSysConfigs(data)
+		_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventEdit, "修改"+name, "修改"+name)
 		c.Success("更新数据成功")
 		return
 	}
@@ -40,5 +43,6 @@ func (Controller) config(c *context.Context, group string, keys []string) {
 			configs[key] = ""
 		}
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventShow, "查看"+name, "查看"+name)
 	c.SuccessWithData("获取数据成功", configs)
 }

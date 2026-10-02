@@ -5,6 +5,8 @@ import (
 	"service-admin/app/service"
 	"strconv"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -16,6 +18,7 @@ func (Controller) Update(c *context.Context) {
 		Status  string   `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
 		MenuIds *[]int64 `json:"menu_ids" validate:"omitempty,unique" label:"菜单ID列表"`
 	}
+
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
@@ -37,5 +40,6 @@ func (Controller) Update(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventEdit, "修改角色", "修改角色["+strconv.FormatInt(form.Id, 10)+"]")
 	c.Success("更新数据成功")
 }

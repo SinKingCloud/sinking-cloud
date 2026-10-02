@@ -1,10 +1,13 @@
 package user
 
 import (
+	"fmt"
 	"service-user/app/repository/user"
 	"service-user/app/service"
 	"strconv"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
@@ -81,5 +84,6 @@ func (Controller) Update(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventEdit, "修改用户信息", fmt.Sprintf("修改用户%v", form.Ids))
 	c.Success("更新数据成功")
 }

@@ -4,6 +4,8 @@ import (
 	"service-admin/app/model"
 	"service-admin/app/service"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
@@ -36,5 +38,6 @@ func (Controller) Create(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventCreate, "创建管理员", "创建管理员["+form.Account+"]")
 	c.Success("创建数据成功")
 }

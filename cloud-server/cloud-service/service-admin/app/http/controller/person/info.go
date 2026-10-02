@@ -3,6 +3,8 @@ package person
 import (
 	"service-admin/app/service"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -27,6 +29,7 @@ func (Controller) Info(c *context.Context) {
 			"expire_time": s.ExpireTime.String(),
 		}
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventShow, "查看账户信息", "查看账户信息")
 	c.SuccessWithData("获取用户信息成功", sinking_web.H{
 		"id":        info.Id,
 		"avatar":    info.Avatar,

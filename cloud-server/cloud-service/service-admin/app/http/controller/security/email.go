@@ -5,6 +5,7 @@ import (
 	"service-admin/app/service"
 
 	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -34,6 +35,7 @@ func (Controller) Email(c *context.Context) {
 	if err = service.User.UpdateById(c.GetUserInfo().Id, &user.UpdateUser{
 		Email: &form.Mail,
 	}); err == nil {
+		_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventEdit, "修改账户邮箱", "修改账户邮箱")
 		c.Success("修改邮箱成功")
 	} else {
 		c.Error("修改邮箱失败")

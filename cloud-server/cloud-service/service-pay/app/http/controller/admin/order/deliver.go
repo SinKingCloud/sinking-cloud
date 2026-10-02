@@ -1,8 +1,11 @@
 package order
 
 import (
+	"fmt"
 	"service-pay/app/service"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -20,5 +23,6 @@ func (Controller) Deliver(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventEdit, "系统订单发货", fmt.Sprintf("发货订单[%d]", form.Id))
 	c.Success("订单发货成功")
 }

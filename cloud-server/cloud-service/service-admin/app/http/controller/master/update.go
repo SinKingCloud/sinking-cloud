@@ -5,6 +5,8 @@ import (
 	"service-admin/app/service"
 	"strconv"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
@@ -36,8 +38,7 @@ func (Controller) Update(c *context.Context) {
 		data.Email = &form.Email
 	}
 	if form.Password != "" {
-		password := str.NewStringTool(form.Password).GetPassword()
-		data.Password = &password
+		data.Password = new(str.NewStringTool(form.Password).GetPassword())
 	}
 	if form.Avatar != "" {
 		data.Avatar = &form.Avatar
@@ -58,5 +59,6 @@ func (Controller) Update(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventEdit, "修改管理员", "修改管理员["+strconv.FormatInt(form.Id, 10)+"]")
 	c.Success("更新数据成功")
 }

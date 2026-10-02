@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"service-admin/app/constant"
-	"service-admin/app/enum/user_log_type"
 	"service-admin/app/model"
 	"service-admin/app/queue/user_log"
 	userLogRepository "service-admin/app/repository/user_log"
@@ -13,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/ip"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/page"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"

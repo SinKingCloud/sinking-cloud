@@ -1,10 +1,13 @@
 package scene
 
 import (
+	"fmt"
 	"service-driver/app/repository/scene"
 	"service-driver/app/service"
 	"strconv"
 
+	commonService "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -62,5 +65,6 @@ func (Controller) Update(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = commonService.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventEdit, "修改上传场景", fmt.Sprintf("修改上传场景[%d]", form.Id))
 	c.Success("更新数据成功")
 }

@@ -5,6 +5,7 @@ import (
 	"service-admin/app/service"
 
 	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -40,6 +41,7 @@ func (Controller) Verify(c *context.Context) {
 		if u.Phone == "" && u.Email == "" && u.Password != "" {
 			data["password"] = true
 		}
+		_ = service2.User.CreateSystemUserLog(u.Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventShow, "查看账户安全验证方式", "查看账户安全验证方式")
 		c.SuccessWithData("获取验证方式成功", data)
 		return
 	}
@@ -82,5 +84,6 @@ func (Controller) Verify(c *context.Context) {
 	}
 	minute := 10
 	service.User.SetUserVerifyStatus(u.Id, true, minute)
+	_ = service2.User.CreateSystemUserLog(u.Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventEdit, "完成账户安全验证", "完成账户安全验证")
 	c.Success(fmt.Sprintf("验证成功,此次验证%d分钟内有效", minute))
 }

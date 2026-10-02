@@ -4,6 +4,8 @@ import (
 	"service-driver/app/model"
 	"service-driver/app/service"
 
+	commonService "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -35,5 +37,6 @@ func (Controller) Create(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
+	_ = commonService.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventCreate, "创建上传场景", "创建上传场景["+form.Name+"]")
 	c.Success("创建数据成功")
 }

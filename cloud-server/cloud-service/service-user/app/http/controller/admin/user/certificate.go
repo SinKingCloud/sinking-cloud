@@ -1,10 +1,13 @@
 package user
 
 import (
+	"fmt"
 	"service-user/app/enum/real_auth_status"
 	"service-user/app/enum/real_auth_type"
 	"service-user/app/service"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
@@ -44,5 +47,6 @@ func (Controller) Certificate(c *context.Context) {
 			data["company_no"] = info.CompanyNo
 		}
 	}
+	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventShow, "查看用户实名信息", fmt.Sprintf("查看用户[%d]的实名信息", form.Id))
 	c.SuccessWithData("获取数据成功", data)
 }

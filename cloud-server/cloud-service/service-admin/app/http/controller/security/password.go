@@ -4,6 +4,8 @@ import (
 	"service-admin/app/repository/user"
 	"service-admin/app/service"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/str"
 )
@@ -30,6 +32,7 @@ func (Controller) Password(c *context.Context) {
 	if err = service.User.UpdateById(c.GetUserInfo().Id, &user.UpdateUser{
 		Password: &password,
 	}); err == nil {
+		_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventEdit, "修改账户密码", "修改账户密码")
 		c.Success("修改密码成功")
 	} else {
 		c.Error("修改密码失败")

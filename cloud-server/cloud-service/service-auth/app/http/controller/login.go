@@ -3,7 +3,10 @@ package controller
 import (
 	"service-auth/app/service"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/jwt"
 )
 
 // Login 账号登录
@@ -34,6 +37,11 @@ func Login(c *context.Context) {
 	if err != nil {
 		c.Error(err.Error())
 		return
+	}
+	if form.IsAdmin {
+		if claims := jwt.CheckToken(token); claims != nil && claims.User != nil && claims.User.Id > 0 {
+			_ = service2.User.CreateSystemUserLog(claims.User.Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventLogin, "管理员登录", "管理员登录")
+		}
 	}
 	c.SuccessWithData("登录成功", token)
 }

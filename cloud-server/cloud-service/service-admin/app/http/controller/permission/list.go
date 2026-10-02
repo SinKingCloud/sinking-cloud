@@ -4,6 +4,8 @@ import (
 	"service-admin/app/repository/permission"
 	"service-admin/app/service"
 
+	service2 "github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service"
+	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/service/user/user_log_type"
 	"github.com/SinKingCloud/sinking-cloud/cloud-server/cloud-common/util/context"
 )
 
@@ -19,6 +21,7 @@ func (Controller) List(c *context.Context) {
 		UpdateTimeStart string `json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
 		UpdateTimeEnd   string `json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
 	}
+
 	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
@@ -49,6 +52,7 @@ func (Controller) List(c *context.Context) {
 	if err != nil {
 		c.Error("获取数据失败")
 	} else {
+		_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventShow, "查看权限列表", "查看权限列表")
 		c.SuccessWithData("获取数据成功", data)
 	}
 }
