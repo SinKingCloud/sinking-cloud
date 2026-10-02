@@ -1,7 +1,6 @@
 import React, {useRef, useState} from 'react';
-import type {ModalTableProps, ModalTableRef} from "sinking-antd";
-import {Body, ModalTable, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
-import {App, Button, Col, Dropdown, Form, Grid, Input, Result, Row, Select, Spin, Tooltip, Typography} from "antd";
+import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
+import {App, Button, Col, Dropdown, Form, Input, Result, Row, Select, Spin, Tooltip, Typography} from "antd";
 import {createStyles} from "antd-style";
 import defaultSettings from "@/../config/defaultSettings";
 import {buildOptions, buildValueEnum, dateRangeTransform, emptyTableData, getData, normalizeIds} from "@/utils/page";
@@ -9,7 +8,8 @@ import useEnum from "@/utils/enum";
 import useControl from "@/utils/control";
 import {AdminControlCode} from "@/utils/permission";
 import AceEditor from "@/pages/components/ace-editor";
-import {createCron, deleteCron, getCronInfo, getCronList, getCronLog, runCron, updateCron} from "@/service/admin/cron";
+import {createCron, deleteCron, getCronInfo, getCronList, runCron, updateCron} from "@/service/admin/cron";
+import CronLog, {CronLogRef} from "./components/log";
 import Schedule from "./components/schedule";
 import {describeSchedule, parseSchedule} from "./utils";
 
@@ -33,7 +33,6 @@ const useStyles: any = createStyles(({token}: any) => ({
 export default (): React.ReactNode => {
     const {message, modal} = App.useApp();
     const {styles} = useStyles();
-    const screens = Grid.useBreakpoint();
     const [enumData, enumLoading] = useEnum(["cron.task"]) as any;
     const control = useControl();
     const hasListControl = control.hasControl(AdminControlCode.SYSTEM_CRON_LIST);
@@ -261,51 +260,7 @@ export default (): React.ReactNode => {
     /**
      * 任务日志
      */
-    const logModalRef = useRef<ModalTableRef | null>(null);
-    const [logScene, setLogScene] = useState<any>({
-        id: undefined,
-        title: "任务日志",
-    });
-
-    const openLog = (record: any) => {
-        if (!hasLogControl) {
-            message?.warning("暂无任务日志权限");
-            return;
-        }
-        const id = Number(record?.id);
-        if (!id) {
-            return;
-        }
-        setLogScene({
-            id,
-            title: `任务日志`,
-        });
-        logModalRef.current?.show();
-    };
-
-    const logColumns: ModalTableProps["columns"] = [
-        {
-            title: "ID",
-            dataIndex: "id",
-            width: 180,
-            sorter: true,
-        },
-        {
-            title: "日志内容",
-            dataIndex: "content",
-            render: (value: string) => (
-                <Typography.Text style={{whiteSpace: "pre-wrap", overflowWrap: "anywhere"}}>
-                    {value || "-"}
-                </Typography.Text>
-            ),
-        },
-        {
-            title: "创建时间",
-            dataIndex: "create_time",
-            width: 180,
-            sorter: true,
-        },
-    ];
+    const logRef = useRef<CronLogRef | null>(null);
 
     /**
      * 表格
@@ -389,7 +344,7 @@ export default (): React.ReactNode => {
                     hasLogControl ? {
                         key: "log",
                         label: "日志",
-                        onClick: () => openLog(record),
+                        onClick: () => logRef.current?.open(record),
                     } : null,
                     hasRunControl ? {
                         key: "run",
@@ -543,44 +498,7 @@ export default (): React.ReactNode => {
                     </Form>
                 </ProModal>
 
-                <ModalTable
-                    ref={logModalRef}
-                    title={<Title>{logScene?.title}</Title>}
-                    width={760}
-                    minHeight={440}
-                    scrollMode="modal"
-                    modalProps={{
-                        style: {
-                            top: screens.md ? 100 : 24,
-                            paddingBottom: screens.md ? 100 : 24,
-                            maxWidth: "calc(100vw - 24px)",
-                        },
-                        mask: {
-                            closable: true,
-                        },
-                        afterClose: () => {
-                            setLogScene({
-                                id: undefined,
-                                title: "任务日志",
-                            });
-                        },
-                    }}
-                    search={false}
-                    rowKey="id"
-                    columns={logColumns}
-                    scroll={{x: 700}}
-                    defaultPage={1}
-                    defaultPageSize={10}
-                    params={{id: logScene?.id}}
-                    requestEnabled={hasLogControl && !!logScene?.id}
-                    request={(params, sort) => {
-                        if (!hasLogControl || !logScene?.id) {
-                            return Promise.resolve(emptyTableData);
-                        }
-                        return getData({...params}, sort, getCronLog);
-                    }}
-                    toolbar={false}
-                    pagination={{unit: "条"}}/>
+                <CronLog ref={logRef} control={control}/>
             </>}
         </Body>
     );
