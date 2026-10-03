@@ -1,3114 +1,687 @@
 import React, {useEffect, useRef, useState} from "react";
-import {Col, Row, Statistic} from "antd";
-import {createStyles} from "antd-style";
+import {Drawer} from "antd";
 import {useModel} from "umi";
 import {Body, Icon, useTheme} from "sinking-antd";
-
 import Settings from "@/../config/defaultSettings";
 import {deleteHeader} from "@/utils/auth";
 import {logout} from "@/service/common/login";
 import {historyPush} from "@/utils/route";
-import {getPath as getAssetPath} from "@/utils/assets";
+import HomeVisual from "./components/visual";
+import {createStyles} from "antd-style";
 
-type HomeSvgIconType = "deploy" | "shield" | "speed" | "module" | "support" | "global" | "monitor" | "api" | "safe" | "ops";
+const useStyles = createStyles(({css, token, isDarkMode}) => {
+    const ink = token.colorTextHeading;
+    const muted = token.colorTextSecondary;
+    const line = token.colorBorderSecondary;
+    const paper = token.colorBgContainer;
+    const accent = token.colorPrimary;
+    const wash = `color-mix(in srgb, ${accent} 2%, ${paper})`;
 
-const HomeSvgIcon = ({type}: { type: HomeSvgIconType }) => {
-    const common = {
-        className: "theme-svg-icon",
-        viewBox: "0 0 48 48",
-        fill: "none",
-        xmlns: "http://www.w3.org/2000/svg",
+    return {
+        body: css`padding: 0 !important;`,
+        page: css`
+            position: relative; overflow: clip; width: 100%; color: ${ink}; background: ${paper}; -webkit-font-smoothing: antialiased;
+            *, *::before, *::after { box-sizing: border-box; }
+            h1, h2, h3, p { margin: 0; }
+            button, a { -webkit-tap-highlight-color: transparent; }
+            button { font-family: inherit; cursor: pointer; }
+            button:focus-visible, a:focus-visible { outline: 2px solid ${accent}; outline-offset: 5px; }
+            .home-reveal { transition: opacity .45s ease, transform .45s ease; }
+            &[data-motion="true"] .home-reveal:not([data-visible="true"]) { opacity: 0; transform: translateY(14px); }
+            @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+        `,
+        container: css`
+            width: min(100%, 1450px); margin-inline: auto; padding-inline: clamp(24px, 5vw, 80px);
+            @media (max-width: 575px) { padding-inline: 22px; }
+        `,
+        header: css`
+            position: fixed; inset: 0 0 auto; z-index: 50; height: 76px; border-bottom: 1px solid transparent;
+            background: transparent; transition: background .25s, border-color .25s;
+            &[data-scrolled="true"] {
+                background: color-mix(in srgb, ${paper} 97%, transparent);
+                border-color: color-mix(in srgb, ${line} 60%, transparent);
+                @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+                    background: color-mix(in srgb, ${paper} ${isDarkMode ? 68 : 64}%, transparent);
+                    -webkit-backdrop-filter: blur(20px) saturate(150%);
+                    backdrop-filter: blur(20px) saturate(150%);
+                }
+            }
+            @media (max-width: 767px) { height: 64px; }
+        `,
+        headerInner: css`display: flex; align-items: center; justify-content: space-between; gap: 34px; height: 100%;`,
+        logo: css`
+            display: inline-flex; align-items: center; flex-shrink: 0; gap: 10px; border: 0; padding: 0; color: ${ink}; background: transparent; font-size: 18px; font-weight: 650; letter-spacing: -.5px;
+            img { width: 32px; height: 32px; object-fit: contain; }
+            .anticon { color: ${accent}; font-size: 31px; }
+            @media (max-width: 575px) { font-size: 16px; img { width: 28px; height: 28px; } }
+        `,
+        nav: css`
+            display: flex; align-items: center; justify-content: center; gap: 30px; margin-left: auto;
+            button { position: relative; padding: 9px 0; border: 0; color: ${muted}; background: transparent; font-size: 13px; transition: color .2s;
+                &:hover, &[aria-current="true"] { color: ${ink}; }
+                &[aria-current="true"]::after { position: absolute; bottom: 0; left: calc(50% - 2px); width: 4px; height: 4px; border-radius: 50%; background: ${accent}; content: ""; }
+            }
+            @media (max-width: 991px) { gap: 22px; }
+            @media (max-width: 767px) { display: none; }
+        `,
+        headerActions: css`
+            display: flex; align-items: center; gap: 20px;
+            @media (max-width: 991px) { gap: 12px; }
+            @media (max-width: 767px) { display: none; }
+        `,
+        textButton: css`
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 0; padding: 0; color: ${accent}; background: transparent; font-size: 13px; transition: opacity .2s;
+            &:hover { opacity: .7; }
+        `,
+        themeButton: css`
+            display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 50%; color: ${muted}; background: transparent; font-size: 18px;
+            &:hover { color: ${accent}; background: ${wash}; }
+        `,
+        primaryButton: css`
+            position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 22px; height: 48px; border: 1px solid ${accent}; border-radius: 7px; padding: 0 25px;
+            color: ${token.colorTextLightSolid}; background: ${accent}; font-size: 14px; font-weight: 500; transition: background .18s, border-color .18s, box-shadow .2s;
+            &::before { position: absolute; inset: -30% auto -30% -65%; width: 45%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.23), transparent); transform: skewX(-22deg); transition: left .5s ease; content: ""; }
+            &:hover { background: ${token.colorPrimaryHover}; border-color: ${token.colorPrimaryHover}; box-shadow: 0 6px 20px -9px color-mix(in srgb, ${accent} 55%, transparent); &::before { left: 125%; } }
+            &:active { background: ${token.colorPrimaryActive}; border-color: ${token.colorPrimaryActive}; }
+            .anticon { font-size: 13px; }
+            &[data-small="true"] { height: 36px; gap: 12px; padding: 0 17px; font-size: 12px; border-radius: 6px; }
+        `,
+        secondaryButton: css`
+            display: inline-flex; align-items: center; justify-content: center; gap: 14px; height: 48px; border: 1px solid ${line}; border-radius: 8px; padding: 0 24px;
+            color: ${ink}; background: ${paper}; font-size: 14px; transition: border-color .18s, color .18s;
+            &:hover { color: ${accent}; border-color: ${accent}; }
+            .anticon { font-size: 12px; }
+        `,
+        mobileToggle: css`
+            display: none;
+            @media (max-width: 767px) { display: grid; place-items: center; width: 34px; height: 34px; border: 0; padding: 0; color: ${ink}; background: transparent; font-size: 20px; }
+        `,
+        mobileMenuBody: css`
+            display: flex; flex-direction: column; padding: 20px 24px 28px !important; background: ${paper};
+            nav { display: grid; margin-bottom: 30px; }
+            nav button { display: flex; align-items: center; justify-content: space-between; border: 0; border-bottom: 1px solid ${line}; padding: 20px 0; color: ${ink}; background: transparent; font-size: 16px; .anticon { font-size: 12px; color: ${muted}; } }
+        `,
+        mobileTheme: css`
+            margin-top: auto; margin-bottom: 24px;
+            > span { display: block; margin-bottom: 12px; color: ${muted}; font-size: 12px; }
+            > div { display: flex; gap: 8px; }
+            button { display: inline-flex; align-items: center; justify-content: center; flex: 1; gap: 7px; height: 38px; border: 1px solid ${line}; border-radius: 6px; color: ${muted}; background: transparent; font-size: 13px;
+                &[aria-pressed="true"] { color: ${accent}; border-color: ${accent}; background: ${wash}; }
+            }
+        `,
+        mobileActions: css`display: grid; gap: 12px;`,
+        spotlight: css`
+            display: none; position: absolute; z-index: -1; top: 0; left: 0; width: 440px; height: 440px; pointer-events: none; opacity: 0;
+            background: radial-gradient(circle, color-mix(in srgb, ${accent} ${isDarkMode ? 18 : 11}%, transparent), color-mix(in srgb, ${accent} 4%, transparent) 38%, transparent 70%);
+            transform: translate3d(var(--spotlight-x, 0px), var(--spotlight-y, 0px), 0) translate(-50%, -50%);
+            transition: opacity .4s ease;
+            [data-spotlight="hero"] > & { width: 780px; height: 780px; }
+            [data-highlighted="true"] > & { opacity: 1; }
+            @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) { display: block; }
+        `,
+        hero: css`
+            position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; min-height: 100vh; min-height: 100svh; padding-top: 76px;
+            background: linear-gradient(115deg, ${paper} 22%, color-mix(in srgb, ${accent} ${isDarkMode ? 10 : 4}%, ${paper}) 75%, color-mix(in srgb, ${accent} ${isDarkMode ? 13 : 6}%, ${paper}));
+            &::before {
+                position: absolute; z-index: -1; inset: 0; pointer-events: none;
+                background-image: linear-gradient(color-mix(in srgb, ${accent} 5%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, ${accent} 5%, transparent) 1px, transparent 1px);
+                background-size: 72px 72px;
+                mask-image: radial-gradient(ellipse at 76% 46%, #000 12%, transparent 68%);
+                -webkit-mask-image: radial-gradient(ellipse at 76% 46%, #000 12%, transparent 68%);
+                content: "";
+            }
+            &::after { position: absolute; z-index: -1; inset: 10% -10% 0 40%; pointer-events: none; background: radial-gradient(ellipse at center, color-mix(in srgb, ${accent} ${isDarkMode ? 11 : 7}%, transparent), transparent 62%); content: ""; }
+            @media (max-width: 767px) { padding-top: 64px; }
+        `,
+        heroInner: css`
+            position: relative; display: grid; flex: 1; grid-template-columns: .92fr 1.08fr; align-items: center; gap: 22px;
+            padding-top: 35px; padding-bottom: 40px;
+            @media (max-width: 1100px) { grid-template-columns: 1fr 1fr; gap: 0; }
+            @media (max-width: 767px) { grid-template-columns: 1fr; gap: 0; padding-top: 40px; padding-bottom: 5px; }
+        `,
+        heroCopy: css`
+            position: relative; z-index: 2; min-width: 0; padding-bottom: 10px;
+            h1 { margin-top: 27px; color: ${ink}; font-size: clamp(46px, 5.25vw, 78px); line-height: 1.23; font-weight: 700; letter-spacing: -3.4px; white-space: nowrap;
+                span { display: block; color: ${accent}; background: linear-gradient(115deg, ${token.colorPrimaryActive} 8%, ${accent} 58%, ${token.colorPrimaryHover}); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+            }
+            > p { max-width: 390px; margin-top: 25px; color: ${muted}; font-size: 15px; line-height: 1.9; }
+            @media (max-width: 1100px) { h1 { font-size: clamp(42px, 5.2vw, 60px); letter-spacing: -2.8px; } }
+            @media (max-width: 767px) { padding-bottom: 0; text-align: center; h1 { margin-top: 22px; font-size: clamp(40px, 8.5vw, 58px); letter-spacing: -2px; } > p { max-width: 360px; margin: 19px auto 0; font-size: 13px; } }
+        `,
+        heroEyebrow: css`
+            display: inline-flex; align-items: center; gap: 10px; color: ${accent}; font-size: 10px; font-weight: 500; letter-spacing: 1.6px;
+            > span { width: 6px; height: 6px; border-radius: 50%; background: ${accent}; box-shadow: 0 0 0 5px color-mix(in srgb, ${accent} ${isDarkMode ? 10 : 6}%, transparent); }
+            @media (max-width: 575px) { font-size: 9px; letter-spacing: 1.5px; }
+        `,
+        heroActions: css`
+            display: flex; gap: 12px; margin-top: 34px;
+            button { height: 50px; }
+            @media (max-width: 767px) { justify-content: center; margin-top: 25px; }
+            @media (max-width: 575px) { button { height: 44px; font-size: 13px; padding-inline: 20px; gap: 16px; } }
+        `,
+        heroNotes: css`
+            display: flex; align-items: center; gap: 18px; margin-top: 29px; color: ${muted}; font-size: 11px;
+            span { display: inline-flex; align-items: center; gap: 6px; }
+            .anticon { color: ${accent}; font-size: 11px; }
+            @media (max-width: 767px) { justify-content: center; gap: 20px; margin-top: 21px; font-size: 10px; }
+        `,
+        heroArt: css`
+            position: relative; min-width: 0; width: calc(100% + 90px); margin-left: -30px; margin-right: -60px;
+            @media (max-width: 1100px) { width: calc(100% + 60px); margin-inline: -20px -40px; }
+            @media (max-width: 767px) { width: min(115%, 500px); max-width: none; justify-self: center; margin: -14px 0 -15px; }
+        `,
+        visual: css`
+            width: 100%; max-height: min(650px, calc(100svh - 250px)); aspect-ratio: 1.05;
+            @media (max-width: 767px) { max-height: 350px; }
+        `,
+        artCaption: css`
+            position: absolute; bottom: 3%; left: 17%; right: 13%; display: flex; justify-content: space-between; align-items: center; gap: 15px; padding-top: 13px; border-top: 1px solid color-mix(in srgb, ${accent} 12%, transparent); color: ${muted}; font-size: 8px; letter-spacing: 1.5px;
+            > span:last-child { color: ${accent}; font-size: 9px; letter-spacing: .7px; }
+            @media (max-width: 767px) { display: none; }
+        `,
+        heroBottom: css`
+            position: relative; display: flex; align-items: center; justify-content: space-between; gap: 25px; min-height: 86px; color: ${muted}; font-size: 10px;
+            &::before { position: absolute; top: 0; left: clamp(24px, 5vw, 80px); right: clamp(24px, 5vw, 80px); height: 1px; background: ${line}; content: ""; }
+            > span { font-size: 8px; letter-spacing: 1.8px; }
+            > div { display: flex; gap: 42px; span { display: flex; align-items: center; gap: 13px; } b { color: ${accent}; font-size: 9px; font-weight: 400; font-family: monospace; } }
+            button { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid ${line}; border-radius: 50%; color: ${muted}; background: transparent; transition: border-color .2s, color .2s; &:hover { color: ${accent}; border-color: ${accent}; } }
+            @media (max-width: 767px) { min-height: 61px; > div { gap: 22px; span { gap: 7px; } } > span { display: none; } font-size: 10px; }
+            @media (max-width: 360px) { > div { gap: 14px; } }
+        `,
+        section: css`
+            padding-block: 112px;
+            @media (max-width: 991px) { padding-block: 80px; }
+            @media (max-width: 575px) { padding-block: 64px; }
+        `,
+        eyebrow: css`display: inline-block; color: ${muted}; font-size: 9px; line-height: 1.6; letter-spacing: 1.8px; font-weight: 500;`,
+        sectionHeading: css`
+            display: flex; align-items: flex-end; justify-content: space-between; gap: 35px; margin-bottom: 44px;
+            h2 { margin-top: 18px; font-size: clamp(30px, 3vw, 42px); font-weight: 550; line-height: 1.4; letter-spacing: -1.3px; span { color: ${muted}; } }
+            > p { max-width: 320px; padding-bottom: 4px; color: ${muted}; font-size: 13px; line-height: 1.9; }
+            @media (max-width: 767px) { display: block; margin-bottom: 30px; h2 { font-size: 30px; letter-spacing: -.8px; } > p { margin-top: 20px; font-size: 12px; } }
+        `,
+        featureGrid: css`
+            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px;
+            article { position: relative; overflow: hidden; isolation: isolate; padding: 32px 32px 35px; border: 1px solid ${line}; border-radius: 10px; background: ${paper}; transition: border-color .25s, transform .25s; }
+            @media (hover: hover) and (pointer: fine) { article:hover { border-color: ${token.colorPrimaryBorder}; transform: translateY(-4px); } }
+            h3 { margin-top: 24px; font-size: 16px; font-weight: 550; }
+            p { max-width: 320px; margin-top: 11px; color: ${muted}; font-size: 12px; line-height: 1.9; }
+            @media (max-width: 991px) { article { padding: 26px; } }
+            @media (max-width: 767px) { grid-template-columns: repeat(2, minmax(0, 1fr)); article { padding: 24px; } }
+            @media (max-width: 420px) { article { padding: 22px 18px; } h3 { margin-top: 19px; font-size: 15px; } p { font-size: 11px; } }
+        `,
+        featureTop: css`
+            display: flex; align-items: center; justify-content: space-between;
+            svg { width: 30px; height: 30px; color: ${accent}; } span { color: ${muted}; font-size: 9px; opacity: .5; font-variant-numeric: tabular-nums; }
+        `,
+        productsSection: css`background: ${wash};`,
+        productWorkspace: css`
+            display: grid; grid-template-columns: 215px minmax(0, 1fr); border: 1px solid ${line}; border-radius: 12px; overflow: hidden; background: ${paper};
+            @media (max-width: 991px) { grid-template-columns: 175px minmax(0, 1fr); }
+            @media (max-width: 767px) { grid-template-columns: 1fr; }
+        `,
+        productMenu: css`
+            display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 22px 14px; border-right: 1px solid ${line}; scrollbar-width: thin;
+            button { display: flex; align-items: center; gap: 12px; min-width: 0; height: 60px; padding: 0 17px; border: 0; border-radius: 6px; color: ${muted}; background: transparent; font-size: 13px; white-space: nowrap; transition: background .2s, color .2s;
+                &[aria-pressed="true"] { color: ${accent}; background: ${wash}; }
+                &:hover { color: ${accent}; } > svg { width: 25px; height: 25px; } > .anticon { margin-left: auto; font-size: 12px; }
+            }
+            @media (max-width: 991px) { padding-inline: 10px; button { padding-inline: 12px; gap: 9px; font-size: 12px; } }
+            @media (max-width: 767px) { flex-direction: row; justify-content: flex-start; overflow-x: auto; padding: 10px; border-right: 0; border-bottom: 1px solid ${line}; button { flex: none; height: 42px; min-width: 120px; > svg { width: 22px; height: 22px; } > .anticon { display: none; } } }
+        `,
+        productDetail: css`
+            display: grid; grid-template-columns: 1fr 1fr; gap: 36px; padding: 48px;
+            @media (max-width: 1199px) { gap: 25px; padding: 34px; }
+            @media (min-width: 768px) and (max-width: 991px) { grid-template-columns: 1fr; }
+            @media (max-width: 767px) { grid-template-columns: 1fr; padding: 30px; gap: 30px; }
+        `,
+        productCopy: css`
+            h3 { margin-top: 17px; font-size: 30px; font-weight: 550; }
+            p { max-width: 340px; margin-top: 17px; color: ${muted}; font-size: 13px; line-height: 1.9; }
+            ul { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 18px; padding: 0; margin: 25px 0 28px; list-style: none; }
+            li { display: flex; align-items: center; gap: 8px; color: ${muted}; font-size: 12px; .anticon { color: ${accent}; font-size: 10px; } }
+            @media (max-width: 575px) { h3 { font-size: 26px; } p { font-size: 12px; } li { font-size: 11px; } }
+        `,
+        productDiagram: css`
+            position: relative; align-self: center; min-height: 280px; border-radius: 50%; background: radial-gradient(ellipse at center, ${token.colorPrimaryBg}, transparent 68%);
+            &::before, &::after { position: absolute; top: 50%; left: 15%; width: 70%; height: 1px; background: ${token.colorPrimaryBorder}; content: ""; }
+            &::before { transform: rotate(32deg); } &::after { transform: rotate(-32deg); }
+            @media (max-width: 767px) { min-height: 230px; width: min(100%, 400px); margin-inline: auto; }
+        `,
+        diagramCenter: css`
+            position: absolute; z-index: 2; top: 50%; left: 50%; display: grid; place-items: center; width: 94px; height: 94px; border: 1px solid ${token.colorPrimaryBorder}; border-radius: 22px;
+            color: ${accent}; background: ${paper}; transform: translate(-50%, -50%); box-shadow: 0 12px 24px -16px color-mix(in srgb, ${accent} 20%, transparent);
+            svg { width: 43px; height: 43px; }
+            @media (max-width: 575px) { width: 74px; height: 74px; border-radius: 18px; svg { width: 36px; height: 36px; } }
+        `,
+        diagramNode: css`
+            position: absolute; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 110px; height: 37px; padding: 0 12px; border: 1px solid ${line}; border-radius: 6px; color: ${muted}; background: ${paper}; font-size: 11px;
+            i { width: 4px; height: 4px; border-radius: 50%; background: ${accent}; opacity: .6; }
+            &[data-position="0"] { left: 0; top: 14%; } &[data-position="1"] { right: 0; top: 14%; }
+            &[data-position="2"] { left: 0; bottom: 14%; } &[data-position="3"] { right: 0; bottom: 14%; }
+            @media (max-width: 575px) { min-width: 100px; padding-inline: 8px; font-size: 10px; }
+        `,
+        manifesto: css`
+            text-align: center;
+            h2 { margin-top: 20px; font-size: clamp(30px, 3.5vw, 48px); font-weight: 550; line-height: 1.5; letter-spacing: -1.5px; span { color: ${muted}; } }
+            p { margin-top: 22px; color: ${muted}; font-size: 13px; line-height: 2; }
+            @media (max-width: 767px) { h2 { font-size: 30px; span { display: block; } } p { font-size: 12px; } }
+        `,
+        advantages: css`
+            display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; margin-top: 62px;
+            article { padding-top: 23px; border-top: 1px solid ${line}; } span { color: ${accent}; font-size: 10px; }
+            h3 { margin-top: 18px; font-size: 16px; font-weight: 550; } p { margin-top: 10px; color: ${muted}; font-size: 12px; line-height: 1.85; }
+            @media (max-width: 767px) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px; margin-top: 40px; }
+        `,
+        testimonials: css`padding-top: 0;`,
+        testimonialGrid: css`
+            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 35px;
+            article { display: flex; flex-direction: column; padding: 24px 0 0; border-top: 1px solid ${line}; }
+            blockquote { margin: 3px 0 26px; color: ${muted}; font-size: 13px; line-height: 2; }
+            @media (max-width: 767px) { grid-template-columns: 1fr; gap: 28px; }
+        `,
+        quoteMark: css`height: 44px; color: ${accent}; opacity: .5; font-size: 54px; font-family: Georgia, serif; line-height: 1;`,
+        author: css`
+            display: flex; align-items: center; gap: 11px; margin-top: auto;
+            > span { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid ${line}; border-radius: 50%; color: ${muted}; background: ${wash}; font-size: 12px; }
+            strong { display: block; font-size: 12px; font-weight: 500; } small { display: block; margin-top: 3px; color: ${muted}; font-size: 10px; }
+        `,
+        cta: css`
+            display: flex; align-items: center; justify-content: space-between; gap: 35px; padding: 50px 0; border-top: 1px solid ${line}; border-bottom: 1px solid ${line};
+            h2 { margin-top: 16px; font-size: 38px; font-weight: 550; letter-spacing: -1px; span { color: ${accent}; } } p { margin-top: 17px; color: ${muted}; font-size: 13px; }
+            @media (max-width: 767px) { flex-direction: column; align-items: flex-start; padding-block: 34px; gap: 28px; h2 { font-size: 30px; } p { font-size: 12px; } }
+        `,
+        ctaActions: css`
+            display: flex; flex-shrink: 0; gap: 12px;
+            @media (max-width: 991px) { flex-direction: column; }
+            @media (max-width: 767px) { flex-direction: row; }
+            @media (max-width: 575px) { width: 100%; button { flex: 1; padding-inline: 15px; height: 44px; font-size: 13px; gap: 10px; } }
+        `,
+        footer: css`
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px; padding-block: 30px; color: ${muted}; font-size: 10px;
+            > div { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; } a { color: inherit; text-decoration: none; &:hover { color: ${accent}; } }
+            @media (max-width: 575px) { padding-block: 25px; gap: 12px; font-size: 9px; }
+        `,
+        backToTop: css`
+            position: fixed; z-index: 40; right: 24px; bottom: 24px; display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid ${line}; border-radius: 8px; color: ${muted}; background: ${paper}; opacity: 0; visibility: hidden; transition: opacity .2s, color .2s;
+            &[data-visible="true"] { opacity: 1; visibility: visible; } &:hover { color: ${accent}; }
+            @media (max-width: 575px) { right: 18px; bottom: 18px; width: 34px; height: 34px; }
+        `,
     };
-    const line = {
-        stroke: "currentColor",
-        strokeWidth: 2.4,
-        strokeLinecap: "round" as const,
-        strokeLinejoin: "round" as const,
-    };
+});
+
+type HomeIconType = "deploy" | "shield" | "speed" | "module" | "support" | "global" | "monitor" | "api" | "safe" | "ops";
+
+const HomeIcon = ({type}: {type: HomeIconType}) => {
+    const line = {stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const};
+    let content: React.ReactNode;
     switch (type) {
         case "deploy":
-            return (
-                <svg {...common}>
-                    <path d="M24 6l14 8v16L24 38 10 30V14L24 6Z" fill="currentColor" fillOpacity=".08"/>
-                    <path d="M24 6l14 8v16L24 38 10 30V14L24 6Z" {...line}/>
-                    <path d="M10 14l14 8 14-8M24 22v16" {...line}/>
-                    <path d="M17 42h14M24 38v4" {...line}/>
-                </svg>
-            );
+            content = <><path d="M24 6 38 14v16L24 38 10 30V14Z"/><path d="m10 14 14 8 14-8M24 22v16M17 42h14M24 38v4"/></>;
+            break;
         case "shield":
-            return (
-                <svg {...common}>
-                    <path d="M24 5l14 5v10.5C38 31 32.5 38.5 24 43c-8.5-4.5-14-12-14-22.5V10l14-5Z" fill="currentColor" fillOpacity=".08"/>
-                    <path d="M24 5l14 5v10.5C38 31 32.5 38.5 24 43c-8.5-4.5-14-12-14-22.5V10l14-5Z" {...line}/>
-                    <path d="M18 24l4 4 8-10" {...line}/>
-                </svg>
-            );
+            content = <><path d="m24 5 14 5v10.5C38 31 32.5 38.5 24 43c-8.5-4.5-14-12-14-22.5V10Z"/><path d="m18 24 4 4 8-10"/></>;
+            break;
         case "speed":
-            return (
-                <svg {...common}>
-                    <path d="M9 34a15 15 0 1 1 30 0" {...line}/>
-                    <path d="M14 34h20" {...line}/>
-                    <path d="M24 34l8-13" {...line}/>
-                    <path d="M15 21h5M28 21h5M24 13v5" {...line}/>
-                    <circle cx="24" cy="34" r="3" fill="currentColor" fillOpacity=".14" stroke="currentColor" strokeWidth="2.4"/>
-                </svg>
-            );
+            content = <><path d="M9 34a15 15 0 1 1 30 0M14 34h20M24 34l8-13M15 21h5M28 21h5M24 13v5"/><circle cx="24" cy="34" r="3"/></>;
+            break;
         case "module":
-            return (
-                <svg {...common}>
-                    <rect x="8" y="8" width="13" height="13" rx="3" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
-                    <rect x="27" y="8" width="13" height="13" rx="3" stroke="currentColor" strokeWidth="2.4"/>
-                    <rect x="8" y="27" width="13" height="13" rx="3" stroke="currentColor" strokeWidth="2.4"/>
-                    <rect x="27" y="27" width="13" height="13" rx="3" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
-                </svg>
-            );
+            content = <><rect x="8" y="8" width="13" height="13" rx="2"/><rect x="27" y="8" width="13" height="13" rx="2"/><rect x="8" y="27" width="13" height="13" rx="2"/><rect x="27" y="27" width="13" height="13" rx="2"/></>;
+            break;
         case "support":
-            return (
-                <svg {...common}>
-                    <circle cx="24" cy="18" r="8" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
-                    <path d="M10 41c2.5-7 7.2-11 14-11s11.5 4 14 11" {...line}/>
-                    <path d="M9 23v-3a15 15 0 0 1 30 0v3" {...line}/>
-                    <path d="M39 23v3a5 5 0 0 1-5 5h-4" {...line}/>
-                </svg>
-            );
+            content = <><circle cx="24" cy="18" r="8"/><path d="M10 41c2.5-7 7.2-11 14-11s11.5 4 14 11M9 23v-3a15 15 0 0 1 30 0v6a5 5 0 0 1-5 5h-4"/></>;
+            break;
         case "global":
-            return (
-                <svg {...common}>
-                    <circle cx="24" cy="24" r="17" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
-                    <path d="M7 24h34M24 7c5 4.5 7.5 10.2 7.5 17S29 36.5 24 41M24 7c-5 4.5-7.5 10.2-7.5 17S19 36.5 24 41" {...line}/>
-                </svg>
-            );
+            content = <><circle cx="24" cy="24" r="17"/><path d="M7 24h34M24 7c5 4.5 7.5 10.2 7.5 17S29 36.5 24 41M24 7c-5 4.5-7.5 10.2-7.5 17S19 36.5 24 41"/></>;
+            break;
         case "monitor":
-            return (
-                <svg {...common}>
-                    <rect x="7" y="9" width="34" height="24" rx="4" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
-                    <path d="M17 39h14M24 33v6M15 24l5-5 5 5 7-9" {...line}/>
-                </svg>
-            );
+            content = <><rect x="7" y="9" width="34" height="24" rx="3"/><path d="M17 39h14M24 33v6m-9-15 5-5 5 5 7-9"/></>;
+            break;
         case "api":
-            return (
-                <svg {...common}>
-                    <rect x="7" y="10" width="34" height="28" rx="4" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
-                    <path d="M15 20h18M15 29h8M28 29h5M14 10V7M24 10V7M34 10V7M14 41v-3M24 41v-3M34 41v-3" {...line}/>
-                </svg>
-            );
+            content = <><rect x="7" y="10" width="34" height="28" rx="3"/><path d="m17 20-5 4 5 4m14-8 5 4-5 4m-5-12-4 16"/></>;
+            break;
         case "safe":
-            return (
-                <svg {...common}>
-                    <path d="M12 22v-5a12 12 0 0 1 24 0v5" {...line}/>
-                    <rect x="9" y="22" width="30" height="20" rx="4" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
-                    <path d="M24 30v5" {...line}/>
-                </svg>
-            );
+            content = <><path d="M12 22v-5a12 12 0 0 1 24 0v5"/><rect x="9" y="22" width="30" height="20" rx="3"/><path d="M24 30v5"/></>;
+            break;
         case "ops":
-            return (
-                <svg {...common}>
-                    <path d="M24 7v6M24 35v6M7 24h6M35 24h6M12 12l4.2 4.2M31.8 31.8 36 36M36 12l-4.2 4.2M16.2 31.8 12 36" {...line}/>
-                    <circle cx="24" cy="24" r="9" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="2.4"/>
-                    <path d="M21 24l2 2 5-5" {...line}/>
-                </svg>
-            );
-        default:
-            return null;
+            content = <><path d="M24 7v6M24 35v6M7 24h6M35 24h6m-23-12 4.2 4.2m15.6 15.6L36 36m0-24-4.2 4.2M16.2 31.8 12 36"/><circle cx="24" cy="24" r="9"/><path d="m21 24 2 2 5-5"/></>;
+            break;
     }
+    return <svg viewBox="0 0 48 48" fill="none" aria-hidden="true" {...line}>{content}</svg>;
 };
 
-// 优化后的动画元素配置 - 减少数量提升性能
-const ANIMATION_ELEMENTS = {
-    // 减少粒子数量 4 -> 2
-    particles: Array.from({length: 2}, (_, i) => ({
-        id: i,
-        left: `${30 + i * 40}%`,
-        top: `${40 + i * 20}%`,
-        duration: `${20 + i * 4}s`,
-        delay: `${i * 3}s`,
-        tx: `${(i === 0 ? 100 : -100)}px`,
-        ty: `${(i === 0 ? 80 : -80)}px`
-    })),
-    // 减少光球数量 5 -> 2
-    glowOrbs: Array.from({length: 2}, (_, i) => ({
-        id: i,
-        left: `${25 + i * 50}%`,
-        top: `${35 + i * 15}%`,
-        size: `${250 + i * 50}px`,
-        duration: `${18 + i * 4}s`,
-        delay: `${i * 3}s`,
-        tx: `${(i === 0 ? 60 : -60)}px`,
-        ty: `${(i === 0 ? 50 : -50)}px`
-    }))
-};
-
-const useStyles: any = createStyles(({token, css, isDarkMode}) => ({
-    title: css`
-        margin: 0;
-        padding: 0;
-        font-weight: 600;
-        line-height: 1.2;
-        color: ${token.colorText};
-    `,
-    h1: css`
-        font-size: 56px;
-        font-weight: 800;
-        margin-bottom: 24px;
-        line-height: 1.1;
-
-        @media (max-width: 768px) {
-            font-size: 32px;
-            margin-bottom: 16px;
-        }
-    `,
-    h2: css`
-        font-size: 48px;
-        font-weight: 800;
-        margin-bottom: 16px;
-
-        @media (max-width: 768px) {
-            font-size: 32px;
-            margin-bottom: 12px;
-        }
-    `,
-    h3: css`
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 48px;
-
-        @media (max-width: 768px) {
-            font-size: 18px;
-            margin-bottom: 40px;
-        }
-    `,
-    h4: css`
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 10px;
-
-        @media (max-width: 768px) {
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-    `,
-    paragraph: css`
-        margin: 0;
-        padding: 0;
-        line-height: 1.6;
-        color: ${token.colorTextSecondary};
-    `,
-    divider: css`
-        height: 1px;
-        background: ${token.colorBorderSecondary};
-        border: none;
-        margin: 24px 0;
-
-        @media (max-width: 768px) {
-            margin: 20px 0;
-        }
-    `,
-    pageWrapper: css`
-        background: ${token.colorBgLayout};
-        width: 100%;
-        min-height: 100%;
-        overflow-x: hidden;
-        margin: 0;
-        padding: 0;
-        position: relative;
-        isolation: isolate;
-        overscroll-behavior-y: none;
-        -webkit-overflow-scrolling: touch;
-    `,
-    noPadding: css`
-        padding: 0 !important;
-    `,
-    navbar: css`
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 9999;
-        padding: 0;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        pointer-events: auto;
-        isolation: isolate;
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
-
-        &::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: ${token.colorBorderSecondary};
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        &.scrolled::after {
-            opacity: 1;
-        }
-    `,
-    contentWrapper: css`
-        padding-top: 0;
-        position: relative;
-        z-index: 1;
-    `,
-    navWrapper: css`
-        background: ${isDarkMode
-                ? 'rgba(10, 10, 10, 0.5)'
-                : 'rgba(255, 255, 255, 0.55)'};
-        backdrop-filter: blur(20px) saturate(160%);
-        -webkit-backdrop-filter: blur(20px) saturate(160%);
-        transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-        border-bottom: 1px solid ${isDarkMode
-                ? 'rgba(255, 255, 255, 0.08)'
-                : 'transparent'};
-        position: relative;
-        z-index: 1;
-        transform: translateZ(0);
-        will-change: transform;
-
-        .scrolled & {
-            background: ${isDarkMode
-                    ? 'rgba(10, 10, 10, 0.75)'
-                    : 'rgba(255, 255, 255, 0.8)'};
-            backdrop-filter: blur(24px) saturate(170%);
-            -webkit-backdrop-filter: blur(24px) saturate(170%);
-            box-shadow: ${isDarkMode
-                    ? '0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 16px rgba(0, 0, 0, 0.4)'
-                    : '0 1px 0 rgba(0, 0, 0, 0.05)'};
-            border-bottom-color: ${isDarkMode
-                    ? 'rgba(255, 255, 255, 0.1)'
-                    : 'transparent'};
-        }
-    `,
-    themeToggle: css`
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        color: ${token.colorText};
-        cursor: pointer;
-        border-radius: ${token.borderRadius}px;
-        background: transparent;
-        border: none;
-        transition: all 0.2s ease;
-        transform-origin: center;
-        backface-visibility: hidden;
-        -webkit-font-smoothing: antialiased;
-
-        svg {
-            transform-origin: center;
-            backface-visibility: hidden;
-        }
-
-        &:hover {
-            background: ${token.colorFillQuaternary};
-        }
-
-        &:active {
-            transform: scale(0.95);
-        }
-    `,
-    navContainer: css`
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0 max(24px, env(safe-area-inset-right));
-        height: 64px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 32px;
-
-        @media (max-width: 768px) {
-            height: 56px;
-            padding: 0 16px;
-            gap: 16px;
-        }
-    `,
-    logo: css`
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        cursor: pointer;
-        transition: opacity 0.2s ease;
-        flex-shrink: 0;
-        min-width: 200px;
-
-        &:hover {
-            opacity: 0.8;
-        }
-    `,
-    logoIcon: css`
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 32px;
-        color: ${token.colorPrimary};
-        transition: all 0.2s ease;
-        flex-shrink: 0;
-
-        img {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
-            border-radius: ${token.borderRadius}px;
-        }
-
-        @media (max-width: 768px) {
-            width: 28px;
-            height: 28px;
-            font-size: 28px;
-
-            img {
-                width: 28px;
-                height: 28px;
-                border-radius: ${token.borderRadiusSM}px;
-            }
-        }
-    `,
-    logoText: css`
-        font-size: 16px;
-        font-weight: 600;
-        color: ${token.colorText};
-        letter-spacing: -0.01em;
-
-        @media (max-width: 768px) {
-            font-size: 15px;
-        }
-    `,
-    navMenu: css`
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex: 1;
-        justify-content: center;
-
-        @media (max-width: 968px) {
-            display: none;
-        }
-    `,
-    navLink: css`
-        font-size: 14px;
-        color: ${token.colorTextSecondary};
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-weight: 500;
-        position: relative;
-        padding: 8px 16px;
-        border-radius: ${token.borderRadius}px;
-        white-space: nowrap;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        &:hover {
-            color: ${token.colorText};
-            background: ${token.colorFillQuaternary};
-        }
-
-        &:active {
-            transform: scale(0.98);
-        }
-    `,
-    navActions: css`
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-shrink: 0;
-        min-width: 200px;
-        justify-content: flex-end;
-
-        @media (max-width: 968px) {
-            display: none;
-        }
-    `,
-    navBtn: css`
-        height: 36px;
-        padding: 0 16px;
-        font-size: 14px;
-        font-weight: 500;
-        border-radius: ${token.borderRadiusLG}px;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        position: relative;
-        letter-spacing: 0.2px;
-
-        &.btn-secondary {
-            background: ${token.colorFillQuaternary};
-            color: ${token.colorText};
-
-            &:hover {
-                background: ${token.colorFillTertiary};
-            }
-
-            &:active {
-                transform: scale(0.96);
-            }
-        }
-
-        &.btn-primary {
-            background: ${token.colorPrimary};
-            color: ${token.colorWhite};
-
-            &:hover {
-                background: ${token.colorPrimaryHover};
-            }
-
-            &:active {
-                transform: scale(0.96);
-            }
-        }
-    `,
-    mobileMenuBtn: css`
-        display: none;
-        width: 36px;
-        height: 36px;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        color: ${token.colorText};
-        cursor: pointer;
-        border-radius: ${token.borderRadius}px;
-        background: transparent;
-        border: none;
-        transition: all 0.2s ease;
-        transform-origin: center;
-        backface-visibility: hidden;
-        -webkit-font-smoothing: antialiased;
-
-        svg {
-            transform-origin: center;
-            backface-visibility: hidden;
-        }
-
-        &:hover {
-            background: ${token.colorFillQuaternary};
-        }
-
-        &:active {
-            transform: scale(0.95);
-        }
-
-        @media (max-width: 968px) {
-            display: flex;
-        }
-    `,
-    mobileMenuMask: css`
-        position: fixed;
-        inset: 0;
-        background: ${isDarkMode ? 'rgba(0, 0, 0, 0.65)' : 'rgba(0, 0, 0, 0.45)'};
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-        z-index: 9998;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease;
-
-        &.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-    `,
-    mobileMenuDrawer: css`
-        position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 300px;
-        background: ${isDarkMode
-                ? 'rgba(18, 18, 18, 0.6)'
-                : 'rgba(255, 255, 255, 0.65)'};
-        backdrop-filter: blur(28px) saturate(170%);
-        -webkit-backdrop-filter: blur(28px) saturate(170%);
-        box-shadow: ${isDarkMode
-                ? '-2px 0 50px rgba(0, 0, 0, 0.7)'
-                : '-2px 0 50px rgba(0, 0, 0, 0.2)'};
-        border-left: 1px solid ${isDarkMode
-                ? 'rgba(255, 255, 255, 0.12)'
-                : 'rgba(0, 0, 0, 0.1)'};
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        transform: translateX(100%);
-        transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-
-        &.open {
-            transform: translateX(0);
-        }
-    `,
-    mobileMenuHeader: css`
-        padding: 20px 20px 16px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        flex-shrink: 0;
-    `,
-    mobileMenuClose: css`
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        border: none;
-        background: ${isDarkMode
-                ? 'rgba(255, 255, 255, 0.1)'
-                : 'rgba(0, 0, 0, 0.08)'};
-        color: ${token.colorTextSecondary};
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        font-size: 13px;
-        transform-origin: center;
-        backface-visibility: hidden;
-        -webkit-font-smoothing: antialiased;
-
-        svg {
-            transform-origin: center;
-            backface-visibility: hidden;
-        }
-
-        &:hover {
-            background: ${isDarkMode
-                    ? 'rgba(255, 255, 255, 0.15)'
-                    : 'rgba(0, 0, 0, 0.12)'};
-            color: ${token.colorText};
-        }
-
-        &:active {
-            transform: scale(0.9);
-        }
-    `,
-    mobileMenuBody: css`
-        padding: 0 20px 32px;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow-y: auto;
-
-        /* 隐藏滚动条但保持功能 */
-
-        &::-webkit-scrollbar {
-            width: 0;
-            display: none;
-        }
-
-        scrollbar-width: none;
-    `,
-    mobileMenuNav: css`
-        flex: 1;
-        padding-bottom: 24px;
-        margin-bottom: 0;
-    `,
-    mobileMenuItem: css`
-        padding: 15px 8px;
-        font-size: 15px;
-        color: ${token.colorText};
-        cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        font-weight: 400;
-        margin-bottom: 0;
-        background: transparent;
-        border: none;
-        border-bottom: 0.5px solid ${isDarkMode
-                ? 'rgba(255, 255, 255, 0.08)'
-                : 'rgba(0, 0, 0, 0.08)'};
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        letter-spacing: 0.2px;
-
-        &::after {
-            content: '›';
-            font-size: 18px;
-            color: ${token.colorTextTertiary};
-            transition: all 0.2s ease;
-            opacity: 0.25;
-            font-weight: 300;
-        }
-
-        &:hover {
-            background: transparent;
-            color: ${token.colorPrimary};
-            padding-left: 6px;
-
-            &::after {
-                opacity: 0.8;
-                transform: translateX(-2px);
-                color: ${token.colorPrimary};
-            }
-        }
-
-        &:active {
-            opacity: 0.4;
-        }
-
-        &:last-child {
-            border-bottom: none;
-        }
-    `,
-    mobileThemeSection: css`
-        padding: 16px 8px 20px;
-        margin-bottom: 16px;
-        border-top: 0.5px solid ${isDarkMode
-                ? 'rgba(255, 255, 255, 0.08)'
-                : 'rgba(0, 0, 0, 0.08)'};
-    `,
-    mobileThemeLabel: css`
-        font-size: 11px;
-        color: ${token.colorTextTertiary};
-        padding: 0 4px 10px;
-        font-weight: 500;
-        letter-spacing: 0.3px;
-    `,
-    mobileThemeButtons: css`
-        display: flex;
-        gap: 4px;
-        padding: 2px;
-        background: ${token.colorFillQuaternary};
-        border-radius: ${token.borderRadiusSM}px;
-    `,
-    mobileThemeBtn: css`
-        flex: 1;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 3px;
-        font-size: 11px;
-        font-weight: 500;
-        border-radius: ${token.borderRadiusSM}px;
-        border: none;
-        background: transparent;
-        color: ${token.colorTextSecondary};
-        cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-        &.active {
-            background: ${token.colorBgContainer};
-            color: ${token.colorText};
-            box-shadow: ${token.boxShadowTertiary};
-        }
-
-        &:hover:not(.active) {
-            color: ${token.colorText};
-        }
-
-        &:active {
-            transform: scale(0.95);
-        }
-
-        .anticon {
-            font-size: 13px;
-            transform-origin: center;
-            backface-visibility: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-    `,
-    mobileActions: css`
-        margin-top: auto;
-        padding: 20px 8px 0;
-        border-top: 0.5px solid ${isDarkMode
-                ? 'rgba(255, 255, 255, 0.08)'
-                : 'rgba(0, 0, 0, 0.08)'};
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    `,
-    mobileActionItem: css`
-        padding: 0 20px;
-        height: 50px;
-        font-size: 15px;
-        font-weight: 500;
-        border-radius: ${token.borderRadiusLG}px;
-        border: 1px solid ${token.colorBorder};
-        cursor: pointer;
-        transition: all 0.2s ease;
-        background: ${token.colorBgContainer};
-        color: ${token.colorText};
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        letter-spacing: 0.2px;
-        width: 100%;
-
-        .anticon {
-            font-size: 16px;
-        }
-
-        &:hover {
-            background: ${token.colorBgTextHover};
-            border-color: ${token.colorPrimary};
-            color: ${token.colorPrimary};
-        }
-
-        &:active {
-            transform: scale(0.98);
-        }
-    `,
-    mobileBtnPrimary: css`
-        background: ${token.colorPrimary};
-        border-color: transparent;
-        color: ${token.colorWhite} !important;
-        font-weight: 600;
-
-        .anticon {
-            color: ${token.colorWhite} !important;
-        }
-
-        &:hover {
-            background: ${token.colorPrimaryHover};
-            border-color: transparent;
-            color: ${token.colorWhite} !important;
-        }
-    `,
-    heroSection: css`
-        position: relative;
-        width: 100%;
-        min-height: 100vh;
-        height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-        padding: 0;
-        background: ${isDarkMode
-                ? `radial-gradient(ellipse 80% 50% at 50% 50%, ${token.colorBgLayout} 0%, ${token.colorBgContainer} 100%)`
-                : `radial-gradient(ellipse 80% 50% at 50% 50%, ${token.colorBgContainer} 0%, ${token.colorBgLayout} 100%)`};
-        overflow: hidden;
-
-        @media (max-width: 768px) {
-            min-height: 100vh;
-            height: 100vh;
-        }
-
-        &::before {
-            content: '';
-            position: absolute;
-            width: 1200px;
-            height: 1200px;
-            top: -600px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: radial-gradient(circle, ${token.colorPrimary}${isDarkMode ? '18' : '12'} 0%, transparent 60%);
-            border-radius: 50%;
-            opacity: 0.7;
-        }
-
-        &::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: ${isDarkMode
-                    ? `radial-gradient(circle at 50% 30%, ${token.colorPrimary}08, transparent 50%)`
-                    : `radial-gradient(circle at 50% 30%, ${token.colorPrimary}12, transparent 50%)`};
-            opacity: 0.6;
-        }
-    `,
-    heroSpotlight: css`
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(
-                ellipse 50% 35% at 50% 40%,
-                ${token.colorPrimary}${isDarkMode ? '08' : '06'} 0%,
-                transparent 65%
-        );
-        opacity: 0.9;
-    `,
-    heroGrid: css`
-        position: absolute;
-        inset: 0;
-        background-image: linear-gradient(${isDarkMode ? `${token.colorPrimary}05` : `${token.colorPrimary}03`} 1px, transparent 1px),
-        linear-gradient(90deg, ${isDarkMode ? `${token.colorPrimary}05` : `${token.colorPrimary}03`} 1px, transparent 1px);
-        background-size: 80px 80px;
-        mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 0%, transparent 70%);
-        -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 0%, transparent 70%);
-        animation: gridMove 40s linear infinite;
-        opacity: ${isDarkMode ? '0.4' : '0.3'};
-
-        @keyframes gridMove {
-            0% {
-                transform: translate(0, 0);
-            }
-            100% {
-                transform: translate(80px, 80px);
-            }
-        }
-    `,
-    heroScanLine: css`
-        position: absolute;
-        inset: 0;
-        overflow: hidden;
-        pointer-events: none;
-
-        &::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(
-                    90deg,
-                    transparent 0%,
-                    ${isDarkMode ? `${token.colorPrimary}80` : `${token.colorPrimary}60`} 50%,
-                    transparent 100%
-            );
-            box-shadow: 0 0 20px ${isDarkMode ? `${token.colorPrimary}60` : `${token.colorPrimary}40`};
-            animation: scanVertical 8s ease-in-out infinite;
-        }
-
-        &::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(
-                    180deg,
-                    transparent 0%,
-                    ${isDarkMode ? `${token.colorPrimary}80` : `${token.colorPrimary}60`} 50%,
-                    transparent 100%
-            );
-            box-shadow: 0 0 20px ${isDarkMode ? `${token.colorPrimary}60` : `${token.colorPrimary}40`};
-            animation: scanHorizontal 10s ease-in-out infinite;
-        }
-
-        @keyframes scanVertical {
-            0%, 100% {
-                top: -10%;
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                top: 110%;
-                opacity: 0;
-            }
-        }
-
-        @keyframes scanHorizontal {
-            0%, 100% {
-                left: -10%;
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                left: 110%;
-                opacity: 0;
-            }
-        }
-    `,
-    heroCircuits: css`
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        overflow: hidden;
-        opacity: ${isDarkMode ? '0.15' : '0.1'};
-
-        &::before,
-        &::after {
-            content: '';
-            position: absolute;
-            border: 1px solid ${token.colorPrimary};
-            border-radius: 50%;
-        }
-
-        &::before {
-            width: 600px;
-            height: 600px;
-            top: 10%;
-            left: -10%;
-            animation: circuitPulse 15s ease-in-out infinite;
-        }
-
-        &::after {
-            width: 800px;
-            height: 800px;
-            bottom: -20%;
-            right: -15%;
-            animation: circuitPulse 20s ease-in-out infinite reverse;
-        }
-
-        @keyframes circuitPulse {
-            0%, 100% {
-                transform: scale(1);
-                opacity: 0.3;
-            }
-            50% {
-                transform: scale(1.1);
-                opacity: 0.6;
-            }
-        }
-    `,
-    heroDots: css`
-        position: absolute;
-        inset: 0;
-        background-image: radial-gradient(circle at 15% 25%, ${isDarkMode ? `${token.colorText}40` : `${token.colorPrimary}50`} 2px, transparent 2px),
-        radial-gradient(circle at 85% 30%, ${isDarkMode ? `${token.colorText}35` : `${token.colorPrimary}45`} 1.5px, transparent 1.5px),
-        radial-gradient(circle at 40% 75%, ${isDarkMode ? `${token.colorText}30` : `${token.colorPrimary}40`} 1.5px, transparent 1.5px),
-        radial-gradient(circle at 70% 80%, ${isDarkMode ? `${token.colorText}45` : `${token.colorPrimary}55`} 2px, transparent 2px),
-        radial-gradient(circle at 25% 60%, ${isDarkMode ? `${token.colorText}35` : `${token.colorPrimary}45`} 1.5px, transparent 1.5px);
-        background-size: 100% 100%;
-        animation: dotsGlow 4s ease-in-out infinite;
-        pointer-events: none;
-
-        @keyframes dotsGlow {
-            0%, 100% {
-                opacity: 0.4;
-            }
-            50% {
-                opacity: 0.8;
-            }
-        }
-    `,
-    heroDataStream: css`
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        overflow: hidden;
-
-        &::before {
-            content: '';
-            position: absolute;
-            width: 1px;
-            height: 100px;
-            left: 20%;
-            background: linear-gradient(
-                    180deg,
-                    transparent 0%,
-                    ${isDarkMode ? `${token.colorPrimary}80` : `${token.colorPrimary}60`} 50%,
-                    transparent 100%
-            );
-            box-shadow: 0 0 10px ${isDarkMode ? `${token.colorPrimary}80` : `${token.colorPrimary}60`};
-            animation: dataFlow1 5s linear infinite;
-        }
-
-        &::after {
-            content: '';
-            position: absolute;
-            width: 1px;
-            height: 80px;
-            left: 75%;
-            background: linear-gradient(
-                    180deg,
-                    transparent 0%,
-                    ${isDarkMode ? `${token.colorPrimary}60` : `${token.colorPrimary}50`} 50%,
-                    transparent 100%
-            );
-            box-shadow: 0 0 8px ${isDarkMode ? `${token.colorPrimary}60` : `${token.colorPrimary}50`};
-            animation: dataFlow2 6s linear infinite 2s;
-        }
-
-        @keyframes dataFlow1 {
-            0% {
-                top: -100px;
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                top: 100%;
-                opacity: 0;
-            }
-        }
-
-        @keyframes dataFlow2 {
-            0% {
-                top: -80px;
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                top: 100%;
-                opacity: 0;
-            }
-        }
-    `,
-    heroTechLines: css`
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-
-        &::before {
-            content: '';
-            position: absolute;
-            left: 10%;
-            top: 30%;
-            width: 150px;
-            height: 1px;
-            background: linear-gradient(
-                    90deg,
-                    transparent 0%,
-                    ${isDarkMode ? `${token.colorPrimary}50` : `${token.colorPrimary}40`} 50%,
-                    transparent 100%
-            );
-            animation: techLineExpand 3s ease-in-out infinite;
-        }
-
-        &::after {
-            content: '';
-            position: absolute;
-            right: 15%;
-            bottom: 35%;
-            width: 200px;
-            height: 1px;
-            background: linear-gradient(
-                    90deg,
-                    transparent 0%,
-                    ${isDarkMode ? `${token.colorPrimary}40` : `${token.colorPrimary}30`} 50%,
-                    transparent 100%
-            );
-            animation: techLineExpand 4s ease-in-out infinite 1.5s;
-        }
-
-        @keyframes techLineExpand {
-            0%, 100% {
-                transform: scaleX(0.5);
-                opacity: 0.3;
-            }
-            50% {
-                transform: scaleX(1);
-                opacity: 0.8;
-            }
-        }
-    `,
-    heroParticles: css`
-        position: absolute;
-        inset: 0;
-        overflow: hidden;
-        pointer-events: none;
-    `,
-    particle: css`
-        position: absolute;
-        width: 3px;
-        height: 3px;
-        background: ${token.colorPrimary};
-        border-radius: 50%;
-        box-shadow: 0 0 4px ${token.colorPrimary};
-        animation: particleFloat var(--duration) cubic-bezier(0.4, 0, 0.6, 1) infinite;
-
-        @keyframes particleFloat {
-            0% {
-                opacity: 0;
-                transform: translate3d(0, 0, 0) scale(0.6);
-            }
-            15% {
-                opacity: 0.6;
-            }
-            50% {
-                opacity: 0.8;
-                transform: translate3d(calc(var(--tx) / 2), calc(var(--ty) / 2), 0) scale(1);
-            }
-            85% {
-                opacity: 0.6;
-            }
-            100% {
-                opacity: 0;
-                transform: translate3d(var(--tx), var(--ty), 0) scale(0.6);
-            }
-        }
-    `,
-    heroOrbs: css`
-        position: absolute;
-        inset: 0;
-        overflow: hidden;
-        pointer-events: none;
-    `,
-    orb: css`
-        position: absolute;
-        border-radius: 50%;
-        background: radial-gradient(circle at 30% 30%,
-        ${token.colorPrimary}${isDarkMode ? '20' : '15'},
-        ${token.colorPrimary}${isDarkMode ? '10' : '08'},
-        transparent
-        );
-        filter: blur(30px);
-        animation: orbFloat var(--duration) ease-in-out infinite;
-        animation-delay: var(--delay);
-
-        @keyframes orbFloat {
-            0%, 100% {
-                transform: translate3d(0, 0, 0) scale(1);
-                opacity: ${isDarkMode ? '0.3' : '0.25'};
-            }
-            50% {
-                transform: translate3d(var(--tx), var(--ty), 0) scale(1.1);
-                opacity: ${isDarkMode ? '0.5' : '0.45'};
-            }
-        }
-    `,
-    heroGradient: css`
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(circle at 30% 20%, ${token.colorPrimary}${isDarkMode ? '10' : '08'} 0%, transparent 45%),
-        radial-gradient(circle at 70% 80%, ${token.colorPrimaryHover}${isDarkMode ? '08' : '06'} 0%, transparent 45%);
-        opacity: 0.6;
-    `,
-    heroCursorGlow: css`
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 520px;
-        height: 520px;
-        border-radius: 50%;
-        pointer-events: none;
-        transform: translate3d(calc(var(--mouse-x, 50vw) - 50%), calc(var(--mouse-y, 45vh) - 50%), 0);
-        opacity: var(--mouse-active, 0);
-        transition: opacity 0.35s ease;
-        background:
-                radial-gradient(circle at 50% 50%, ${token.colorPrimary}${isDarkMode ? '3f' : '2f'} 0%, transparent 34%),
-                radial-gradient(circle at 38% 42%, ${token.colorInfo}${isDarkMode ? '30' : '24'} 0%, transparent 40%),
-                radial-gradient(circle at 64% 60%, ${token.colorSuccess}${isDarkMode ? '26' : '1d'} 0%, transparent 42%);
-        filter: blur(34px) saturate(1.2);
-        mix-blend-mode: ${isDarkMode ? 'screen' : 'multiply'};
-        z-index: 0;
-        will-change: transform, opacity;
-
-        @media (max-width: 768px) {
-            display: none;
-        }
-    `,
-    heroGlowOrbs: css`
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        overflow: hidden;
-    `,
-    glowOrb: css`
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(25px);
-        background: radial-gradient(circle at center,
-        ${token.colorPrimary}50 0%,
-        ${token.colorPrimary}25 40%,
-        transparent 70%
-        );
-        animation: glowFloat var(--duration) ease-in-out infinite;
-        animation-delay: var(--delay);
-
-        @keyframes glowFloat {
-            0%, 100% {
-                transform: translate(0, 0) scale(1);
-                opacity: 0.4;
-            }
-            50% {
-                transform: translate(var(--tx), var(--ty)) scale(1.2);
-                opacity: 0.7;
-            }
-        }
-    `,
-    heroContent: css`
-        position: relative;
-        z-index: 1;
-        text-align: center;
-        max-width: 1100px;
-        width: 100%;
-        margin: 0 auto;
-        padding: 0 20px;
-        transform: translateY(-32px);
-
-        @media (max-width: 768px) {
-            padding: 0 16px;
-            transform: translateY(-20px);
-        }
-    `,
-    heroTitle: css`
-        font-size: 80px !important;
-        font-weight: 900 !important;
-        margin-bottom: 32px !important;
-        line-height: 1.05 !important;
-        color: ${token.colorText} !important;
-        letter-spacing: -0.04em;
-        animation: titleFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        will-change: opacity, transform;
-
-        @keyframes titleFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(40px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        @media (max-width: 768px) {
-            font-size: 48px !important;
-            margin-bottom: 20px !important;
-            letter-spacing: -0.02em;
-        }
-    `,
-    heroSubtitle: css`
-        font-size: 28px !important;
-        color: ${token.colorText} !important;
-        margin-bottom: 56px !important;
-        font-weight: 600;
-        opacity: 0;
-        line-height: 1.35 !important;
-        letter-spacing: -0.015em;
-        animation: subtitleFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
-        text-shadow: 0 2px 12px ${isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.8)'};
-
-        @keyframes subtitleFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-                filter: blur(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-                filter: blur(0);
-            }
-        }
-
-        @media (max-width: 768px) {
-            font-size: 20px !important;
-            margin-bottom: 44px !important;
-        }
-    `,
-    ctaButtons: css`
-        opacity: 0;
-        animation: buttonFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
-        display: flex;
-        gap: 16px;
-        justify-content: center;
-        align-items: center;
-
-        @keyframes buttonFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        @media (max-width: 768px) {
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-        }
-    `,
-    btnPrimary: css`
-        height: 56px;
-        padding: 0 40px;
-        font-size: 16px;
-        font-weight: 600;
-        border-radius: ${token.borderRadiusLG}px;
-        border: none;
-        background: ${token.colorPrimary};
-        color: ${token.colorWhite};
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        letter-spacing: 0.3px;
-
-        &:hover {
-            background: ${token.colorPrimaryHover};
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px ${token.colorPrimary}50;
-        }
-
-        &:active {
-            transform: translateY(0);
-        }
-
-        @media (max-width: 768px) {
-            height: 52px;
-            padding: 0 36px;
-            font-size: 15px;
-            width: 100%;
-            max-width: 320px;
-        }
-    `,
-    btnSecondary: css`
-        height: 56px;
-        padding: 0 40px;
-        font-size: 16px;
-        font-weight: 600;
-        border-radius: ${token.borderRadiusLG}px;
-        border: 1px solid ${token.colorBorder};
-        background: ${token.colorBgContainer};
-        color: ${token.colorText};
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        letter-spacing: 0.3px;
-
-        &:hover {
-            background: ${token.colorBgTextHover};
-            border-color: ${token.colorPrimary};
-            color: ${token.colorPrimary};
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px ${token.colorFillQuaternary};
-        }
-
-        &:active {
-            transform: translateY(0);
-        }
-
-        @media (max-width: 768px) {
-            height: 52px;
-            padding: 0 36px;
-            font-size: 15px;
-            width: 100%;
-            max-width: 320px;
-        }
-    `,
-    section: css`
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 80px 20px;
-        width: 100%;
-
-        @media (max-width: 1200px) {
-            padding: 70px 16px;
-        }
-
-        @media (max-width: 768px) {
-            padding: 60px 16px;
-        }
-    `,
-    sectionTitle: css`
-        text-align: center;
-        font-size: 48px !important;
-        font-weight: 800 !important;
-        margin-bottom: 16px !important;
-        background: ${isDarkMode
-                ? `linear-gradient(135deg, ${token.colorText} 0%, ${token.colorTextSecondary} 50%, ${token.colorTextTertiary} 100%)`
-                : `linear-gradient(135deg, ${token.colorText} 0%, ${token.colorTextSecondary} 50%, ${token.colorTextTertiary} 100%)`};
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        letter-spacing: -0.02em;
-        line-height: 1.2 !important;
-
-        @media (max-width: 768px) {
-            font-size: 32px !important;
-            margin-bottom: 12px !important;
-            letter-spacing: -0.01em;
-        }
-    `,
-    sectionSubtitle: css`
-        text-align: center;
-        font-size: 16px !important;
-        color: ${token.colorTextSecondary} !important;
-        margin-bottom: 48px !important;
-        max-width: 700px;
-        margin-left: auto !important;
-        margin-right: auto !important;
-        font-weight: 400;
-        line-height: 1.6 !important;
-
-        @media (max-width: 768px) {
-            font-size: 14px !important;
-            margin-bottom: 40px !important;
-        }
-    `,
-    statsSection: css`
-        background: ${isDarkMode
-                ? `linear-gradient(135deg, ${token.colorBgElevated} 0%, ${token.colorBgLayout} 100%)`
-                : `linear-gradient(135deg, ${token.colorBgLayout} 0%, ${token.colorBgContainer} 100%)`};
-        padding: 60px 20px;
-        margin: 0;
-        width: 100%;
-        position: relative;
-        overflow: hidden;
-
-        &::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: ${isDarkMode
-                    ? `linear-gradient(135deg, ${token.colorPrimary}15 0%, transparent 50%, ${token.colorPrimaryHover}10 100%)`
-                    : `linear-gradient(135deg, ${token.colorPrimary}05 0%, transparent 50%, ${token.colorPrimaryHover}03 100%)`};
-        }
-
-        @media (max-width: 1200px) {
-            padding: 50px 16px;
-        }
-
-        @media (max-width: 768px) {
-            padding: 40px 16px;
-        }
-    `,
-    statsContainer: css`
-        max-width: 1200px;
-        margin: 0 auto;
-        position: relative;
-        z-index: 1;
-    `,
-    statCard: css`
-        text-align: center;
-        padding: 32px 16px;
-        background: ${isDarkMode
-                ? 'rgba(255, 255, 255, 0.03)'
-                : 'rgba(255, 255, 255, 0.8)'};
-        border-radius: ${token.borderRadiusLG}px;
-        border: 1px solid ${isDarkMode
-                ? 'rgba(255, 255, 255, 0.1)'
-                : 'rgba(0, 0, 0, 0.06)'};
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-
-        &::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: ${token.colorPrimary};
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-
-        &:hover {
-            transform: translateY(-8px) scale(1.02);
-            border-color: ${token.colorPrimary};
-            box-shadow: ${isDarkMode
-                    ? `0 12px 32px ${token.colorPrimary}60`
-                    : `0 12px 32px ${token.colorPrimary}40`};
-
-            &::before {
-                opacity: 0.05;
-            }
-
-            .ant-statistic-content {
-                transform: scale(1.05);
-            }
-        }
-
-        .ant-statistic-title {
-            color: ${token.colorText} !important;
-            font-size: 12px !important;
-            margin-bottom: 8px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            position: relative;
-            z-index: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .ant-statistic-content {
-            color: ${token.colorPrimary} !important;
-            font-size: 36px !important;
-            font-weight: 800 !important;
-            transition: transform 0.4s ease;
-            position: relative;
-            z-index: 1;
-            word-break: break-all;
-        }
-
-        .ant-statistic-content-value {
-            color: ${token.colorPrimary} !important;
-        }
-
-        @media (max-width: 768px) {
-            padding: 20px 8px;
-
-            .ant-statistic-title {
-                font-size: 10px !important;
-                margin-bottom: 6px;
-                letter-spacing: 0.2px;
-                line-height: 1.2 !important;
-            }
-
-            .ant-statistic-content {
-                font-size: 24px !important;
-            }
-        }
-    `,
-    featureCard: css`
-        height: 100%;
-        padding: 40px 32px;
-        border-radius: ${token.borderRadiusLG * 2.5}px;
-        transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        border: 1px solid ${isDarkMode ? `${token.colorPrimary}15` : token.colorBorderSecondary};
-        background: ${isDarkMode
-                ? `linear-gradient(145deg, ${token.colorBgContainer}f5 0%, rgba(10, 10, 10, 0.8) 100%)`
-                : `linear-gradient(145deg, ${token.colorBgContainer} 0%, rgba(248, 248, 248, 0.95) 100%)`};
-        position: relative;
-        overflow: hidden;
-        backdrop-filter: blur(12px);
-        box-shadow: ${isDarkMode
-                ? `0 6px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08)`
-                : `0 4px 12px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8)`};
-
-        &::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 120px;
-            background: ${isDarkMode
-                    ? `radial-gradient(ellipse 100% 80% at 50% 0%, ${token.colorPrimary}12 0%, transparent 70%)`
-                    : `radial-gradient(ellipse 100% 80% at 50% 0%, ${token.colorPrimary}08 0%, transparent 70%)`};
-            opacity: 0;
-            transition: opacity 0.6s ease;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        &:hover {
-            transform: translateY(-16px) scale(1.03);
-            box-shadow: ${isDarkMode
-                    ? `0 24px 70px rgba(0, 0, 0, 0.7), 0 0 0 1px ${token.colorPrimary}60, 0 0 70px ${token.colorPrimary}25, inset 0 2px 0 rgba(255, 255, 255, 0.12)`
-                    : `0 24px 70px rgba(0, 0, 0, 0.15), 0 0 0 1px ${token.colorPrimary}40, 0 0 50px ${token.colorPrimary}18, inset 0 2px 0 rgba(255, 255, 255, 1)`};
-            border-color: ${token.colorPrimary};
-
-            &::before {
-                opacity: 1;
-            }
-
-            > div:first-child {
-                transform: translateY(-12px) scale(1.15) rotate(8deg);
-                box-shadow: ${isDarkMode
-                        ? `0 24px 60px ${token.colorPrimary}60, 0 0 40px ${token.colorPrimary}40, inset 0 2px 0 rgba(255,255,255,0.2)`
-                        : `0 20px 50px ${token.colorPrimary}35, 0 0 30px ${token.colorPrimary}25, inset 0 2px 0 rgba(255,255,255,1)`};
-                border-color: ${token.colorPrimary};
-                background: ${isDarkMode
-                        ? `linear-gradient(135deg, ${token.colorPrimary}40 0%, ${token.colorPrimaryHover}20 50%, ${token.colorPrimary}15 100%)`
-                        : `linear-gradient(135deg, ${token.colorPrimary}20 0%, ${token.colorPrimaryHover}12 50%, ${token.colorPrimary}08 100%)`};
-
-                &::before {
-                    opacity: 1;
-                    animation-play-state: running;
-                }
-
-                .theme-svg-icon {
-                    transform: scale(1.25) rotate(-10deg);
-                }
-            }
-
-            h4 {
-                color: ${token.colorPrimary};
-                transform: translateY(-2px);
-            }
-        }
-
-        @media (max-width: 768px) {
-            padding: 32px 26px;
-            border-radius: ${token.borderRadiusLG * 2}px;
-        }
-    `,
-    featureIcon: css`
-        width: 80px;
-        height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: ${isDarkMode
-                ? `linear-gradient(135deg, ${token.colorPrimary}25 0%, ${token.colorPrimaryHover}12 50%, ${token.colorPrimary}08 100%)`
-                : `linear-gradient(135deg, ${token.colorPrimary}12 0%, ${token.colorPrimaryHover}08 50%, ${token.colorPrimary}05 100%)`};
-        border-radius: ${token.borderRadiusLG * 2}px;
-        margin: 0 auto 24px;
-        transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: ${isDarkMode
-                ? `0 10px 30px ${token.colorPrimary}30, inset 0 1px 0 rgba(255,255,255,0.1)`
-                : `0 6px 18px ${token.colorPrimary}20, inset 0 1px 0 rgba(255,255,255,0.8)`};
-        border: 1px solid ${isDarkMode ? `${token.colorPrimary}25` : `${token.colorPrimary}15`};
-        position: relative;
-        overflow: hidden;
-
-        &::before {
-            content: '';
-            position: absolute;
-            inset: -50%;
-            background: ${isDarkMode
-                    ? `conic-gradient(from 180deg, transparent, ${token.colorPrimary}15, transparent)`
-                    : `conic-gradient(from 180deg, transparent, ${token.colorPrimary}10, transparent)`};
-            opacity: 0;
-            transition: all 0.6s ease;
-            animation: iconRotate 4s linear infinite;
-            animation-play-state: paused;
-        }
-
-        @keyframes iconRotate {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .theme-svg-icon {
-            width: 40px;
-            height: 40px;
-            display: block;
-            color: ${token.colorPrimary};
-            overflow: visible;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-
-        @media (max-width: 768px) {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 18px;
-
-            .theme-svg-icon {
-                width: 32px;
-                height: 32px;
-            }
-        }
-    `,
-    featureTitle: css`
-        font-size: 18px !important;
-        font-weight: 600 !important;
-        margin-bottom: 10px !important;
-        text-align: center;
-        color: ${token.colorText};
-        transition: all 0.3s ease;
-
-        @media (max-width: 768px) {
-            font-size: 16px !important;
-            margin-bottom: 8px !important;
-        }
-    `,
-    featureDescription: css`
-        color: ${token.colorTextSecondary} !important;
-        line-height: 1.6 !important;
-        text-align: center;
-        margin-bottom: 0 !important;
-        font-size: 14px;
-
-        @media (max-width: 768px) {
-            font-size: 13px !important;
-        }
-    `,
-    productCard: css`
-        height: 100%;
-        padding: 36px 30px;
-        border-radius: ${token.borderRadiusLG * 2.2}px;
-        transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        border: 1px solid ${isDarkMode ? `${token.colorPrimary}12` : token.colorBorderSecondary};
-        background: ${isDarkMode
-                ? `linear-gradient(145deg, ${token.colorBgContainer}f8 0%, rgba(15, 15, 15, 0.85) 100%)`
-                : `linear-gradient(145deg, ${token.colorBgContainer} 0%, rgba(252, 252, 252, 0.9) 100%)`};
-        position: relative;
-        overflow: hidden;
-        backdrop-filter: blur(10px);
-        box-shadow: ${isDarkMode
-                ? `0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)`
-                : `0 6px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9)`};
-
-        &::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            height: 140px;
-            background: ${isDarkMode
-                    ? `radial-gradient(ellipse 120% 100% at 50% 0%, ${token.colorPrimary}15 0%, transparent 65%)`
-                    : `radial-gradient(ellipse 120% 100% at 50% 0%, ${token.colorPrimary}10 0%, transparent 65%)`};
-            opacity: 0;
-            transition: opacity 0.6s ease;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        > *:not(.product-icon-bg) {
-            position: relative;
-            z-index: 1;
-        }
-
-        &:hover {
-            transform: translateY(-14px) scale(1.03);
-            box-shadow: ${isDarkMode
-                    ? `0 22px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px ${token.colorPrimary}55, 0 0 60px ${token.colorPrimary}22, inset 0 2px 0 rgba(255, 255, 255, 0.15)`
-                    : `0 22px 60px rgba(0, 0, 0, 0.12), 0 0 0 1px ${token.colorPrimary}35, 0 0 45px ${token.colorPrimary}15, inset 0 2px 0 rgba(255, 255, 255, 1)`};
-            border-color: ${token.colorPrimary};
-
-            &::before {
-                opacity: 1;
-            }
-
-            .product-icon-bg {
-                transform: scale(1.08) rotate(-8deg);
-                opacity: ${isDarkMode ? '0.3' : '0.24'};
-            }
-
-            h4 {
-                color: ${token.colorPrimary};
-            }
-        }
-
-        @media (max-width: 768px) {
-            padding: 28px 24px;
-            border-radius: ${token.borderRadiusLG * 1.8}px;
-        }
-    `,
-    productIconBg: css`
-        position: absolute;
-        top: -38px;
-        right: -42px;
-        width: 176px;
-        height: 176px;
-        opacity: ${isDarkMode ? '0.26' : '0.18'};
-        color: ${token.colorPrimary};
-        transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        z-index: 0;
-        pointer-events: none;
-        transform: rotate(-8deg);
-
-        &::before {
-            content: '';
-            position: absolute;
-            inset: 10px;
-            border-radius: 999px;
-            background:
-                    radial-gradient(circle at 34% 34%, ${token.colorPrimary} 0%, transparent 34%),
-                    radial-gradient(circle at 66% 42%, ${token.colorInfo} 0%, transparent 32%),
-                    radial-gradient(circle at 52% 72%, ${token.colorSuccess} 0%, transparent 34%);
-            opacity: ${isDarkMode ? '.5' : '.4'};
-            filter: blur(28px) saturate(1.35);
-        }
-
-        .theme-svg-icon {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: block;
-            color: currentColor;
-            opacity: .76;
-            filter: blur(7px) drop-shadow(0 0 24px ${token.colorPrimary}90);
-            mix-blend-mode: ${isDarkMode ? 'screen' : 'multiply'};
-        }
-
-        @media (max-width: 768px) {
-            width: 142px;
-            height: 142px;
-            top: -30px;
-            right: -34px;
-
-            .theme-svg-icon {
-                filter: blur(6px) drop-shadow(0 0 18px ${token.colorPrimary}70);
-            }
-        }
-    `,
-    productTitle: css`
-        font-size: 20px !important;
-        font-weight: 700 !important;
-        margin-bottom: 12px !important;
-        color: ${token.colorText};
-        transition: all 0.3s ease;
-        position: relative;
-        z-index: 1;
-
-        @media (max-width: 768px) {
-            font-size: 18px !important;
-            margin-bottom: 10px !important;
-        }
-    `,
-    productDesc: css`
-        color: ${token.colorTextSecondary} !important;
-        margin-bottom: 20px !important;
-        min-height: 52px;
-        font-size: 15px;
-        line-height: 1.7;
-        font-weight: 400;
-        position: relative;
-        z-index: 1;
-
-        @media (max-width: 768px) {
-            font-size: 14px !important;
-            min-height: auto;
-            margin-bottom: 16px !important;
-        }
-    `,
-    productFeatures: css`
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 1px solid ${token.colorBorderSecondary};
-        position: relative;
-        z-index: 1;
-
-        @media (max-width: 768px) {
-            margin-top: 16px;
-            padding-top: 16px;
-        }
-    `,
-    productFeatureItem: css`
-        display: flex;
-        align-items: center;
-        margin-bottom: 8px;
-        color: ${token.colorTextSecondary};
-        font-size: 13px;
-        padding: 6px 10px;
-        border-radius: ${token.borderRadius}px;
-        background: ${isDarkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
-        transition: all 0.3s ease;
-
-        &:last-child {
-            margin-bottom: 0;
-        }
-
-        &:hover {
-            background: ${isDarkMode ? `${token.colorPrimary}10` : `${token.colorPrimary}08`};
-            color: ${token.colorText};
-            transform: translateX(4px);
-        }
-
-        .anticon {
-            color: ${token.colorSuccess};
-            margin-right: 8px;
-            font-size: 13px;
-            transition: all 0.3s ease;
-        }
-
-        &:hover .anticon {
-            color: ${token.colorPrimary};
-            transform: scale(1.15);
-        }
-
-        @media (max-width: 768px) {
-            font-size: 12px;
-            margin-bottom: 6px;
-            padding: 5px 8px;
-
-            .anticon {
-                font-size: 12px;
-                margin-right: 6px;
-            }
-        }
-    `,
-    testimonialCard: css`
-        height: 100%;
-        padding: 28px 24px;
-        border-radius: ${token.borderRadiusLG}px;
-        border: 1px solid ${token.colorBorderSecondary};
-        background: ${token.colorBgContainer};
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-
-        &::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(135deg, ${token.colorPrimary}15, ${token.colorPrimaryHover}10);
-            border-radius: ${token.borderRadiusLG}px;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        &:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: ${isDarkMode
-                    ? `0 16px 32px rgba(0, 0, 0, 0.5), 0 0 40px ${token.colorPrimary}25`
-                    : `0 16px 32px rgba(0, 0, 0, 0.12), 0 0 30px ${token.colorPrimary}20`};
-
-            &::before {
-                opacity: 1;
-            }
-
-            > div:first-child .anticon {
-                transform: scale(1.2) rotate(15deg);
-            }
-
-            > div:last-child > div:first-child {
-                transform: scale(1.1);
-                box-shadow: ${isDarkMode
-                        ? `0 6px 16px ${token.colorPrimary}50`
-                        : `0 4px 12px ${token.colorPrimary}30`};
-            }
-        }
-
-        @media (max-width: 768px) {
-            padding: 24px 20px;
-        }
-    `,
-    testimonialStars: css`
-        margin-bottom: 16px;
-        display: flex;
-        gap: 4px;
-        justify-content: center;
-
-        .anticon {
-            color: ${token.colorWarning};
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-    `,
-    testimonialContent: css`
-        font-size: 15px;
-        color: ${token.colorText};
-        line-height: 1.8;
-        margin-bottom: 24px;
-        position: relative;
-        padding: 16px;
-        background: ${isDarkMode
-                ? 'rgba(255, 255, 255, 0.02)'
-                : 'rgba(0, 0, 0, 0.02)'};
-        border-radius: ${token.borderRadius}px;
-        border-left: 3px solid ${token.colorPrimary};
-
-        &::before {
-            content: '"';
-            position: absolute;
-            left: 8px;
-            top: 8px;
-            font-size: 32px;
-            color: ${token.colorPrimary};
-            opacity: 0.2;
-            font-family: Georgia, serif;
-            line-height: 1;
-        }
-
-        @media (max-width: 768px) {
-            font-size: 14px;
-            margin-bottom: 20px;
-            padding: 14px;
-        }
-    `,
-    testimonialAuthor: css`
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    `,
-    testimonialAvatar: css`
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: ${isDarkMode
-                ? `linear-gradient(135deg, ${token.colorPrimary} 0%, ${token.colorPrimaryHover} 100%)`
-                : token.colorPrimaryBg};
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: ${isDarkMode ? '#fff' : token.colorPrimary};
-        font-weight: 700;
-        font-size: 18px;
-        flex-shrink: 0;
-        box-shadow: ${isDarkMode
-                ? `0 4px 12px ${token.colorPrimary}40`
-                : `0 2px 8px ${token.colorPrimary}20`};
-        transition: all 0.3s ease;
-    `,
-    testimonialInfo: css`
-        flex: 1;
-    `,
-    testimonialName: css`
-        font-weight: 600;
-        margin-bottom: 2px;
-        color: ${token.colorText};
-        font-size: 14px;
-    `,
-    testimonialRole: css`
-        color: ${token.colorTextTertiary};
-        font-size: 12px;
-    `,
-    advantageSection: css`
-        background: ${isDarkMode ? token.colorBgLayout : token.colorBgContainer};
-        padding: 60px 20px;
-        width: 100%;
-        margin: 0;
-
-        @media (max-width: 1200px) {
-            padding: 50px 16px;
-        }
-
-        @media (max-width: 768px) {
-            padding: 40px 16px;
-        }
-    `,
-    advantageCard: css`
-        text-align: center;
-        padding: 40px 24px;
-        border-radius: ${token.borderRadiusLG}px;
-        background: ${token.colorBgContainer};
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        height: 100%;
-        border: 1px solid ${token.colorBorderSecondary};
-        position: relative;
-        overflow: hidden;
-
-        &::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, ${token.colorPrimary}, ${token.colorPrimaryHover});
-            transform: scaleX(0);
-            transition: transform 0.4s ease;
-        }
-
-        &:hover {
-            background: ${isDarkMode ? token.colorBgElevated : token.colorBgContainer};
-            box-shadow: ${isDarkMode
-                    ? `0 12px 24px rgba(0, 0, 0, 0.4), 0 0 30px ${token.colorPrimary}20`
-                    : `0 12px 24px rgba(0, 0, 0, 0.1), 0 0 20px ${token.colorPrimary}15`};
-            border-color: ${token.colorPrimary}40;
-            transform: translateY(-6px);
-
-            &::before {
-                transform: scaleX(1);
-            }
-
-            .advantage-number {
-                transform: scale(1.15);
-            }
-        }
-
-        @media (max-width: 768px) {
-            padding: 28px 16px;
-        }
-    `,
-    advantageNumber: css`
-        font-size: 56px;
-        font-weight: 800;
-        background: linear-gradient(135deg, ${token.colorPrimary} 0%, ${token.colorPrimaryHover} 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 16px;
-        transition: transform 0.4s ease;
-
-        @media (max-width: 768px) {
-            font-size: 42px;
-            margin-bottom: 12px;
-        }
-    `,
-    advantageTitle: css`
-        font-size: 19px;
-        font-weight: 700;
-        margin-bottom: 10px;
-        color: ${token.colorText};
-
-        @media (max-width: 768px) {
-            font-size: 17px;
-            margin-bottom: 8px;
-        }
-    `,
-    advantageDesc: css`
-        color: ${token.colorTextSecondary};
-        font-size: 14px;
-        line-height: 1.6;
-
-        @media (max-width: 768px) {
-            font-size: 13px;
-        }
-    `,
-    ctaSection: css`
-        background: ${isDarkMode
-                ? `linear-gradient(135deg, ${token.colorPrimary}15 0%, ${token.colorPrimary}08 100%)`
-                : `linear-gradient(135deg, ${token.colorPrimary}05 0%, ${token.colorPrimary}10 100%)`};
-        width: 100vw;
-        margin-left: calc(-50vw + 50%);
-        padding: 80px 0;
-        position: relative;
-    `,
-    ctaCard: css`
-        background: transparent;
-        border: none;
-        border-radius: 0;
-        text-align: center;
-        padding: 0 20px;
-        max-width: 1400px;
-        margin: 0 auto;
-
-        @media (max-width: 768px) {
-            padding: 0 16px;
-        }
-    `,
-    ctaTitle: css`
-        margin-bottom: 16px !important;
-        color: ${token.colorText} !important;
-
-        @media (max-width: 768px) {
-            font-size: 24px !important;
-        }
-    `,
-    ctaDescription: css`
-        font-size: 18px;
-        margin-bottom: 40px;
-        color: ${token.colorTextSecondary} !important;
-
-        @media (max-width: 768px) {
-            font-size: 16px;
-            margin-bottom: 32px;
-        }
-    `,
-    footer: css`
-        background: ${isDarkMode ? token.colorBgElevated : token.colorBgContainer};
-        border-top: 1px solid ${token.colorBorderSecondary};
-        padding: 48px 20px 32px;
-        text-align: center;
-        width: 100%;
-        margin: 0;
-
-        @media (max-width: 1200px) {
-            padding: 40px 16px 28px;
-        }
-
-        @media (max-width: 768px) {
-            padding: 36px 16px 24px;
-        }
-    `,
-    footerContainer: css`
-        max-width: 1200px;
-        margin: 0 auto;
-    `,
-    footerInfo: css`
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        align-items: center;
-
-        @media (max-width: 768px) {
-            gap: 10px;
-        }
-    `,
-    footerCopyright: css`
-        font-size: 13px;
-        color: ${token.colorTextTertiary};
-
-        @media (max-width: 768px) {
-            font-size: 12px;
-        }
-    `,
-    footerBeian: css`
-        font-size: 13px;
-        color: ${token.colorTextTertiary};
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-
-        a {
-            color: ${token.colorTextTertiary};
-            transition: color 0.2s ease;
-            text-decoration: none;
-
-            &:hover {
-                color: ${token.colorPrimary};
-                text-decoration: none;
-            }
-        }
-
-        @media (max-width: 768px) {
-            font-size: 12px;
-            flex-direction: column;
-            gap: 6px;
-        }
-    `,
-    backToTop: css`
-        position: fixed;
-        right: 24px;
-        bottom: 24px;
-        z-index: 1000;
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        border: none;
-        background: ${token.colorPrimary};
-        color: white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        box-shadow: ${isDarkMode
-                ? `0 4px 12px ${token.colorPrimary}40, 0 2px 8px rgba(0, 0, 0, 0.4)`
-                : `${token.colorPrimary}80 0 6px 27px 0, 0 2px 8px rgba(0, 0, 0, 0.15)`};
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: ${isDarkMode
-                ? `1px solid ${token.colorBorder}`
-                : 'none'};
-        transition: all 0.3s ease;
-        opacity: 0;
-        transform: translateY(20px);
-        pointer-events: none;
-        font-weight: 600;
-
-        &.visible {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        &:hover {
-            background: ${token.colorPrimaryHover};
-            transform: translateY(-4px) scale(1.05);
-            box-shadow: ${isDarkMode
-                    ? `0 6px 16px ${token.colorPrimaryHover}40, 0 4px 12px rgba(0, 0, 0, 0.5)`
-                    : `${token.colorPrimaryHover}80 0 8px 32px 0, 0 4px 12px rgba(0, 0, 0, 0.2)`};
-            color: white;
-        }
-
-        &:active {
-            transform: translateY(-2px) scale(1.02);
-        }
-
-        @media (max-width: 768px) {
-            right: 16px;
-            bottom: 16px;
-            width: 44px;
-            height: 44px;
-            font-size: 14px;
-        }
-    `,
-}));
+const navigation = [
+    {id: "home", name: "首页"},
+    {id: "features", name: "平台优势"},
+    {id: "products", name: "产品能力"},
+    {id: "testimonials", name: "用户评价"},
+];
+
+const features: {icon: HomeIconType; title: string; description: string}[] = [
+    {icon: "deploy", title: "快速部署", description: "分钟级快速部署，无需复杂配置，开箱即用，让您的项目快速上线运营。"},
+    {icon: "shield", title: "安全防护", description: "多重安全防护体系，数据加密传输，符合行业安全标准，保障业务安全。"},
+    {icon: "speed", title: "高性能", description: "采用先进的技术架构，毫秒级响应速度，支持高并发访问，稳定可靠。"},
+    {icon: "module", title: "弹性扩展", description: "灵活的扩展机制，根据业务需求自动调整资源，应对流量高峰。"},
+    {icon: "support", title: "专业支持", description: "7×24小时专业技术支持，快速响应您的需求，助力业务持续发展。"},
+    {icon: "global", title: "全球加速", description: "全球CDN加速节点，智能路由分发，无论用户在哪里都能获得极速体验。"},
+];
+
+const products: {icon: HomeIconType; title: string; description: string; features: string[]}[] = [
+    {icon: "monitor", title: "智能监控", description: "实时监控系统运行状态，智能告警，让您随时掌握系统健康状况。", features: ["实时数据监控", "智能告警通知", "可视化报表", "性能分析"]},
+    {icon: "api", title: "API 服务", description: "提供丰富的API接口，文档完善，便于集成，助力快速开发。", features: ["RESTful API", "完善文档", "SDK支持", "高并发处理"]},
+    {icon: "safe", title: "数据安全", description: "企业级数据安全方案，多重备份机制，确保数据万无一失。", features: ["数据加密", "定期备份", "灾难恢复", "权限管理"]},
+    {icon: "ops", title: "自动化运维", description: "自动化部署与运维工具，提升运维效率，降低人工成本。", features: ["自动部署", "日志管理", "版本控制", "回滚机制"]},
+];
+
+const advantages = [
+    {title: "简单易用", describe: "直观的操作界面，降低使用门槛"},
+    {title: "灵活定制", describe: "支持个性化配置，满足不同需求"},
+    {title: "持续创新", describe: "不断更新迭代，引领技术潮流"},
+    {title: "生态完善", describe: "丰富的生态系统，无缝对接"},
+];
+
+const testimonials = [
+    {content: "使用这个平台后，我们的开发效率提升了3倍，服务稳定性也大幅提高。团队可以更专注于业务开发，而不是运维工作。强烈推荐！", name: "张伟", role: "技术总监"},
+    {content: "非常专业的服务，技术支持响应及时，功能强大且易用。帮助我们快速搭建了业务系统，节省了大量时间和成本。", name: "李娜", role: "产品经理"},
+    {content: "安全性和稳定性都非常出色，API文档清晰易懂，集成起来很顺畅。是我用过最好的服务平台之一。", name: "王强", role: "架构师"},
+];
 
 export default () => {
-    const {styles} = useStyles();
+    const {styles, cx} = useStyles();
     const {info} = useModel("web");
-    const theme = useTheme();
     const user = useModel("user");
-
-    // 统计数据 - 写死避免动画卡顿
-    const stats = {
-        userCount: 50000,
-        serviceCount: 200,
-        apiCount: 1000000,
-        uptime: 99.9
-    };
-
-    // UI 状态
+    const theme = useTheme();
+    const pageRef = useRef<HTMLDivElement>(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [showBackToTop, setShowBackToTop] = useState(false);
-    const heroRef = useRef<HTMLDivElement | null>(null);
-    const cursorFrameRef = useRef<number | null>(null);
-    const cursorPointRef = useRef({
-        x: 0,
-        y: 0,
-        targetX: 0,
-        targetY: 0,
-        active: false,
-        initialized: false,
-    });
+    const [activeSection, setActiveSection] = useState("home");
+    const [productIndex, setProductIndex] = useState(0);
+    const product = products[productIndex];
+    const site = info as typeof info & {logo?: string; describe?: string; icp?: string; police_beian?: string};
+    const brand = site?.name || Settings.title || "云上豁者";
+    const themeIcon = theme?.isDarkMode() ? "icon-dark" : theme?.isAutoMode() ? "icon-auto" : "icon-light";
+    const themeName = theme?.getModeName(theme.mode) || "跟随系统";
 
-    // 滚动监听 - 监听 window 滚动（AdaptiveScroll 已做事件桥接）
     useEffect(() => {
-        let ticking = false;
-
-        const handleScroll = () => {
-            if (!ticking) {
-                window.requestAnimationFrame(() => {
-                    const scrollY = window.scrollY;
-                    setScrolled(scrollY > 50);
-                    setShowBackToTop(scrollY > 300);
-                    ticking = false;
-                });
-                ticking = true;
-            }
+        let frame = 0;
+        const updateScroll = () => {
+            frame = 0;
+            setScrolled(window.scrollY > 30);
+            setShowBackToTop(window.scrollY > 450);
+            let current = "home";
+            navigation.forEach(item => {
+                const element = document.getElementById(item.id);
+                if (element && element.getBoundingClientRect().top <= window.innerHeight * .3) current = item.id;
+            });
+            setActiveSection(current);
         };
-
-        window.addEventListener('scroll', handleScroll, {passive: true});
-
+        const onScroll = () => {
+            if (!frame) frame = window.requestAnimationFrame(updateScroll);
+        };
+        const onResize = () => {
+            if (window.innerWidth >= 768) setMobileMenuOpen(false);
+            onScroll();
+        };
+        updateScroll();
+        window.addEventListener("scroll", onScroll, {passive: true});
+        window.addEventListener("resize", onResize);
         return () => {
-            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener("scroll", onScroll);
+            window.removeEventListener("resize", onResize);
+            if (frame) window.cancelAnimationFrame(frame);
         };
     }, []);
 
     useEffect(() => {
+        const page = pageRef.current;
+        if (!page) return;
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        const revealObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.setAttribute("data-visible", "true");
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, {threshold: .08});
+        if (!reducedMotion.matches) {
+            page.setAttribute("data-motion", "true");
+            page.querySelectorAll(".home-reveal").forEach(element => revealObserver.observe(element));
+        }
+        const onMotionChange = () => {
+            if (reducedMotion.matches) page.removeAttribute("data-motion");
+        };
+        reducedMotion.addEventListener("change", onMotionChange);
         return () => {
-            if (cursorFrameRef.current) {
-                cancelAnimationFrame(cursorFrameRef.current);
-            }
+            revealObserver.disconnect();
+            reducedMotion.removeEventListener("change", onMotionChange);
         };
     }, []);
 
-    const features = [
-        {
-            icon: "deploy" as HomeSvgIconType,
-            title: "快速部署",
-            description: "分钟级快速部署，无需复杂配置，开箱即用，让您的项目快速上线运营。",
-        },
-        {
-            icon: "shield" as HomeSvgIconType,
-            title: "安全防护",
-            description: "多重安全防护体系，数据加密传输，符合行业安全标准，保障业务安全。",
-        },
-        {
-            icon: "speed" as HomeSvgIconType,
-            title: "高性能",
-            description: "采用先进的技术架构，毫秒级响应速度，支持高并发访问，稳定可靠。",
-        },
-        {
-            icon: "module" as HomeSvgIconType,
-            title: "弹性扩展",
-            description: "灵活的扩展机制，根据业务需求自动调整资源，应对流量高峰。",
-        },
-        {
-            icon: "support" as HomeSvgIconType,
-            title: "专业支持",
-            description: "7×24小时专业技术支持，快速响应您的需求，助力业务持续发展。",
-        },
-        {
-            icon: "global" as HomeSvgIconType,
-            title: "全球加速",
-            description: "全球CDN加速节点，智能路由分发，无论用户在哪里都能获得极速体验。",
-        }
-    ];
+    useEffect(() => {
+        const page = pageRef.current;
+        if (!page) return;
+        const hoverMotion = window.matchMedia("(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)");
+        let target: HTMLElement | null = null;
+        let frame = 0;
+        let x = 0;
+        let y = 0;
+        const reset = () => {
+            if (frame) window.cancelAnimationFrame(frame);
+            frame = 0;
+            target?.removeAttribute("data-highlighted");
+            target = null;
+        };
+        const update = () => {
+            frame = 0;
+            if (!target) return;
+            const rect = target.getBoundingClientRect();
+            target.style.setProperty("--spotlight-x", `${x - rect.left}px`);
+            target.style.setProperty("--spotlight-y", `${y - rect.top}px`);
+            target.setAttribute("data-highlighted", "true");
+        };
+        const onPointerMove = (event: PointerEvent) => {
+            if (!hoverMotion.matches || event.pointerType !== "mouse") {
+                reset();
+                return;
+            }
+            const next = event.target instanceof Element ? event.target.closest<HTMLElement>("[data-spotlight]") : null;
+            if (next !== target) {
+                reset();
+                target = next;
+            }
+            if (!target) return;
+            x = event.clientX;
+            y = event.clientY;
+            if (!frame) frame = window.requestAnimationFrame(update);
+        };
+        page.addEventListener("pointermove", onPointerMove, {passive: true});
+        page.addEventListener("pointerleave", reset);
+        page.addEventListener("pointercancel", reset);
+        window.addEventListener("scroll", reset, {passive: true});
+        window.addEventListener("resize", reset);
+        window.addEventListener("blur", reset);
+        document.addEventListener("visibilitychange", reset);
+        hoverMotion.addEventListener("change", reset);
+        return () => {
+            reset();
+            page.removeEventListener("pointermove", onPointerMove);
+            page.removeEventListener("pointerleave", reset);
+            page.removeEventListener("pointercancel", reset);
+            window.removeEventListener("scroll", reset);
+            window.removeEventListener("resize", reset);
+            window.removeEventListener("blur", reset);
+            document.removeEventListener("visibilitychange", reset);
+            hoverMotion.removeEventListener("change", reset);
+        };
+    }, []);
 
-    const products = [
-        {
-            icon: "monitor" as HomeSvgIconType,
-            title: "智能监控",
-            description: "实时监控系统运行状态，智能告警，让您随时掌握系统健康状况。",
-            features: ["实时数据监控", "智能告警通知", "可视化报表", "性能分析"]
-        },
-        {
-            icon: "api" as HomeSvgIconType,
-            title: "API 服务",
-            description: "提供丰富的API接口，文档完善，便于集成，助力快速开发。",
-            features: ["RESTful API", "完善文档", "SDK支持", "高并发处理"]
-        },
-        {
-            icon: "safe" as HomeSvgIconType,
-            title: "数据安全",
-            description: "企业级数据安全方案，多重备份机制，确保数据万无一失。",
-            features: ["数据加密", "定期备份", "灾难恢复", "权限管理"]
-        },
-        {
-            icon: "ops" as HomeSvgIconType,
-            title: "自动化运维",
-            description: "自动化部署与运维工具，提升运维效率，降低人工成本。",
-            features: ["自动部署", "日志管理", "版本控制", "回滚机制"]
+    const scrollToSection = (id: string) => {
+        const element = document.getElementById(id);
+        if (element) {
+            window.scrollTo({
+                top: Math.max(0, element.getBoundingClientRect().top + window.scrollY - (window.innerWidth < 768 ? 64 : 76)),
+                behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+            });
         }
-    ];
-
-    const testimonials = [
-        {
-            content: "使用这个平台后，我们的开发效率提升了3倍，服务稳定性也大幅提高。团队可以更专注于业务开发，而不是运维工作。强烈推荐！",
-            name: "张伟",
-            role: "技术总监",
-            avatar: "张"
-        },
-        {
-            content: "非常专业的服务，技术支持响应及时，功能强大且易用。帮助我们快速搭建了业务系统，节省了大量时间和成本。",
-            name: "李娜",
-            role: "产品经理",
-            avatar: "李"
-        },
-        {
-            content: "安全性和稳定性都非常出色，API文档清晰易懂，集成起来很顺畅。是我用过最好的服务平台之一。",
-            name: "王强",
-            role: "架构师",
-            avatar: "王"
-        }
-    ];
-
-    const advantages = [
-        {number: "01", title: "简单易用", desc: "直观的操作界面，降低使用门槛"},
-        {number: "02", title: "灵活定制", desc: "支持个性化配置，满足不同需求"},
-        {number: "03", title: "持续创新", desc: "不断更新迭代，引领技术潮流"},
-        {number: "04", title: "生态完善", desc: "丰富的生态系统，无缝对接"}
-    ];
+        setMobileMenuOpen(false);
+    };
 
     const handleGetStarted = () => {
-        if (user?.web) {
-            historyPush("user.index");
-        } else {
-            historyPush("user.login");
-        }
+        setMobileMenuOpen(false);
+        historyPush(user?.web ? "user.index" : "user.login");
     };
 
     const handleLogout = async () => {
+        setMobileMenuOpen(false);
         try {
             await logout({
                 onSuccess: () => {
                     deleteHeader();
                     user?.setWeb(undefined);
                 },
-                onFail: () => {
-                }
+                onFail: () => {},
             });
-        } catch {
-        }
+        } catch {}
     };
-
-    const scrollToSection = (id: string) => {
-        const element = document.getElementById(id);
-        if (element) {
-            const offsetTop = element.offsetTop - 80;
-            window.scrollTo({
-                top: offsetTop,
-                behavior: 'smooth'
-            });
-        }
-        setMobileMenuOpen(false);
-    };
-
-    const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    };
-
-    const runCursorFollow = () => {
-        const hero = heroRef.current;
-        const point = cursorPointRef.current;
-        if (!hero) {
-            cursorFrameRef.current = null;
-            return;
-        }
-        point.x += (point.targetX - point.x) * 0.16;
-        point.y += (point.targetY - point.y) * 0.16;
-        hero.style.setProperty('--mouse-x', `${point.x}px`);
-        hero.style.setProperty('--mouse-y', `${point.y}px`);
-        if (point.active || Math.abs(point.targetX - point.x) > 0.4 || Math.abs(point.targetY - point.y) > 0.4) {
-            cursorFrameRef.current = requestAnimationFrame(runCursorFollow);
-        } else {
-            cursorFrameRef.current = null;
-        }
-    };
-
-    const startCursorFollow = () => {
-        if (!cursorFrameRef.current) {
-            cursorFrameRef.current = requestAnimationFrame(runCursorFollow);
-        }
-    };
-
-    const handleHeroMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-        const rect = event.currentTarget.getBoundingClientRect();
-        const point = cursorPointRef.current;
-        point.targetX = event.clientX - rect.left;
-        point.targetY = event.clientY - rect.top;
-        point.active = true;
-        if (!point.initialized) {
-            point.x = point.targetX;
-            point.y = point.targetY;
-            point.initialized = true;
-        }
-        event.currentTarget.style.setProperty('--mouse-active', '1');
-        startCursorFollow();
-    };
-
-    const handleHeroMouseLeave = (event: React.MouseEvent<HTMLDivElement>) => {
-        cursorPointRef.current.active = false;
-        event.currentTarget.style.setProperty('--mouse-active', '0');
-    };
-
-    const navItems = [
-        {label: '首页', id: 'home'},
-        {label: '特性', id: 'features'},
-        {label: '产品', id: 'products'},
-        {label: '评价', id: 'testimonials'}
-    ];
 
     return (
-        <Body space={false} animation={false} className={styles.noPadding}>
-            {/* 固定的 Navigation */}
-            <nav className={`${styles.navbar} ${scrolled ? 'scrolled' : ''}`}>
-                <div className={styles.navWrapper}>
-                    <div className={styles.navContainer}>
-                        <div className={styles.logo} onClick={() => scrollToSection('home')}>
-                            <div className={styles.logoIcon}>
-                                {info?.logo ? (
-                                    <img
-                                        src={info?.logo || getAssetPath('logo.svg')}
-                                        alt="logo"
-                                    />
-                                ) : (
-                                    <Icon type="icon-logo"/>
-                                )}
-                            </div>
-                            <span className={styles.logoText}>{info?.name || Settings?.title || "云上豁者"}</span>
-                        </div>
-
-                        <div className={styles.navMenu}>
-                            {navItems.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className={styles.navLink}
-                                    onClick={() => scrollToSection(item.id)}
-                                >
-                                    {item.label}
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className={styles.navActions}>
-                            <button
-                                className={styles.themeToggle}
-                                onClick={() => theme?.toggle?.()}
-                                title={theme?.getModeName(theme?.mode as any)}
-                            >
-                                <Icon
-                                    type={theme?.isDarkMode() ? "icon-dark" : (theme?.isAutoMode() ? 'icon-auto' : 'icon-light')}/>
-                            </button>
-                            {user?.web ? (
-                                <>
-                                    <button
-                                        className={`${styles.navBtn} btn-secondary`}
-                                        onClick={() => historyPush("user.index")}
-                                    >
-                                        <Icon type="HomeOutlined"/>
-                                        进入系统
-                                    </button>
-                                    <button
-                                        className={`${styles.navBtn} btn-primary`}
-                                        onClick={handleLogout}
-                                    >
-                                        <Icon type="LogoutOutlined"/>
-                                        退出
-                                    </button>
-                                </>
-                            ) : (
-                                <>
-                                    <button
-                                        className={`${styles.navBtn} btn-secondary`}
-                                        onClick={() => historyPush("user.login")}
-                                    >
-                                        <Icon type="LoginOutlined"/>
-                                        登录
-                                    </button>
-                                    <button
-                                        className={`${styles.navBtn} btn-primary`}
-                                        onClick={handleGetStarted}
-                                    >
-                                        开始使用
-                                    </button>
-                                </>
-                            )}
-                        </div>
-
-                        <button
-                            className={styles.mobileMenuBtn}
-                            onClick={() => setMobileMenuOpen(true)}
-                        >
-                            <Icon type="MenuOutlined"/>
+        <Body space={false} animation={false} className={styles.body}>
+            <div ref={pageRef} className={styles.page}>
+                <header className={styles.header} data-scrolled={scrolled}>
+                    <div className={cx(styles.container, styles.headerInner)}>
+                        <button className={styles.logo} onClick={() => scrollToSection("home")} aria-label="返回首页顶部">
+                            {site?.logo ? <img src={site.logo} alt=""/> : <Icon type="icon-logo"/>}
+                            <span>{brand}</span>
                         </button>
+                        <nav className={styles.nav} aria-label="首页导航">
+                            {navigation.map(item => <button key={item.id} onClick={() => scrollToSection(item.id)} aria-current={activeSection === item.id}>{item.name}</button>)}
+                        </nav>
+                        <div className={styles.headerActions}>
+                            <button className={styles.themeButton} onClick={() => theme?.toggle()} aria-label={themeName} title={themeName}><Icon type={themeIcon}/></button>
+                            <button className={styles.textButton} onClick={user?.web ? handleLogout : () => historyPush("user.login")}>{user?.web ? "退出" : "登录"}</button>
+                            <button className={styles.primaryButton} data-small="true" onClick={handleGetStarted}>{user?.web ? "进入系统" : "开始使用"}<Icon type="ArrowRightOutlined"/></button>
+                        </div>
+                        <button className={styles.mobileToggle} onClick={() => setMobileMenuOpen(true)} aria-label="打开导航菜单" aria-expanded={mobileMenuOpen}><Icon type="MenuOutlined"/></button>
                     </div>
-                </div>
-            </nav>
+                </header>
 
-            {/* Mobile Menu - 预渲染，纯 CSS 动画 */}
-            <div
-                className={`${styles.mobileMenuMask} ${mobileMenuOpen ? 'open' : ''}`}
-                onClick={() => setMobileMenuOpen(false)}
-            />
-            <div className={`${styles.mobileMenuDrawer} ${mobileMenuOpen ? 'open' : ''}`}>
-                <div className={styles.mobileMenuHeader}>
-                    <button
-                        className={styles.mobileMenuClose}
-                        onClick={() => setMobileMenuOpen(false)}
-                    >
-                        <Icon type="CloseOutlined"/>
-                    </button>
-                </div>
-
-                <div className={styles.mobileMenuBody}>
-                    <div className={styles.mobileMenuNav}>
-                        {navItems.map((item, _) => (
-                            <div
-                                key={item.id}
-                                className={styles.mobileMenuItem}
-                                onClick={() => scrollToSection(item.id)}
-                            >
-                                {item.label}
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className={styles.mobileThemeSection}>
-                        <div className={styles.mobileThemeLabel}>主题模式</div>
-                        <div className={styles.mobileThemeButtons}>
-                            <button
-                                className={`${styles.mobileThemeBtn} ${theme?.isLightMode() ? 'active' : ''}`}
-                                onClick={() => theme?.setLightMode?.()}
-                            >
-                                <Icon type={"icon-light"}/>
-                                亮色
-                            </button>
-                            <button
-                                className={`${styles.mobileThemeBtn} ${theme?.isDarkMode() ? 'active' : ''}`}
-                                onClick={() => theme?.setDarkMode?.()}
-                            >
-                                <Icon type={"icon-dark"}/>
-                                暗色
-                            </button>
-                            <button
-                                className={`${styles.mobileThemeBtn} ${theme?.isAutoMode() ? 'active' : ''}`}
-                                onClick={() => theme?.setAutoMode?.()}
-                            >
-                                <Icon type={"icon-auto"}/>
-                                自动
-                            </button>
+                <Drawer title={brand} size={360} open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} classNames={{body: styles.mobileMenuBody}}>
+                    <nav aria-label="移动端首页导航">
+                        {navigation.map(item => <button key={item.id} onClick={() => scrollToSection(item.id)}>{item.name}<Icon type="ArrowRightOutlined"/></button>)}
+                    </nav>
+                    <div className={styles.mobileTheme}>
+                        <span>主题模式</span>
+                        <div>
+                            <button aria-pressed={theme?.isLightMode()} onClick={() => theme?.setLightMode()}><Icon type="icon-light"/>亮色</button>
+                            <button aria-pressed={theme?.isDarkMode()} onClick={() => theme?.setDarkMode()}><Icon type="icon-dark"/>暗色</button>
+                            <button aria-pressed={theme?.isAutoMode()} onClick={() => theme?.setAutoMode()}><Icon type="icon-auto"/>自动</button>
                         </div>
                     </div>
-
                     <div className={styles.mobileActions}>
-                        {user?.web ? (
-                            <>
-                                <button
-                                    className={`${styles.mobileActionItem} ${styles.mobileBtnPrimary}`}
-                                    onClick={() => {
-                                        historyPush("user.index");
-                                        setMobileMenuOpen(false);
-                                    }}
-                                >
-                                    <Icon type="HomeOutlined"/>
-                                    <span>进入系统</span>
-                                </button>
-                                <button
-                                    className={styles.mobileActionItem}
-                                    onClick={() => {
-                                        handleLogout();
-                                        setMobileMenuOpen(false);
-                                    }}
-                                >
-                                    <Icon type="LogoutOutlined"/>
-                                    <span>退出登录</span>
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button
-                                    className={`${styles.mobileActionItem} ${styles.mobileBtnPrimary}`}
-                                    onClick={() => {
-                                        handleGetStarted();
-                                        setMobileMenuOpen(false);
-                                    }}
-                                >
-                                    <Icon type="RocketOutlined"/>
-                                    <span>免费开始</span>
-                                </button>
-                                <button
-                                    className={styles.mobileActionItem}
-                                    onClick={() => {
-                                        historyPush("user.login");
-                                        setMobileMenuOpen(false);
-                                    }}
-                                >
-                                    <Icon type="LoginOutlined"/>
-                                    <span>登录账号</span>
-                                </button>
-                            </>
-                        )}
+                        <button className={styles.primaryButton} onClick={handleGetStarted}>{user?.web ? "进入系统" : "开始使用"}<Icon type="ArrowRightOutlined"/></button>
+                        {user?.web && <button className={styles.secondaryButton} onClick={handleLogout}>退出登录</button>}
                     </div>
-                </div>
-            </div>
+                </Drawer>
 
-            {/* 页面内容 */}
-            <div className={styles.pageWrapper}>
-                <div className={styles.contentWrapper}>
-                    {/* Hero Section - 科技感背景动画 */}
-                    <div
-                        ref={heroRef}
-                        id="home"
-                        className={styles.heroSection}
-                        onMouseMove={handleHeroMouseMove}
-                        onMouseLeave={handleHeroMouseLeave}
-                    >
-                        {/* 基础背景层 */}
-                        <div className={styles.heroGradient}></div>
-                        <div className={styles.heroSpotlight}></div>
-                        <div className={styles.heroCursorGlow}></div>
-
-                        {/* 科技感动画层 - 轻量级纯CSS动画 */}
-                        <div className={styles.heroGrid}></div>
-                        <div className={styles.heroScanLine}></div>
-                        <div className={styles.heroCircuits}></div>
-                        <div className={styles.heroDots}></div>
-                        <div className={styles.heroDataStream}></div>
-                        <div className={styles.heroTechLines}></div>
-
-                        {/* 发光球 - 已减少到 2 个 */}
-                        <div className={styles.heroGlowOrbs}>
-                            {ANIMATION_ELEMENTS.glowOrbs.map((orb) => (
-                                <div
-                                    key={orb.id}
-                                    className={styles.glowOrb}
-                                    style={{
-                                        left: orb.left,
-                                        top: orb.top,
-                                        width: orb.size,
-                                        height: orb.size,
-                                        '--duration': orb.duration,
-                                        '--delay': orb.delay,
-                                        '--tx': orb.tx,
-                                        '--ty': orb.ty
-                                    } as React.CSSProperties}
-                                />
-                            ))}
-                        </div>
-
-                        {/* 粒子 - 已减少到 2 个 */}
-                        <div className={styles.heroParticles}>
-                            {ANIMATION_ELEMENTS.particles.map((particle) => (
-                                <div
-                                    key={particle.id}
-                                    className={styles.particle}
-                                    style={{
-                                        left: particle.left,
-                                        top: particle.top,
-                                        '--duration': particle.duration,
-                                        '--delay': particle.delay,
-                                        '--tx': particle.tx,
-                                        '--ty': particle.ty
-                                    } as React.CSSProperties}
-                                />
-                            ))}
-                        </div>
-
-                        <div className={styles.heroContent}>
-                            <h1 className={`${styles.title} ${styles.h1} ${styles.heroTitle}`}>
-                                {info?.name || Settings?.title}
-                            </h1>
-                            <h3 className={`${styles.title} ${styles.h3} ${styles.heroSubtitle}`}>
-                                {(info as any)?.describe || "赋能企业数字化转型，构建高效业务系统"}
-                            </h3>
-
-                            <div className={styles.ctaButtons}>
-                                <button
-                                    className={styles.btnPrimary}
-                                    onClick={handleGetStarted}
-                                >
-                                    {user?.web ? (
-                                        <>
-                                            <Icon type="HomeOutlined"/>
-                                            进入系统
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Icon type="RocketOutlined"/>
-                                            开始体验
-                                        </>
-                                    )}
-                                </button>
-                                {!user?.web && (
-                                    <button
-                                        className={styles.btnSecondary}
-                                        onClick={() => historyPush("user.login")}
-                                    >
-                                        已有账号？登录
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Stats Section */}
-                    <div className={styles.statsSection}>
-                        <div className={styles.statsContainer}>
-                            <Row gutter={[16, 24]}>
-                                <Col xs={12} sm={12} md={6}>
-                                    <div className={styles.statCard}>
-                                        <Statistic
-                                            title="服务用户"
-                                            value={stats.userCount}
-                                            suffix="+"
-                                        />
-                                    </div>
-                                </Col>
-                                <Col xs={12} sm={12} md={6}>
-                                    <div className={styles.statCard}>
-                                        <Statistic
-                                            title="功能服务"
-                                            value={stats.serviceCount}
-                                            suffix="+"
-                                        />
-                                    </div>
-                                </Col>
-                                <Col xs={12} sm={12} md={6}>
-                                    <div className={styles.statCard}>
-                                        <Statistic
-                                            title="API 调用量"
-                                            value={stats.apiCount}
-                                            suffix="+"
-                                        />
-                                    </div>
-                                </Col>
-                                <Col xs={12} sm={12} md={6}>
-                                    <div className={styles.statCard}>
-                                        <Statistic
-                                            title="稳定性"
-                                            value={stats.uptime}
-                                            suffix="%"
-                                            precision={1}
-                                        />
-                                    </div>
-                                </Col>
-                            </Row>
-                        </div>
-                    </div>
-
-                    {/* Features Section */}
-                    <div id="features" className={styles.section}>
-                        <h2 className={`${styles.title} ${styles.h2} ${styles.sectionTitle}`}>
-                            核心特性
-                        </h2>
-                        <p className={`${styles.paragraph} ${styles.sectionSubtitle}`}>
-                            为您提供企业级的服务能力，助力业务快速发展
-                        </p>
-
-                        <Row gutter={[24, 24]}>
-                            {features.map((feature, index) => (
-                                <Col xs={24} sm={12} md={8} lg={8} key={index}>
-                                    <div className={styles.featureCard}>
-                                        <div className={styles.featureIcon}>
-                                            <HomeSvgIcon type={feature.icon}/>
-                                        </div>
-                                        <h4 className={`${styles.title} ${styles.h4} ${styles.featureTitle}`}>
-                                            {feature.title}
-                                        </h4>
-                                        <p className={`${styles.paragraph} ${styles.featureDescription}`}>
-                                            {feature.description}
-                                        </p>
-                                    </div>
-                                </Col>
-                            ))}
-                        </Row>
-                    </div>
-
-                    {/* Products Section */}
-                    <div id="products" className={styles.advantageSection}>
-                        <div className={styles.section}>
-                            <h2 className={`${styles.title} ${styles.h2} ${styles.sectionTitle}`}>
-                                产品服务
-                            </h2>
-                            <p className={`${styles.paragraph} ${styles.sectionSubtitle}`}>
-                                丰富的产品矩阵，满足不同场景需求
-                            </p>
-
-                            <Row gutter={[24, 24]}>
-                                {products.map((product, index) => (
-                                    <Col xs={24} sm={12} md={12} lg={6} key={index}>
-                                        <div className={styles.productCard}>
-                                            <div className={`${styles.productIconBg} product-icon-bg`}>
-                                                <HomeSvgIcon type={product.icon}/>
-                                            </div>
-                                            <h4 className={`${styles.title} ${styles.h4} ${styles.productTitle}`}>
-                                                {product.title}
-                                            </h4>
-                                            <p className={`${styles.paragraph} ${styles.productDesc}`}>
-                                                {product.description}
-                                            </p>
-                                            <div className={styles.productFeatures}>
-                                                {product.features.map((feature, idx) => (
-                                                    <div key={idx} className={styles.productFeatureItem}>
-                                                        <Icon type="CheckCircleOutlined"/>
-                                                        <span>{feature}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </Col>
-                                ))}
-                            </Row>
-                        </div>
-                    </div>
-
-                    {/* Advantages Section */}
-                    <div className={styles.section}>
-                        <h2 className={`${styles.title} ${styles.h2} ${styles.sectionTitle}`}>
-                            为什么选择我们
-                        </h2>
-                        <p className={`${styles.paragraph} ${styles.sectionSubtitle}`}>
-                            专业、可靠、创新，是我们的核心价值
-                        </p>
-
-                        <Row gutter={[16, 16]}>
-                            {advantages.map((advantage, index) => (
-                                <Col xs={12} sm={12} md={6} key={index}>
-                                    <div className={styles.advantageCard}>
-                                        <div className={`${styles.advantageNumber} advantage-number`}>
-                                            {advantage.number}
-                                        </div>
-                                        <div className={styles.advantageTitle}>
-                                            {advantage.title}
-                                        </div>
-                                        <div className={styles.advantageDesc}>
-                                            {advantage.desc}
-                                        </div>
-                                    </div>
-                                </Col>
-                            ))}
-                        </Row>
-                    </div>
-
-                    {/* Testimonials Section */}
-                    <div id="testimonials" className={styles.advantageSection}>
-                        <div className={styles.section}>
-                            <h2 className={`${styles.title} ${styles.h2} ${styles.sectionTitle}`}>
-                                用户评价
-                            </h2>
-                            <p className={`${styles.paragraph} ${styles.sectionSubtitle}`}>
-                                听听用户怎么说
-                            </p>
-
-                            <Row gutter={[24, 24]}>
-                                {testimonials.map((testimonial, index) => (
-                                    <Col xs={24} sm={24} md={8} key={index}>
-                                        <div className={styles.testimonialCard}>
-                                            <div className={styles.testimonialStars}>
-                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                    <Icon type="StarFilled" key={star}/>
-                                                ))}
-                                            </div>
-                                            <div className={styles.testimonialContent}>
-                                                "{testimonial.content}"
-                                            </div>
-                                            <div className={styles.testimonialAuthor}>
-                                                <div className={styles.testimonialAvatar}>
-                                                    {testimonial.avatar}
-                                                </div>
-                                                <div className={styles.testimonialInfo}>
-                                                    <div className={styles.testimonialName}>
-                                                        {testimonial.name}
-                                                    </div>
-                                                    <div className={styles.testimonialRole}>
-                                                        {testimonial.role}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Col>
-                                ))}
-                            </Row>
-                        </div>
-                    </div>
-
-                    {/* CTA Section */}
-                    <div className={styles.ctaSection}>
-                        <div className={styles.ctaCard}>
-                            <h2 className={`${styles.title} ${styles.h2} ${styles.ctaTitle}`}>
-                                准备好开始了吗？
-                            </h2>
-                            <p className={`${styles.paragraph} ${styles.ctaDescription}`}>
-                                立即注册，开启您的数字化之旅
-                            </p>
-                            <div className={styles.ctaButtons}>
-                                <button
-                                    className={styles.btnPrimary}
-                                    onClick={() => user?.web ? historyPush("user.index") : historyPush("user.login")}
-                                >
-                                    {user?.web ? (
-                                        <>
-                                            <Icon type="HomeOutlined"/>
-                                            进入控制台
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Icon type="RocketOutlined"/>
-                                            立即开始
-                                        </>
-                                    )}
-                                </button>
-                                <button
-                                    className={styles.btnSecondary}
-                                    onClick={() => window.location.href = `mailto:${info?.contact || 'contact@example.com'}`}
-                                >
-                                    咨询合作
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Footer */}
-                    <footer className={styles.footer}>
-                        <div className={styles.footerContainer}>
-
-                            <div className={styles.footerInfo}>
-                                <div className={styles.footerCopyright}>
-                                    © {new Date().getFullYear()} {info?.name || Settings?.title || "云上豁者"}. All
-                                    rights
-                                    reserved.
+                <main>
+                    <section id="home" className={styles.hero} data-spotlight="hero">
+                        <div className={styles.spotlight} aria-hidden="true"/>
+                        <div className={cx(styles.container, styles.heroInner)}>
+                            <div className={styles.heroCopy}>
+                                <div className={styles.heroEyebrow}><span/>A NEW WAY TO CONNECT</div>
+                                <h1>连接你的世界<span>让可能发生</span></h1>
+                                <p>{site?.describe || "连接灵感、服务与日常。以简单的体验，开启数字世界的更多可能。"}</p>
+                                <div className={styles.heroActions}>
+                                    <button className={styles.primaryButton} onClick={handleGetStarted}>{user?.web ? "进入工作空间" : "开始体验"}<Icon type="ArrowRightOutlined"/></button>
+                                    <button className={styles.secondaryButton} onClick={() => scrollToSection("products")}>探索产品<Icon type="ArrowDownOutlined"/></button>
                                 </div>
-                                <div className={styles.footerBeian}>
-                                    {(info as any)?.icp && (
-                                        <a
-                                            href="https://beian.miit.gov.cn"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            {(info as any)?.icp}
-                                        </a>
-                                    )}
-                                    {(info as any)?.police_beian && (
-                                        <>
-                                            {(info as any)?.icp && <span>|</span>}
-                                            <a
-                                                href="http://www.beian.gov.cn/portal/registerSystemInfo"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                {(info as any)?.police_beian}
-                                            </a>
-                                        </>
-                                    )}
+                                <div className={styles.heroNotes}><span><Icon type="CheckOutlined"/>轻盈体验</span><span><Icon type="CheckOutlined"/>安全可靠</span><span><Icon type="CheckOutlined"/>持续进化</span></div>
+                            </div>
+                            <div className={styles.heroArt} aria-hidden="true">
+                                <HomeVisual className={styles.visual}/>
+                                <div className={styles.artCaption}><span>IDEAS. CONNECTED.</span><span>构建无限可能</span></div>
+                            </div>
+                        </div>
+                        <div className={cx(styles.container, styles.heroBottom)}>
+                            <span>TECHNOLOGY, MADE HUMAN.</span>
+                            <div><span><b>01</b>高效连接</span><span><b>02</b>安全守护</span><span><b>03</b>自由扩展</span></div>
+                            <button onClick={() => scrollToSection("features")} aria-label="探索平台优势"><Icon type="ArrowDownOutlined"/></button>
+                        </div>
+                    </section>
+
+                    <section id="features" className={cx(styles.container, styles.section)}>
+                        <div className={cx(styles.sectionHeading, "home-reveal")}>
+                            <div><span className={styles.eyebrow}>01 / BUILT TO GO FURTHER</span><h2>强大的内核。<br/><span>轻盈的体验。</span></h2></div>
+                            <p>每一个顺畅的瞬间，背后都有可靠的技术。<br/>从快速开始，到从容进阶。</p>
+                        </div>
+                        <div className={styles.featureGrid}>
+                            {features.map((feature, index) => <article key={feature.title} className="home-reveal" data-spotlight="card"><div className={styles.spotlight} aria-hidden="true"/><div className={styles.featureTop}><HomeIcon type={feature.icon}/><span>0{index + 1}</span></div><h3>{feature.title}</h3><p>{feature.description}</p></article>)}
+                        </div>
+                    </section>
+
+                    <section id="products" className={styles.productsSection}>
+                        <div className={cx(styles.container, styles.section)}>
+                            <div className={cx(styles.sectionHeading, "home-reveal")}>
+                                <div><span className={styles.eyebrow}>02 / AN OPEN ECOSYSTEM</span><h2>让能力相连，<span>让场景延伸。</span></h2></div>
+                                <p>让每个场景都有合适的工具，<br/>让每一步都更从容。</p>
+                            </div>
+                            <div className={cx(styles.productWorkspace, "home-reveal")}>
+                                <div className={styles.productMenu} aria-label="选择产品能力">
+                                    {products.map((item, index) => <button key={item.title} onClick={() => setProductIndex(index)} aria-pressed={productIndex === index} aria-controls="home-product-detail"><HomeIcon type={item.icon}/><span>{item.title}</span><Icon type="ArrowRightOutlined"/></button>)}
+                                </div>
+                                <div id="home-product-detail" className={styles.productDetail}>
+                                    <div className={styles.productCopy}><span className={styles.eyebrow}>0{productIndex + 1} / CONNECTED SERVICES</span><h3>{product.title}</h3><p>{product.description}</p><ul>{product.features.map(feature => <li key={feature}><Icon type="CheckOutlined"/>{feature}</li>)}</ul><button className={styles.textButton} onClick={handleGetStarted}>开始使用<Icon type="ArrowRightOutlined"/></button></div>
+                                    <div className={styles.productDiagram} aria-hidden="true"><div className={styles.diagramCenter}><HomeIcon type={product.icon}/></div>{product.features.map((feature, index) => <div key={feature} className={styles.diagramNode} data-position={index}><i/> {feature}</div>)}</div>
                                 </div>
                             </div>
                         </div>
-                    </footer>
+                    </section>
 
-                    {/* Back to Top Button */}
-                    <button
-                        className={`${styles.backToTop} ${showBackToTop ? 'visible' : ''}`}
-                        onClick={scrollToTop}
-                        title="返回顶部"
-                    >
-                        <Icon type="UpOutlined"/>
-                    </button>
-                </div>
+                    <section className={cx(styles.container, styles.section)}>
+                        <div className={cx(styles.manifesto, "home-reveal")}>
+                            <span className={styles.eyebrow}>LESS FRICTION. MORE FOCUS.</span>
+                            <h2>好的工具，<span>让你忘记工具。</span></h2>
+                            <p>直观的体验、可靠的服务，与持续生长的能力。<br/>陪你把日常的小想法，变成下一步的大可能。</p>
+                        </div>
+                        <div className={styles.advantages}>
+                            {advantages.map((item, index) => <article key={item.title} className="home-reveal"><span>0{index + 1}</span><h3>{item.title}</h3><p>{item.describe}</p></article>)}
+                        </div>
+                    </section>
+
+                    <section id="testimonials" className={cx(styles.container, styles.section, styles.testimonials)}>
+                        <div className={cx(styles.sectionHeading, "home-reveal")}>
+                            <div><span className={styles.eyebrow}>IN GOOD COMPANY</span><h2>体验，由使用者诉说。</h2></div>
+                            <p>好的体验，体现在每一次使用中。</p>
+                        </div>
+                        <div className={styles.testimonialGrid}>
+                            {testimonials.map(item => <article key={item.name} className="home-reveal">
+                                <span className={styles.quoteMark} aria-hidden="true">“</span>
+                                <blockquote>{item.content}</blockquote>
+                                <div className={styles.author}><span>{item.name.slice(0, 1)}</span><div><strong>{item.name}</strong><small>{item.role}</small></div></div>
+                            </article>)}
+                        </div>
+                    </section>
+
+                    <div className={styles.container}>
+                        <section className={cx(styles.cta, "home-reveal")}>
+                            <div><span className={styles.eyebrow}>MAKE ROOM FOR WHAT'S NEXT</span><h2>下一步，<span>一起向前。</span></h2><p>让想法有处安放，让可能自在生长。</p></div>
+                            <div className={styles.ctaActions}>
+                                <button className={styles.primaryButton} onClick={handleGetStarted}>{user?.web ? "进入控制台" : "立即开始"}<Icon type="ArrowRightOutlined"/></button>
+                                <button className={styles.secondaryButton} onClick={() => window.location.href = `mailto:${site?.contact || Settings.contact}`}>咨询合作</button>
+                            </div>
+                        </section>
+                        <footer className={styles.footer}>
+                            <span>© {new Date().getFullYear()} {brand}. All rights reserved.</span>
+                            <div>
+                                {site?.icp && <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer">{site.icp}</a>}
+                                {site?.police_beian && <a href="http://www.beian.gov.cn/portal/registerSystemInfo" target="_blank" rel="noopener noreferrer">{site.police_beian}</a>}
+                            </div>
+                        </footer>
+                    </div>
+                </main>
+                <button className={styles.backToTop} data-visible={showBackToTop} onClick={() => scrollToSection("home")} aria-label="返回顶部" title="返回顶部"><Icon type="ArrowUpOutlined"/></button>
             </div>
         </Body>
     );
