@@ -1,10 +1,10 @@
 import React, {useRef, useState} from "react";
 import {App, Button, ColorPicker, Flex, Form, Image, Input, InputNumber, Select, Spin} from "antd";
-import {Icon} from "sinking-antd";
+import {Icon, useTheme} from "sinking-antd";
 
 import {createStyles} from "antd-style";
 import {Upload, type UploadRef} from "@/pages/components/upload";
-import {SYSTEM_FILE_SCENE_ID, getUploadUrl} from "@/utils/upload";
+import {getUploadUrl, SYSTEM_FILE_SCENE_ID} from "@/utils/upload";
 
 const useStyles: any = createStyles(({css, token}: any) => ({
     actions: css`
@@ -301,16 +301,17 @@ export const FormField = ({
                               precision,
                               options,
                               rules,
-                              maxWidth = "350px",
+                              maxWidth,
                               format = "rgb",
                               accept,
                               sceneId,
                               uploadText,
                           }: FormFieldProps): React.ReactNode => {
+    const theme = useTheme();
     const inputAction = type === "select" ? "请选择" : type === "upload" ? "请上传" : "请输入";
     const itemRules = rules || (required ? [{required: true, message: `${inputAction}${label}`}] : undefined);
     const itemTooltip = tooltip || label;
-    const itemStyle = {maxWidth, width: "100%"};
+    const itemStyle = {maxWidth: maxWidth ?? (theme?.isCompactTheme?.() ? 300 : 350), width: "100%"};
     if (type === "upload") {
         return (
             <UploadField name={name} label={label} tooltip={itemTooltip} rules={itemRules} style={itemStyle}
@@ -342,7 +343,7 @@ export const FormField = ({
     if (type === "color") {
         return (
             <Form.Item label={label} tooltip={itemTooltip} style={itemStyle}>
-                <Flex gap={8} align="center">
+                <Flex gap={8} align="center" wrap>
                     <Form.Item name={name as any} rules={itemRules} noStyle
                                getValueFromEvent={(_: any, value: string) => value}>
                         <ColorPicker showText format={format} defaultFormat={format}/>

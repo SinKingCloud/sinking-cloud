@@ -1,6 +1,7 @@
 import React from "react";
 import {Form, Space} from "antd";
 import {createStyles} from "antd-style";
+import {useTheme} from "sinking-antd";
 import {BaseForm, FormField, Loading} from "./common";
 import {useSystemConfig} from "../hooks";
 import {uiConfig} from "@/service/admin/config";
@@ -30,10 +31,10 @@ const radiusOptions = Array.from({length: 16}, (_, index) => ({
     label: `${index}px${index === 0 ? " (无圆角)" : ""}`,
 }));
 
-const useStyles: any = createStyles(({css, token}: any) => ({
+const useStyles = createStyles(({css, token}, {isCompactMode}: {isCompactMode: boolean}) => ({
     wrapper: css`
         width: 100%;
-        max-width: 720px;
+        max-width: ${isCompactMode ? 620 : 720}px;
     `,
     title: css`
         margin-bottom: ${token.marginSM}px;
@@ -44,7 +45,8 @@ const useStyles: any = createStyles(({css, token}: any) => ({
 }));
 
 const UiConfigForm = ({title, prefix}: UiConfigFormProps): React.ReactNode => {
-    const {styles} = useStyles();
+    const theme = useTheme();
+    const {styles} = useStyles({isCompactMode: Boolean(theme?.isCompactTheme?.())});
     const {form, dataLoading, submitLoading, saveConfig, resetForm} = useSystemConfig({
         request: uiConfig,
     });
@@ -87,10 +89,12 @@ const UiConfigForm = ({title, prefix}: UiConfigFormProps): React.ReactNode => {
 };
 
 const UiView: React.FC = () => {
-    const {styles} = useStyles();
+    const theme = useTheme();
+    const isCompactMode = Boolean(theme?.isCompactTheme?.());
+    const {styles} = useStyles({isCompactMode});
 
     return (
-        <Space className={styles.wrapper} orientation="vertical" size={16}>
+        <Space className={styles.wrapper} orientation="vertical" size={isCompactMode ? 12 : 16}>
             <UiConfigForm title="后台界面" prefix="ui.admin"/>
             <UiConfigForm title="前台界面" prefix="ui.user"/>
         </Space>
