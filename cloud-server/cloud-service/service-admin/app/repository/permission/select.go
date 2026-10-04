@@ -75,15 +75,6 @@ func (r *Repository) SelectByIds(ids []int64) ([]*model.Permission, error) {
 func (r *Repository) Select(where *SelectPermission, queryPage *page.Query) (*page.Result[*model.Permission], error) {
 	query := r.Database.Db.Model(&model.Permission{})
 	if where != nil {
-		if where.Code != nil {
-			query = query.Where("code LIKE ?", "%"+*where.Code+"%")
-		}
-		if where.Path != nil {
-			query = query.Where("path LIKE ?", "%"+*where.Path+"%")
-		}
-		if where.Name != nil {
-			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
-		}
 		if where.CreateTimeStart != nil {
 			query = query.Where("create_time >= ?", *where.CreateTimeStart)
 		}
@@ -95,6 +86,15 @@ func (r *Repository) Select(where *SelectPermission, queryPage *page.Query) (*pa
 		}
 		if where.UpdateTimeEnd != nil {
 			query = query.Where("update_time <= ?", *where.UpdateTimeEnd)
+		}
+		if where.Code != nil {
+			query = query.Where("code LIKE ?", "%"+*where.Code+"%")
+		}
+		if where.Path != nil {
+			query = query.Where("path LIKE ?", "%"+*where.Path+"%")
+		}
+		if where.Name != nil {
+			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage)

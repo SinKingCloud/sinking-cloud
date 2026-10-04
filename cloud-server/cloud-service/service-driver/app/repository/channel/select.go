@@ -37,9 +37,6 @@ func (r *Repository) Select(where *SelectChannel, queryPage *page.Query) (*page.
 		if where.Status != nil {
 			query = query.Where("status = ?", *where.Status)
 		}
-		if where.Name != nil {
-			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
-		}
 		if where.CreateTimeStart != nil {
 			query = query.Where("create_time >= ?", *where.CreateTimeStart)
 		}
@@ -51,6 +48,9 @@ func (r *Repository) Select(where *SelectChannel, queryPage *page.Query) (*page.
 		}
 		if where.UpdateTimeEnd != nil {
 			query = query.Where("update_time <= ?", *where.UpdateTimeEnd)
+		}
+		if where.Name != nil {
+			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage)

@@ -53,9 +53,6 @@ func (r *Repository) SelectIdNameMap() (map[int64]string, error) {
 func (r *Repository) Select(where *SelectRole, queryPage *page.Query) (*page.Result[*model.Role], error) {
 	query := r.Database.Db.Model(&model.Role{})
 	if where != nil {
-		if where.Name != nil {
-			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
-		}
 		if where.Status != nil {
 			query = query.Where("status = ?", *where.Status)
 		}
@@ -70,6 +67,9 @@ func (r *Repository) Select(where *SelectRole, queryPage *page.Query) (*page.Res
 		}
 		if where.UpdateTimeEnd != nil {
 			query = query.Where("update_time <= ?", *where.UpdateTimeEnd)
+		}
+		if where.Name != nil {
+			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage)

@@ -47,12 +47,6 @@ func (r *Repository) Select(where *SelectFile, queryPage *page.Query) (*page.Res
 		if where.Status != nil {
 			query = query.Where("status = ?", *where.Status)
 		}
-		if where.Name != nil {
-			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
-		}
-		if where.Path != nil {
-			query = query.Where("path LIKE ?", *where.Path+"%")
-		}
 		if where.CreateTimeStart != nil {
 			query = query.Where("create_time >= ?", *where.CreateTimeStart)
 		}
@@ -64,6 +58,12 @@ func (r *Repository) Select(where *SelectFile, queryPage *page.Query) (*page.Res
 		}
 		if where.UpdateTimeEnd != nil {
 			query = query.Where("update_time <= ?", *where.UpdateTimeEnd)
+		}
+		if where.Name != nil {
+			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
+		}
+		if where.Path != nil {
+			query = query.Where("path LIKE ?", *where.Path+"%")
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage)

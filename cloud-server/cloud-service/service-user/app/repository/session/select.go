@@ -16,19 +16,6 @@ func (r *Repository) Select(where *SelectSession, queryPage *page.Query) (*page.
 		if where.UserId != nil {
 			query = query.Where("user_id = ?", *where.UserId)
 		}
-		if where.Keyword != nil {
-			keyword := "%" + *where.Keyword + "%"
-			query = query.Where("(device LIKE ? OR ip LIKE ? OR location LIKE ?)", keyword, keyword, keyword)
-		}
-		if where.Device != nil {
-			query = query.Where("device LIKE ?", "%"+*where.Device+"%")
-		}
-		if where.Ip != nil {
-			query = query.Where("ip LIKE ?", "%"+*where.Ip+"%")
-		}
-		if where.Location != nil {
-			query = query.Where("location LIKE ?", "%"+*where.Location+"%")
-		}
 		if where.CreateTimeStart != nil {
 			query = query.Where("create_time >= ?", *where.CreateTimeStart)
 		}
@@ -46,6 +33,19 @@ func (r *Repository) Select(where *SelectSession, queryPage *page.Query) (*page.
 		}
 		if where.ExpireTimeEnd != nil {
 			query = query.Where("expire_time <= ?", *where.ExpireTimeEnd)
+		}
+		if where.Keyword != nil {
+			keyword := "%" + *where.Keyword + "%"
+			query = query.Where("(device LIKE ? OR ip LIKE ? OR location LIKE ?)", keyword, keyword, keyword)
+		}
+		if where.Device != nil {
+			query = query.Where("device LIKE ?", "%"+*where.Device+"%")
+		}
+		if where.Ip != nil {
+			query = query.Where("ip LIKE ?", "%"+*where.Ip+"%")
+		}
+		if where.Location != nil {
+			query = query.Where("location LIKE ?", "%"+*where.Location+"%")
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage, "token")

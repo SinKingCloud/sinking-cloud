@@ -108,15 +108,6 @@ func (r *Repository) Select(where *SelectMenu, queryPage *page.Query) (*page.Res
 		if where.ParentId != nil {
 			query = query.Where("parent_id = ?", *where.ParentId)
 		}
-		if where.Code != nil {
-			query = query.Where("code LIKE ?", "%"+*where.Code+"%")
-		}
-		if where.Name != nil {
-			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
-		}
-		if where.Icon != nil {
-			query = query.Where("icon LIKE ?", "%"+*where.Icon+"%")
-		}
 		if where.Type != nil {
 			query = query.Where("type = ?", *where.Type)
 		}
@@ -134,6 +125,15 @@ func (r *Repository) Select(where *SelectMenu, queryPage *page.Query) (*page.Res
 		}
 		if where.UpdateTimeEnd != nil {
 			query = query.Where("update_time <= ?", *where.UpdateTimeEnd)
+		}
+		if where.Code != nil {
+			query = query.Where("code LIKE ?", "%"+*where.Code+"%")
+		}
+		if where.Name != nil {
+			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
+		}
+		if where.Icon != nil {
+			query = query.Where("icon LIKE ?", "%"+*where.Icon+"%")
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage)

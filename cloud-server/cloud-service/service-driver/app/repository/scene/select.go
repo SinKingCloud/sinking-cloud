@@ -40,12 +40,6 @@ func (r *Repository) Select(where *SelectScene, queryPage *page.Query) (*page.Re
 		if where.Login != nil {
 			query = query.Where("login = ?", *where.Login)
 		}
-		if where.Name != nil {
-			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
-		}
-		if where.Remark != nil {
-			query = query.Where("remark LIKE ?", "%"+*where.Remark+"%")
-		}
 		if where.CreateTimeStart != nil {
 			query = query.Where("create_time >= ?", *where.CreateTimeStart)
 		}
@@ -57,6 +51,12 @@ func (r *Repository) Select(where *SelectScene, queryPage *page.Query) (*page.Re
 		}
 		if where.UpdateTimeEnd != nil {
 			query = query.Where("update_time <= ?", *where.UpdateTimeEnd)
+		}
+		if where.Name != nil {
+			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
+		}
+		if where.Remark != nil {
+			query = query.Where("remark LIKE ?", "%"+*where.Remark+"%")
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage)

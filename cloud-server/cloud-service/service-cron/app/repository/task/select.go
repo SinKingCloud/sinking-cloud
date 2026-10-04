@@ -25,9 +25,6 @@ func (r *Repository) Select(where *SelectTask, queryPage *page.Query) (*page.Res
 		if where.Concurrent != nil {
 			query = query.Where("concurrent = ?", *where.Concurrent)
 		}
-		if where.Name != nil {
-			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
-		}
 		if where.CreateTimeStart != nil {
 			query = query.Where("create_time >= ?", *where.CreateTimeStart)
 		}
@@ -39,6 +36,9 @@ func (r *Repository) Select(where *SelectTask, queryPage *page.Query) (*page.Res
 		}
 		if where.UpdateTimeEnd != nil {
 			query = query.Where("update_time <= ?", *where.UpdateTimeEnd)
+		}
+		if where.Name != nil {
+			query = query.Where("name LIKE ?", "%"+*where.Name+"%")
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage)

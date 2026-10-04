@@ -10,18 +10,6 @@ import (
 func (r *Repository) Select(where *SelectUser, queryPage *page.Query) (*page.Result[*User], error) {
 	query := r.Database.Db.Model(&model.User{})
 	if where != nil {
-		if where.Account != nil {
-			query = query.Where("account LIKE ?", "%"+*where.Account+"%")
-		}
-		if where.Phone != nil {
-			query = query.Where("phone LIKE ?", "%"+*where.Phone+"%")
-		}
-		if where.Email != nil {
-			query = query.Where("email LIKE ?", "%"+*where.Email+"%")
-		}
-		if where.NickName != nil {
-			query = query.Where("nick_name LIKE ?", "%"+*where.NickName+"%")
-		}
 		if where.Status != nil {
 			query = query.Where("status = ?", *where.Status)
 		}
@@ -36,6 +24,18 @@ func (r *Repository) Select(where *SelectUser, queryPage *page.Query) (*page.Res
 		}
 		if where.UpdateTimeEnd != nil {
 			query = query.Where("update_time <= ?", *where.UpdateTimeEnd)
+		}
+		if where.Account != nil {
+			query = query.Where("account LIKE ?", "%"+*where.Account+"%")
+		}
+		if where.Phone != nil {
+			query = query.Where("phone LIKE ?", "%"+*where.Phone+"%")
+		}
+		if where.Email != nil {
+			query = query.Where("email LIKE ?", "%"+*where.Email+"%")
+		}
+		if where.NickName != nil {
+			query = query.Where("nick_name LIKE ?", "%"+*where.NickName+"%")
 		}
 	}
 	return r.Repository.SelectPage(query, queryPage)
