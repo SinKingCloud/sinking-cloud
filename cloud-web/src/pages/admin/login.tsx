@@ -41,16 +41,14 @@ export default () => {
                 `,
                 body: css`
                     padding: 0;
+                    overflow: hidden;
                 `,
                 container: css`
                     display: flex;
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
+                    position: relative;
                     width: 100%;
-                    height: 100%;
+                    height: 100vh;
+                    height: 100dvh;
                     flex-direction: column;
                     justify-content: flex-start;
                     align-items: center;
@@ -666,7 +664,7 @@ export default () => {
     ];
 
     return (
-        <Body space={false} animation={false} className={styles.body}>
+        <Body space={false} className={styles.body}>
             <div className={styles.container}>
                 <div className={styles.background} aria-hidden="true">
                     <svg className={styles.backgroundSvg} viewBox="0 0 1361 609" focusable="false">

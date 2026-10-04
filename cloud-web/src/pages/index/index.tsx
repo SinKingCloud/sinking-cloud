@@ -101,16 +101,16 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
             &:hover { color: ${accent}; background: ${wash}; }
         `,
         primaryButton: css`
-            position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 22px; height: 48px; border: 1px solid ${accent}; border-radius: 7px; padding: 0 25px;
+            position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 22px; height: 48px; border: 1px solid ${accent}; border-radius: ${token.borderRadius}px; padding: 0 25px;
             color: ${token.colorTextLightSolid}; background: ${accent}; font-size: 14px; font-weight: 500; transition: background .18s, border-color .18s, box-shadow .2s;
             &::before { position: absolute; inset: -30% auto -30% -65%; width: 45%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.23), transparent); transform: skewX(-22deg); transition: left .5s ease; content: ""; }
             &:hover { background: ${token.colorPrimaryHover}; border-color: ${token.colorPrimaryHover}; box-shadow: 0 6px 20px -9px color-mix(in srgb, ${accent} 55%, transparent); &::before { left: 125%; } }
             &:active { background: ${token.colorPrimaryActive}; border-color: ${token.colorPrimaryActive}; }
             .anticon { font-size: 13px; }
-            &[data-small="true"] { height: 36px; gap: 12px; padding: 0 17px; font-size: 12px; border-radius: 6px; }
+            &[data-small="true"] { height: 36px; gap: 12px; padding: 0 17px; font-size: 12px; }
         `,
         secondaryButton: css`
-            display: inline-flex; align-items: center; justify-content: center; gap: 14px; height: 48px; border: 1px solid ${line}; border-radius: 8px; padding: 0 24px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 14px; height: 48px; border: 1px solid ${line}; border-radius: ${token.borderRadius}px; padding: 0 24px;
             color: ${ink}; background: ${paper}; font-size: 14px; transition: border-color .18s, color .18s;
             &:hover { color: ${accent}; border-color: ${accent}; }
             .anticon { font-size: 12px; }
@@ -128,7 +128,7 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
             margin-top: auto; margin-bottom: 24px;
             > span { display: block; margin-bottom: 12px; color: ${muted}; font-size: 12px; }
             > div { display: flex; gap: 8px; }
-            button { display: inline-flex; align-items: center; justify-content: center; flex: 1; gap: 7px; height: 38px; border: 1px solid ${line}; border-radius: 6px; color: ${muted}; background: transparent; font-size: 13px;
+            button { display: inline-flex; align-items: center; justify-content: center; flex: 1; gap: 7px; height: 38px; border: 1px solid ${line}; border-radius: ${token.borderRadius}px; color: ${muted}; background: transparent; font-size: 13px;
                 &[aria-pressed="true"] { color: ${accent}; border-color: ${accent}; background: ${wash}; }
             }
         `,
@@ -302,7 +302,7 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
         featureGrid: css`
             display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 18px;
             article {
-                position: relative; grid-column: span 3; min-width: 0; overflow: hidden; isolation: isolate; padding: 28px 25px; border: 1px solid color-mix(in srgb, ${accent} 10%, ${line}); border-radius: 16px;
+                position: relative; grid-column: span 3; min-width: 0; overflow: hidden; isolation: isolate; padding: 28px 25px; border: 1px solid color-mix(in srgb, ${accent} 10%, ${line}); border-radius: ${token.borderRadiusLG}px;
                 background: linear-gradient(145deg, ${paper}, color-mix(in srgb, ${accent} ${isDarkMode ? 7 : 3}%, ${paper})); transition: border-color .25s, transform .25s, box-shadow .25s;
                 &:nth-child(-n+2) { grid-column: span 6; min-height: 242px; padding: 32px; background: linear-gradient(120deg, ${paper} 15%, color-mix(in srgb, ${accent} ${isDarkMode ? 15 : 8}%, ${paper})); }
                 &:nth-child(-n+2) h3 { position: relative; margin-top: 24px; font-size: 21px; }
@@ -313,7 +313,7 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
             p { margin-top: 12px; color: ${muted}; font-size: 12px; line-height: 1.9; }
             @media (max-width: 991px) { article { grid-column: span 6; padding: 26px; } article:nth-child(-n+2) { padding: 28px; } }
             @media (max-width: 575px) {
-                gap: 12px; article { padding: 24px 18px; border-radius: 12px; }
+                gap: 12px; article { padding: 24px 18px; }
                 article:nth-child(-n+2) { grid-column: span 12; min-height: 215px; padding: 26px; }
                 article:nth-child(-n+2) p { max-width: 68%; }
                 h3 { margin-top: 20px; font-size: 15px; } p { font-size: 11px; }
@@ -321,7 +321,7 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
         `,
         featureTop: css`
             position: relative; display: flex; align-items: center; justify-content: space-between;
-            > svg { width: 45px; height: 45px; padding: 8px; border: 1px solid color-mix(in srgb, ${accent} 12%, transparent); border-radius: 12px; color: ${accent}; background: color-mix(in srgb, ${accent} 5%, ${paper}); }
+            > svg { width: 45px; height: 45px; padding: 8px; border: 1px solid color-mix(in srgb, ${accent} 12%, transparent); border-radius: ${token.borderRadius}px; color: ${accent}; background: color-mix(in srgb, ${accent} 5%, ${paper}); }
             > span { color: ${accent}; font-size: 10px; opacity: .5; font-family: monospace; font-variant-numeric: tabular-nums; }
         `,
         featureArt: css`
@@ -340,13 +340,12 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
             @media (max-width: 767px) { h2 span { display: block; } }
         `,
         productWorkspace: css`
-            border: 1px solid color-mix(in srgb, ${accent} 14%, ${line}); border-radius: 20px; overflow: hidden; background: ${paper};
+            border: 1px solid color-mix(in srgb, ${accent} 14%, ${line}); border-radius: ${token.borderRadiusLG}px; overflow: hidden; background: ${paper};
             box-shadow: 0 24px 70px -48px color-mix(in srgb, ${accent} 40%, transparent);
-            @media (max-width: 575px) { border-radius: 14px; }
         `,
         productMenu: css`
             display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 12px; border-bottom: 1px solid ${line}; background: color-mix(in srgb, ${accent} 2%, ${paper}); scrollbar-width: thin;
-            button { display: flex; align-items: center; justify-content: center; gap: 11px; min-width: 0; height: 56px; padding: 0 18px; border: 1px solid transparent; border-radius: 10px; color: ${muted}; background: transparent; font-size: 13px; white-space: nowrap; transition: background .2s, color .2s, border-color .2s;
+            button { display: flex; align-items: center; justify-content: center; gap: 11px; min-width: 0; height: 56px; padding: 0 18px; border: 1px solid transparent; border-radius: ${token.borderRadius}px; color: ${muted}; background: transparent; font-size: 13px; white-space: nowrap; transition: background .2s, color .2s, border-color .2s;
                 &[aria-pressed="true"] { color: ${accent}; border-color: color-mix(in srgb, ${accent} 18%, transparent); background: ${paper}; box-shadow: 0 3px 8px -6px color-mix(in srgb, ${accent} 40%, transparent); }
                 &:hover { color: ${accent}; } > svg { width: 24px; height: 24px; } > .anticon { font-size: 11px; opacity: .6; }
             }
@@ -448,7 +447,7 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
             display: flex; align-items: center; justify-content: center; gap: 9px;
             min-width: 0; padding: 9px;
             border: 1px solid color-mix(in srgb, ${token.colorPrimary} ${isDarkMode ? 24 : 14}%, ${token.colorBorderSecondary});
-            border-radius: 11px;
+            border-radius: ${token.borderRadius}px;
             color: ${token.colorTextSecondary};
             background: linear-gradient(135deg, ${token.colorBgContainer}, color-mix(in srgb, ${token.colorPrimary} ${isDarkMode ? 6 : 2}%, ${token.colorBgContainer}));
             box-shadow: 0 5px 12px -9px color-mix(in srgb, ${token.colorPrimary} 30%, transparent), inset 0 1px 0 color-mix(in srgb, ${token.colorTextLightSolid} ${isDarkMode ? 8 : 70}%, transparent);
@@ -462,7 +461,7 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
             }
             &[data-position="2"]::after, &[data-position="3"]::after { top: -3px; bottom: auto; }
             @container product-visual (max-width: 330px) {
-                flex-direction: column; gap: 4px; padding: 7px 5px; border-radius: 9px;
+                flex-direction: column; gap: 4px; padding: 7px 5px;
                 font-size: 10px; text-align: center;
                 > svg { width: 16px; height: 16px; }
             }
@@ -473,7 +472,7 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
             grid-column: 1 / -1; grid-row: 2;
             min-width: 0;
 
-            > span { position: relative; z-index: 1; max-width: 100%; padding: 3px 10px; color: ${token.colorTextSecondary}; background: color-mix(in srgb, ${token.colorBgContainer} 85%, transparent); border-radius: 20px; font-size: 10px; font-weight: 500; letter-spacing: 1px; overflow-wrap: anywhere; text-align: center; }
+            > span { position: relative; z-index: 1; max-width: 100%; padding: 3px 10px; color: ${token.colorTextSecondary}; background: color-mix(in srgb, ${token.colorBgContainer} 85%, transparent); border-radius: ${token.borderRadiusSM}px; font-size: 10px; font-weight: 500; letter-spacing: 1px; overflow-wrap: anywhere; text-align: center; }
             @container product-visual (max-width: 330px) { gap: 9px; }
         `,
         productOrbit: css`
@@ -497,13 +496,13 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
             position: relative; display: grid; place-items: center; width: 76px; height: 76px;
             color: var(--product-accent);
             border: 1px solid color-mix(in srgb, ${token.colorPrimary} ${isDarkMode ? 55 : 32}%, ${token.colorBgContainer});
-            border-radius: 20px;
+            border-radius: ${token.borderRadiusLG}px;
             background: linear-gradient(145deg, ${token.colorBgContainer} 15%, color-mix(in srgb, ${token.colorPrimary} ${isDarkMode ? 20 : 9}%, ${token.colorBgContainer}));
             box-shadow: 0 14px 24px -17px color-mix(in srgb, ${token.colorPrimary} 65%, transparent), inset 0 1px 0 color-mix(in srgb, ${token.colorTextLightSolid} ${isDarkMode ? 16 : 90}%, transparent);
             &::before { position: absolute; z-index: -1; inset: 5px -5px -6px 5px; border: 1px solid var(--product-line); border-radius: inherit; background: color-mix(in srgb, ${token.colorPrimary} ${isDarkMode ? 8 : 4}%, ${token.colorBgContainer}); transform: rotate(6deg); content: ""; }
             &::after { position: absolute; top: 7px; right: 7px; width: 3px; height: 3px; border-radius: 50%; background: var(--product-bright); content: ""; }
             > svg { width: 37px; height: 37px; }
-            @container product-visual (max-width: 330px) { width: 65px; height: 65px; border-radius: 17px; > svg { width: 32px; height: 32px; } }
+            @container product-visual (max-width: 330px) { width: 65px; height: 65px; > svg { width: 32px; height: 32px; } }
         `,
         experienceLayout: css`
             display: grid; grid-template-columns: 1fr 1.1fr; align-items: center; gap: 80px;
@@ -518,7 +517,7 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
         advantages: css`
             display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px;
             article { position: relative; padding: 23px 0 0 20px; border-left: 1px solid color-mix(in srgb, ${accent} 20%, ${line}); }
-            article::before { position: absolute; top: 0; left: -2px; width: 3px; height: 24px; border-radius: 2px; background: ${accent}; opacity: .5; content: ""; transition: height .4s; }
+            article::before { position: absolute; top: 0; left: -2px; width: 3px; height: 24px; border-radius: ${token.borderRadiusXS}px; background: ${accent}; opacity: .5; content: ""; transition: height .4s; }
             article:hover::before { height: 58px; }
             span { color: ${accent}; font-size: 11px; font-family: monospace; }
             h3 { margin-top: 18px; font-size: 16px; font-weight: 600; } p { margin-top: 10px; color: ${muted}; font-size: 12px; line-height: 1.85; }
@@ -530,7 +529,7 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
         `,
         testimonialGrid: css`
             display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px;
-            article { position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; padding: 30px; border: 1px solid color-mix(in srgb, ${accent} 10%, ${line}); border-radius: 16px; background: ${paper}; transition: border-color .25s, transform .25s; }
+            article { position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; padding: 30px; border: 1px solid color-mix(in srgb, ${accent} 10%, ${line}); border-radius: ${token.borderRadiusLG}px; background: ${paper}; transition: border-color .25s, transform .25s; }
             article:nth-child(2) { background: linear-gradient(145deg, ${paper}, color-mix(in srgb, ${accent} ${isDarkMode ? 10 : 5}%, ${paper})); }
             @media (hover: hover) and (pointer: fine) { article:hover { transform: translateY(-4px); border-color: ${token.colorPrimaryBorder}; } }
             blockquote { margin: 3px 0 26px; color: ${muted}; font-size: 13px; line-height: 2; }
@@ -540,17 +539,17 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
         quoteMark: css`height: 44px; color: ${accent}; opacity: .45; font-size: 54px; font-family: Georgia, serif; line-height: 1;`,
         author: css`
             display: flex; align-items: center; gap: 11px; margin-top: auto;
-            > span { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid color-mix(in srgb, ${accent} 15%, transparent); border-radius: 11px; color: ${accent}; background: color-mix(in srgb, ${accent} 7%, ${paper}); font-size: 12px; }
+            > span { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid color-mix(in srgb, ${accent} 15%, transparent); border-radius: ${token.borderRadius}px; color: ${accent}; background: color-mix(in srgb, ${accent} 7%, ${paper}); font-size: 12px; }
             strong { display: block; font-size: 12px; font-weight: 500; } small { display: block; margin-top: 3px; color: ${muted}; font-size: 10px; }
         `,
         cta: css`
-            position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 35px; padding: 56px; border: 1px solid color-mix(in srgb, ${accent} 18%, ${line}); border-radius: 20px;
+            position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 35px; padding: 56px; border: 1px solid color-mix(in srgb, ${accent} 18%, ${line}); border-radius: ${token.borderRadiusLG}px;
             background: linear-gradient(120deg, color-mix(in srgb, ${accent} ${isDarkMode ? 12 : 6}%, ${paper}), color-mix(in srgb, ${accent} ${isDarkMode ? 20 : 12}%, ${paper}));
             &::before { position: absolute; z-index: -1; top: -190px; right: 5%; width: 520px; height: 520px; border: 1px solid color-mix(in srgb, ${accent} 12%, transparent); border-radius: 50%; box-shadow: 0 0 0 54px color-mix(in srgb, ${accent} 3%, transparent), 0 0 0 110px color-mix(in srgb, ${accent} 3%, transparent); pointer-events: none; content: ""; }
             h2 { margin-top: 16px; font-size: 38px; font-weight: 650; letter-spacing: -1px; span { color: ${accent}; } } p { margin-top: 17px; color: ${muted}; font-size: 13px; }
             @media (max-width: 991px) { padding: 42px; }
             @media (max-width: 767px) { flex-direction: column; align-items: flex-start; padding: 32px; gap: 28px; h2 { font-size: 30px; } p { font-size: 12px; } }
-            @media (max-width: 575px) { padding: 30px 24px; border-radius: 14px; h2 { font-size: 28px; } }
+            @media (max-width: 575px) { padding: 30px 24px; h2 { font-size: 28px; } }
         `,
         ctaActions: css`
             display: flex; flex-shrink: 0; gap: 12px;
@@ -564,7 +563,7 @@ const useStyles = createStyles(({css, token, isDarkMode}) => {
             @media (max-width: 575px) { padding-block: 25px; gap: 12px; font-size: 9px; }
         `,
         backToTop: css`
-            position: fixed; z-index: 40; right: 24px; bottom: 24px; display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid ${line}; border-radius: 8px; color: ${muted}; background: ${paper}; opacity: 0; visibility: hidden; transition: opacity .2s, color .2s;
+            position: fixed; z-index: 40; right: 24px; bottom: 24px; display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid ${line}; border-radius: ${token.borderRadius}px; color: ${muted}; background: ${paper}; opacity: 0; visibility: hidden; transition: opacity .2s, color .2s;
             &[data-visible="true"] { opacity: 1; visibility: visible; } &:hover { color: ${accent}; }
             @media (max-width: 575px) { right: 18px; bottom: 18px; width: 34px; height: 34px; }
         `,
@@ -921,7 +920,7 @@ export default () => {
                                 <h1>让想法成为现实<span>让可能发生</span></h1>
                                 <p>{brand}</p>
                                 <div className={styles.heroActions}>
-                                    <button className={styles.primaryButton} onClick={handleGetStarted}>{user?.web ? "进入工作空间" : "开始体验"}<Icon type="ArrowRightOutlined"/></button>
+                                    <button className={styles.primaryButton} onClick={handleGetStarted}>开始体验<Icon type="ArrowRightOutlined"/></button>
                                     <button className={styles.secondaryButton} onClick={() => scrollToSection("products")}>探索产品<Icon type="ArrowDownOutlined"/></button>
                                 </div>
                                 <div className={styles.heroNotes}><span><Icon type="CheckOutlined"/>轻盈体验</span><span><Icon type="CheckOutlined"/>安全可靠</span><span><Icon type="CheckOutlined"/>持续进化</span></div>
