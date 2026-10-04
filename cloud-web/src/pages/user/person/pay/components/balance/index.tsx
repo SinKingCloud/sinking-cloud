@@ -47,19 +47,17 @@ const useStyles = createStyles(({css, token}, {isCompactMode}: {isCompactMode: b
         line-height: 20px;
     `,
     amount: css`
-        display: inline-grid;
-        grid-template-columns: 1em auto auto;
+        display: inline-flex;
         align-items: baseline;
         justify-content: flex-start;
-        gap: 3px;
+        gap: 4px;
         color: ${token.colorTextSecondary};
-        font-size: ${isCompactMode ? 17 : 18}px;
-        font-weight: 600;
-        line-height: 20px;
-        font-variant-numeric: tabular-nums;
+        font-size: ${isCompactMode ? 16 : 17}px;
+        font-weight: 500;
+        line-height: 22px;
+        font-variant-numeric: lining-nums tabular-nums;
         white-space: nowrap;
-        .amount-sign { font-size: inherit; font-weight: inherit; text-align: center; }
-        .amount-currency { margin-inline-start: 2px; color: ${token.colorTextTertiary}; font-size: 12px; font-weight: 400; }
+        .amount-currency { color: ${token.colorTextTertiary}; font-size: 12px; font-weight: 400; line-height: 20px; }
     `,
     balance: css`
         display: grid;
@@ -104,8 +102,7 @@ export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
         {
             title: "变动金额", dataIndex: "money", width: 140, align: "left", sorter: true,
             render: (value: number) => <span className={styles.amount}>
-                <span className="amount-sign">{Number(value) > 0 ? "+" : Number(value) < 0 ? "−" : ""}</span>
-                <span>{formatMoney(Math.abs(Number(value)))}</span>
+                <span>{Number(value) > 0 ? "+" : Number(value) < 0 ? "−" : ""}{formatMoney(Math.abs(Number(value)))}</span>
                 <span className="amount-currency">元</span>
             </span>,
         },

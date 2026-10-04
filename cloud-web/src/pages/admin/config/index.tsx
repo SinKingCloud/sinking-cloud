@@ -39,20 +39,6 @@ const useStyles = createStyles(({css, token, isDarkMode}, {isCompactMode}: {isCo
             color-mix(in srgb, #13c2c2, ${token.colorBgContainer} ${isDarkMode ? 97 : 96}%) 100%
         );
 
-        &::before {
-            position: absolute;
-            z-index: 0;
-            inset: 0;
-            background-image:
-                linear-gradient(${isDarkMode ? "rgba(255,255,255,.018)" : "rgba(72,132,202,.035)"} 1px, transparent 1px),
-                linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,.018)" : "rgba(72,132,202,.035)"} 1px, transparent 1px);
-            background-size: 24px 24px;
-            -webkit-mask-image: linear-gradient(90deg, transparent 36%, rgba(0,0,0,.2) 58%, #000 100%);
-            mask-image: linear-gradient(90deg, transparent 36%, rgba(0,0,0,.2) 58%, #000 100%);
-            pointer-events: none;
-            content: "";
-        }
-
         .hero-copy {
             position: relative;
             z-index: 2;
@@ -93,9 +79,6 @@ const useStyles = createStyles(({css, token, isDarkMode}, {isCompactMode}: {isCo
             inset: 0 82px 0 auto;
             width: 52%;
             opacity: ${isDarkMode ? .12 : .25};
-            filter: ${isDarkMode ? "blur(.8px) saturate(.78)" : "blur(.25px)"};
-            -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.38) 28%, #000 52%);
-            mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.38) 28%, #000 52%);
             pointer-events: none;
         }
 
