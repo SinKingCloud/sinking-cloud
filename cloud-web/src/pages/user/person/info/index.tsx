@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useRef} from "react";
 import {useModel} from "umi";
 import {Avatar, Button, Card, Col, Row, Tag, Typography} from "antd";
 import {createStyles} from "antd-style";
@@ -11,7 +11,6 @@ import AvatarUpload, {AvatarRef} from "./components/avatar";
 import PhoneComponent, {PhoneRef} from "./components/phone";
 import EmailComponent, {EmailRef} from "./components/email";
 import Verify, {VerifyRef} from "./components/verify";
-import {getPersonInfo} from "@/service/user/person";
 import {historyPush} from "@/utils/route";
 
 type SettingItem = {
@@ -753,27 +752,8 @@ export default () => {
     const phoneRef = useRef<PhoneRef>({} as PhoneRef);
     const emailRef = useRef<EmailRef>({} as EmailRef);
     const verifyRef = useRef<VerifyRef>({} as VerifyRef);
-    const [person, setPerson] = useState<any>();
-    const [loading, setLoading] = useState(true);
-
-    const refreshPerson = async () => {
-        setLoading(true);
-        await getPersonInfo({
-            onSuccess: (res: any) => {
-                setPerson(res?.data || undefined);
-            },
-            onFinally: () => {
-                setLoading(false);
-            },
-        });
-    };
-
-    useEffect(() => {
-        refreshPerson();
-    }, []);
-
     const ensureVerify = () => verifyRef.current?.ensure?.() || Promise.resolve(false);
-    const currentPerson: any = person || user?.web || {};
+    const currentPerson: any = user?.web || {};
     const currentSession = currentPerson?.session || {};
     const displayName = currentPerson?.nick_name || currentPerson?.account || currentPerson?.phone || currentPerson?.email || "用户";
     const hour = new Date().getHours();
@@ -803,10 +783,6 @@ export default () => {
         {label: "登录地点", value: currentSession?.location || "-", icon: <Icon type="EnvironmentOutlined"/>},
     ];
 
-    const handleSuccess = () => {
-        refreshPerson();
-    };
-
     const profileSettings: SettingItem[] = [
         {
             icon: <Icon type="CameraOutlined"/>,
@@ -817,7 +793,6 @@ export default () => {
                 avatar={currentPerson?.avatar}
                 nickName={currentPerson?.nick_name}
                 size={36}
-                onSuccess={handleSuccess}
             />,
             onClick: () => avatarRef.current?.triggerUpload(),
         },
@@ -896,7 +871,7 @@ export default () => {
     );
 
     return (
-        <Body loading={loading}>
+        <Body loading={!user?.web}>
             <Row className={styles.pageRow} gutter={[0, pageGutter]}>
                 <Col span={24}>
                     <Card
@@ -1032,11 +1007,11 @@ export default () => {
                 </Col>
             </Row>
 
-            <Info ref={infoRef} nickName={currentPerson?.nick_name} onSuccess={handleSuccess}/>
-            <Account ref={accountRef} account={currentPerson?.account} onSuccess={handleSuccess}/>
-            <Password ref={passwordRef} ensureVerify={ensureVerify} onSuccess={handleSuccess}/>
-            <PhoneComponent ref={phoneRef} phone={currentPerson?.phone} ensureVerify={ensureVerify} onSuccess={handleSuccess}/>
-            <EmailComponent ref={emailRef} email={currentPerson?.email} ensureVerify={ensureVerify} onSuccess={handleSuccess}/>
+            <Info ref={infoRef} nickName={currentPerson?.nick_name}/>
+            <Account ref={accountRef} account={currentPerson?.account}/>
+            <Password ref={passwordRef} ensureVerify={ensureVerify}/>
+            <PhoneComponent ref={phoneRef} phone={currentPerson?.phone} ensureVerify={ensureVerify}/>
+            <EmailComponent ref={emailRef} email={currentPerson?.email} ensureVerify={ensureVerify}/>
             <Verify ref={verifyRef}/>
         </Body>
     );

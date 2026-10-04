@@ -1,13 +1,7 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef} from 'react';
 import {useModel} from 'umi';
 import {Body, Icon, useTheme} from 'sinking-antd';
-import {
-    Avatar,
-    Button,
-    Card,
-    Col,
-    Row,
-} from 'antd';
+import {Avatar, Button, Card, Col, Row,} from 'antd';
 import {createStyles} from 'antd-style';
 import {ago} from '@/utils/time';
 import Info, {InfoRef} from '@/pages/admin/person/components/info';
@@ -17,7 +11,6 @@ import AvatarUpload, {AvatarRef} from '@/pages/admin/person/components/avatar';
 import PhoneComponent, {PhoneRef} from '@/pages/admin/person/components/phone';
 import EmailComponent, {EmailRef} from '@/pages/admin/person/components/email';
 import Verify, {VerifyRef} from '@/pages/admin/person/components/verify';
-import {getPersonInfo} from '@/service/admin/person';
 
 const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props: any = {}) => {
     const isCompactMode = props?.isCompactMode || false;
@@ -501,36 +494,11 @@ export default () => {
     const phoneRef = useRef<PhoneRef>({} as PhoneRef);
     const emailRef = useRef<EmailRef>({} as EmailRef);
     const verifyRef = useRef<VerifyRef>({} as VerifyRef);
-    const [person, setPerson] = useState<any>();
-    const [loading, setLoading] = useState(true);
-
-    /**
-     * 拉取后台个人资料和当前会话信息。
-     */
-    const refreshPerson = async () => {
-        setLoading(true);
-        await getPersonInfo({
-            onSuccess: (res: any) => {
-                setPerson(res?.data || undefined);
-            },
-            onFinally: () => {
-                setLoading(false);
-            },
-        });
-    };
-
-    /**
-     * 页面初始化时加载个人资料。
-     */
-    useEffect(() => {
-        refreshPerson();
-    }, []);
-
     /**
      * 调用独立安全验证流程，供敏感操作前置确认。
      */
     const ensureVerify = () => verifyRef.current?.ensure?.() || Promise.resolve(false);
-    const currentPerson: any = person || user?.system || {};
+    const currentPerson: any = user?.system || {};
     const currentSession = currentPerson?.session || {};
     const profileContacts = [
         {
@@ -558,13 +526,6 @@ export default () => {
     ];
 
     /**
-     * 子组件保存成功后刷新页面资料。
-     */
-    const handleSuccess = () => {
-        refreshPerson();
-    };
-
-    /**
      * 账户设置项配置，集中维护展示内容和操作入口。
      */
     const settingItems = [
@@ -576,7 +537,6 @@ export default () => {
                 ref={avatarRef}
                 avatar={currentPerson?.avatar}
                 nickName={currentPerson?.nick_name}
-                onSuccess={handleSuccess}
             />,
             onEdit: () => avatarRef.current?.triggerUpload(),
         },
@@ -657,7 +617,7 @@ export default () => {
     };
 
     return (
-        <Body loading={loading}>
+        <Body loading={!user?.system}>
             <div className={pageShell}>
                 <Row justify="center">
                     <Col xs={24} sm={24} md={22} lg={20} xl={18} xxl={16} xxxl={14}>
@@ -739,11 +699,11 @@ export default () => {
                     </Col>
                 </Row>
             </div>
-            <Info ref={infoRef} nickName={currentPerson?.nick_name} onSuccess={handleSuccess}/>
-            <Account ref={accountRef} account={currentPerson?.account} onSuccess={handleSuccess}/>
-            <Password ref={passwordRef} ensureVerify={ensureVerify} onSuccess={handleSuccess}/>
-            <PhoneComponent ref={phoneRef} phone={currentPerson?.phone} ensureVerify={ensureVerify} onSuccess={handleSuccess}/>
-            <EmailComponent ref={emailRef} email={currentPerson?.email} ensureVerify={ensureVerify} onSuccess={handleSuccess}/>
+            <Info ref={infoRef} nickName={currentPerson?.nick_name}/>
+            <Account ref={accountRef} account={currentPerson?.account}/>
+            <Password ref={passwordRef} ensureVerify={ensureVerify}/>
+            <PhoneComponent ref={phoneRef} phone={currentPerson?.phone} ensureVerify={ensureVerify}/>
+            <EmailComponent ref={emailRef} email={currentPerson?.email} ensureVerify={ensureVerify}/>
             <Verify ref={verifyRef}/>
         </Body>
     );
