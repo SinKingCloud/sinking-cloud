@@ -549,12 +549,10 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
             border-radius: ${token.borderRadius}px;
             border: 1px solid ${token.colorBorderSecondary};
             background: ${token.colorBgContainer};
-            transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+            transition: border-color 0.2s ease;
 
             &:hover {
                 border-color: ${token.colorPrimaryBorder};
-                background: ${isDarkMode ? "rgba(255,255,255,0.018)" : token.colorFillAlter};
-                box-shadow: ${isDarkMode ? "none" : "0 6px 14px rgba(15, 23, 42, 0.04)"};
             }
 
             &:hover .item-icon {
@@ -690,17 +688,11 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
                 border-radius: ${token.borderRadius}px;
                 border: 1px solid ${token.colorBorderSecondary};
                 background: ${token.colorBgContainer};
-                transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-            }
-
-            .session-item + .session-item {
-                box-shadow: none;
+                transition: border-color 0.2s ease;
             }
 
             .session-item:hover {
                 border-color: ${token.colorPrimaryBorder};
-                background: ${isDarkMode ? "rgba(255,255,255,0.018)" : token.colorFillAlter};
-                box-shadow: ${isDarkMode ? "none" : "0 6px 14px rgba(15, 23, 42, 0.04)"};
             }
 
             .session-item:hover .session-icon {

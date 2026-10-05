@@ -563,7 +563,7 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
             background: ${token.colorBgContainer};
             text-align: left;
             cursor: pointer;
-            transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+            transition: border-color .2s ease, background .2s ease;
 
             .type-top {
                 display: contents;
@@ -608,7 +608,6 @@ const useStyles = createStyles(({css, token, isDarkMode, responsive}: any, props
 
             &:hover {
                 border-color: ${token.colorPrimaryBorder};
-                box-shadow: ${isDarkMode ? "none" : "0 10px 24px rgba(15, 23, 42, 0.055)"};
             }
 
             &.active {
