@@ -218,7 +218,7 @@ func (s *service) CreateRechargeOrder(userId int64, money int, payType string) (
 		return 0, errors.New("充值金额不能大于" + strconv.FormatFloat(payConfig.Max, 'f', -1, 64) + "元")
 	}
 	orderId, err := s.orderService.Create(userId,
-		"在线充值",
+		"在线充值帐户余额",
 		order_type.Recharge,
 		payType,
 		amount,
