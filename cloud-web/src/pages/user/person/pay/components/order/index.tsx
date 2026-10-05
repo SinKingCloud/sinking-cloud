@@ -10,21 +10,27 @@ import {getOrderList} from "@/service/user/pay";
 import Info, {type InfoRef} from "./components/info";
 import PayType, {getEnumText} from "./components/pay-type";
 
-const typeColors: Record<string, string> = {"0": "default", "1": "cyan"};
+const typeColors: Record<string, string> = {"0": "blue", "1": "purple"};
 const statusColors: Record<string, string> = {"0": "orange", "1": "blue", "2": "green", "3": "default"};
-const payStatusColors: Record<string, string> = {"0": "default", "1": "green"};
+const payStatusColors: Record<string, string> = {"0": "orange", "1": "green"};
 const logTypeColors: Record<string, string> = {"0": "blue", "1": "green", "2": "red"};
 const useStyles = createStyles(({css, token}) => ({
     table: css`
         .order-cell { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; color: ${token.colorTextSecondary}; font-size: 12px; line-height: 20px; }
-        .order-name.ant-typography { max-width: 100%; color: ${token.colorText}; font-size: 13px; line-height: 20px; }
-        .order-id.ant-typography { max-width: 100%; color: ${token.colorTextSecondary}; font-size: 12px; line-height: 20px; }
+        .order-name.ant-typography { max-width: 100%; color: ${token.colorTextSecondary}; font-size: 12px; line-height: 20px; }
+        .order-id.ant-typography { max-width: 100%; color: ${token.colorTextSecondary}; font-size: 12px; line-height: 20px; white-space: nowrap; font-variant-numeric: tabular-nums; }
         .order-label { color: ${token.colorTextTertiary}; }
         .order-value { display: flex; align-items: center; gap: 6px; white-space: nowrap; font-variant-numeric: tabular-nums; }
         .order-amount { color: ${token.colorText}; }
         .order-cell .ant-tag { margin-inline-end: 0; font-size: 12px; line-height: 18px; }
-        .ant-typography-copy { margin-inline-start: 6px; color: ${token.colorTextTertiary}; font-size: 12px; }
-        .ant-typography-copy:hover { color: ${token.colorPrimary}; }
+        .ant-typography-copy { margin-inline-start: 6px; color: ${token.colorPrimary}; font-size: 12px; }
+        .ant-typography-copy:hover { color: ${token.colorPrimaryHover}; }
+        .ant-typography-copy-success, .ant-typography-copy-success:hover { color: ${token.colorSuccess}; }
+
+        @media (hover: hover) and (pointer: fine) {
+            .order-id .ant-typography-copy { opacity: 0; pointer-events: none; }
+            .order-id:hover .ant-typography-copy, .order-id:focus-within .ant-typography-copy { opacity: 1; pointer-events: auto; }
+        }
     `,
 }));
 
@@ -51,12 +57,16 @@ export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
 
     const columns: PageTableProps<any>["columns"] = [
         {
-            title: "订单信息", dataIndex: "id", width: 260, sorter: true,
+            title: "订单ID", dataIndex: "id", width: 170, sorter: true,
+            render: (value: number | string) => <Typography.Text className="order-id" copyable={value ? {text: String(value)} : false}>
+                {value ? String(value) : "-"}
+            </Typography.Text>,
+        },
+        {
+            title: "订单信息", dataIndex: "name", width: 170, ellipsis: {showTitle: false},
             render: (_: unknown, record: any) => <div className="order-cell">
+                <Tag color={typeColors[String(record.type)] || "default"}>{getEnumText(orderType, record.type)}</Tag>
                 <Typography.Text className="order-name" ellipsis={{tooltip: record.name || "-"}}>{record.name || "-"}</Typography.Text>
-                <Typography.Text className="order-id" copyable={record.id ? {text: String(record.id)} : false}>
-                    {record.id ? String(record.id) : "-"}
-                </Typography.Text>
             </div>,
         },
         {
@@ -71,18 +81,23 @@ export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
             title: "支付方式", dataIndex: "pay_type", width: 120,
             render: (_: unknown, record: any) => <div className="order-cell">
                 <PayType data={payTypes} value={record.pay_type}/>
-                <span className="order-label">{getEnumText(orderType, record.type)}</span>
             </div>,
         },
         {
-            title: "状态", dataIndex: "status", width: 110,
+            title: "状态", dataIndex: "status", width: 170,
             render: (_: unknown, record: any) => <div className="order-cell">
-                <Tag color={statusColors[String(record.status)] || "default"}>{getEnumText(orderStatus, record.status)}</Tag>
-                <span>{getEnumText(payStatus, record.pay_status)}</span>
+                <div className="order-value">
+                    <span className="order-label">订单状态:</span>
+                    <Tag color={statusColors[String(record.status)] || "default"}>{getEnumText(orderStatus, record.status)}</Tag>
+                </div>
+                <div className="order-value">
+                    <span className="order-label">支付状态:</span>
+                    <Tag color={payStatusColors[String(record.pay_status)] || "default"}>{getEnumText(payStatus, record.pay_status)}</Tag>
+                </div>
             </div>,
         },
         {
-            title: "相关时间", dataIndex: "create_time", width: 225, sorter: true,
+            title: "相关时间", dataIndex: "create_time", width: 200, sorter: true,
             render: (_: unknown, record: any) => <div className="order-cell">
                 {dateFields.map((item) => <div className="order-value" key={item.name}>
                     <span className="order-label">{item.label.slice(0, 2)}于:</span>
@@ -121,7 +136,7 @@ export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
             toolbar={{refresh: {ariaLabel: "刷新订单记录"}}}
             rowKey="id"
             columns={columns}
-            scroll={{x: 950}}
+            scroll={{x: 1065}}
             defaultPageSize={10}
             loading={enumLoading || undefined}
             requestEnabled={!enumLoading}

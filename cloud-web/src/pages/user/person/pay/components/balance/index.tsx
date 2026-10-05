@@ -30,6 +30,11 @@ const useStyles = createStyles(({css, token}, {isCompactMode}: {isCompactMode: b
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
         .ant-typography-copy { margin-inline-start: 6px; font-size: 12px; }
+
+        @media (hover: hover) and (pointer: fine) {
+            .ant-typography-copy { opacity: 0; pointer-events: none; }
+            &:hover .ant-typography-copy, &:focus-within .ant-typography-copy { opacity: 1; pointer-events: auto; }
+        }
     `,
     transaction: css`
         display: grid;
@@ -89,7 +94,7 @@ export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
 
     const columns: PageTableProps<BalanceLog>["columns"] = [
         {
-            title: "ID", dataIndex: "id", width: 180, sorter: true,
+            title: "明细ID", dataIndex: "id", width: 180, sorter: true,
             render: (value: number | string) => <Typography.Text className={styles.text} copyable={{text: String(value)}}>{value}</Typography.Text>,
         },
         {
