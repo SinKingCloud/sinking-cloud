@@ -146,7 +146,7 @@ func (s *service) FindById(id int64, refresh bool) (*model.Scene, error) {
 	if !refresh {
 		if data, exists := s.cache.Get(cacheKey); exists && data != "" {
 			var result *model.Scene
-			if err := json.Unmarshal([]byte(data), &result); err == nil {
+			if err := json.Unmarshal([]byte(data), &result); err == nil && result != nil && result.Id > 0 {
 				return result, nil
 			}
 		}

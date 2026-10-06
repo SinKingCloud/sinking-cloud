@@ -77,7 +77,7 @@ func (s *service) FindById(id int64, refresh bool) (data *model.Task, err error)
 	if !refresh {
 		cacheKey := constant.CacheNameWithTaskInfo + strconv.FormatInt(id, 10)
 		if value, exists := s.cache.Get(cacheKey); exists && value != "" {
-			if err = json.Unmarshal([]byte(value), &data); err == nil && data != nil {
+			if err = json.Unmarshal([]byte(value), &data); err == nil && data != nil && data.Id > 0 {
 				return data, nil
 			}
 		}

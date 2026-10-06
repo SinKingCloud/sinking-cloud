@@ -14,11 +14,11 @@ func (r *Repository) FindById(id int64) (*model.BalanceLog, error) {
 	}
 	var data *model.BalanceLog
 	err := r.Database.Db.Where("id = ?", id).First(&data).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
-	}
-	if err != nil {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
+	}
+	if data == nil || data.Id <= 0 {
+		return nil, nil
 	}
 	return data, nil
 }
