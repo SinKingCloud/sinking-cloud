@@ -80,7 +80,7 @@ export default (): React.ReactNode => {
         {
             title: "操作时间",
             dataIndex: "create_time",
-            valueType: "dateTimeRange",
+            valueType: "dateRange",
             sorter: true,
             transform: dateRangeTransform("create_time"),
             render: (_: any, record: any) => record?.create_time || "-",
