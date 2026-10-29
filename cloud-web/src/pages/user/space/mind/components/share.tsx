@@ -137,18 +137,18 @@ const Share: React.FC<ShareProps> = ({
                         <>
                             <div className="share-items">
                                 {items.map((item) => {
-                                    const expireTimestamp = item.expireTime
-                                        ? new Date(item.expireTime.replace(" ", "T")).getTime()
+                                    const expireTimestamp = item?.expireTime
+                                        ? new Date(item?.expireTime?.replace(" ", "T")).getTime()
                                         : Number.POSITIVE_INFINITY;
                                     const expired = Number.isFinite(expireTimestamp) && expireTimestamp <= Date.now();
-                                    const enabled = item.status === SHARE_ENABLE && !expired;
+                                    const enabled = item?.status === SHARE_ENABLE && !expired;
                                     const state = expired ? "expired" : enabled ? "enabled" : "disabled";
                                     const stateText = expired ? "已过期" : enabled ? "已开启" : "已关闭";
                                     return (
-                                        <article className="share-item" data-state={state} key={item.id}>
+                                        <article className="share-item" data-state={state} key={item?.id}>
                                             <div className="share-item-head">
                                                 <div className="share-code-line">
-                                                    <span className="share-code">{item.code}</span>
+                                                    <span className="share-code">{item?.code}</span>
                                                     <span className="share-state"><i/>{stateText}</span>
                                                 </div>
                                                 <Dropdown
@@ -163,20 +163,20 @@ const Share: React.FC<ShareProps> = ({
                                                         type="text"
                                                         size="small"
                                                         icon={<MoreOutlined/>}
-                                                        aria-label={`管理分享 ${item.code}`}
+                                                        aria-label={`管理分享 ${item?.code}`}
                                                     />
                                                 </Dropdown>
                                             </div>
-                                            <div className={`share-remark${item.remark ? "" : " empty"}`}>
-                                                {item.remark || "未填写备注"}
+                                            <div className={`share-remark${item?.remark ? "" : " empty"}`}>
+                                                {item?.remark || "未填写备注"}
                                             </div>
                                             <div className="share-meta">
-                                                <Tooltip title={item.expireTime || "永久有效"}>
-                                                    <span>{item.expireTime ? `有效至 ${item.expireTime}` : "永久有效"}</span>
+                                                <Tooltip title={item?.expireTime || "永久有效"}>
+                                                    <span>{item?.expireTime ? `有效至 ${item?.expireTime}` : "永久有效"}</span>
                                                 </Tooltip>
                                                 <i/>
-                                                <Tooltip title={item.createTime}>
-                                                    <span>创建于 {getTimeText(item.createTime)}</span>
+                                                <Tooltip title={item?.createTime}>
+                                                    <span>创建于 {getTimeText(item?.createTime)}</span>
                                                 </Tooltip>
                                             </div>
                                         </article>

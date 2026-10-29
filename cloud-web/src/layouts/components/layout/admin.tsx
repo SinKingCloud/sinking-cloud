@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {history, Outlet, useLocation, useModel, useSelectedRoutes} from "umi";
 import {
     clearRouteCache,
@@ -336,6 +336,31 @@ const SKLayout: React.FC = () => {
     const match = useSelectedRoutes();
     const [loading, setLoading] = useState(true);
     const {styles: {color, menuColor, collapsedImg, unCollapsed, collapsedLogo}} = useSKLayoutStyles();
+    const routeName = match?.at(-1)?.route?.name;
+    const siteName = web?.info?.name;
+    const siteLogo = web?.info?.logo;
+    const themeColor = web?.info?.ui?.admin?.color || defaultSettings?.color;
+    const watermark = Boolean(web?.info?.ui?.admin?.watermark);
+    const year = new Date().getFullYear();
+    const onNavigate = useCallback((path: string) => history.push(path), []);
+    const waterMark = useMemo(() => watermark ? [user?.system?.nick_name, user?.system?.email] : "", [watermark, user?.system?.nick_name, user?.system?.email]);
+    const headerRight = useMemo(() => <RightTop/>, []);
+    const footer = useMemo(() => <>©{year} All Right Revered {siteName || Settings?.title}</>, [year, siteName]);
+    const renderCollapsedLogo = useCallback(() => siteLogo ? <img
+        src={siteLogo || getPath("logo.svg")} alt={siteName} className={collapsedImg}/> :
+        <Icon type="icon-logo" style={{color: themeColor}} className={collapsedLogo}/>, [siteLogo, siteName, themeColor, collapsedImg, collapsedLogo]);
+    const renderUnCollapsedLogo = useCallback(() => <div className={unCollapsed}>
+        {siteLogo ? <img src={siteLogo || getPath("logo.svg")} alt={siteName || Settings?.title}/> :
+            <Icon type="icon-logo" style={{color: themeColor}}/>}
+        <div style={{color: themeColor}}>{siteName || Settings?.title}</div>
+    </div>, [siteLogo, siteName, themeColor, unCollapsed]);
+    const siteUrl = web?.info?.url;
+    const menuBottomBtnIcon = useMemo(() => <Icon type="icon-computer" className={color}/>, [color]);
+    const menuBottomBtnText = useMemo(() => <>&nbsp;&nbsp;系统前台</>, []);
+    const onMenuBottomBtnClick = useCallback(() => {
+        if (siteUrl) window.open(siteUrl);
+    }, [siteUrl]);
+
 
     /**
      * 菜单数据
@@ -359,7 +384,7 @@ const SKLayout: React.FC = () => {
     const adminIndexMenu = useMemo(() => {
         const routeItem = adminRoutes?.[0] || {};
         return {
-            path: getFullPathByName(routeItem.name),
+            path: getFullPathByName(routeItem?.name),
             title: routeItem?.title,
             name: routeItem?.name,
             icon: routeItem?.icon,
@@ -381,9 +406,9 @@ const SKLayout: React.FC = () => {
             if (!item?.code) {
                 return list;
             }
-            const routeItem = adminRouteMap.get(item.code);
+            const routeItem = adminRouteMap.get(item?.code);
             const current: any = {
-                path: routeItem?.name ? getFullPathByName(routeItem.name) : item.code,
+                path: routeItem?.name ? getFullPathByName(routeItem?.name) : item?.code,
                 title: item?.name || routeItem?.title || item?.code,
                 name: item?.code,
                 icon: item?.icon || routeItem?.icon,
@@ -403,7 +428,6 @@ const SKLayout: React.FC = () => {
      */
     const breadCrumbItems = useMemo(() => {
         if (!location?.pathname) return [];
-        const routeName = match?.at(-1)?.route?.name;
         const menuItems = getParentList(currentMenusWithHidden, routeName, "admin-remote");
         const items = menuItems.length > 0 ? menuItems : getParentList(localMenusWithHidden, routeName, "admin-local");
         const temp = [{
@@ -426,7 +450,7 @@ const SKLayout: React.FC = () => {
             });
         });
         return temp;
-    }, [currentMenus, currentMenusWithHidden, localMenusWithHidden, location?.pathname, match]);
+    }, [currentMenus, currentMenusWithHidden, localMenusWithHidden, location?.pathname, routeName]);
 
     /**
      * 初始化数据
@@ -454,49 +478,26 @@ const SKLayout: React.FC = () => {
         <Layout loading={loading || !user?.system}
                 pathname={location?.pathname}
                 matchedRoutes={match || []}
-                onNavigate={(path) => history.push(path)}
+                onNavigate={onNavigate}
                 breadCrumbItems={breadCrumbItems}
                 hideBreadCrumb={match?.at(-1)?.route?.hideBreadCrumb}
-                waterMark={web?.info?.ui?.admin?.watermark ? [user?.system?.nick_name, user?.system?.email] : ""}
+                waterMark={waterMark}
                 menus={currentMenus}
                 menuClassNames={menuColor}
                 layout={web?.info?.ui?.admin?.layout != "left" ? "horizontal" : "inline"}
                 flowLayout={web?.info?.ui?.admin?.layout != "left"}
                 menuTheme={web?.info?.ui?.admin?.theme == "dark" ? "dark" : "light"}
-                footer={<>©{new Date().getFullYear()} All Right
-                    Revered {web?.info?.name || Settings?.title}</>}
-                menuBottomBtnIcon={<Icon type={"icon-computer"} className={color}/>}
-                menuBottomBtnText={<>&nbsp;&nbsp;系统前台</>}
-                onMenuBottomBtnClick={() => {
-                    if (web?.info?.url) {
-                        window.open(web.info.url);
-                    }
-                }}
+                footer={footer}
+                menuBottomBtnIcon={menuBottomBtnIcon}
+                menuBottomBtnText={menuBottomBtnText}
+                onMenuBottomBtnClick={onMenuBottomBtnClick}
                 headerHidden={false}
                 headerFixed={false}
-                headerRight={<RightTop/>}
+                headerRight={headerRight}
                 menuCollapsedWidth={60}
                 menuUnCollapsedWidth={210}
-                collapsedLogo={() => {
-                    return web?.info?.logo ? <img
-                            src={web?.info?.logo || getPath("logo.svg")}
-                            alt={web?.info?.name} className={collapsedImg}/> :
-                        <Icon type="icon-logo" style={{color: web?.info?.ui?.admin?.color || defaultSettings?.color}}
-                              className={collapsedLogo}/>
-                }}
-                unCollapsedLogo={() => {
-                    return <div className={unCollapsed}>
-                        {web?.info?.logo ? <img
-                                src={web?.info?.logo || getPath("logo.svg")}
-                                alt={web?.info?.name || Settings?.title}/> :
-                            <Icon type="icon-logo"
-                                  style={{color: web?.info?.ui?.admin?.color || defaultSettings?.color}}/>}
-                        <div
-                            style={{color: web?.info?.ui?.admin?.color ? web?.info?.ui?.admin?.color : defaultSettings?.color}}>
-                            {web?.info?.name || Settings?.title}
-                        </div>
-                    </div>
-                }}>
+                collapsedLogo={renderCollapsedLogo}
+                unCollapsedLogo={renderUnCollapsedLogo}>
             <Outlet/>
         </Layout>
     );

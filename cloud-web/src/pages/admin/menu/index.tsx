@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import type {MenuProps} from "antd";
 import {
     App,
@@ -150,7 +150,7 @@ export default (): React.ReactNode => {
     const menuTypes = enumData?.["admin.menu"]?.types || {};
     const menuStatus = enumData?.["admin.menu"]?.status || {};
     const permissionCodes = enumData?.["admin.permission"]?.codes || {};
-    const menuTypeOptions = buildOptions(menuTypes, true).filter((item: any) => item.value !== 2);
+    const menuTypeOptions = buildOptions(menuTypes, true).filter((item: any) => item?.value !== 2);
     const statusOptions = buildOptions(menuStatus, true);
     const permissionOptions = buildOptions(permissionCodes, false, (value, key) => `${value}（${key}）`);
     const statusColor: any = {
@@ -227,14 +227,14 @@ export default (): React.ReactNode => {
         setLoading(true);
         getMenuList({
             onSuccess: (res) => {
-                const list = res?.data || [];
+                const list = Array.isArray(res?.data) ? res?.data?.filter(Boolean) : [];
                 const getOpenKeys = (list: any[] = []): string[] => {
                     const keys: string[] = [];
                     const loop = (items: any[]) => {
                         items.forEach((item: any) => {
-                            if (item.children && item.children.length > 0) {
+                            if (item?.children && item?.children?.length > 0) {
                                 keys.push(String(item?.id));
-                                loop(item.children);
+                                loop(item?.children);
                             }
                         });
                     };
@@ -242,14 +242,14 @@ export default (): React.ReactNode => {
                     return keys;
                 };
                 const buildMenuItems = (list: any[] = []): MenuProps["items"] => {
-                    return list.map((item) => ({
+                    return list.filter(Boolean).map((item) => ({
                         key: String(item?.id),
-                        icon: item?.icon && item.icon !== "0" ? <Icon type={item.icon}/> : undefined,
-                        label: item.name,
-                        onTitleClick: item.children && item.children.length > 0 ? ({key}: any) => {
+                        icon: item?.icon && item?.icon !== "0" ? <Icon type={item?.icon}/> : undefined,
+                        label: item?.name,
+                        onTitleClick: item?.children && item?.children?.length > 0 ? ({key}: any) => {
                             setSelectedKeys([String(key)]);
                         } : undefined,
-                        children: item.children && item.children.length > 0 ? buildMenuItems(item.children) : undefined,
+                        children: item?.children && item?.children?.length > 0 ? buildMenuItems(item?.children) : undefined,
                     }));
                 };
                 setMenus(buildMenuItems(list));
@@ -433,6 +433,10 @@ export default (): React.ReactNode => {
      */
     const formModalRef = useRef<ProModalRef>({} as ProModalRef);
     const [form] = Form.useForm();
+    const mountedForm = useRef<any>(null);
+    const formRequestRef = useRef(0);
+    const [initialValues, setInitialValues] = useState<any>({});
+    const [formOpen, setFormOpen] = useState(false);
     const [formLoading, setFormLoading] = useState(false);
     const [formSubmitting, setFormSubmitting] = useState(false);
     const [formScene, setFormScene] = useState<any>({
@@ -460,6 +464,7 @@ export default (): React.ReactNode => {
             return;
         }
         loadIconOptions();
+        formRequestRef.current += 1;
         setFormScene({
             action: "create",
             target: "menu",
@@ -469,8 +474,7 @@ export default (): React.ReactNode => {
             type: 0,
             typeEditable: true,
         });
-        form.resetFields();
-        form.setFieldsValue({
+        setInitialValues({
             parent_id: 0,
             type: 0,
             sort: 0,
@@ -490,18 +494,18 @@ export default (): React.ReactNode => {
             return;
         }
         loadIconOptions();
+        formRequestRef.current += 1;
         setFormScene({
             action: "create",
             target: "menu",
             title: "新增菜单",
             id: undefined,
-            parentId: menuInfo.id,
+            parentId: menuInfo?.id,
             type: 1,
             typeEditable: true,
         });
-        form.resetFields();
-        form.setFieldsValue({
-            parent_id: menuInfo.id,
+        setInitialValues({
+            parent_id: menuInfo?.id,
             type: 1,
             sort: 0,
             status: 0,
@@ -519,18 +523,18 @@ export default (): React.ReactNode => {
             message?.warning("请选择页面后再添加控件");
             return;
         }
+        formRequestRef.current += 1;
         setFormScene({
             action: "create",
             target: "control",
             title: "添加控件",
             id: undefined,
-            parentId: menuInfo.id,
+            parentId: menuInfo?.id,
             type: 2,
             typeEditable: false,
         });
-        form.resetFields();
-        form.setFieldsValue({
-            parent_id: menuInfo.id,
+        setInitialValues({
+            parent_id: menuInfo?.id,
             type: 2,
             status: 0,
             permission_codes: [],
@@ -549,6 +553,7 @@ export default (): React.ReactNode => {
         if (target !== "control") {
             loadIconOptions();
         }
+        const requestId = ++formRequestRef.current;
         setFormScene({
             action: "edit",
             target,
@@ -557,12 +562,13 @@ export default (): React.ReactNode => {
             type: target === "control" ? 2 : menuInfo?.type,
             typeEditable: false,
         });
-        form.resetFields();
+        setInitialValues({});
         setFormLoading(true);
         formModalRef.current?.show();
         await getMenuInfo({
             body: {id},
             onSuccess: (res: any) => {
+                if (formRequestRef.current !== requestId) return;
                 const data = res?.data || {};
                 const nextTarget = data?.type === 2 ? "control" : "menu";
                 setFormScene((prev: any) => ({
@@ -581,13 +587,16 @@ export default (): React.ReactNode => {
                 } else {
                     formValues.icon = data?.icon === "0" ? "无图标" : data?.icon;
                 }
-                form.setFieldsValue(formValues);
+                setInitialValues(formValues);
             },
             onFail: (res: any) => {
+                if (formRequestRef.current !== requestId) return;
                 formModalRef.current?.hide();
                 message.error(res?.message || "获取数据失败");
             },
-            onFinally: () => setFormLoading(false),
+            onFinally: () => {
+                if (formRequestRef.current === requestId) setFormLoading(false);
+            },
         });
     };
     const handleSubmit = async (values: any) => {
@@ -638,7 +647,7 @@ export default (): React.ReactNode => {
                 formModalRef.current?.hide();
                 if (target === "control") {
                     if (menuInfo?.code) {
-                        clearControlCache(menuInfo.code);
+                        clearControlCache(menuInfo?.code);
                     }
                     actionRef.current?.clearSelectedRows?.();
                     if (hasControlsControl) {
@@ -682,7 +691,7 @@ export default (): React.ReactNode => {
                     onSuccess: (res: any) => {
                         message.success(res?.message || "删除成功");
                         if (!refreshMenu && menuInfo?.code) {
-                            clearControlCache(menuInfo.code);
+                            clearControlCache(menuInfo?.code);
                         }
                         actionRef.current?.clearSelectedRows?.();
                         if (hasControlsControl) {
@@ -722,6 +731,12 @@ export default (): React.ReactNode => {
 
     const showMenuInfoActions = Boolean(menuInfo?.id && (hasCreateControl || hasUpdateControl || hasDeleteControl));
     const showControlTable = Boolean(hasControlsControl && menuInfo?.id && menuInfo?.type === 1);
+
+    useLayoutEffect(() => {
+        if (!formOpen || !mountedForm.current) return;
+        form.resetFields();
+        form.setFieldsValue(initialValues);
+    }, [form, formOpen, initialValues]);
 
     return (
         <Body loading={control?.loading}>
@@ -827,7 +842,7 @@ export default (): React.ReactNode => {
                                                 ) : "-"}
                                             </Descriptions.Item>
                                             <Descriptions.Item
-                                                label="菜单图标">{menuInfo?.icon && menuInfo?.icon !== "0" ? menuInfo.icon : "-"}</Descriptions.Item>
+                                                label="菜单图标">{menuInfo?.icon && menuInfo?.icon !== "0" ? menuInfo?.icon : "-"}</Descriptions.Item>
                                             <Descriptions.Item label="菜单排序">{menuInfo?.sort}</Descriptions.Item>
                                             <Descriptions.Item
                                                 label="创建时间">{menuInfo?.create_time || "-"}</Descriptions.Item>
@@ -865,7 +880,7 @@ export default (): React.ReactNode => {
                                             fixed: true,
                                             rightExtra: (
                                                 <Button key="delete" danger ghost
-                                                        onClick={() => deleteMenuOrControls(actionRef.current?.getSelectedRows?.().map((row: any) => row.id) || [])}>
+                                                        onClick={() => deleteMenuOrControls(actionRef.current?.getSelectedRows?.().map((row: any) => row?.id) || [])}>
                                                     批量删除
                                                 </Button>
                                             )
@@ -878,13 +893,17 @@ export default (): React.ReactNode => {
                 </Row>
                 <ProModal
                     ref={formModalRef}
+                    afterOpenChange={(open) => {
+                        setFormOpen(open);
+                        if (!open) formRequestRef.current += 1;
+                    }}
                     title={<Title>{formScene?.title}</Title>}
                     width={420}
                     onOk={form.submit}
                     modalProps={{
                         mask: {closable: true},
                         confirmLoading: formSubmitting,
-                        forceRender: true,
+                        destroyOnHidden: true,
                         okText: "提交",
                         cancelText: "取消",
                         okButtonProps: {
@@ -895,7 +914,6 @@ export default (): React.ReactNode => {
                             paddingBottom: 100,
                         },
                         afterClose: () => {
-                            form.resetFields();
                             setFormLoading(false);
                             setFormSubmitting(false);
                         },
@@ -903,7 +921,7 @@ export default (): React.ReactNode => {
                     <div className={formLoading ? styles.formLoading : styles.hidden}>
                         <Spin/>
                     </div>
-                    <Form form={form} onFinish={handleSubmit} layout={"vertical"}
+                    <Form ref={mountedForm} form={form} initialValues={initialValues} clearOnDestroy onFinish={handleSubmit} layout={"vertical"}
                           className={formLoading ? styles.hidden : ""}>
                         <Form.Item name="id" hidden>
                             <Input/>

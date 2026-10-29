@@ -3,6 +3,10 @@ import defaultSettings from "@/../config/defaultSettings"
 import {API} from "../../typings";
 import {Modal} from "sinking-antd";
 
+type RequestOptions = Record<string, any>;
+type ResponseCallback = (res: API.Response) => void;
+type ErrorCallback = (error: any) => void;
+
 /**
  * request对象
  */
@@ -44,9 +48,7 @@ function errorHandle(): void {
  * @param onError 错误捕获
  * @param options 其他选项
  */
-export async function post(url: string = "", body: any = {}, onSuccess: (res) => void = undefined, onFail: (res) => void = undefined, onFinally: () => void = undefined, onError: (error) => void = undefined, options?: {
-    [key: string]: any
-}) {
+export async function post(url: string = "", body: any = {}, onSuccess?: ResponseCallback, onFail?: ResponseCallback, onFinally?: () => void, onError?: ErrorCallback, options?: RequestOptions) {
     let res = {};
     await request<API.Response>(url, {
         method: 'POST',
@@ -80,9 +82,7 @@ export async function post(url: string = "", body: any = {}, onSuccess: (res) =>
  * @param onError 错误捕获
  * @param options 其他选项
  */
-export async function get(url: string = "", params?: {}, onSuccess: (res) => void = undefined, onFail: (res) => void = undefined, onFinally: () => void = undefined, onError: (error) => void = undefined, options?: {
-    [key: string]: any
-}) {
+export async function get(url: string = "", params?: {}, onSuccess?: ResponseCallback, onFail?: ResponseCallback, onFinally?: () => void, onError?: ErrorCallback, options?: RequestOptions) {
     let res = {};
     await request<API.Response>(url, {
         method: 'GET',

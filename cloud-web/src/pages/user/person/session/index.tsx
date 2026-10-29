@@ -1,4 +1,4 @@
-import React, {useRef, useState} from "react";
+import React, {useMemo, useRef, useState} from "react";
 import {useModel} from "umi";
 import {App, Badge, Button, Card, Tooltip, Typography} from "antd";
 import {createStyles} from "antd-style";
@@ -355,7 +355,7 @@ export default function Index(): React.ReactNode {
     const {message, modal} = App.useApp();
     const user = useModel("user");
     const theme = useTheme();
-    const {styles} = useStyles({isCompactMode: theme?.isCompactTheme?.() || false});
+    const {styles} = useStyles(useMemo(() => ({isCompactMode: theme?.isCompactTheme?.() || false}), [theme?.isCompactTheme?.()]));
     const tableRef = useRef<PageTableRef<UserSession> | null>(null);
     const [logoutLoading, setLogoutLoading] = useState(false);
     const currentSession = user?.web?.session || {};
@@ -410,8 +410,8 @@ export default function Index(): React.ReactNode {
                         {value || "-"}
                     </Typography.Text>
                     <Typography.Text className="session-location" type="secondary"
-                                     ellipsis={{tooltip: record.location || "-"}}>
-                        {record.location || "-"}
+                                     ellipsis={{tooltip: record?.location || "-"}}>
+                        {record?.location || "-"}
                     </Typography.Text>
                 </div>
             ),
@@ -424,11 +424,11 @@ export default function Index(): React.ReactNode {
                 <div className="session-source session-time">
                     <div className="session-time-row">
                         <span className="session-time-label">登录于:</span>
-                        <span>{record.create_time || "-"}</span>
+                        <span>{record?.create_time || "-"}</span>
                     </div>
                     <div className="session-time-row">
                         <span className="session-time-label">过期于:</span>
-                        <span>{record.expire_time || "-"}</span>
+                        <span>{record?.expire_time || "-"}</span>
                     </div>
                 </div>
             ),
@@ -440,7 +440,7 @@ export default function Index(): React.ReactNode {
             fixed: "right",
             className: "action-cell",
             render: (_: unknown, record: UserSession) => (
-                <Button size="small" danger loading={logoutLoading} onClick={() => handleLogout([record.token])}>
+                <Button size="small" danger loading={logoutLoading} onClick={() => handleLogout([record?.token])}>
                     注销
                 </Button>
             ),
@@ -549,9 +549,9 @@ export default function Index(): React.ReactNode {
                     if (response?.code !== 200) {
                         throw new Error(response?.message || "获取会话列表失败");
                     }
-                    return {data: response.data?.list, total: response.data?.total ?? 0, success: true};
+                    return {data: Array.isArray(response?.data?.list) ? response?.data?.list?.filter(Boolean) : [], total: response?.data?.total ?? 0, success: true};
                 }}
-                onRequestError={(error) => message.error(error.message)}
+                onRequestError={(error) => message.error(error?.message || "获取会话失败")}
                 pagination={{unit: "条"}}
                 paginationAffix={{offsetBottom: 15}}
             />

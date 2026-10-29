@@ -1,4 +1,4 @@
-import React, {forwardRef, useImperativeHandle, useRef, useState} from "react";
+import React, {forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState} from "react";
 import {App, Form, InputNumber} from "antd";
 import {ProModal, ProModalRef, Title} from "sinking-antd";
 import {refoundOrder} from "@/service/admin/pay";
@@ -15,6 +15,9 @@ const Refund = forwardRef<RefundRef, RefundProps>(({onSuccess}, ref) => {
     const {message} = App.useApp();
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const [form] = Form.useForm();
+    const [initialValues, setInitialValues] = useState<any>({});
+    const [formOpen, setFormOpen] = useState(false);
+    const mountedForm = useRef<any>(null);
     const [record, setRecord] = useState<any>();
     const [submitting, setSubmitting] = useState(false);
     const refundableMoney = Math.max(0, Number(record?.pay_amount || 0) - Number(record?.refund_amount || 0));
@@ -23,8 +26,7 @@ const Refund = forwardRef<RefundRef, RefundProps>(({onSuccess}, ref) => {
         open: (data: any) => {
             const nextRecord = data || {};
             setRecord(nextRecord);
-            form.resetFields();
-            form.setFieldsValue({
+            setInitialValues({
                 money: Math.max(0, Number(nextRecord?.pay_amount || 0) - Number(nextRecord?.refund_amount || 0)),
             });
             modalRef.current?.show();
@@ -53,9 +55,16 @@ const Refund = forwardRef<RefundRef, RefundProps>(({onSuccess}, ref) => {
         });
     };
 
+    useLayoutEffect(() => {
+        if (!formOpen || !mountedForm.current) return;
+        form.resetFields();
+        form.setFieldsValue(initialValues);
+    }, [form, formOpen, initialValues]);
+
     return (
         <ProModal
             ref={modalRef}
+            afterOpenChange={setFormOpen}
             title={<Title>订单退款</Title>}
             onOk={form.submit}
             width={320}
@@ -63,7 +72,7 @@ const Refund = forwardRef<RefundRef, RefundProps>(({onSuccess}, ref) => {
                 confirmLoading: submitting,
                 okText: "提交",
                 cancelText: "取消",
-                forceRender: true,
+                destroyOnHidden: true,
                 style: {
                     top: 100,
                     paddingBottom: 100,
@@ -74,10 +83,9 @@ const Refund = forwardRef<RefundRef, RefundProps>(({onSuccess}, ref) => {
                 afterClose: () => {
                     setRecord(undefined);
                     setSubmitting(false);
-                    form.resetFields();
                 },
             } as any}>
-            <Form form={form} layout="vertical" onFinish={submit}>
+            <Form ref={mountedForm} form={form} initialValues={initialValues} clearOnDestroy layout="vertical" onFinish={submit}>
                 <Form.Item
                     name="money"
                     label="退款金额"

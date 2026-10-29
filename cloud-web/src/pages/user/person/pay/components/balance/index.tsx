@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useMemo} from "react";
 import {App, Tag, Typography} from "antd";
 import {createStyles} from "antd-style";
 import type {PageTableProps} from "sinking-antd";
@@ -88,9 +88,9 @@ const useStyles = createStyles(({css, token}, {isCompactMode}: {isCompactMode: b
 export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
     const {message} = App.useApp();
     const theme = useTheme();
-    const {styles} = useStyles({isCompactMode: theme?.isCompactTheme?.() || false});
+    const {styles} = useStyles(useMemo(() => ({isCompactMode: theme?.isCompactTheme?.() || false}), [theme?.isCompactTheme?.()]));
     const [enumData, enumLoading] = useEnum(["pay.balance_log"]);
-    const typeEnum = enumData["pay.balance_log"]?.type || {};
+    const typeEnum = enumData?.["pay.balance_log"]?.type || {};
 
     const columns: PageTableProps<BalanceLog>["columns"] = [
         {
@@ -101,7 +101,7 @@ export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
             title: "交易信息", dataIndex: "type", width: 220, ellipsis: {showTitle: false},
             render: (value: number, record: BalanceLog) => <div className={styles.transaction}>
                 <Tag color={typeColors[String(value)] || "default"}>{typeEnum[String(value)] || String(value)}</Tag>
-                {record.describe && <Typography.Text className={styles.describe} ellipsis={{tooltip: record.describe}}>{record.describe}</Typography.Text>}
+                {record?.describe && <Typography.Text className={styles.describe} ellipsis={{tooltip: record?.describe}}>{record?.describe}</Typography.Text>}
             </div>,
         },
         {
@@ -115,8 +115,8 @@ export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
             title: "余额变化", dataIndex: "money_after", width: 260, align: "left",
             render: (_: number, record: BalanceLog) => <div className={styles.balance}>
                 {[
-                    {label: "可用", before: record.money_before, after: record.money_after},
-                    {label: "冻结", before: record.frozen_before, after: record.frozen_after},
+                    {label: "可用", before: record?.money_before, after: record?.money_after},
+                    {label: "冻结", before: record?.frozen_before, after: record?.frozen_after},
                 ].map((item) => {
                     const before = `¥ ${formatMoney(item.before)}`;
                     const after = `¥ ${formatMoney(item.after)}`;
@@ -155,9 +155,9 @@ export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
         request={async (params, sort) => {
             const response = await getBalanceLogList({body: getParams(params, sort)});
             if (response?.code !== 200) throw new Error(response?.message || "获取资金记录失败");
-            return {data: response.data?.list, total: response.data?.total ?? 0, success: true};
+            return {data: Array.isArray(response?.data?.list) ? response?.data?.list?.filter(Boolean) : [], total: response?.data?.total ?? 0, success: true};
         }}
-        onRequestError={(error) => message.error(error.message)}
+        onRequestError={(error) => message.error(error?.message || "获取资金记录失败")}
         pagination={{unit: "条"}}
         paginationAffix={{offsetBottom: 15}}
     />;

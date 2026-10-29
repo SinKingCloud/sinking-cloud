@@ -164,15 +164,15 @@ const CronLog = forwardRef<CronLogRef, CronLogProps>(({control}, ref) => {
             if (res?.code !== 200) {
                 throw new Error(res?.message || "获取任务日志失败");
             }
-            const data = res.data || {};
-            setItems(data.list || []);
+            const data = res?.data || {};
+            setItems(Array.isArray(data?.list) ? data?.list?.filter(Boolean) : []);
             setSort(nextSort);
             cursorsRef.current = [...cursorsRef.current.slice(0, index), cursor];
             setPage({
                 index,
-                hasMore: Boolean(data.has_more),
-                nextId: data.next_cursor_id || "",
-                nextLastId: data.next_cursor_last_id || "",
+                hasMore: Boolean(data?.has_more),
+                nextId: data?.next_cursor_id || "",
+                nextLastId: data?.next_cursor_last_id || "",
             });
         } catch (error) {
             if (requestId === requestRef.current) {

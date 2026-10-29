@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useLayoutEffect, useRef, useState} from 'react';
 import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {App, Button, Dropdown, Form, Input, Result} from "antd";
 import {dateRangeTransform, emptyTableData, getData, normalizeIds} from "@/utils/page";
@@ -20,6 +20,9 @@ export default (): React.ReactNode => {
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const [form] = Form.useForm();
+    const [initialValues, setInitialValues] = useState<any>({});
+    const [formOpen, setFormOpen] = useState(false);
+    const mountedForm = useRef<any>(null);
     const [formSubmitting, setFormSubmitting] = useState(false);
     const [formScene, setFormScene] = useState<any>({
         action: "create",
@@ -38,7 +41,7 @@ export default (): React.ReactNode => {
             ids: [],
             title: "新增权限",
         });
-        form.resetFields();
+        setInitialValues({});
         modalRef.current?.show();
     };
 
@@ -52,11 +55,10 @@ export default (): React.ReactNode => {
         }
         setFormScene({
             action: "edit",
-            ids: [record.id],
+            ids: [record?.id],
             title: "编辑权限",
         });
-        form.resetFields();
-        form.setFieldsValue({
+        setInitialValues({
             code: record?.code,
             name: record?.name,
             path: record?.path,
@@ -217,6 +219,12 @@ export default (): React.ReactNode => {
         }] : []),
     ] as any;
 
+    useLayoutEffect(() => {
+        if (!formOpen || !mountedForm.current) return;
+        form.resetFields();
+        form.setFieldsValue(initialValues);
+    }, [form, formOpen, initialValues]);
+
     return (
         <Body loading={control?.loading}>
             {!hasListControl && <Result
@@ -257,13 +265,14 @@ export default (): React.ReactNode => {
 
                 <ProModal
                     ref={modalRef}
+                    afterOpenChange={setFormOpen}
                     title={<Title>{formScene?.title}</Title>}
                     onOk={form.submit}
                     width={350}
                     modalProps={{
                         mask: {closable: true},
                         confirmLoading: formSubmitting,
-                        forceRender: true,
+                        destroyOnHidden: true,
                         okText: "提交",
                         cancelText: "取消",
                         style: {
@@ -271,11 +280,10 @@ export default (): React.ReactNode => {
                             paddingBottom: 100,
                         },
                         afterClose: () => {
-                            form.resetFields();
                             setFormSubmitting(false);
                         },
                     } as any}>
-                    <Form form={form} layout="vertical" onFinish={handleSubmit}>
+                    <Form ref={mountedForm} form={form} initialValues={initialValues} clearOnDestroy layout="vertical" onFinish={handleSubmit}>
                         {isCreateMode ? (
                             <Form.Item name="code" label="权限标识"
                                        rules={[{required: true, message: "请输入权限标识"}]}>

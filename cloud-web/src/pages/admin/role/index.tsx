@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useLayoutEffect, useRef, useState} from 'react';
 import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {App, Button, Dropdown, Empty, Form, Input, Result, Select, Space, Spin, Tag, Tree, Typography} from "antd";
 import {buildOptions, buildValueEnum, dateRangeTransform, emptyTableData, getData, normalizeIds} from "@/utils/page";
@@ -26,6 +26,10 @@ export default (): React.ReactNode => {
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const [form] = Form.useForm();
+    const mountedForm = useRef<any>(null);
+    const formRequestRef = useRef(0);
+    const [initialValues, setInitialValues] = useState<any>({});
+    const [formOpen, setFormOpen] = useState(false);
     const [formSubmitting, setFormSubmitting] = useState(false);
     const [infoLoading, setInfoLoading] = useState(false);
     const [infoLoaded, setInfoLoaded] = useState(false);
@@ -142,7 +146,7 @@ export default (): React.ReactNode => {
         return Array.from(selected);
     };
 
-    const loadRoleMenus = (): Promise<any[]> => {
+    const loadRoleMenus = (requestId: number): Promise<any[]> => {
         if (!hasCreateControl && !hasUpdateControl) {
             return Promise.resolve(roleMenus);
         }
@@ -153,15 +157,19 @@ export default (): React.ReactNode => {
         setMenuLoading(true);
         return getRoleMenu({
             onSuccess: (res: any) => {
-                nextMenus = Array.isArray(res?.data) ? res.data : [];
+                if (formRequestRef.current !== requestId) return;
+                nextMenus = Array.isArray(res?.data) ? res?.data?.filter(Boolean) : [];
                 setRoleMenus(nextMenus);
                 setMenuLoaded(true);
             },
             onFail: (res: any) => {
+                if (formRequestRef.current !== requestId) return;
                 setRoleMenus([]);
                 message?.error(res?.message || "获取角色菜单失败");
             },
-            onFinally: () => setMenuLoading(false),
+            onFinally: () => {
+                if (formRequestRef.current === requestId) setMenuLoading(false);
+            },
         }).then(() => nextMenus);
     };
 
@@ -176,6 +184,8 @@ export default (): React.ReactNode => {
             message?.warning("暂无创建权限");
             return;
         }
+        const requestId = ++formRequestRef.current;
+        setInfoLoading(false);
         setFormScene({
             action: "create",
             id: undefined,
@@ -183,27 +193,28 @@ export default (): React.ReactNode => {
         });
         setInfoLoaded(false);
         setCheckedMenuIds([]);
-        form.resetFields();
-        form.setFieldsValue({
+        setInitialValues({
             status: 0,
             menu_ids: [],
         });
         modalRef.current?.show();
-        await loadRoleMenus();
+        await loadRoleMenus(requestId);
     };
 
-    const loadEditInfo = (id: number) => {
+    const loadEditInfo = (id: number, requestId: number) => {
         if (!hasUpdateControl) {
             return;
         }
         setInfoLoading(true);
-        loadRoleMenus().then((menus) => {
+        loadRoleMenus(requestId).then((menus) => {
+            if (formRequestRef.current !== requestId) return;
             getRoleInfo({
                 body: {id},
                 onSuccess: (res: any) => {
+                    if (formRequestRef.current !== requestId) return;
                     const info = res?.data || {};
                     const menuIds = filterDetachedPageMenuIds(info?.menu_ids || [], menus);
-                    form.setFieldsValue({
+                    setInitialValues({
                         name: info?.name,
                         status: Number(info?.status),
                         menu_ids: menuIds,
@@ -212,10 +223,11 @@ export default (): React.ReactNode => {
                     setInfoLoaded(true);
                 },
                 onFail: (res: any) => {
+                    if (formRequestRef.current !== requestId) return;
                     message?.error(res?.message || "获取角色详情失败");
                 },
             }).finally(() => {
-                setInfoLoading(false)
+                if (formRequestRef.current === requestId) setInfoLoading(false);
             });
         });
     };
@@ -229,6 +241,7 @@ export default (): React.ReactNode => {
         if (!id) {
             return;
         }
+        const requestId = ++formRequestRef.current;
         setFormScene({
             action: "edit",
             id,
@@ -236,13 +249,12 @@ export default (): React.ReactNode => {
         });
         setInfoLoaded(false);
         setCheckedMenuIds([]);
-        form.resetFields();
-        form.setFieldsValue({
+        setInitialValues({
             name: record?.name,
             status: Number(record?.status),
         });
         modalRef.current?.show();
-        loadEditInfo(id);
+        loadEditInfo(id, requestId);
     };
 
     const handleSubmit = async (values: any) => {
@@ -394,6 +406,12 @@ export default (): React.ReactNode => {
         }] : []),
     ] as any;
 
+    useLayoutEffect(() => {
+        if (!formOpen || !mountedForm.current) return;
+        form.resetFields();
+        form.setFieldsValue(initialValues);
+    }, [form, formOpen, initialValues]);
+
     return (
         <Body loading={control?.loading || enumLoading}>
             {!hasListControl && <Result
@@ -434,13 +452,17 @@ export default (): React.ReactNode => {
 
                 <ProModal
                     ref={modalRef}
+                    afterOpenChange={(open) => {
+                        setFormOpen(open);
+                        if (!open) formRequestRef.current += 1;
+                    }}
                     title={<Title>{formScene?.title}</Title>}
                     onOk={form.submit}
                     width={560}
                     modalProps={{
                         mask: {closable: true},
                         confirmLoading: formSubmitting || menuLoading || infoLoading,
-                        forceRender: true,
+                        destroyOnHidden: true,
                         okText: "提交",
                         cancelText: "取消",
                         style: {
@@ -448,14 +470,13 @@ export default (): React.ReactNode => {
                             paddingBottom: 100,
                         },
                         afterClose: () => {
-                            form.resetFields();
                             setFormSubmitting(false);
                             setInfoLoading(false);
                             setInfoLoaded(false);
                             setCheckedMenuIds([]);
                         },
                     } as any}>
-                    <Form form={form} layout="vertical" onFinish={handleSubmit}>
+                    <Form ref={mountedForm} form={form} initialValues={initialValues} clearOnDestroy layout="vertical" onFinish={handleSubmit}>
                         <Form.Item name="name" label="角色名称" rules={[{required: true, message: "请输入角色名称"}]}>
                             <Input placeholder="请输入角色名称" maxLength={30} showCount/>
                         </Form.Item>

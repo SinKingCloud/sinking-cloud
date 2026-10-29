@@ -1,4 +1,4 @@
-import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from "react";
+import React, {forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState} from "react";
 import {App, Empty, Image, Spin, Typography} from "antd";
 import {createStyles} from "antd-style";
 import {Icon, ProModal, ProModalRef, Title, useTheme} from "sinking-antd";
@@ -250,7 +250,7 @@ const Certificate = forwardRef<CertificateRef, CertificateProps>(({control}, ref
     const {message} = App.useApp();
     const theme = useTheme();
     const isCompactMode = theme?.isCompactTheme?.() || false;
-    const {styles} = useStyles({isCompactMode});
+    const {styles} = useStyles(useMemo(() => ({isCompactMode}), [isCompactMode]));
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const [info, setInfo] = useState<any>();
@@ -295,7 +295,7 @@ const Certificate = forwardRef<CertificateRef, CertificateProps>(({control}, ref
         },
     }));
 
-    const pics = Array.isArray(info?.pics) ? info.pics.filter(Boolean) : [];
+    const pics = Array.isArray(info?.pics) ? info?.pics?.filter(Boolean) : [];
     const hasCompanyInfo = !!(info?.company_name || info?.company_no);
     const hasMedia = pics.length > 0 || !!info?.video;
     const infoItems = [
@@ -444,7 +444,7 @@ const Certificate = forwardRef<CertificateRef, CertificateProps>(({control}, ref
                                              onClick={playFullscreenVideo}>
                                             <video
                                                 ref={videoRef}
-                                                src={info.video}
+                                                src={info?.video}
                                                 className={styles.videoFrame}
                                                 muted
                                                 playsInline
@@ -461,9 +461,9 @@ const Certificate = forwardRef<CertificateRef, CertificateProps>(({control}, ref
                                                 <div className={styles.mediaName}>认证视频</div>
                                                 <div className={styles.mediaActions}>
                                                     <Typography.Link
-                                                        onClick={() => openLink(info.video)}>下载</Typography.Link>
+                                                        onClick={() => openLink(info?.video)}>下载</Typography.Link>
                                                     <Typography.Link
-                                                        onClick={() => copyLink(info.video)}>复制</Typography.Link>
+                                                        onClick={() => copyLink(info?.video)}>复制</Typography.Link>
                                                 </div>
                                             </div>
                                         </div>

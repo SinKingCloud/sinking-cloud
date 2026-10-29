@@ -55,7 +55,7 @@ export const useMindShares = ({onChanged}: UseMindSharesOptions) => {
             const response = await getMindShareList({body});
             if (requestId !== requestRef.current) return;
             const result = getResponseData<PageResult<any>>(response, "获取分享列表失败");
-            const nextItems = (result?.list || []).map(toMindShare).filter((item) => item.id);
+            const nextItems = (Array.isArray(result?.list) ? result?.list : []).map(toMindShare).filter((item) => item.id);
             setItems((current) => {
                 const source = reset ? nextItems : [...current, ...nextItems];
                 return Array.from(new Map(source.map((item) => [item.id, item])).values());
@@ -79,6 +79,7 @@ export const useMindShares = ({onChanged}: UseMindSharesOptions) => {
     }, [message]);
 
     const openShareManager = (record: MindDocument) => {
+        if (!record?.id) return;
         actionRequestRef.current += 1;
         documentRef.current = record;
         setSubmitting(false);
@@ -87,7 +88,7 @@ export const useMindShares = ({onChanged}: UseMindSharesOptions) => {
         setLoadFailed(false);
         setOpen(true);
         cursorRef.current = initialCursor();
-        void loadShares(record.id, true);
+        void loadShares(record?.id, true);
     };
 
     const closeShareManager = () => {
@@ -110,18 +111,20 @@ export const useMindShares = ({onChanged}: UseMindSharesOptions) => {
     };
 
     const openEditShare = (record: MindShareRecord) => {
+        if (!record?.id) return;
         setEditingShare(record);
         form.setFieldsValue({
-            status: record.status,
-            expireType: record.expireTime ? "custom" : "permanent",
-            expireTime: record.expireTime || undefined,
-            remark: record.remark,
+            status: record?.status,
+            expireType: record?.expireTime ? "custom" : "permanent",
+            expireTime: record?.expireTime || undefined,
+            remark: record?.remark,
         });
         setFormOpen(true);
     };
 
     const copyShareLink = useCallback(async (record: MindShareRecord) => {
-        const siteUrl = String(web.info?.url || "").trim();
+        if (!record?.code) return;
+        const siteUrl = String(web?.info?.url || "").trim();
         if (!siteUrl) {
             message.error("网站地址未配置");
             return;
@@ -131,7 +134,7 @@ export const useMindShares = ({onChanged}: UseMindSharesOptions) => {
             baseUrl.search = "";
             baseUrl.hash = "";
             baseUrl.pathname = `${baseUrl.pathname.replace(/\/+$/, "")}/`;
-            const url = new URL(`mind/${encodeURIComponent(record.code)}`, baseUrl);
+            const url = new URL(`mind/${encodeURIComponent(record?.code)}`, baseUrl);
             if (await copyText(url.toString())) {
                 message.success("分享链接已复制");
                 return;
@@ -141,7 +144,7 @@ export const useMindShares = ({onChanged}: UseMindSharesOptions) => {
             return;
         }
         message.error("复制链接失败");
-    }, [message, web.info?.url]);
+    }, [message, web?.info?.url]);
 
     const closeShareForm = () => {
         setFormOpen(false);
@@ -192,8 +195,8 @@ export const useMindShares = ({onChanged}: UseMindSharesOptions) => {
             }
             if (share) {
                 const body: Record<string, any> = {
-                    data_id: Number(currentDocument.id),
-                    id: Number(share.id),
+                    data_id: Number(currentDocument?.id),
+                    id: Number(share?.id),
                     status: String(values.status),
                     remark: values.remark || "",
                 };
@@ -202,7 +205,7 @@ export const useMindShares = ({onChanged}: UseMindSharesOptions) => {
                 getResponseData(response, "更新分享失败");
             } else {
                 const response = await createMindShare({body: {
-                    data_id: Number(currentDocument.id),
+                    data_id: Number(currentDocument?.id),
                     status: SHARE_ENABLE,
                     expire_time: expireTime || "",
                     remark: values.remark || "",
@@ -210,10 +213,10 @@ export const useMindShares = ({onChanged}: UseMindSharesOptions) => {
                 getResponseData(response, "创建分享失败");
             }
             if (requestId !== actionRequestRef.current
-                || documentRef.current?.id !== currentDocument.id) return;
+                || documentRef.current?.id !== currentDocument?.id) return;
             message.success(share ? "分享已更新" : "分享已创建");
             setFormOpen(false);
-            await loadShares(currentDocument.id, true);
+            await loadShares(currentDocument?.id, true);
             onChanged();
         } catch (error) {
             if ((error as any)?.errorFields) return;
@@ -229,21 +232,21 @@ export const useMindShares = ({onChanged}: UseMindSharesOptions) => {
 
     const removeShare = (record: MindShareRecord) => {
         const currentDocument = documentRef.current;
-        if (!currentDocument) return;
+        if (!currentDocument?.id || !record?.id) return;
         modal.confirm({
             title: "删除分享",
-            content: `确定删除分享码 ${record.code} 吗？`,
+            content: `确定删除分享码 ${record?.code} 吗？`,
             okText: "删除",
             okButtonProps: {danger: true},
             onOk: async () => {
                 try {
                     const response = await deleteMindShare({body: {
-                        data_id: Number(currentDocument.id),
-                        id: Number(record.id),
+                        data_id: Number(currentDocument?.id),
+                        id: Number(record?.id),
                     }});
                     getResponseData(response, "删除分享失败");
-                    if (documentRef.current?.id === currentDocument.id) {
-                        await loadShares(currentDocument.id, true);
+                    if (documentRef.current?.id === currentDocument?.id) {
+                        await loadShares(currentDocument?.id, true);
                     }
                     onChanged();
                     message.success("分享已删除");

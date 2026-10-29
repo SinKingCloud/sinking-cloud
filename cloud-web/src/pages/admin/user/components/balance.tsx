@@ -1,18 +1,6 @@
-import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from "react";
-import {
-    App,
-    Button,
-    DatePicker,
-    Empty,
-    Form,
-    Input,
-    InputNumber,
-    Pagination,
-    Popover,
-    Segmented,
-    Spin,
-} from "antd";
+import React, {forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState} from "react";
 import type {FormInstance} from "antd";
+import {App, Button, DatePicker, Empty, Form, Input, InputNumber, Pagination, Popover, Segmented, Spin,} from "antd";
 
 import {Icon, ProModal, ProModalRef, Title, useTheme} from "sinking-antd";
 import {createStyles} from "antd-style";
@@ -793,7 +781,7 @@ const Balance = forwardRef<BalanceRef, BalanceProps>(({control, onSuccess}, ref)
     const [submitting, setSubmitting] = useState(false);
 
     const isCompactMode = theme?.isCompactTheme?.() || false;
-    const {styles} = useStyles({isCompactMode});
+    const {styles} = useStyles(useMemo(() => ({isCompactMode}), [isCompactMode]));
     const permissions: ControlState = {
         info: control.hasControl(AdminControlCode.WEB_USER_BALANCE_INFO),
         operate: control.hasControl(AdminControlCode.WEB_USER_BALANCE_OPERATE),
@@ -854,7 +842,7 @@ const Balance = forwardRef<BalanceRef, BalanceProps>(({control, onSuccess}, ref)
         const nextPanel = value as ActivePanel;
         setActivePanel(nextPanel);
         if ((nextPanel === "overview" || nextPanel === "operate") && !balanceInfo && userInfo?.id) {
-            reloadBalanceInfo(Number(userInfo.id));
+            reloadBalanceInfo(Number(userInfo?.id));
         }
     };
 
@@ -1217,7 +1205,7 @@ const BalanceLog = ({userId, hasControl, typeEnum, styles, message}: BalanceLogP
             if (disposed) {
                 return;
             }
-            setList(res?.data?.list || []);
+            setList(Array.isArray(res?.data?.list) ? res?.data?.list?.filter(Boolean) : []);
             setTotal(Number(res?.data?.total || 0));
         }).finally(() => {
             if (!disposed) {

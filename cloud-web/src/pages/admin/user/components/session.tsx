@@ -152,7 +152,7 @@ const Session = forwardRef<SessionRef, SessionProps>(({control}, ref) => {
                         {value || "-"}
                     </Typography.Text>
                     <Typography.Text className="session-location" type="secondary"
-                                     copyable={record?.location ? {text: record.location} : false}>
+                                     copyable={record?.location ? {text: record?.location} : false}>
                         {record?.location || "-"}
                     </Typography.Text>
                 </div>

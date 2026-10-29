@@ -153,7 +153,7 @@ type ScheduleProps = {
 
 const Schedule = forwardRef<HTMLDivElement, ScheduleProps>(({id, value, onChange}, ref) => {
     const theme = useTheme();
-    const {styles} = useStyles({compact: theme?.isCompactTheme?.() || false});
+    const {styles} = useStyles(useMemo(() => ({compact: theme?.isCompactTheme?.() || false}), [theme?.isCompactTheme?.()]));
     const [customValue, setCustomValue] = useState<string>();
     const schedule = useMemo(() => parseSchedule(value), [value]);
     const mode = customValue !== undefined && customValue === value ? "custom" : schedule.mode;

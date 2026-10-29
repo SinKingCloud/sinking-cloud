@@ -1,4 +1,4 @@
-import React, {forwardRef, useImperativeHandle, useRef, useState} from "react";
+import React, {forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState} from "react";
 import {App, Form, Input} from "antd";
 import {useModel} from "umi";
 import {ProModal, ProModalRef, Title} from "sinking-antd";
@@ -18,6 +18,8 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref) => {
     const {message} = App.useApp();
     const user = useModel("user");
     const [form] = Form.useForm();
+    const [formOpen, setFormOpen] = useState(false);
+    const mountedForm = useRef<any>(null);
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const [loading, setLoading] = useState(false);
 
@@ -26,9 +28,6 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref) => {
      */
     useImperativeHandle(ref, () => ({
         show: () => {
-            form.setFieldsValue({
-                nick_name: nickName || "",
-            });
             modalRef.current?.show();
         },
     }));
@@ -51,15 +50,21 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref) => {
         });
     };
 
+    useLayoutEffect(() => {
+        if (!formOpen || !mountedForm.current) return;
+        form.resetFields();
+        form.setFieldsValue({nick_name: nickName || ""});
+    }, [form, formOpen, nickName]);
+
     return (
         <ProModal
             ref={modalRef}
+            afterOpenChange={setFormOpen}
             title={<Title>修改信息</Title>}
             width={350}
             okText="确认"
             onOk={form.submit}
             onCancel={() => modalRef.current?.hide()}
-            afterClose={() => form.resetFields()}
             modalProps={{
                 confirmLoading: loading,
                 style: {
@@ -67,9 +72,8 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref) => {
                     paddingBottom: 100,
                 },
                 destroyOnHidden: true,
-                forceRender: true,
             } as any}>
-            <Form form={form} layout="vertical" onFinish={handleFinish}>
+            <Form ref={mountedForm} form={form} initialValues={{nick_name: nickName || ""}} clearOnDestroy layout="vertical" onFinish={handleFinish}>
                 <Form.Item
                     label="账号昵称"
                     name="nick_name"

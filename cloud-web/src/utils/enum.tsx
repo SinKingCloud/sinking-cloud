@@ -68,7 +68,7 @@ export async function getEnum(...names: string[]): Promise<EnumsData>;
 export async function getEnum(name: string | string[], ...restNames: string[]): Promise<EnumGroup | EnumsData> {
     const names = normalizeNames(name, restNames);
     if (names.length <= 0) {
-        return (Array.isArray(name) || restNames.length > 0) ? {} : {};
+        return {};
     }
 
     const data = await getEnumData(names);
@@ -90,14 +90,31 @@ export function useEnum(name: string | string[], ...restNames: string[]): [EnumG
     const namesKey = useMemo(() => {
         return normalizeNames(name, restNames).join(",");
     }, [Array.isArray(name) ? name.join(",") : name, restNames.join(",")]);
-    const [enumData, setEnumData] = useState<EnumGroup | EnumsData>({});
-    const [loading, setLoading] = useState(true);
+    const [enumData, setEnumData] = useState<EnumGroup | EnumsData>(() => {
+        const names = normalizeNames(name, restNames);
+        const cachedData = getCachedEnums(names);
+        if (names.some((item) => !cachedData[item])) return {};
+        return isMultiple ? cachedData : cachedData[names[0]] || {};
+    });
+    const [loading, setLoading] = useState(() => normalizeNames(name, restNames).some((item) => !enumCache[item]));
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
         const names = normalizeNames(name, restNames);
         if (names.length <= 0) {
             setEnumData({});
+            setLoading(false);
+            setError(null);
+            return;
+        }
+
+        const cachedData = getCachedEnums(names);
+        if (names.every((item) => cachedData[item])) {
+            setEnumData((current) => {
+                if (!isMultiple) return cachedData[names[0]];
+                return Object.keys(current).length === names.length && names.every((item) => current[item] === cachedData[item])
+                    ? current : cachedData;
+            });
             setLoading(false);
             setError(null);
             return;

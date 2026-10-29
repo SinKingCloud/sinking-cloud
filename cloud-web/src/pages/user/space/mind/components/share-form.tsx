@@ -94,7 +94,7 @@ const ShareForm: React.FC<ShareFormProps> = ({
                             showTime
                             format="YYYY-MM-DD HH:mm:ss"
                             placeholder={editingShare?.expireTime
-                                ? `当前：${editingShare.expireTime}`
+                                ? `当前：${editingShare?.expireTime}`
                                 : "选择到期时间"}
                             disabledDate={(current) => current.valueOf() < new Date().setHours(0, 0, 0, 0)}
                             style={{width: "100%"}}

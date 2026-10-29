@@ -1,5 +1,5 @@
-import React, {useRef, useEffect, useState, useCallback, useMemo, useLayoutEffect} from 'react';
-import Script, {preloadScript, isScriptLoaded} from '../script';
+import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
+import Script, {isScriptLoaded, preloadScript} from '../script';
 
 // Ace Editor 配置接口
 export interface AceEditorProps {
@@ -60,6 +60,8 @@ export interface AceEditorProps {
 }
 
 
+const emptyItems: [] = [];
+
 const AceEditor: React.FC<AceEditorProps> = ({
                                                  value = '',
                                                  defaultValue = '',
@@ -90,9 +92,9 @@ const AceEditor: React.FC<AceEditorProps> = ({
                                                  onFocus,
                                                  onLoad,
                                                  onBeforeLoad,
-                                                 commands = [],
-                                                 annotations = [],
-                                                 markers = [],
+                                                 commands = emptyItems,
+                                                 annotations = emptyItems,
+                                                 markers = emptyItems,
                                                  enableBasicAutocompletion = true,
                                                  enableLiveAutocompletion = true,
                                                  enableSnippets = true,
@@ -113,6 +115,11 @@ const AceEditor: React.FC<AceEditorProps> = ({
     const outerContainerRef = useRef<any>(null);
     const commandNamesRef = useRef<string[]>([]);
     const markerIdsRef = useRef<number[]>([]);
+
+    const handleScriptLoad = useCallback(() => {
+        setAceLoaded(true);
+        setHasScriptLoaded(true);
+    }, []);
 
     // 统一应用编辑器可变配置
     const applyEditorOptions = useCallback((ed: any, options: {
@@ -240,15 +247,11 @@ const AceEditor: React.FC<AceEditorProps> = ({
 
         if (isScriptLoaded(scriptUrl)) return;
 
-        try {
-            await preloadScript(scriptUrl, {
-                cache: true,
-                timeout: 5000,
-                retryCount: 2
-            });
-        } catch (error) {
-            onError?.(error as Error);
-        }
+        await preloadScript(scriptUrl, {
+            cache: true,
+            timeout: 5000,
+            retryCount: 2
+        });
     }, [acePath]);
 
     // 动态加载主题文件
@@ -259,15 +262,11 @@ const AceEditor: React.FC<AceEditorProps> = ({
 
         if (isScriptLoaded(scriptUrl)) return;
 
-        try {
-            await preloadScript(scriptUrl, {
-                cache: true,
-                timeout: 5000,
-                retryCount: 2
-            });
-        } catch (error) {
-            onError?.(error as Error);
-        }
+        await preloadScript(scriptUrl, {
+            cache: true,
+            timeout: 5000,
+            retryCount: 2
+        });
     }, [acePath]);
 
 
@@ -275,6 +274,7 @@ const AceEditor: React.FC<AceEditorProps> = ({
     useEffect(() => {
         if (!aceLoaded || editorRef.current) return;
 
+        let cancelled = false;
         const initialize = async () => {
             if (!stableContainer.current || !window.ace || !mountedRef.current) return;
 
@@ -316,7 +316,7 @@ const AceEditor: React.FC<AceEditorProps> = ({
                 }
 
                 // 直接初始化编辑器，使用稳定容器
-                if (!editorRef.current && stableContainer.current && window.ace) {
+                if (!cancelled && mountedRef.current && !editorRef.current && stableContainer.current && window.ace) {
                     onBeforeLoad?.(window.ace);
 
                     const editor = window.ace.edit(stableContainer.current);
@@ -395,12 +395,13 @@ const AceEditor: React.FC<AceEditorProps> = ({
                 }
 
             } catch (error) {
-                onError?.(error as Error);
+                if (!cancelled) onError?.(error as Error);
             }
         };
 
-        initialize?.();
-    }, [aceLoaded, containerMounted]); // 依赖 aceLoaded 和容器挂载状态
+        initialize();
+        return () => { cancelled = true; };
+    }, [aceLoaded, containerMounted, acePath, mode, theme]);
 
     // 更新编辑器配置
     useEffect(() => {
@@ -534,29 +535,34 @@ const AceEditor: React.FC<AceEditorProps> = ({
 
     // 处理模式变化
     useEffect(() => {
-        if (editorRef.current && mode) {
-            loadMode(mode).finally(() => {
-                if (editorRef.current) {
-                    editorRef.current.session.setMode(`ace/mode/${mode}`);
-                }
-            })
-        }
-    }, [mode]);
+        const editor = editorRef.current;
+        if (!editor || !mode) return;
+        let active = true;
+        loadMode(mode).then(() => {
+            if (active && editorRef.current === editor) editor.session.setMode(`ace/mode/${mode}`);
+        }).catch(error => {
+            if (active) onError?.(error as Error);
+        });
+        return () => { active = false; };
+    }, [mode, loadMode]);
 
     // 处理主题变化
     useEffect(() => {
-        if (editorRef.current && theme) {
-            loadTheme(theme).finally(() => {
-                if (editorRef.current) {
-                    editorRef.current.setTheme(`ace/theme/${theme}`);
-                }
-            })
-        }
-    }, [theme]);
+        const editor = editorRef.current;
+        if (!editor || !theme) return;
+        let active = true;
+        loadTheme(theme).then(() => {
+            if (active && editorRef.current === editor) editor.setTheme(`ace/theme/${theme}`);
+        }).catch(error => {
+            if (active) onError?.(error as Error);
+        });
+        return () => { active = false; };
+    }, [theme, loadTheme]);
 
     // 组件卸载时清理
     useEffect(() => {
         return () => {
+            mountedRef.current = false;
             if (editorRef.current) {
                 editorRef.current.destroy();
                 editorRef.current = null;
@@ -575,10 +581,7 @@ const AceEditor: React.FC<AceEditorProps> = ({
                     timeout={10000}
                     retryCount={2}
                     cache={true}
-                    onLoad={useCallback(() => {
-                        setAceLoaded(true);
-                        setHasScriptLoaded(true);
-                    }, [])}
+                    onLoad={handleScriptLoad}
                     loading={hasScriptLoaded ? null : loadingContent}>
                     <div ref={containerRef} style={containerBaseStyle as any}/>
                 </Script>

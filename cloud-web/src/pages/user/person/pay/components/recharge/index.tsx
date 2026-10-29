@@ -98,6 +98,7 @@ const useStyles = createStyles(({css, token}) => ({
 export default forwardRef<RechargeRef, {onRefreshBalance: () => Promise<void>}>(({onRefreshBalance}, ref) => {
     const {message, modal} = App.useApp();
     const [form] = Form.useForm();
+    const mountedForm = useRef<any>(null);
     const {styles} = useStyles();
     const modalRef = useRef<ProModalRef>(null);
     const [enumData, enumLoading] = useEnum(["pay.pay"]);
@@ -107,7 +108,7 @@ export default forwardRef<RechargeRef, {onRefreshBalance: () => Promise<void>}>(
     const [money, setMoney] = useState<number>(quickAmounts[0]);
     const [customAmount, setCustomAmount] = useState(false);
     const [payType, setPayType] = useState<string>();
-    const payTypes = enumData["pay.pay"]?.type || {};
+    const payTypes = enumData?.["pay.pay"]?.type || {};
 
     const enabledPayOptions = useMemo(() => Object.entries(payTypes)
         .filter(([value]) => value !== "balance" && config?.[value])
@@ -126,8 +127,8 @@ export default forwardRef<RechargeRef, {onRefreshBalance: () => Promise<void>}>(
                 onSuccess: (response: any) => {
                     const nextConfig = response?.data || {};
                     setConfig(nextConfig);
-                    const minAmount = Number(nextConfig.min || 0);
-                    const maxAmount = Number(nextConfig.max || 0);
+                    const minAmount = Number(nextConfig?.min || 0);
+                    const maxAmount = Number(nextConfig?.max || 0);
                     if ((minAmount > 0 && money < minAmount) || (maxAmount > 0 && money > maxAmount)) {
                         const nextMoney = quickAmounts.find((amount) => amount >= minAmount && (!maxAmount || amount <= maxAmount));
                         setMoney(nextMoney ?? Math.max(1, minAmount));
@@ -143,7 +144,7 @@ export default forwardRef<RechargeRef, {onRefreshBalance: () => Promise<void>}>(
         if (enabledPayOptions.length > 0 && (!payType || !enabledPayOptions.some((item) => item.value === payType))) {
             const nextPayType = enabledPayOptions[0].value;
             setPayType(nextPayType);
-            form.setFieldValue("type", nextPayType);
+            if (mountedForm.current) form.setFieldValue("type", nextPayType);
         }
     }, [enabledPayOptions, form, payType]);
 
@@ -225,9 +226,9 @@ export default forwardRef<RechargeRef, {onRefreshBalance: () => Promise<void>}>(
     const payDisabled = pageLoading || enabledPayOptions.length <= 0;
 
     return <ProModal ref={modalRef} title={<Title>在线充值</Title>} width={460}
-        modalProps={{footer: null, forceRender: true, mask: {closable: !submitting}, closable: !submitting, keyboard: !submitting} as any}>
+        modalProps={{footer: null, mask: {closable: !submitting}, closable: !submitting, keyboard: !submitting} as any}>
         <Spin spinning={pageLoading}>
-            <Form className={styles.form} form={form} layout="vertical" requiredMark onFinish={handleSubmit}
+            <Form ref={mountedForm} className={styles.form} form={form} initialValues={{type: selectedPayType}} layout="vertical" requiredMark onFinish={handleSubmit}
                 style={{visibility: pageLoading ? "hidden" : "visible"}}>
                 <Form.Item label="充值金额" required>
                     <ConfigProvider wave={{disabled: true}}>

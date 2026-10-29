@@ -170,7 +170,7 @@ export default (): React.ReactNode => {
             width: 250,
             hideInSearch: true,
             render: (_: any, record: any) => renderRows([
-                {label: "订单:", value: record?.id ? `${record.id}` : "-", copy: record?.id, className: styles.strongText},
+                {label: "订单:", value: record?.id ? `${record?.id}` : "-", copy: record?.id, className: styles.strongText},
                 {label: "外部:", value: record?.trade_no, copy: record?.trade_no},
             ]),
         },

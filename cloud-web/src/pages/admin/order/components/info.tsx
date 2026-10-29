@@ -1,4 +1,4 @@
-import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from "react";
+import React, {forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState} from "react";
 
 import {App, Button, Empty, Pagination, Segmented, Space, Spin, Tag, Tooltip, Typography} from "antd";
 import {Icon, ProModal, ProModalRef, Title, useTheme} from "sinking-antd";
@@ -891,7 +891,7 @@ const LogDetail = forwardRef<LogDetailRef, any>(({
             width={720}
             modalProps={{
                 footer: null,
-                forceRender: true,
+
                 style: {
                     top: 100,
                     paddingBottom: 100,
@@ -924,7 +924,7 @@ const LogDetail = forwardRef<LogDetailRef, any>(({
                                 <div className="content">{detail?.content || "-"}</div>
                             </div>
                             <Typography.Text className="headMeta"
-                                             copyable={detail?.id ? {text: String(detail.id)} : false}>
+                                             copyable={detail?.id ? {text: String(detail?.id)} : false}>
                                 日志ID {detail?.id || "-"}
                             </Typography.Text>
                         </div>
@@ -933,7 +933,7 @@ const LogDetail = forwardRef<LogDetailRef, any>(({
                                 <span className="label">订单ID</span>
                                 <span className="value">
                                     <Typography.Text
-                                        copyable={detail?.order_id ? {text: String(detail.order_id)} : false}>
+                                        copyable={detail?.order_id ? {text: String(detail?.order_id)} : false}>
                                         {detail?.order_id || "-"}
                                     </Typography.Text>
                                 </span>
@@ -945,8 +945,8 @@ const LogDetail = forwardRef<LogDetailRef, any>(({
                                     {detail?.operator_id ? (
                                         <>
                                             {" "}
-                                            <Typography.Text copyable={{text: String(detail.operator_id)}}>
-                                                账号ID：{detail.operator_id}
+                                            <Typography.Text copyable={{text: String(detail?.operator_id)}}>
+                                                账号ID：{detail?.operator_id}
                                             </Typography.Text>
                                         </>
                                     ) : null}
@@ -993,7 +993,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
     const {message} = App.useApp();
     const theme = useTheme();
     const isCompactMode = theme?.isCompactTheme?.() || false;
-    const {styles} = useStyles({isCompactMode});
+    const {styles} = useStyles(useMemo(() => ({isCompactMode}), [isCompactMode]));
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const refundRef = useRef<RefundRef>({} as RefundRef);
     const logDetailRef = useRef<LogDetailRef>({} as LogDetailRef);
@@ -1049,7 +1049,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
         void getOrderLogList({
             body,
             onSuccess: (res: any) => {
-                setLogs(res?.data?.list || []);
+                setLogs(Array.isArray(res?.data?.list) ? res?.data?.list?.filter(Boolean) : []);
                 setTotal(Number(res?.data?.total || 0));
             },
             onFail: (res: any) => message?.error(res?.message || "获取订单日志失败"),
@@ -1105,7 +1105,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                         </div>
                         <Typography.Text
                             className="id"
-                            copyable={data?.id ? {text: String(data.id)} : false}>
+                            copyable={data?.id ? {text: String(data?.id)} : false}>
                             订单ID {data?.id || "-"}
                         </Typography.Text>
                     </div>
@@ -1232,10 +1232,10 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                                                 <span className="operator-type">操作人：{enumText(operatorTypes, item?.operator_type)}</span>
                                                 {item?.operator_id ? (
                                                     <span className="operator-id" onClick={(event) => event.stopPropagation()}>
-                                                        <span className="operator-id-text">账号ID：{item.operator_id}</span>
+                                                        <span className="operator-id-text">账号ID：{item?.operator_id}</span>
                                                         <Typography.Text
                                                             className="operator-copy"
-                                                            copyable={{text: String(item.operator_id), tooltips: ["复制", "复制成功"]}}
+                                                            copyable={{text: String(item?.operator_id), tooltips: ["复制", "复制成功"]}}
                                                         />
                                                     </span>
                                                 ) : null}
@@ -1287,7 +1287,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
             width={600}
             modalProps={{
                 footer: null,
-                forceRender: true,
+
                 style: {
                     top: 100,
                     paddingBottom: 100,

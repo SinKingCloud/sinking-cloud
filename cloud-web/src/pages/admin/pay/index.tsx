@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useLayoutEffect, useRef, useState} from 'react';
 import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {App, Button, Col, Dropdown, Form, Input, Result, Row, Select, Spin} from "antd";
 import {createStyles} from "antd-style";
@@ -51,6 +51,10 @@ export default (): React.ReactNode => {
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const channelModalRef = useRef<ProModalRef>({} as ProModalRef);
     const [channelForm] = Form.useForm();
+    const [initialValues, setInitialValues] = useState<any>({});
+    const [formOpen, setFormOpen] = useState(false);
+    const mountedForm = useRef<any>(null);
+    const formRequestRef = useRef(0);
     const [channelScene, setChannelScene] = useState<any>({
         action: "create",
         id: undefined,
@@ -66,13 +70,13 @@ export default (): React.ReactNode => {
             message?.warning("暂无创建权限");
             return;
         }
+        formRequestRef.current += 1;
         setChannelScene({
             action: "create",
             id: undefined,
             title: "新增通道",
         });
-        channelForm.resetFields();
-        channelForm.setFieldsValue({
+        setInitialValues({
             type: typeOptions?.[0]?.value || "alipay",
             plugin: Number(pluginOptions?.[0]?.value || 0),
             status: Number(statusOptions?.[0]?.value || 0),
@@ -91,36 +95,36 @@ export default (): React.ReactNode => {
         if (!id) {
             return;
         }
+        const requestId = ++formRequestRef.current;
         setChannelScene({
             action: "edit",
             id,
             title: "编辑通道",
         });
-        channelForm.resetFields();
         setConfigFields([]);
         setChannelInfoLoading(true);
         channelModalRef.current?.show();
         getPayChannelInfo({
             body: {id},
             onSuccess: (res: any) => {
+                if (requestId !== formRequestRef.current) return;
                 const info = res?.data || {};
-                channelForm.setFieldsValue({
+                const nextConfig = normalizeConfig(info?.config);
+                setConfigFields(Object.keys(nextConfig));
+                setInitialValues({
                     id: info?.id,
                     name: info?.name,
                     status: Number(info?.status),
-                });
-                const nextConfig = normalizeConfig(info?.config);
-                channelForm.resetFields(["config"] as any);
-                setConfigFields(Object.keys(nextConfig));
-                channelForm.setFieldsValue({
                     config: nextConfig,
                 });
             },
             onFail: (res: any) => {
+                if (requestId !== formRequestRef.current) return;
                 channelModalRef.current?.hide();
                 message?.error(res?.message || "获取通道详情失败");
             },
         }).finally(() => {
+            if (requestId !== formRequestRef.current) return;
             setChannelInfoLoading(false)
         });
     };
@@ -285,6 +289,12 @@ export default (): React.ReactNode => {
         }] : []),
     ] as any;
 
+    useLayoutEffect(() => {
+        if (!formOpen || !mountedForm.current || channelInfoLoading) return;
+        channelForm.resetFields();
+        channelForm.setFieldsValue(initialValues);
+    }, [channelForm, formOpen, initialValues, channelInfoLoading]);
+
     return (
         <Body loading={control?.loading || enumLoading}>
             {!hasListControl && <Result
@@ -316,13 +326,17 @@ export default (): React.ReactNode => {
 
                 <ProModal
                     ref={channelModalRef}
+                    afterOpenChange={(open) => {
+                        setFormOpen(open);
+                        if (!open) formRequestRef.current += 1;
+                    }}
                     title={<Title>{channelScene?.title}</Title>}
                     onOk={channelForm.submit}
                     width={420}
                     modalProps={{
                         mask: {closable: true},
                         confirmLoading: channelSubmitting || channelInfoLoading,
-                        forceRender: true,
+                        destroyOnHidden: true,
                         okText: "提交",
                         cancelText: "取消",
                         footer: channelInfoLoading ? null : undefined,
@@ -331,7 +345,6 @@ export default (): React.ReactNode => {
                             paddingBottom: 100,
                         },
                         afterClose: () => {
-                            channelForm.resetFields();
                             setChannelSubmitting(false);
                             setChannelInfoLoading(false);
                             setConfigFields([]);
@@ -342,7 +355,7 @@ export default (): React.ReactNode => {
                             <Spin/>
                         </div>
                     ) : (
-                        <Form form={channelForm} layout="vertical" onFinish={handleChannelSubmit}>
+                        <Form ref={mountedForm} form={channelForm} initialValues={initialValues} clearOnDestroy layout="vertical" onFinish={handleChannelSubmit}>
                             <Form.Item name="id" hidden>
                                 <Input/>
                             </Form.Item>

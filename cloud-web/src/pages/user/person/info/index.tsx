@@ -1,4 +1,4 @@
-import React, {useRef} from "react";
+import React, {useMemo, useRef} from "react";
 import {useModel} from "umi";
 import {Avatar, Button, Card, Col, Row, Tag, Typography} from "antd";
 import {createStyles} from "antd-style";
@@ -734,7 +734,7 @@ const useStyles = createStyles(({css, token, responsive, isDarkMode}: any, props
 export default () => {
     const theme = useTheme();
     const isCompactMode = theme?.isCompactTheme?.() || false;
-    const {styles} = useStyles({isCompactMode});
+    const {styles} = useStyles(useMemo(() => ({isCompactMode}), [isCompactMode]));
     const pageGutter = isCompactMode ? 12 : 14;
     const user = useModel("user");
     const infoRef = useRef<InfoRef>({} as InfoRef);

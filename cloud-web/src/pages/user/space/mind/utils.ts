@@ -1,4 +1,4 @@
-import type {API} from "../../../../typings";
+import type {API} from "@/../typings";
 import type {MindValue} from "@/pages/components/mind";
 import {ago} from "@/utils/time";
 import {VERSION_AUTO, VERSION_MANUAL} from "./constants";
@@ -39,7 +39,7 @@ export const createBlankValue = (title: string): MindValue => ({
 
 export const parseMindValue = (value: unknown): MindValue => {
     const data = typeof value === "string" ? JSON.parse(value) : value;
-    if (!data || typeof data !== "object" || !Array.isArray((data as MindValue).nodes)) {
+    if (!data || typeof data !== "object" || !Array.isArray((data as MindValue)?.nodes)) {
         throw new Error("导图内容格式错误");
     }
     return data as MindValue;
@@ -49,7 +49,7 @@ export const getResponseData = <T, >(response: API.Response, fallback: string): 
     if (response?.code !== 200) {
         throw new Error(response?.message || fallback);
     }
-    return response.data as T;
+    return response?.data as T;
 };
 
 const toId = (value: unknown) => String(value ?? "");
@@ -59,7 +59,7 @@ export const toMindDocument = (data: any): MindDocument => ({
     categoryId: toId(data?.type_id ?? 0),
     title: data?.title || "未命名导图",
     description: data?.describe || "",
-    value: data?.value ? parseMindValue(data.value) : undefined,
+    value: data?.value ? parseMindValue(data?.value) : undefined,
     shared: Boolean(data?.shared),
     createTime: data?.create_time || "",
     updateTime: data?.update_time || "",
@@ -79,7 +79,7 @@ export const toMindVersion = (data: any): MindVersionRecord => ({
     saveType: Number(data?.type) === VERSION_AUTO ? VERSION_AUTO : VERSION_MANUAL,
     remark: data?.remark || (Number(data?.type) === VERSION_AUTO ? "自动保存" : "手动保存"),
     current: Boolean(data?.current),
-    value: data?.value ? parseMindValue(data.value) : undefined,
+    value: data?.value ? parseMindValue(data?.value) : undefined,
     createTime: data?.create_time || "",
     updateTime: data?.update_time || "",
 });
@@ -89,7 +89,7 @@ export const toMindShare = (data: any): MindShareRecord => ({
     mindId: toId(data?.data_id),
     code: data?.code || "",
     status: Number(data?.status),
-    expireTime: data?.expire_time && !String(data.expire_time).startsWith("0001-") ? data.expire_time : "",
+    expireTime: data?.expire_time && !String(data?.expire_time).startsWith("0001-") ? data?.expire_time : "",
     remark: data?.remark || "",
     createTime: data?.create_time || "",
     updateTime: data?.update_time || "",

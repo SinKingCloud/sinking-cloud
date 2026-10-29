@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useLayoutEffect, useRef, useState} from 'react';
 import {Body, ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {App, Button, Col, Dropdown, Form, Input, Result, Row, Select, Spin, Tooltip, Typography} from "antd";
 import {createStyles} from "antd-style";
@@ -59,6 +59,10 @@ export default (): React.ReactNode => {
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const formModalRef = useRef<ProModalRef>({} as ProModalRef);
     const [form] = Form.useForm();
+    const mountedForm = useRef<any>(null);
+    const formRequestRef = useRef(0);
+    const [initialValues, setInitialValues] = useState<any>({});
+    const [formOpen, setFormOpen] = useState(false);
     const [formScene, setFormScene] = useState<any>({
         action: "create",
         id: undefined,
@@ -76,6 +80,7 @@ export default (): React.ReactNode => {
             message?.warning("暂无创建权限");
             return;
         }
+        formRequestRef.current += 1;
         setFormScene({
             action: "create",
             id: undefined,
@@ -83,8 +88,7 @@ export default (): React.ReactNode => {
         });
         setTaskType(0);
         setScriptContent("");
-        form.resetFields();
-        form.setFieldsValue({
+        setInitialValues({
             type: 0,
             spec: "0 */5 * * * *",
             status: 0,
@@ -103,6 +107,7 @@ export default (): React.ReactNode => {
         if (!id) {
             return;
         }
+        const requestId = ++formRequestRef.current;
         setFormScene({
             action: "edit",
             id,
@@ -110,8 +115,7 @@ export default (): React.ReactNode => {
         });
         setTaskType(Number(record?.type || 0));
         setScriptContent("");
-        form.resetFields();
-        form.setFieldsValue({
+        setInitialValues({
             name: record?.name,
             type: Number(record?.type),
             spec: record?.spec,
@@ -123,11 +127,12 @@ export default (): React.ReactNode => {
         getCronInfo({
             body: {id},
             onSuccess: (res: any) => {
+                if (formRequestRef.current !== requestId) return;
                 const info = res?.data || {};
                 const type = Number(info?.type || 0);
                 setTaskType(type);
                 setScriptContent(type === 0 ? (info?.script || "") : "");
-                form.setFieldsValue({
+                setInitialValues({
                     name: info?.name,
                     type,
                     spec: info?.spec,
@@ -137,11 +142,12 @@ export default (): React.ReactNode => {
                 });
             },
             onFail: (res: any) => {
+                if (formRequestRef.current !== requestId) return;
                 formModalRef.current?.hide();
                 message?.error(res?.message || "读取任务失败");
             },
         }).finally(() => {
-            setFormInfoLoading(false)
+            if (formRequestRef.current === requestId) setFormInfoLoading(false);
         });
     };
 
@@ -370,6 +376,12 @@ export default (): React.ReactNode => {
         }] : []),
     ] as any;
 
+    useLayoutEffect(() => {
+        if (!formOpen || !mountedForm.current) return;
+        form.resetFields();
+        form.setFieldsValue(initialValues);
+    }, [form, formOpen, initialValues]);
+
     return (
         <Body loading={control?.loading || enumLoading}>
             {!hasListControl && <Result
@@ -410,12 +422,16 @@ export default (): React.ReactNode => {
 
                 <ProModal
                     ref={formModalRef}
+                    afterOpenChange={(open) => {
+                        setFormOpen(open);
+                        if (!open) formRequestRef.current += 1;
+                    }}
                     title={<Title>{formScene?.title}</Title>}
                     onOk={form.submit}
                     width={700}
                     modalProps={{
                         confirmLoading: formSubmitting || formInfoLoading,
-                        forceRender: true,
+                        destroyOnHidden: true,
                         okText: "提交",
                         cancelText: "取消",
                         footer: formInfoLoading ? null : undefined,
@@ -424,14 +440,13 @@ export default (): React.ReactNode => {
                             paddingBottom: 100,
                         },
                         afterClose: () => {
-                            form.resetFields();
                             setFormSubmitting(false);
                             setFormInfoLoading(false);
                             setScriptContent("");
                             setTaskType(0);
                         },
                     } as any}>
-                    <Form form={form} layout="vertical" onFinish={handleSubmit}>
+                    <Form ref={mountedForm} form={form} initialValues={initialValues} clearOnDestroy layout="vertical" onFinish={handleSubmit}>
                         {formInfoLoading ? (
                             <div className={styles.formLoading}>
                                 <Spin/>

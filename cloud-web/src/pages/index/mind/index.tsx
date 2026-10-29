@@ -200,12 +200,12 @@ const MindSharePage: React.FC = () => {
                 <>
                     <header className={styles.header}>
                         <div className="share-document-info">
-                            <h1>{data.title}</h1>
-                            {data.describe && <p>{data.describe}</p>}
+                            <h1>{data?.title}</h1>
+                            {data?.describe && <p>{data?.describe}</p>}
                         </div>
-                        {data.updateTime && (
-                            <Tooltip title={data.updateTime}>
-                                <span className="share-update-time">更新于 {getTimeText(data.updateTime)}</span>
+                        {data?.updateTime && (
+                            <Tooltip title={data?.updateTime}>
+                                <span className="share-update-time">更新于 {getTimeText(data?.updateTime)}</span>
                             </Tooltip>
                         )}
                     </header>
@@ -213,7 +213,7 @@ const MindSharePage: React.FC = () => {
                         <Mind
                             key={code}
                             ref={mindRef}
-                            defaultValue={data.value}
+                            defaultValue={data?.value}
                             height="100%"
                             readOnly
                             showControls

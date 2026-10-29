@@ -1,9 +1,9 @@
-import React, {useEffect, useState} from "react";
-import {useLocation, useModel, history} from "umi";
+import React, {useEffect, useLayoutEffect} from "react";
+import {history, useLocation, useModel} from "umi";
 import {ConfigProvider, Spin} from "antd";
 import {getCurrentPath, historyPush} from "@/utils/route";
 import {adminPath, userPath} from "../../config/routes";
-import {Admin, User, Index} from "@/layouts/components";
+import {Admin, Index, User} from "@/layouts/components";
 import Title from "./components/title";
 import {getHeaders} from "@/utils/auth";
 import request from "@/utils/request";
@@ -18,15 +18,15 @@ import zhCN from 'antd/locale/zh_CN';
  * @param next 执行函数
  */
 const check = async (ctx: any, next: any) => {
-    ctx.req.options.headers = getHeaders();
+    ctx.req.options.headers = {...ctx.req.options.headers, ...getHeaders()};
     await next();
     const path = getCurrentPath((history as any)?.location?.pathname || "/")?.substring(1);
     if (path == userPath || path == adminPath) {
-        if ((ctx.res.code == 403)) {
+        if ((ctx.res?.code == 403)) {
             historyPush(path == userPath ? "user.login" : "admin.login");//登陆页面
             return
         }
-        if (ctx.res.code == 401) {
+        if (ctx.res?.code == 401) {
             historyPush("notAllowed");
             return
         }
@@ -54,10 +54,9 @@ const ProLayout = () => {
     const theme = useTheme();
     const web = useModel("web");
     const location = useLocation();
-    const [systemPath, setSystemPath] = useState("");
-    const [isLoginPage, setIsLoginPage] = useState(false);
-    const currentSystemPath = getCurrentPath(location?.pathname)?.substring(1);
-    const ui = currentSystemPath == adminPath ? web?.info?.ui?.admin : web?.info?.ui?.user;
+    const systemPath = getCurrentPath(location?.pathname)?.substring(1);
+    const isLoginPage = location?.pathname?.startsWith("/" + systemPath + "/login");
+    const ui = systemPath == adminPath ? web?.info?.ui?.admin : web?.info?.ui?.user;
 
     // 初始化 iconfont 地址
     useEffect(() => {
@@ -66,26 +65,8 @@ const ProLayout = () => {
         }
     }, []);
 
-    /**
-     * 监听路由数据
-     */
-    useEffect(() => {
-        const path = currentSystemPath;
-        let loginPage = false
-        if (location?.pathname?.startsWith("/" + path + "/login")) {
-            setIsLoginPage(true);
-            loginPage = true;
-        }
-        if (loginPage != isLoginPage) {
-            setIsLoginPage(loginPage);
-        }
-        if (path != systemPath) {
-            setSystemPath(path);
-        }
-    }, [location?.pathname]);
-
     // 初始化主题
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (ui) {
             if (ui.color) {
                 theme?.setColor(ui.color);

@@ -74,11 +74,11 @@ const Version: React.FC<VersionProps> = ({
             ) : (
                 <ol className="timeline" aria-label="历史版本">
                     {items.map((item) => {
-                        const isCurrent = item.current;
+                        const isCurrent = item?.current;
                         return (
                             <li
                                 className={`version${isCurrent ? " current" : ""}`}
-                                key={item.id}
+                                key={item?.id}
                                 aria-current={isCurrent ? "true" : undefined}
                             >
                                 <div className="axis" aria-hidden="true">
@@ -89,15 +89,15 @@ const Version: React.FC<VersionProps> = ({
                                     <div className="head">
                                         <div className="meta">
                                             <span className="snapshot-version">
-                                                {item.saveType === VERSION_AUTO ? "自动保存" : "手动保存"}
+                                                {item?.saveType === VERSION_AUTO ? "自动保存" : "手动保存"}
                                             </span>
                                             {isCurrent && <span className="current-label">当前版本</span>}
                                         </div>
-                                        <Tooltip title={item.createTime}>
-                                            <span className="snapshot-time">{getTimeText(item.createTime)}</span>
+                                        <Tooltip title={item?.createTime}>
+                                            <span className="snapshot-time">{getTimeText(item?.createTime)}</span>
                                         </Tooltip>
                                     </div>
-                                    <div className="snapshot-text">{item.remark}</div>
+                                    <div className="snapshot-text">{item?.remark}</div>
                                     <div className="snapshot-extra">
                                         <span/>
                                         <Button
@@ -105,7 +105,7 @@ const Version: React.FC<VersionProps> = ({
                                             type="link"
                                             size="small"
                                             icon={<EyeOutlined/>}
-                                            aria-label={`预览 ${item.createTime} 的版本`}
+                                            aria-label={`预览 ${item?.createTime} 的版本`}
                                             onClick={(event) => {
                                                 event.stopPropagation();
                                                 void onPreview(item);

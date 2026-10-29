@@ -40,9 +40,9 @@ export async function getData(params: any, sort: any, request: any): Promise<any
         }
     });
     return {
-        data: data?.data?.list === undefined || data?.data?.list === null || data?.data?.list?.length <= 0 ? [] : data?.data?.list,
+        data: Array.isArray(data?.data?.list) ? data?.data?.list?.filter(Boolean) : [],
         success: data?.code === 200,
-        total: data?.data?.total,
+        total: data?.data?.total ?? 0,
     };
 }
 
@@ -58,8 +58,8 @@ export const emptyTableData = {
  * @param name 字段前缀
  */
 export const dateRangeTransform = (name: string) => (value: any) => ({
-    [`${name}_start`]: value?.[0]?.format ? value[0].format("YYYY-MM-DD HH:mm:ss") : value?.[0],
-    [`${name}_end`]: value?.[1]?.format ? value[1].format("YYYY-MM-DD HH:mm:ss") : value?.[1],
+    [`${name}_start`]: value?.[0]?.format ? value?.[0]?.format?.("YYYY-MM-DD HH:mm:ss") : value?.[0],
+    [`${name}_end`]: value?.[1]?.format ? value?.[1]?.format?.("YYYY-MM-DD HH:mm:ss") : value?.[1],
 });
 
 /** 规范化 ID 数组 */

@@ -70,7 +70,7 @@ export const useMindDocuments = ({
         getMindDataList({body}).then((response) => {
             if (requestId !== requestRef.current) return;
             const result = getResponseData<PageResult<any>>(response, "获取导图失败");
-            setDocuments((result?.list || []).map(toMindDocument).filter((item) => item.id));
+            setDocuments((Array.isArray(result?.list) ? result?.list : []).map(toMindDocument).filter((item) => item.id));
             setDocumentTotal(Number(result?.total || 0));
         }).catch((error) => {
             if (requestId === requestRef.current) {
@@ -114,14 +114,15 @@ export const useMindDocuments = ({
     }, []);
 
     const openDocument = useCallback(async (record: MindDocument) => {
+        if (!record?.id) return;
         const requestId = ++infoRequestRef.current;
-        setDocumentOpeningId(record.id);
+        setDocumentOpeningId(record?.id);
         try {
-            const response = await getMindDataInfo({body: {id: record.id}});
+            const response = await getMindDataInfo({body: {id: record?.id}});
             if (requestId !== infoRequestRef.current) return;
             const info = toMindDocument(getResponseData<any>(response, "获取导图失败"));
-            if (!info.value) throw new Error("导图内容为空");
-            onOpen(info, info.value);
+            if (!info?.id || !info?.value) throw new Error("导图内容为空");
+            onOpen(info, info?.value);
         } catch (error) {
             if (requestId === infoRequestRef.current) {
                 message.error(error instanceof Error ? error.message : "获取导图失败");
@@ -149,11 +150,12 @@ export const useMindDocuments = ({
     }, [activeCategoryId, form]);
 
     const openEditDocument = useCallback((record: MindDocument) => {
+        if (!record?.id) return;
         setEditingDocument(record);
         form.setFieldsValue({
-            title: record.title,
-            description: record.description,
-            categoryId: record.categoryId,
+            title: record?.title,
+            description: record?.description,
+            categoryId: record?.categoryId,
         });
         setCreateOpen(true);
     }, [form]);
@@ -169,7 +171,7 @@ export const useMindDocuments = ({
             setFormSubmitting(true);
             if (editingDocument) {
                 const response = await updateMindData({body: {
-                    id: Number(editingDocument.id),
+                    id: Number(editingDocument?.id),
                     type_id: values.categoryId,
                     title: values.title,
                     describe: values.description || "",
@@ -196,6 +198,7 @@ export const useMindDocuments = ({
                 value: JSON.stringify(value),
             }});
             const record = {...toMindDocument(getResponseData<any>(response, "创建导图失败")), value};
+            if (!record?.id) throw new Error("创建导图失败");
             setCreateOpen(false);
             onOpen(record, value);
             message.success("导图已创建");
@@ -209,13 +212,14 @@ export const useMindDocuments = ({
     };
 
     const duplicateDocument = (record: MindDocument) => {
+        if (!record?.id) return;
         modal.confirm({
             title: "复制导图",
-            content: `确定复制${record.title}吗？`,
+            content: `确定复制${record?.title}吗？`,
             okText: "复制",
             onOk: async () => {
                 try {
-                    const response = await copyMindData({body: {id: Number(record.id)}});
+                    const response = await copyMindData({body: {id: Number(record?.id)}});
                     getResponseData(response, "复制导图失败");
                     message.success("导图已复制");
                     setPage(1);
@@ -228,16 +232,17 @@ export const useMindDocuments = ({
     };
 
     const deleteDocument = (record: MindDocument) => {
+        if (!record?.id) return;
         modal.confirm({
             title: "删除导图",
-            content: `确定删除${record.title}吗？`,
+            content: `确定删除${record?.title}吗？`,
             okText: "删除",
             okButtonProps: {danger: true},
             onOk: async () => {
                 try {
-                    const response = await deleteMindData({body: {id: Number(record.id)}});
+                    const response = await deleteMindData({body: {id: Number(record?.id)}});
                     getResponseData(response, "删除导图失败");
-                    setDocuments((items) => items.filter((item) => item.id !== record.id));
+                    setDocuments((items) => items.filter((item) => item.id !== record?.id));
                     onDeleted(record);
                     if (documents.length <= 1 && page > 1) {
                         setPage((current) => Math.max(1, current - 1));

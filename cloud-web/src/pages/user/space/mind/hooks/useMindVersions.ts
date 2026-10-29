@@ -55,7 +55,7 @@ export const useMindVersions = ({selectedDocumentRef}: UseMindVersionsOptions) =
             const response = await getMindVersionList({body});
             if (requestId !== requestRef.current) return;
             const result = getResponseData<PageResult<any>>(response, "获取版本记录失败");
-            const nextItems = (result?.list || []).map(toMindVersion).filter((item) => item.id);
+            const nextItems = (Array.isArray(result?.list) ? result?.list : []).map(toMindVersion).filter((item) => item.id);
             setItems((current) => {
                 const source = reset ? nextItems : [...current, ...nextItems];
                 return Array.from(new Map(source.map((item) => [item.id, item])).values());
@@ -92,7 +92,7 @@ export const useMindVersions = ({selectedDocumentRef}: UseMindVersionsOptions) =
         setPreview(undefined);
         setOpen(true);
         cursorRef.current = initialCursor();
-        void loadMore(document.id, type, true);
+        void loadMore(document?.id, type, true);
     }, [currentRecord?.saveType, loadMore, selectedDocumentRef]);
 
     const changeFilter = useCallback((type: MindVersionSaveType) => {
@@ -103,22 +103,22 @@ export const useMindVersions = ({selectedDocumentRef}: UseMindVersionsOptions) =
         setItems([]);
         setLoadFailed(false);
         cursorRef.current = initialCursor();
-        void loadMore(document.id, type, true);
+        void loadMore(document?.id, type, true);
     }, [loadMore, selectedDocumentRef]);
 
     const openPreview = useCallback(async (record: MindVersionRecord) => {
         const document = selectedDocumentRef.current;
-        if (!document) return;
+        if (!document?.id || !record?.id) return;
         const requestId = ++infoRequestRef.current;
         setPreview(undefined);
         setPreviewOpen(true);
         try {
-            const response = await getMindVersionInfo({body: {data_id: document.id, id: record.id}});
+            const response = await getMindVersionInfo({body: {data_id: document?.id, id: record?.id}});
             if (requestId !== infoRequestRef.current
-                || selectedDocumentRef.current?.id !== document.id) return;
+                || selectedDocumentRef.current?.id !== document?.id) return;
             const info = toMindVersion(getResponseData<any>(response, "获取版本详情失败"));
-            if (!info.value) throw new Error("版本内容为空");
-            const stats = getMindStats(info.value);
+            if (!info?.value) throw new Error("版本内容为空");
+            const stats = getMindStats(info?.value);
             setPreview({...info, nodeCount: stats.nodeCount, depth: stats.depth});
         } catch (error) {
             if (requestId === infoRequestRef.current) {
@@ -154,10 +154,10 @@ export const useMindVersions = ({selectedDocumentRef}: UseMindVersionsOptions) =
     }, [close]);
 
     const recordSavedVersion = useCallback((record: MindVersionRecord, type: MindVersionSaveType) => {
-        if (!openRef.current) return;
+        if (!openRef.current || !record?.id) return;
         setItems((current) => {
             const previous = current
-                .filter((item) => item.id !== record.id)
+                .filter((item) => item.id !== record?.id)
                 .map((item) => ({...item, current: false}));
             return filterRef.current === type ? [record, ...previous] : previous;
         });

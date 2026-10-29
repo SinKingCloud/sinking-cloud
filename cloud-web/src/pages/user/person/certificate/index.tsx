@@ -897,7 +897,7 @@ export default (): React.ReactNode => {
     const isAuthed = !!info?.status;
     const currentAuthTypeName = info?.company_name ? "企业实名" : "个人实名";
     const currentStep = isAuthed ? 3 : certify?.id ? 2 : formStep;
-    const {styles} = useStyles({isCompactMode});
+    const {styles} = useStyles(useMemo(() => ({isCompactMode}), [isCompactMode]));
 
     const authedItems = useMemo(() => {
         const items = [

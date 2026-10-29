@@ -1,4 +1,4 @@
-import React, {useRef, useState} from "react";
+import React, {useMemo, useRef, useState} from "react";
 import {App, Button, Dropdown, Spin, Tag, Tooltip} from "antd";
 import {createStyles} from "antd-style";
 import type {PageTableProps, PageTableRef, ProModalRef} from "sinking-antd";
@@ -328,7 +328,7 @@ const formatAgoTime = (value: any) => {
 export default (): React.ReactNode => {
     const {message, modal} = App.useApp();
     const theme = useTheme();
-    const {styles} = useStyles({isCompactMode: theme?.isCompactTheme?.() || false});
+    const {styles} = useStyles(useMemo(() => ({isCompactMode: theme?.isCompactTheme?.() || false}), [theme?.isCompactTheme?.()]));
     const tableRef = useRef<PageTableRef<UserMessage> | null>(null);
     const detailModalRef = useRef<ProModalRef | null>(null);
     const [detailLoading, setDetailLoading] = useState(false);
@@ -449,14 +449,14 @@ export default (): React.ReactNode => {
             width: 320,
             ellipsis: {showTitle: false},
             render: (_: any, record: UserMessage) => (
-                <Tooltip title={record.title || "未命名消息"}>
+                <Tooltip title={record?.title || "未命名消息"}>
                     <button
                         type="button"
-                        className={`${styles.messageTitle} ${isUnread(record.status) ? "unread" : ""}`}
+                        className={`${styles.messageTitle} ${isUnread(record?.status) ? "unread" : ""}`}
                         onClick={() => openDetail(record)}
                     >
-                        <span className={`unread-dot ${isUnread(record.status) ? "unread" : ""}`} aria-hidden="true"/>
-                        <span>{record.title || "未命名消息"}</span>
+                        <span className={`unread-dot ${isUnread(record?.status) ? "unread" : ""}`} aria-hidden="true"/>
+                        <span>{record?.title || "未命名消息"}</span>
                     </button>
                 </Tooltip>
             ),
@@ -618,9 +618,9 @@ export default (): React.ReactNode => {
                     if (response?.code !== 200) {
                         throw new Error(response?.message || "获取站内消息列表失败");
                     }
-                    return {data: response.data?.list, total: response.data?.total ?? 0, success: true};
+                    return {data: Array.isArray(response?.data?.list) ? response?.data?.list?.filter(Boolean) : [], total: response?.data?.total ?? 0, success: true};
                 }}
-                onRequestError={(error) => message.error(error.message)}
+                onRequestError={(error) => message.error(error?.message || "获取消息失败")}
                 pagination={{unit: "条"}}
                 paginationAffix={{offsetBottom: 15}}
             />

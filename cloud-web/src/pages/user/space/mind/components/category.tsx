@@ -142,18 +142,18 @@ const Category: React.FC<CategoryProps> = ({
                                 <div className={styles.categoryGrid}>
                                     {categories.map((item) => (
                                         <div
-                                            key={item.id}
-                                            className={`${styles.categoryCard} ${activeCategoryId === item.id ? "active" : ""}`}
-                                            style={{"--accent": getStableColor(item.id || item.name)} as React.CSSProperties}
-                                            onClick={() => onSelect(item.id)}
+                                            key={item?.id}
+                                            className={`${styles.categoryCard} ${activeCategoryId === item?.id ? "active" : ""}`}
+                                            style={{"--accent": getStableColor(item?.id || item?.name)} as React.CSSProperties}
+                                            onClick={() => onSelect(item?.id)}
                                         >
                                             <div className="row">
                                                 <span className="name-wrap">
                                                     <span className="color"/>
-                                                    <span className="name">{item.name}</span>
+                                                    <span className="name">{item?.name}</span>
                                                 </span>
                                                 <span className="right">
-                                                    {!item.preset && (
+                                                    {!item?.preset && (
                                                         <Dropdown
                                                             trigger={["click"]}
                                                             placement="bottomRight"
@@ -191,7 +191,7 @@ const Category: React.FC<CategoryProps> = ({
                                                                     type="text"
                                                                     size="small"
                                                                     icon={<MoreOutlined/>}
-                                                                    aria-label={`${item.name}分类操作`}
+                                                                    aria-label={`${item?.name}分类操作`}
                                                                 />
                                                             </span>
                                                         </Dropdown>

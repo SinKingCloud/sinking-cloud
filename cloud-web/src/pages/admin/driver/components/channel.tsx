@@ -1,4 +1,4 @@
-import React, {useRef, useState} from "react";
+import React, {useLayoutEffect, useRef, useState} from "react";
 import {App, Button, Dropdown, Form, Input, Select, Spin} from "antd";
 import {ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import {createStyles} from "antd-style";
@@ -28,6 +28,10 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const [form] = Form.useForm();
+    const [initialValues, setInitialValues] = useState<any>({});
+    const [formOpen, setFormOpen] = useState(false);
+    const mountedForm = useRef<any>(null);
+    const formRequestRef = useRef(0);
     const [scene, setScene] = useState<any>({
         action: "create",
         id: undefined,
@@ -52,15 +56,15 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
             message?.warning("暂无创建权限");
             return;
         }
+        formRequestRef.current += 1;
         setScene({
             action: "create",
             id: undefined,
             title: "新增通道",
         });
-        form.resetFields();
         setConfigFields([]);
         setInfoLoading(false);
-        form.setFieldsValue({
+        setInitialValues({
             type: Number(typeOptions?.[0]?.value || 0),
             status: Number(statusOptions?.[0]?.value || 0),
         });
@@ -76,21 +80,22 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
         if (!id) {
             return;
         }
+        const requestId = ++formRequestRef.current;
         setScene({
             action: "edit",
             id,
             title: "编辑通道",
         });
-        form.resetFields();
         setConfigFields([]);
         setInfoLoading(true);
         modalRef.current?.show();
         getChannelInfo({
             body: {id},
             onSuccess: (res: any) => {
+                if (requestId !== formRequestRef.current) return;
                 const info = res?.data || {};
                 const config = normalizeConfig(info?.config);
-                form.setFieldsValue({
+                setInitialValues({
                     id: info?.id,
                     name: info?.name,
                     status: Number(info?.status),
@@ -99,10 +104,12 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
                 setConfigFields(Object.keys(config));
             },
             onFail: (res: any) => {
+                if (requestId !== formRequestRef.current) return;
                 modalRef.current?.hide();
                 message?.error(res?.message || "获取通道详情失败");
             },
         }).finally(() => {
+            if (requestId !== formRequestRef.current) return;
             setInfoLoading(false);
         });
     };
@@ -269,6 +276,12 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
         }] : []),
     ];
 
+    useLayoutEffect(() => {
+        if (!formOpen || !mountedForm.current || infoLoading) return;
+        form.resetFields();
+        form.setFieldsValue(initialValues);
+    }, [form, formOpen, initialValues, infoLoading]);
+
     if (!hasListControl) {
         return null;
     }
@@ -293,13 +306,17 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
 
             <ProModal
                 ref={modalRef}
+                afterOpenChange={(open) => {
+                    setFormOpen(open);
+                    if (!open) formRequestRef.current += 1;
+                }}
                 title={<Title>{scene?.title}</Title>}
                 onOk={form.submit}
                 width={420}
                 modalProps={{
                     mask: {closable: true},
                     confirmLoading: submitLoading || infoLoading,
-                    forceRender: true,
+                    destroyOnHidden: true,
                     okText: "提交",
                     cancelText: "取消",
                     footer: infoLoading ? null : undefined,
@@ -308,7 +325,6 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
                         paddingBottom: 100,
                     },
                     afterClose: () => {
-                        form.resetFields();
                         setSubmitLoading(false);
                         setInfoLoading(false);
                         setConfigFields([]);
@@ -320,7 +336,7 @@ const ChannelManage: React.FC<ChannelManageProps> = ({control}) => {
                         <Spin/>
                     </div>
                 ) : (
-                    <Form form={form} layout="vertical" onFinish={onSubmit}>
+                    <Form ref={mountedForm} form={form} initialValues={initialValues} clearOnDestroy layout="vertical" onFinish={onSubmit}>
                         <Form.Item name="id" hidden>
                             <Input/>
                         </Form.Item>

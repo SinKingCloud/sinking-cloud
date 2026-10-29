@@ -1002,7 +1002,7 @@ export default () => {
                     <div className={styles.brandGlow} aria-hidden="true"/>
                     <button type="button" className={styles.brandLogo} onClick={() => historyPush("index.index")}
                             aria-label="返回首页">
-                        {web?.info?.logo ? <img src={web.info.logo} alt=""/> : <Icon type="icon-logo"/>}
+                        {web?.info?.logo ? <img src={web?.info?.logo} alt=""/> : <Icon type="icon-logo"/>}
                         <span>{web?.info?.name || Settings?.title}</span>
                     </button>
                     <div className={styles.brandContent}>

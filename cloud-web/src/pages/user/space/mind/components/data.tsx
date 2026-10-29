@@ -123,9 +123,9 @@ const Data: React.FC<DataProps> = ({
                     <div className={styles.documentGrid}>
                         {documents.map((item) => (
                             <Card
-                                key={item.id}
-                                className={`${styles.documentCard}${openingDocumentId === item.id ? " loading" : ""}`}
-                                style={{"--accent": getStableColor(item.id || item.title)} as React.CSSProperties}
+                                key={item?.id}
+                                className={`${styles.documentCard}${openingDocumentId === item?.id ? " loading" : ""}`}
+                                style={{"--accent": getStableColor(item?.id || item?.title)} as React.CSSProperties}
                                 styles={{body: {padding: 0}}}
                                 onClick={() => void onOpen(item)}
                             >
@@ -142,7 +142,7 @@ const Data: React.FC<DataProps> = ({
                                                 void onOpen(item);
                                             }}
                                         >
-                                            {item.title}
+                                            {item?.title}
                                         </button>
                                         <span className="actions" onClick={(event) => event.stopPropagation()}>
                                             <Dropdown
@@ -156,16 +156,16 @@ const Data: React.FC<DataProps> = ({
                                                     type="text"
                                                     size="small"
                                                     icon={<MoreOutlined/>}
-                                                    aria-label={`${item.title}导图操作`}
+                                                    aria-label={`${item?.title}导图操作`}
                                                 />
                                             </Dropdown>
                                         </span>
                                     </div>
-                                    <div className="desc">{item.description || "暂无描述"}</div>
+                                    <div className="desc">{item?.description || "暂无描述"}</div>
                                     <div className="meta">
-                                        <span>{item.shared ? "已分享" : "仅自己可见"}</span>
-                                        <Tooltip title={item.updateTime}>
-                                            <span>{getTimeText(item.updateTime)}</span>
+                                        <span>{item?.shared ? "已分享" : "仅自己可见"}</span>
+                                        <Tooltip title={item?.updateTime}>
+                                            <span>{getTimeText(item?.updateTime)}</span>
                                         </Tooltip>
                                     </div>
                                 </div>

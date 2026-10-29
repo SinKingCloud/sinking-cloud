@@ -194,11 +194,12 @@ export function getCurrentMenus(pathName: any, hideMenu = true): any {
  * @param menu
  */
 export function getFirstMenuWithoutChildren(menu: any[]): any | null {
-    for (const item of menu) {
-        if (!item.hasOwnProperty('children')) {
+    for (const item of menu || []) {
+        if (!item) continue;
+        if (!Object.prototype.hasOwnProperty.call(item, 'children')) {
             return item; // 如果对象没有 children 属性，则返回该对象
         } else {
-            const result = getFirstMenuWithoutChildren(item.children);
+            const result = getFirstMenuWithoutChildren(item?.children || []);
             if (result !== null) {
                 return result;
             }

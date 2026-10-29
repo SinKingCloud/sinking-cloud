@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React, {useMemo, useRef} from 'react';
 import {useModel} from 'umi';
 import {Body, Icon, useTheme} from 'sinking-antd';
 import {Avatar, Button, Card, Col, Row,} from 'antd';
@@ -485,7 +485,7 @@ export default () => {
             pageShell, userCard, settingItem, topCard, bottomCard, settingSection,
             avatarStyle,
         },
-    } = useStyles({isCompactMode});
+    } = useStyles(useMemo(() => ({isCompactMode}), [isCompactMode]));
     const user = useModel('user');
     const infoRef = useRef<InfoRef>({} as InfoRef);
     const accountRef = useRef<AccountRef>({} as AccountRef);

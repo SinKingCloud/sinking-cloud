@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {history, Outlet, useLocation, useModel, useSelectedRoutes} from "umi";
-import {getCurrentMenus, getFirstMenuWithoutChildren, getParentList, historyPush} from "@/utils/route";
+import {getCurrentMenus, getCurrentPath, getFirstMenuWithoutChildren, getParentList, historyPush} from "@/utils/route";
 import {createStyles} from 'antd-style';
 import Settings from "@/../config/defaultSettings";
 import defaultSettings from "@/../config/defaultSettings";
@@ -458,11 +458,12 @@ const RightTop: React.FC = () => {
         historyPush("user.person.message");
     };
     const openNotice = async (item: any) => {
+        if (!item?.id) return;
         closeNoticePanel();
         setDetail(item);
         detailModalRef.current?.show();
         setDetailLoading(true);
-        const resp = await getMessageInfo({body: {id: item.id}});
+        const resp = await getMessageInfo({body: {id: item?.id}});
         setDetailLoading(false);
         if (resp?.code != 200) {
             message.error(resp?.message || "获取消息失败");
@@ -473,8 +474,8 @@ const RightTop: React.FC = () => {
         setDetail(info);
         setNotice((data) => ({
             ...data,
-            total: Math.max(0, data.total - 1),
-            list: data.list.filter((x) => x.id != item.id),
+            total: Math.max(0, (data?.total || 0) - 1),
+            list: (data?.list || []).filter((x) => x?.id != item?.id),
         }));
     };
     useEffect(() => {
@@ -548,15 +549,15 @@ const RightTop: React.FC = () => {
                             {notice.list.length <= 0 ? (
                                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
                             ) : notice.list.map((item) => (
-                                <div key={item.id} className={messageItem} onClick={() => openNotice(item)}>
+                                <div key={item?.id} className={messageItem} onClick={() => openNotice(item)}>
                                     <div className="item-title">
                                         <span className="unread-dot"/>
-                                        <span>{item.title || "未命名消息"}</span>
+                                        <span>{item?.title || "未命名消息"}</span>
                                     </div>
                                     <div className="item-time">
-                                        <Tooltip title={item.create_time || "-"}>
+                                        <Tooltip title={item?.create_time || "-"}>
                                             <span>
-                                                {item.create_time ? (ago(item.create_time) || item.create_time) : "-"}
+                                                {item?.create_time ? (ago(item?.create_time) || item?.create_time) : "-"}
                                             </span>
                                         </Tooltip>
                                     </div>
@@ -571,7 +572,7 @@ const RightTop: React.FC = () => {
                 type="icon-notice"
                 className={`${icon} ${messageTrigger}`}
                 data-count={notice.total > 0 ? noticeCount : undefined}
-                onClick={(event) => {
+                onClick={(event: React.MouseEvent<HTMLElement>) => {
                     if (!isMobile) {
                         return;
                     }
@@ -993,17 +994,47 @@ const SKLayout: React.FC = () => {
     const [customerVisible, setCustomerVisible] = useState(false);
     const layoutRef = useRef<SinKingRef | null>(null);
     const {styles: {menuColor, collapsedImg, collapsedLogo, unCollapsed}} = useSKLayoutStyles();
+    const routeName = match?.at(-1)?.route?.name;
+    const siteName = web?.info?.name;
+    const siteLogo = web?.info?.logo;
+    const themeColor = web?.info?.ui?.user?.color || defaultSettings?.color;
+    const watermark = Boolean(web?.info?.ui?.user?.watermark);
+    const year = new Date().getFullYear();
+    const onNavigate = useCallback((path: string) => history.push(path), []);
+    const waterMark = useMemo(() => watermark ? [user?.web?.nick_name, user?.web?.email] : "", [watermark, user?.web?.nick_name, user?.web?.email]);
+    const headerRight = useMemo(() => <RightTop/>, []);
+    const footer = useMemo(() => <>©{year} All Right Revered {siteName || Settings?.title}</>, [year, siteName]);
+    const renderCollapsedLogo = useCallback(() => siteLogo ? <img
+        src={siteLogo || getPath("logo.svg")} alt={siteName} className={collapsedImg}/> :
+        <Icon type="icon-logo" style={{color: themeColor}} className={collapsedLogo}/>, [siteLogo, siteName, themeColor, collapsedImg, collapsedLogo]);
+    const renderUnCollapsedLogo = useCallback(() => <div className={unCollapsed}>
+        {siteLogo ? <img src={siteLogo || getPath("logo.svg")} alt={siteName || Settings?.title}/> :
+            <Icon type="icon-logo" style={{color: themeColor}}/>}
+        <div style={{color: themeColor}}>{siteName || Settings?.title}</div>
+    </div>, [siteLogo, siteName, themeColor, unCollapsed]);
+    const contact = web?.info?.contact;
+    const hasContact = Boolean(contact);
+    const menuBottomBtnIcon = useMemo(() => hasContact ? <Icon type="CustomerServiceOutlined"/> : false, [hasContact]);
+    const menuBottomBtnText = useMemo(() => hasContact ? <>&nbsp;&nbsp;客户服务</> : false, [hasContact]);
+    const onMenuBottomBtnClick = useCallback(() => setCustomerVisible(true), []);
+    const closeCustomer = useCallback(() => setCustomerVisible(false), []);
+    const customerModal = useMemo(() => <CustomerModal open={customerVisible} onCancel={closeCustomer} contact={contact}/>, [customerVisible, closeCustomer, contact]);
+    const outletContext = useMemo(() => ({layoutRef}), []);
+
+    const systemPath = getCurrentPath(location?.pathname);
+    const menus = useMemo(() => getCurrentMenus(systemPath, true), [systemPath]);
+    const menusWithHidden = useMemo(() => getCurrentMenus(systemPath, false), [systemPath]);
 
     /**
      * 计算面包屑数据
      */
     const breadCrumbItems = useMemo(() => {
         if (!location?.pathname) return [];
-        const items = getParentList(getCurrentMenus(location?.pathname, false), match?.at(-1)?.route?.name);
+        const items = getParentList(menusWithHidden, routeName);
         const temp = [{
             title: "首页",
             onClick: () => {
-                historyPush(getFirstMenuWithoutChildren(getCurrentMenus(location?.pathname))?.name || "");
+                historyPush(getFirstMenuWithoutChildren(menus)?.name || "");
             },
         }];
         const handleItemClick = (x: any) => {
@@ -1020,7 +1051,7 @@ const SKLayout: React.FC = () => {
             });
         });
         return temp;
-    }, [location?.pathname, match]);
+    }, [menus, menusWithHidden, location?.pathname, routeName]);
 
     /**
      * 初始化数据
@@ -1036,57 +1067,32 @@ const SKLayout: React.FC = () => {
     }, []);
 
     return <>
-        <CustomerModal
-            open={customerVisible}
-            onCancel={() => setCustomerVisible(false)}
-            contact={web?.info?.contact}
-        />
+        {customerModal}
         <Layout ref={layoutRef}
                 loading={loading || !user?.web}
                 pathname={location?.pathname}
                 matchedRoutes={match || []}
-                onNavigate={(path) => history.push(path)}
+                onNavigate={onNavigate}
                 breadCrumbItems={breadCrumbItems}
                 hideBreadCrumb={match?.at(-1)?.route?.hideBreadCrumb}
-                waterMark={web?.info?.ui?.user?.watermark ? [user?.web?.nick_name, user?.web?.email] : ""}
-                menus={getCurrentMenus(location?.pathname, true)}
+                waterMark={waterMark}
+                menus={menus}
                 menuClassNames={menuColor}
                 layout={web?.info?.ui?.user?.layout != "left" ? "horizontal" : "inline"}
                 flowLayout={web?.info?.ui?.user?.layout != "left"}
                 menuTheme={web?.info?.ui?.user?.theme == "dark" ? "dark" : "light"}
-                footer={<>©{new Date().getFullYear()} All Right
-                    Revered {web?.info?.name || Settings?.title}</>}
+                footer={footer}
                 headerHidden={false}
                 headerFixed={false}
-                headerRight={<RightTop/>}
+                headerRight={headerRight}
                 menuCollapsedWidth={60}
                 menuUnCollapsedWidth={210}
-                menuBottomBtnIcon={web?.info?.contact ? <Icon type="CustomerServiceOutlined"/> : false}
-                menuBottomBtnText={web?.info?.contact ? <>&nbsp;&nbsp;客户服务</> : false}
-                onMenuBottomBtnClick={() => {
-                    setCustomerVisible(true);
-                }}
-                collapsedLogo={() => {
-                    return web?.info?.logo ? <img
-                            src={web?.info?.logo || getPath("logo.svg")}
-                            alt={web?.info?.name} className={collapsedImg}/> :
-                        <Icon type="icon-logo" style={{color: web?.info?.ui?.user?.color || defaultSettings?.color}}
-                              className={collapsedLogo}/>
-                }}
-                unCollapsedLogo={() => {
-                    return <div className={unCollapsed}>
-                        {web?.info?.logo ? <img
-                                src={web?.info?.logo || getPath("logo.svg")}
-                                alt={web?.info?.name || Settings?.title}/> :
-                            <Icon type="icon-logo"
-                                  style={{color: web?.info?.ui?.user?.color || defaultSettings?.color}}/>}
-                        <div
-                            style={{color: web?.info?.ui?.user?.color ? web?.info?.ui?.user?.color : defaultSettings?.color}}>
-                            {web?.info?.name || Settings?.title}
-                        </div>
-                    </div>
-                }}>
-            <Outlet context={{layoutRef}}/>
+                menuBottomBtnIcon={menuBottomBtnIcon}
+                menuBottomBtnText={menuBottomBtnText}
+                onMenuBottomBtnClick={onMenuBottomBtnClick}
+                collapsedLogo={renderCollapsedLogo}
+                unCollapsedLogo={renderUnCollapsedLogo}>
+            <Outlet context={outletContext}/>
         </Layout>
     </>;
 }

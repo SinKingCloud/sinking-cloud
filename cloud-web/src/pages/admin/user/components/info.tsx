@@ -1,4 +1,4 @@
-import React, {forwardRef, useImperativeHandle, useRef, useState} from "react";
+import React, {forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState} from "react";
 
 import {App, Avatar, Col, Form, Input, Row, Select} from "antd";
 import {Icon, ProModal, ProModalRef, Title} from "sinking-antd";
@@ -86,6 +86,9 @@ const Info = forwardRef<InfoRef, InfoProps>(({
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const avatarUploadRef = useRef<UploadRef>({} as UploadRef);
     const [form] = Form.useForm();
+    const [initialValues, setInitialValues] = useState<any>({});
+    const [formOpen, setFormOpen] = useState(false);
+    const mountedForm = useRef<any>(null);
     const avatarValue = Form.useWatch("avatar" as any, form);
     const [userInfo, setUserInfo] = useState<any>();
     const [formSubmitting, setFormSubmitting] = useState(false);
@@ -102,8 +105,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
             return;
         }
         setUserInfo(record || {});
-        form.resetFields();
-        form.setFieldsValue({
+        setInitialValues({
             account: record?.account,
             phone: record?.phone,
             email: record?.email,
@@ -143,7 +145,7 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                 try {
                     await updateUser({
                         body: {
-                            ids: [Number(userInfo.id)],
+                            ids: [Number(userInfo?.id)],
                             avatar: url,
                         },
                         onSuccess: (res: any) => {
@@ -207,9 +209,16 @@ const Info = forwardRef<InfoRef, InfoProps>(({
         });
     };
 
+    useLayoutEffect(() => {
+        if (!formOpen || !mountedForm.current) return;
+        form.resetFields();
+        form.setFieldsValue(initialValues);
+    }, [form, formOpen, initialValues]);
+
     return (
         <ProModal
             ref={modalRef}
+            afterOpenChange={setFormOpen}
             title={<Title>编辑用户</Title>}
             onOk={form.submit}
             width={460}
@@ -218,20 +227,19 @@ const Info = forwardRef<InfoRef, InfoProps>(({
                 mask: {closable: true},
                 okText: "提交",
                 cancelText: "取消",
-                forceRender: true,
+                destroyOnHidden: true,
                 style: {
                     top: 100,
                     paddingBottom: 100,
                 },
                 afterClose: () => {
-                    form.resetFields();
                     setUserInfo(undefined);
                     setFormSubmitting(false);
                     setAvatarUploading(false);
                 },
             } as any}
         >
-            <Form form={form} layout="vertical" onFinish={handleSubmit} className={styles.form}>
+            <Form ref={mountedForm} form={form} initialValues={initialValues} clearOnDestroy layout="vertical" onFinish={handleSubmit} className={styles.form}>
                 <div className={styles.avatarContainer}>
                     <Upload ref={avatarUploadRef}/>
                     <div className={styles.avatarUpload} onClick={uploadAvatar}>

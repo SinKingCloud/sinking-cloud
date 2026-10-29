@@ -258,7 +258,7 @@ const configItems: ConfigItem[] = [
 
 export default (): React.ReactNode => {
     const theme = useTheme();
-    const {styles} = useStyles({isCompactMode: Boolean(theme?.isCompactTheme?.())});
+    const {styles} = useStyles(useMemo(() => ({isCompactMode: Boolean(theme?.isCompactTheme?.())}), [theme?.isCompactTheme?.()]));
     const control = useControl(AdminPageCode.SYSTEM_CONFIG);
     const visibleItems = useMemo(() => {
         return configItems.filter((item) => control.hasControl(item.control));

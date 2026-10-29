@@ -39,14 +39,14 @@ export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
     const {styles} = useStyles();
     const infoRef = useRef<InfoRef>(null);
     const [enumData, enumLoading] = useEnum(["pay.order", "pay.order_log", "pay.pay"]);
-    const orderEnums = enumData["pay.order"] || {};
-    const logEnums = enumData["pay.order_log"] || {};
+    const orderEnums = enumData?.["pay.order"] || {};
+    const logEnums = enumData?.["pay.order_log"] || {};
     const orderType = orderEnums.type || {};
     const orderStatus = orderEnums.status || {};
     const payStatus = orderEnums.pay_status || {};
     const logTypes = logEnums.type || {};
     const operatorTypes = logEnums.operator_type || {};
-    const payTypes = enumData["pay.pay"]?.type || {};
+    const payTypes = enumData?.["pay.pay"]?.type || {};
     const filterFields = [
         {name: "type", label: "订单类型", options: orderType},
         {name: "status", label: "订单状态", options: orderStatus},
@@ -65,22 +65,22 @@ export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
         {
             title: "订单信息", dataIndex: "name", width: 170, ellipsis: {showTitle: false},
             render: (_: unknown, record: any) => <div className="order-cell">
-                <Tag color={typeColors[String(record.type)] || "default"}>{getEnumText(orderType, record.type)}</Tag>
-                <Typography.Text className="order-name" ellipsis={{tooltip: record.name || "-"}}>{record.name || "-"}</Typography.Text>
+                <Tag color={typeColors[String(record?.type)] || "default"}>{getEnumText(orderType, record?.type)}</Tag>
+                <Typography.Text className="order-name" ellipsis={{tooltip: record?.name || "-"}}>{record?.name || "-"}</Typography.Text>
             </div>,
         },
         {
             title: "金额", dataIndex: "amount", width: 155,
             render: (_: unknown, record: any) => <div className="order-cell">
-                <div className="order-value"><span className="order-label">应付</span><span className="order-amount">¥ {formatMoney(record.amount)}</span></div>
-                <div className="order-value"><span className="order-label">实付</span><span>¥ {formatMoney(record.pay_amount)}</span></div>
-                {Number(record.refund_amount) > 0 && <div className="order-value"><span className="order-label">退款</span><span>¥ {formatMoney(record.refund_amount)}</span></div>}
+                <div className="order-value"><span className="order-label">应付</span><span className="order-amount">¥ {formatMoney(record?.amount)}</span></div>
+                <div className="order-value"><span className="order-label">实付</span><span>¥ {formatMoney(record?.pay_amount)}</span></div>
+                {Number(record?.refund_amount) > 0 && <div className="order-value"><span className="order-label">退款</span><span>¥ {formatMoney(record?.refund_amount)}</span></div>}
             </div>,
         },
         {
             title: "支付方式", dataIndex: "pay_type", width: 120,
             render: (_: unknown, record: any) => <div className="order-cell">
-                <PayType data={payTypes} value={record.pay_type}/>
+                <PayType data={payTypes} value={record?.pay_type}/>
             </div>,
         },
         {
@@ -88,11 +88,11 @@ export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
             render: (_: unknown, record: any) => <div className="order-cell">
                 <div className="order-value">
                     <span className="order-label">订单状态:</span>
-                    <Tag color={statusColors[String(record.status)] || "default"}>{getEnumText(orderStatus, record.status)}</Tag>
+                    <Tag color={statusColors[String(record?.status)] || "default"}>{getEnumText(orderStatus, record?.status)}</Tag>
                 </div>
                 <div className="order-value">
                     <span className="order-label">支付状态:</span>
-                    <Tag color={payStatusColors[String(record.pay_status)] || "default"}>{getEnumText(payStatus, record.pay_status)}</Tag>
+                    <Tag color={payStatusColors[String(record?.pay_status)] || "default"}>{getEnumText(payStatus, record?.pay_status)}</Tag>
                 </div>
             </div>,
         },
@@ -101,7 +101,7 @@ export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
             render: (_: unknown, record: any) => <div className="order-cell">
                 {dateFields.map((item) => <div className="order-value" key={item.name}>
                     <span className="order-label">{item.label.slice(0, 2)}于:</span>
-                    <span>{record[item.name] && !String(record[item.name]).startsWith("0001-01-01") ? record[item.name] : "-"}</span>
+                    <span>{record?.[item.name] && !String(record?.[item.name]).startsWith("0001-01-01") ? record?.[item.name] : "-"}</span>
                 </div>)}
             </div>,
         },
@@ -143,9 +143,9 @@ export default ({hero}: {hero: React.ReactElement}): React.ReactNode => {
             request={async (params, sort) => {
                 const response = await getOrderList({body: getParams(params, sort)});
                 if (response?.code !== 200) throw new Error(response?.message || "获取订单记录失败");
-                return {data: response.data?.list, total: response.data?.total ?? 0, success: true};
+                return {data: Array.isArray(response?.data?.list) ? response?.data?.list?.filter(Boolean) : [], total: response?.data?.total ?? 0, success: true};
             }}
-            onRequestError={(error) => message.error(error.message)}
+            onRequestError={(error) => message.error(error?.message || "获取订单记录失败")}
             pagination={{unit: "条"}}
             paginationAffix={{offsetBottom: 15}}
         />

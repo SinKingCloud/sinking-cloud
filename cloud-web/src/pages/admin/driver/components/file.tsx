@@ -2,14 +2,9 @@ import React, {useRef, useState} from "react";
 import {App, Button, Checkbox, Dropdown, Form, Select, Space} from "antd";
 import {ProModal, ProModalRef, ProTable, ProTableRef, Title} from "sinking-antd";
 import defaultSettings from "@/../config/defaultSettings";
-import {getData} from "@/utils/page";
+import {buildOptions, buildValueEnum, dateRangeTransform, getData, normalizeIds} from "@/utils/page";
 import useEnum, {clearEnumCache} from "@/utils/enum";
-import {
-    deleteFile,
-    getFileList,
-    updateFile,
-} from "@/service/admin/driver";
-import {buildOptions, buildValueEnum, dateRangeTransform, normalizeIds} from "@/utils/page";
+import {deleteFile, getFileList, updateFile,} from "@/service/admin/driver";
 import {copyText, formatSize} from "@/utils/string";
 import FileUploadModal, {type FileUploadModalRef} from "./upload";
 import {AdminControlCode} from "@/utils/permission";
@@ -43,13 +38,13 @@ const FileManage: React.FC<FileManageProps> = ({control}) => {
 
     const getFileUrl = (record: any) => {
         if (record?.url) {
-            return record.url;
+            return record?.url;
         }
         if (record?.scene_id && record?.hash) {
-            return `/preview/${record.scene_id}/${record.hash}`;
+            return `/preview/${record?.scene_id}/${record?.hash}`;
         }
-        if (record?.path && /^https?:\/\//i.test(record.path)) {
-            return record.path;
+        if (record?.path && /^https?:\/\//i.test(record?.path)) {
+            return record?.path;
         }
         return "";
     };

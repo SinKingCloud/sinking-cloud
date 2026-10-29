@@ -1,5 +1,5 @@
-import {forwardRef, useState, useImperativeHandle, useRef} from "react";
-import {Modal, Spin, App} from "antd";
+import {forwardRef, useImperativeHandle, useRef, useState} from "react";
+import {App, Modal, Spin} from "antd";
 import GoCaptcha from "go-captcha-react";
 import {getCaptcha} from "@/service/common/captcha";
 import {getRandStr} from "@/utils/string";
@@ -120,15 +120,15 @@ const Captcha = forwardRef<CaptchaRef>((_, ref): any => {
                     const d = res?.data;
                     if (d) {
                         setData({
-                            key: d.key,
-                            image: d.image_base64,
-                            thumb: d.tile_base64,
-                            thumbWidth: d.tile_width,
-                            thumbHeight: d.tile_height,
-                            tileX: d.tile_x,
-                            tileY: d.tile_y,
-                            width: d.width,
-                            height: d.height,
+                            key: d?.key,
+                            image: d?.image_base64,
+                            thumb: d?.tile_base64,
+                            thumbWidth: d?.tile_width,
+                            thumbHeight: d?.tile_height,
+                            tileX: d?.tile_x,
+                            tileY: d?.tile_y,
+                            width: d?.width,
+                            height: d?.height,
                         });
                     }
                 },

@@ -34,7 +34,7 @@ export default (): React.ReactNode => {
                         {value || "-"}
                     </Typography.Text>
                     <Typography.Text type="secondary"
-                                     copyable={record?.request_id ? {text: record.request_id} : false}>
+                                     copyable={record?.request_id ? {text: record?.request_id} : false}>
                         {record?.request_id || "-"}
                     </Typography.Text>
                 </Space>
@@ -68,7 +68,7 @@ export default (): React.ReactNode => {
             hideInSearch: true,
             render: (_: any, record: any) => (
                 <Space orientation="vertical" size={2}>
-                    <Typography.Text copyable={record?.request_ip ? {text: record.request_ip} : false}>
+                    <Typography.Text copyable={record?.request_ip ? {text: record?.request_ip} : false}>
                         {record?.request_ip || "-"}
                     </Typography.Text>
                     <Typography.Text type="secondary">

@@ -20,7 +20,7 @@ export function getRandStr(length = 16) {
 export const normalizeConfig = (config: any) => {
     if (typeof config === "string") {
         try {
-            return JSON.parse(config || "{}");
+            return JSON.parse(config || "{}") || {};
         } catch (_) {
             return {};
         }

@@ -56,12 +56,13 @@ const MindPage: React.FC = () => {
     }, [editorValue]);
 
     const showEditor = useCallback((record: MindDocument, value: MindValue) => {
+        if (!record?.id || !value) return;
         const nextValue = cloneValue(value);
         const nextRecord = {...record, value: nextValue};
         editorValueRef.current = nextValue;
         editorDirtyRef.current = false;
         lastSavedRef.current.clear();
-        lastSavedRef.current.set(record.id, getMindValueSignature(nextValue));
+        lastSavedRef.current.set(record?.id, getMindValueSignature(nextValue));
         setEditorValue(nextValue);
         setEditorClosing(false);
         setSelectedDocument(nextRecord);
@@ -82,10 +83,12 @@ const MindPage: React.FC = () => {
     }, []);
     const categories = useMindCategories({onDeleted: handleCategoryDeleted});
     const handleDocumentUpdated = useCallback((record: MindDocument) => {
-        setSelectedDocument((current) => current?.id === record.id ? {...current, ...record} : current);
+        if (!record?.id) return;
+        setSelectedDocument((current) => current?.id === record?.id ? {...current, ...record} : current);
     }, []);
     const handleDocumentDeleted = useCallback((record: MindDocument) => {
-        if (selectedDocumentRef.current?.id !== record.id) return;
+        if (!record?.id) return;
+        if (selectedDocumentRef.current?.id !== record?.id) return;
         setSelectedDocument(undefined);
         versions.reset();
     }, [versions.reset]);
@@ -179,7 +182,7 @@ const MindPage: React.FC = () => {
     const persistDocument = useCallback((value?: MindValue, stats?: MindStats, reason: MindSaveReason = "manual") => {
         const document = selectedDocumentRef.current;
         if (!document || (reason === "auto" && !editorDirtyRef.current)) return Promise.resolve();
-        const dataId = document.id;
+        const dataId = document?.id;
         const nextValue = cloneValue(value || editorRef.current?.getValue() || editorValueRef.current);
         const signature = getMindValueSignature(nextValue);
         const saveType = reason === "auto" ? VERSION_AUTO : VERSION_MANUAL;
@@ -222,20 +225,20 @@ const MindPage: React.FC = () => {
 
     const restoreVersion = async (record: MindVersionRecord) => {
         const document = selectedDocumentRef.current;
-        if (!document) return;
+        if (!document?.id || !record?.id) return;
         setEditorClosing(true);
         try {
             if (editorDirtyRef.current) {
                 await editorRef.current?.save("auto");
             }
-            await waitForDocumentSaves(document.id);
+            await waitForDocumentSaves(document?.id);
             const response = await restoreMindVersion({body: {
-                data_id: Number(document.id),
-                id: Number(record.id),
+                data_id: Number(document?.id),
+                id: Number(record?.id),
             }});
             const restored = toMindDocument(getResponseData<any>(response, "恢复版本失败"));
-            if (!restored.value) throw new Error("恢复后的导图内容为空");
-            showEditor(restored, restored.value);
+            if (!restored?.value) throw new Error("恢复后的导图内容为空");
+            showEditor(restored, restored?.value);
             documents.reloadDocuments();
             message.success("版本已恢复");
         } finally {
@@ -244,15 +247,16 @@ const MindPage: React.FC = () => {
     };
 
     const confirmRestoreVersion = (record: MindVersionRecord) => {
-        if (record.value
+        if (!record?.id) return;
+        if (record?.value
             && getMindValueSignature(editorRef.current?.getValue() || editorValueRef.current)
-            === getMindValueSignature(record.value)) {
+            === getMindValueSignature(record?.value)) {
             message.info("当前内容已与该版本一致");
             return;
         }
         modal.confirm({
             title: "恢复此版本？",
-            content: `将使用 ${record.createTime} 保存的内容替换当前画布。`,
+            content: `将使用 ${record?.createTime} 保存的内容替换当前画布。`,
             okText: "确认",
             cancelText: "取消",
             onOk: async () => {
@@ -299,7 +303,7 @@ const MindPage: React.FC = () => {
             if (editorDirtyRef.current) {
                 await editorRef.current?.save("auto");
             }
-            await waitForDocumentSaves(document.id);
+            await waitForDocumentSaves(document?.id);
             setSelectedDocument(undefined);
             versions.reset();
         } catch (error) {

@@ -1,4 +1,4 @@
-import React, {forwardRef, useImperativeHandle, useRef, useState} from "react";
+import React, {forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState} from "react";
 import {App, Form, Input} from "antd";
 import {useModel} from "umi";
 import {ProModal, ProModalRef, Title} from "sinking-antd";
@@ -18,6 +18,8 @@ const Password = forwardRef<PasswordRef, PasswordProps>((props, ref) => {
     const {message} = App.useApp();
     const user = useModel("user");
     const [form] = Form.useForm();
+    const [formOpen, setFormOpen] = useState(false);
+    const mountedForm = useRef<any>(null);
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const [loading, setLoading] = useState(false);
 
@@ -30,7 +32,6 @@ const Password = forwardRef<PasswordRef, PasswordProps>((props, ref) => {
             if (pass === false) {
                 return;
             }
-            form.resetFields();
             modalRef.current?.show();
         },
     }));
@@ -55,17 +56,20 @@ const Password = forwardRef<PasswordRef, PasswordProps>((props, ref) => {
         });
     };
 
+    useLayoutEffect(() => {
+        if (!formOpen || !mountedForm.current) return;
+        form.resetFields();
+    }, [form, formOpen]);
+
     return (
         <ProModal
             ref={modalRef}
+            afterOpenChange={setFormOpen}
             title={<Title>修改密码</Title>}
             width={350}
             okText="确认"
             onOk={form.submit}
             onCancel={() => modalRef.current?.hide()}
-            afterClose={() => {
-                form.resetFields();
-            }}
             modalProps={{
                 confirmLoading: loading,
                 okButtonProps: {style: {minWidth: 72}},
@@ -75,9 +79,8 @@ const Password = forwardRef<PasswordRef, PasswordProps>((props, ref) => {
                     paddingBottom: 100,
                 },
                 destroyOnHidden: true,
-                forceRender: true,
             } as any}>
-            <Form form={form} layout="vertical" onFinish={handleFinish}>
+            <Form ref={mountedForm} form={form} clearOnDestroy layout="vertical" onFinish={handleFinish}>
                 <Form.Item
                     label="新账户密码"
                     name="password"

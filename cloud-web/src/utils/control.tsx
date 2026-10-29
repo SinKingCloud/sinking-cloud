@@ -75,7 +75,7 @@ export function useControl(code?: string): UseControlResult {
                 if (!mounted) {
                     return;
                 }
-                const data = Array.isArray(res?.data) ? res.data : [];
+                const data = Array.isArray(res?.data) ? res?.data?.filter(Boolean) : [];
                 controlCache[currentCode] = data;
                 setControls(data);
             },
@@ -101,7 +101,7 @@ export function useControl(code?: string): UseControlResult {
         const map = new Map<string, ControlItem>();
         controls.forEach((item) => {
             if (item?.code) {
-                map.set(item.code, item);
+                map.set(item?.code, item);
             }
         });
         return map;

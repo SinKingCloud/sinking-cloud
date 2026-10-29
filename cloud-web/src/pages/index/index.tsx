@@ -680,7 +680,7 @@ export default () => {
         const token = getLoginToken();
         if (!token) return;
         let active = true;
-        user?.getWebUser().then(data => {
+        user?.getWebUser().then((data: any) => {
             if (active && getLoginToken() === token) {
                 user?.setWeb(data);
             }

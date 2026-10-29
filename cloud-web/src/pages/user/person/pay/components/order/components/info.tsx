@@ -420,14 +420,14 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref): React.ReactNode => {
         setLogLoading(true);
         await getOrderLogList({
             body: {
-                order_id: Number(record.id),
+                order_id: Number(record?.id),
                 page,
                 page_size: LOG_PAGE_SIZE,
                 order_by_field: "id",
                 order_by_type: "desc",
             },
             onSuccess: (res: any) => {
-                setLogs(res?.data?.list || []);
+                setLogs(Array.isArray(res?.data?.list) ? res?.data?.list?.filter(Boolean) : []);
                 setLogTotal(Number(res?.data?.total || 0));
                 setLogLoaded(true);
             },
@@ -557,10 +557,10 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref): React.ReactNode => {
                     ) : null}
                     {hasValue(item?.operator_id) ? (
                         <span className="operator-id">
-                            <span className="operator-id-text">账号ID：{item.operator_id}</span>
+                            <span className="operator-id-text">账号ID：{item?.operator_id}</span>
                             <Typography.Text
                                 className="operator-copy"
-                                copyable={{text: String(item.operator_id), tooltips: ["复制", "复制成功"]}}
+                                copyable={{text: String(item?.operator_id), tooltips: ["复制", "复制成功"]}}
                             />
                         </span>
                     ) : null}
@@ -592,7 +592,7 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref): React.ReactNode => {
                                 </div>
                                 <Typography.Text className="log-time">{formatTime(item?.create_time)}</Typography.Text>
                             </div>
-                            {hasValue(item?.content) ? <div className="log-content">{item.content}</div> : null}
+                            {hasValue(item?.content) ? <div className="log-content">{item?.content}</div> : null}
                             {renderLogExtra(item)}
                         </div>
                     </div>
@@ -608,7 +608,7 @@ const Info = forwardRef<InfoRef, InfoProps>((props, ref): React.ReactNode => {
             width={600}
             modalProps={{
                 footer: null,
-                forceRender: true,
+
                 style: {top: 100, paddingBottom: 100},
                 mask: {closable: true},
                 styles: {

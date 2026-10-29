@@ -94,7 +94,7 @@ export const useMindCategories = ({onDeleted}: UseMindCategoriesOptions) => {
             if (cursor.nextLastId) body.cursor_last_id = cursor.nextLastId;
             const response = await getMindTypeList({body});
             const result = getResponseData<PageResult<any>>(response, "获取分类失败");
-            const nextItems = (result?.list || []).map(toMindCategory).filter((item) => item.id);
+            const nextItems = (Array.isArray(result?.list) ? result?.list : []).map(toMindCategory).filter((item) => item.id);
             setCustomCategories((current) => {
                 const source = reset ? nextItems : [...current, ...nextItems];
                 return Array.from(new Map(source.map((item) => [item.id, item])).values());
@@ -148,9 +148,9 @@ export const useMindCategories = ({onDeleted}: UseMindCategoriesOptions) => {
     };
 
     const openEditCategory = (category: MindCategory) => {
-        if (category.preset) return;
+        if (!category?.id || category?.preset) return;
         setEditingCategory(category);
-        form.setFieldsValue({name: category.name});
+        form.setFieldsValue({name: category?.name});
         setFormOpen(true);
     };
 
@@ -165,11 +165,11 @@ export const useMindCategories = ({onDeleted}: UseMindCategoriesOptions) => {
             setSubmitting(true);
             if (editingCategory) {
                 const response = await updateMindType({body: {
-                    id: Number(editingCategory.id),
+                    id: Number(editingCategory?.id),
                     name: values.name,
                 }});
                 getResponseData(response, "更新分类失败");
-                setCustomCategories((items) => items.map((item) => item.id === editingCategory.id ? {
+                setCustomCategories((items) => items.map((item) => item.id === editingCategory?.id ? {
                     ...item,
                     name: values.name.trim(),
                 } : item));
@@ -179,8 +179,9 @@ export const useMindCategories = ({onDeleted}: UseMindCategoriesOptions) => {
             }
             const response = await createMindType({body: {name: values.name}});
             const category = toMindCategory(getResponseData<any>(response, "创建分类失败"));
-            setCustomCategories((items) => [category, ...items.filter((item) => item.id !== category.id)]);
-            setActiveCategoryId(category.id);
+            if (!category?.id) throw new Error("创建分类失败");
+            setCustomCategories((items) => [category, ...items.filter((item) => item.id !== category?.id)]);
+            setActiveCategoryId(category?.id);
             setFormOpen(false);
             message.success("分类已创建");
         } catch (error) {
@@ -192,21 +193,21 @@ export const useMindCategories = ({onDeleted}: UseMindCategoriesOptions) => {
     };
 
     const deleteCategory = (category: MindCategory) => {
-        if (category.preset) return;
+        if (!category?.id || category?.preset) return;
         modal.confirm({
             title: "删除分类",
-            content: `删除${category.name}后，该分类下的导图会归入全部导图。`,
+            content: `删除${category?.name}后，该分类下的导图会归入全部导图。`,
             okText: "删除",
             okButtonProps: {danger: true},
             onOk: async () => {
                 try {
-                    const response = await deleteMindType({body: {id: Number(category.id)}});
+                    const response = await deleteMindType({body: {id: Number(category?.id)}});
                     getResponseData(response, "删除分类失败");
-                    setCustomCategories((items) => items.filter((item) => item.id !== category.id));
-                    if (activeCategoryId === category.id) {
+                    setCustomCategories((items) => items.filter((item) => item.id !== category?.id));
+                    if (activeCategoryId === category?.id) {
                         setActiveCategoryId(ALL_CATEGORY_ID);
                     }
-                    onDeleted(category.id);
+                    onDeleted(category?.id);
                     message.success("分类已删除");
                 } catch (error) {
                     message.error(error instanceof Error ? error.message : "删除分类失败");

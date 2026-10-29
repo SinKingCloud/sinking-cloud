@@ -1,4 +1,4 @@
-import React, {forwardRef, useImperativeHandle, useRef, useState} from "react";
+import React, {forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState} from "react";
 import {App, Form, Select} from "antd";
 import {ProModal, ProModalRef, Title} from "sinking-antd";
 import {updateUser} from "@/service/admin/user";
@@ -25,6 +25,9 @@ const Batch = forwardRef<BatchRef, BatchProps>(({
     const [enumData, enumLoading] = useEnum(["user.user"]) as any;
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const [form] = Form.useForm();
+    const [initialValues, setInitialValues] = useState<any>({});
+    const [formOpen, setFormOpen] = useState(false);
+    const mountedForm = useRef<any>(null);
     const [ids, setIds] = useState<number[]>([]);
     const [submitting, setSubmitting] = useState(false);
     const hasUpdateControl = control.hasControl(AdminControlCode.WEB_USER_UPDATE);
@@ -41,7 +44,7 @@ const Batch = forwardRef<BatchRef, BatchProps>(({
             return;
         }
         setIds(userIds);
-        form.resetFields();
+        setInitialValues({});
         modalRef.current?.show();
     };
 
@@ -78,9 +81,16 @@ const Batch = forwardRef<BatchRef, BatchProps>(({
         });
     };
 
+    useLayoutEffect(() => {
+        if (!formOpen || !mountedForm.current) return;
+        form.resetFields();
+        form.setFieldsValue(initialValues);
+    }, [form, formOpen, initialValues]);
+
     return (
         <ProModal
             ref={modalRef}
+            afterOpenChange={setFormOpen}
             title={<Title>批量编辑</Title>}
             onOk={form.submit}
             width={320}
@@ -88,7 +98,7 @@ const Batch = forwardRef<BatchRef, BatchProps>(({
                 confirmLoading: submitting,
                 okText: "提交",
                 cancelText: "取消",
-                forceRender: true,
+                destroyOnHidden: true,
                 style: {
                     top: 100,
                     paddingBottom: 100,
@@ -97,12 +107,11 @@ const Batch = forwardRef<BatchRef, BatchProps>(({
                     closable: true,
                 },
                 afterClose: () => {
-                    form.resetFields();
                     setIds([]);
                     setSubmitting(false);
                 },
             } as any}>
-            <Form form={form} layout="vertical" onFinish={handleSubmit}>
+            <Form ref={mountedForm} form={form} initialValues={initialValues} clearOnDestroy layout="vertical" onFinish={handleSubmit}>
                 <Form.Item name="status" label="用户状态" rules={[{required: true, message: "请选择用户状态"}]}>
                     <Select loading={enumLoading} placeholder="请选择用户状态" options={statusOptions as any}/>
                 </Form.Item>

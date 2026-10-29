@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import {App, Button, Card, ConfigProvider, Segmented, Spin, Tooltip, Typography} from "antd";
 import {createStyles} from "antd-style";
 import {Body, Icon, useTheme} from "sinking-antd";
@@ -291,7 +291,7 @@ const useStyles = createStyles(({css, token, isDarkMode}, {isCompactMode}: {isCo
 export default (): React.ReactNode => {
     const {message} = App.useApp();
     const theme = useTheme();
-    const {styles} = useStyles({isCompactMode: theme?.isCompactTheme?.() || false});
+    const {styles} = useStyles(useMemo(() => ({isCompactMode: theme?.isCompactTheme?.() || false}), [theme?.isCompactTheme?.()]));
     const location = useLocation();
     const rechargeRef = useRef<RechargeRef>(null);
     const [tab, setTab] = useState<"balance" | "order">(() => getTabFromLocation(location) === "order" ? "order" : "balance");
@@ -306,7 +306,7 @@ export default (): React.ReactNode => {
                 message.error(response?.message || "获取余额信息失败");
                 return;
             }
-            setBalance(response.data || {});
+            setBalance(response?.data || {});
         } finally {
             setBalanceLoading(false);
         }
@@ -345,7 +345,7 @@ export default (): React.ReactNode => {
                             <Tooltip title={balance ? `账户总余额 ¥ ${formatMoney(totalMoney)}` : "账户总余额"}>
                                 <span className="balance-label">可用余额<Icon type="InfoCircleOutlined"/></span>
                             </Tooltip>
-                            <div className="balance-value"><span>¥</span><Typography.Text ellipsis={{tooltip: balance ? formatMoney(balance.money) : "-"}}>{balance ? formatMoney(balance.money) : "-"}</Typography.Text></div>
+                            <div className="balance-value"><span>¥</span><Typography.Text ellipsis={{tooltip: balance ? formatMoney(balance?.money) : "-"}}>{balance ? formatMoney(balance?.money) : "-"}</Typography.Text></div>
                         </div>
                         <ConfigProvider wave={{disabled: true}}>
                             <Button className="balance-recharge" color="primary" variant="solid"
@@ -358,7 +358,7 @@ export default (): React.ReactNode => {
                             {field: "total_recharge", label: "累计充值"},
                             {field: "total_consume", label: "累计消费"},
                         ].map((item) => <div className="balance-summary-item" key={item.field}>
-                            <Typography.Text className="balance-summary-value" ellipsis={{tooltip: balance ? formatMoney(balance[item.field]) : "-"}}>{balance ? `¥ ${formatMoney(balance[item.field])}` : "-"}</Typography.Text>
+                            <Typography.Text className="balance-summary-value" ellipsis={{tooltip: balance ? formatMoney(balance?.[item.field]) : "-"}}>{balance ? `¥ ${formatMoney(balance?.[item.field])}` : "-"}</Typography.Text>
                             <span className="balance-summary-label">{item.label}</span>
                         </div>)}
                     </div>

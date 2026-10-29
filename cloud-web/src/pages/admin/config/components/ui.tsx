@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useMemo} from "react";
 import {Form, Space} from "antd";
 import {createStyles} from "antd-style";
 import {useTheme} from "sinking-antd";
@@ -46,7 +46,7 @@ const useStyles = createStyles(({css, token}, {isCompactMode}: {isCompactMode: b
 
 const UiConfigForm = ({title, prefix}: UiConfigFormProps): React.ReactNode => {
     const theme = useTheme();
-    const {styles} = useStyles({isCompactMode: Boolean(theme?.isCompactTheme?.())});
+    const {styles} = useStyles(useMemo(() => ({isCompactMode: Boolean(theme?.isCompactTheme?.())}), [theme?.isCompactTheme?.()]));
     const {form, dataLoading, submitLoading, saveConfig, resetForm} = useSystemConfig({
         request: uiConfig,
     });
@@ -91,7 +91,7 @@ const UiConfigForm = ({title, prefix}: UiConfigFormProps): React.ReactNode => {
 const UiView: React.FC = () => {
     const theme = useTheme();
     const isCompactMode = Boolean(theme?.isCompactTheme?.());
-    const {styles} = useStyles({isCompactMode});
+    const {styles} = useStyles(useMemo(() => ({isCompactMode}), [isCompactMode]));
 
     return (
         <Space className={styles.wrapper} orientation="vertical" size={isCompactMode ? 12 : 16}>

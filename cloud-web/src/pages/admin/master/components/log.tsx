@@ -96,7 +96,7 @@ const MasterLog = forwardRef<MasterLogRef, MasterLogProps>(({control, typeData},
                         {value || "-"}
                     </Typography.Text>
                     <Typography.Text className="log-request" type="secondary"
-                                     copyable={record?.request_id ? {text: record.request_id} : false}>
+                                     copyable={record?.request_id ? {text: record?.request_id} : false}>
                         {record?.request_id || "-"}
                     </Typography.Text>
                 </div>
@@ -173,7 +173,7 @@ const MasterLog = forwardRef<MasterLogRef, MasterLogProps>(({control, typeData},
                 if (res?.code !== 200) {
                     throw new Error(res?.message || "获取操作日志失败");
                 }
-                return {data: res.data?.list || [], total: res.data?.total || 0, success: true};
+                return {data: Array.isArray(res?.data?.list) ? res?.data?.list?.filter(Boolean) : [], total: res?.data?.total || 0, success: true};
             }}
             search={{
                 placeholder: "搜索操作日志",
