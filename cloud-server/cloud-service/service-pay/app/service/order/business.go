@@ -168,6 +168,9 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 	if _, ok := pay_type.Map()[payType]; !ok {
 		return 0, errors.New("支付类型不合法")
 	}
+	if s.channelService == nil {
+		return 0, errors.New("支付通道服务未初始化")
+	}
 	channel, err := s.channelService.GetPayChannel(payType)
 	if err != nil {
 		return 0, err
@@ -176,6 +179,9 @@ func (s *service) Create(userId int64, name string, Type int, payType string, am
 		return 0, errors.New("支付类型不合法")
 	}
 	payConfig := s.channelService.GetConfig(false)
+	if payConfig == nil {
+		return 0, errors.New("获取支付配置失败")
+	}
 	expireTime := str.DateTime(time.Now().Add(time.Duration(payConfig.Expire) * time.Minute))
 	if amount <= 0 {
 		amount = 0

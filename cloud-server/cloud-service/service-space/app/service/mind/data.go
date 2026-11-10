@@ -33,6 +33,9 @@ func (s *service) CreateData(userId int64, typeId int64, title string, describe 
 	if err != nil {
 		return nil, err
 	}
+	if s.configService == nil {
+		return nil, errors.New("配置服务未初始化")
+	}
 	settings := s.configService.GetSystemConfig(constant.MindGroup, false)
 	createMax, _ := strconv.ParseInt(strings.TrimSpace(settings[constant.MindCreateMax]), 10, 64)
 	if createMax != 0 && createMax < 10 {
@@ -107,6 +110,9 @@ func (s *service) CreateData(userId int64, typeId int64, title string, describe 
 func (s *service) CopyData(userId int64, id int64) (*Data, error) {
 	if userId <= 0 || id <= 0 {
 		return nil, errors.New("参数错误")
+	}
+	if s.configService == nil {
+		return nil, errors.New("配置服务未初始化")
 	}
 	settings := s.configService.GetSystemConfig(constant.MindGroup, false)
 	createMax, _ := strconv.ParseInt(strings.TrimSpace(settings[constant.MindCreateMax]), 10, 64)

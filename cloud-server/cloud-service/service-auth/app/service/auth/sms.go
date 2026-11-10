@@ -36,6 +36,9 @@ func (s *service) CheckSms(phone string, code string) bool {
 
 // SendSms 发送短信验证码
 func (s *service) SendSms(phone string) bool {
+	if s.configService == nil {
+		return false
+	}
 	//发送间隔
 	key := constant.CacheNameWithSms + phone
 	_, exists := s.cache.Get(key)

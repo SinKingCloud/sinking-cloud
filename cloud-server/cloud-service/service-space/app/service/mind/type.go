@@ -23,6 +23,9 @@ func (s *service) CreateType(userId int64, name string) (*Type, error) {
 	if name == "" {
 		return nil, errors.New("分类名称不能为空")
 	}
+	if s.configService == nil {
+		return nil, errors.New("配置服务未初始化")
+	}
 	settings := s.configService.GetSystemConfig(constant.MindGroup, false)
 	typeMax, _ := strconv.ParseInt(strings.TrimSpace(settings[constant.MindTypeMax]), 10, 64)
 	if typeMax != 0 && typeMax < 10 {

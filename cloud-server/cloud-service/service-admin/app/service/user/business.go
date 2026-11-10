@@ -251,6 +251,9 @@ func (s *service) DeleteById(id int64) error {
 
 // AssignRole 分配用户角色
 func (s *service) AssignRole(userId int64, roleIds []int64) error {
+	if s.rbacService == nil {
+		return errors.New("权限服务未初始化")
+	}
 	info, err := s.GetInfo(userId, false)
 	if err != nil {
 		return errors.Join(errors.New("查询用户失败"), err)

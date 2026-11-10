@@ -203,8 +203,11 @@ func (s *service) CreateRechargeOrder(userId int64, money int, payType string) (
 	if money <= 0 {
 		return 0, errors.New("充值金额必须大于0")
 	}
+	if s.orderService == nil {
+		return 0, errors.New("订单服务未初始化")
+	}
 	if s.channelService == nil {
-		return 0, errors.New("获取支付配置失败")
+		return 0, errors.New("支付通道服务未初始化")
 	}
 	payConfig := s.channelService.GetConfig(false)
 	if payConfig == nil {

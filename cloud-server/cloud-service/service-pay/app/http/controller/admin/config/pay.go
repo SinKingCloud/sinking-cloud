@@ -47,6 +47,11 @@ func (Controller) Pay(c *context.Context) {
 		c.Success("更新配置成功")
 		return
 	}
+	data := service.Channel.GetConfig(false)
+	if data == nil {
+		c.Error("获取支付配置失败")
+		return
+	}
 	_ = service2.User.CreateSystemUserLog(c.GetUserInfo().Id, c.GetRequestId(), c.GetRequestIp(), user_log_type.EventShow, "查看支付配置", "查看支付配置")
-	c.SuccessWithData("获取数据成功", service.Channel.GetConfig(false))
+	c.SuccessWithData("获取数据成功", data)
 }

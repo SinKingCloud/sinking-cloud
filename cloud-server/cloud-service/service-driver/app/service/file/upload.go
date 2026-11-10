@@ -205,6 +205,9 @@ func (s *service) chunkUploadInit(ctx context.Context, client storage.Storage, s
 
 // prepareUpload 加载上传场景和存储客户端。
 func (s *service) prepareUpload(sceneId int64, isLogin bool) (*model.Scene, storage.Storage, error) {
+	if s.sceneService == nil {
+		return nil, nil, errors.New("场景服务未初始化")
+	}
 	sceneInfo, err := s.sceneService.FindById(sceneId, false)
 	if err != nil {
 		return nil, nil, errors.Join(errors.New("获取上传场景失败"), err)
@@ -214,6 +217,9 @@ func (s *service) prepareUpload(sceneId int64, isLogin bool) (*model.Scene, stor
 	}
 	if sceneInfo.Status != scene_status.Enable {
 		return nil, nil, errors.New("上传场景不可用")
+	}
+	if s.channelService == nil {
+		return nil, nil, errors.New("通道服务未初始化")
 	}
 	channelInfo, err := s.channelService.FindById(sceneInfo.ChannelId, false)
 	if err != nil {

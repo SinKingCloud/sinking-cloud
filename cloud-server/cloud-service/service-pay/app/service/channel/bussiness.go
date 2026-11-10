@@ -209,6 +209,9 @@ func (s *service) GetConfig(refresh bool) *Config {
 			}
 		}
 	}
+	if s.configService == nil {
+		return nil
+	}
 	values := s.configService.GetSystemConfig(constant.PayGroup, false)
 
 	minPay, _ := strconv.ParseFloat(strings.TrimSpace(values[constant.PayMin]), 64)
@@ -269,6 +272,9 @@ func (s *service) SetConfig(data *Config) error {
 	if data.Min > 0 && data.Max > 0 && data.Min > data.Max {
 		return errors.New("最小充值金额不能大于最大充值金额")
 	}
+	if s.configService == nil {
+		return errors.New("配置服务未初始化")
+	}
 	if data.Expire < 5 {
 		data.Expire = 5
 	}
@@ -306,6 +312,9 @@ func (s *service) SetConfig(data *Config) error {
 
 // GetPayResultPageUrl 获取支付结果页地址
 func (s *service) GetPayResultPageUrl(code int) string {
+	if s.configService == nil {
+		return "/pay?code=" + strconv.Itoa(code)
+	}
 	config := s.configService.GetSystemConfig(commonConstant.WebGroup, false)
 	webUrl := strings.TrimRight(strings.TrimSpace(config[commonConstant.WebUrl]), "/")
 	return webUrl + "/pay?code=" + strconv.Itoa(code)
@@ -313,6 +322,9 @@ func (s *service) GetPayResultPageUrl(code int) string {
 
 // GetPayUrl 获取支付跳转链接
 func (s *service) GetPayUrl(channelId int64, orderId int64, name string, money float64) (string, error) {
+	if s.configService == nil {
+		return "", errors.New("配置服务未初始化")
+	}
 	config := s.configService.GetSystemConfig(commonConstant.WebGroup, false)
 	apiUrl := strings.TrimRight(strings.TrimSpace(config[commonConstant.WebApi]), "/")
 	if apiUrl == "" {
@@ -366,6 +378,9 @@ func (s *service) ValidateCallback(channelId int64, req *http.Request, successFu
 // GetPayChannel 获取支付通道
 func (s *service) GetPayChannel(payType string) (channel *Channel, err error) {
 	payConfig := s.GetConfig(false)
+	if payConfig == nil {
+		return nil, errors.New("获取支付配置失败")
+	}
 	var channelID int64
 	if payType == pay_type.Alipay {
 		channelID = payConfig.Alipay

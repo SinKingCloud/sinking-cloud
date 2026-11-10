@@ -39,6 +39,9 @@ func (s *service) SaveData(userId int64, id int64, versionType int, remark strin
 			remark = "手动保存"
 		}
 	}
+	if s.configService == nil {
+		return nil, errors.New("配置服务未初始化")
+	}
 	settings := s.configService.GetSystemConfig(constant.MindGroup, false)
 	versionMax, _ := strconv.Atoi(strings.TrimSpace(settings[constant.MindVersionMax]))
 	if versionMax != 0 && versionMax < 10 {
@@ -151,6 +154,9 @@ func (s *service) GetVersion(userId int64, dataId int64, id int64) (*Version, er
 func (s *service) RestoreVersion(userId int64, dataId int64, id int64) (*Data, error) {
 	if userId <= 0 || dataId <= 0 || id <= 0 {
 		return nil, errors.New("参数错误")
+	}
+	if s.configService == nil {
+		return nil, errors.New("配置服务未初始化")
 	}
 	settings := s.configService.GetSystemConfig(constant.MindGroup, false)
 	versionMax, _ := strconv.Atoi(strings.TrimSpace(settings[constant.MindVersionMax]))

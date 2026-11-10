@@ -36,6 +36,9 @@ func (s *service) CheckMail(mail string, code string) bool {
 
 // SendMail 发送短信验证码
 func (s *service) SendMail(mail string) bool {
+	if s.configService == nil {
+		return false
+	}
 	//发送间隔
 	key := constant.CacheNameWithMail + mail
 	_, exists := s.cache.Get(key)

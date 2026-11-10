@@ -63,6 +63,9 @@ func (s *service) GetUrlByHash(sceneId int64, hash string) (string, error) {
 	if info.Path == "" {
 		return cacheError(errors.New("文件路径不存在"))
 	}
+	if s.channelService == nil {
+		return "", errors.New("通道服务未初始化")
+	}
 	client, err := s.channelService.GetStorage(info.ChannelId)
 	if err != nil {
 		return cacheError(errors.Join(errors.New("获取存储信息失败"), err))
@@ -117,6 +120,9 @@ func (s *service) DeleteByIds(ids []int64, clear bool) error {
 			}
 			paths[item.ChannelId] = append(paths[item.ChannelId], item.Path)
 		}
+	}
+	if len(paths) > 0 && s.channelService == nil {
+		return errors.New("通道服务未初始化")
 	}
 	err = s.repositoryFile.DeleteByIds(ids)
 	if err != nil {

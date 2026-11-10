@@ -338,6 +338,9 @@ func (s *service) GetRealAuthInfo(userId int64, refresh bool) (*RealAuthInfo, er
 		var files RealAuthFiles
 		if err := json.Unmarshal([]byte(authInfo.Files), &files); err == nil {
 			info.Files = &files
+			if s.config == nil {
+				return nil, errors.New("配置服务未初始化")
+			}
 			aliConfig := s.config.GetSystemConfig(commonConstant.AliGroup, false)
 			domain := strings.TrimRight(strings.TrimSpace(aliConfig[commonConstant.AliFaceDomain]), "/")
 			if domain != "" {
@@ -386,6 +389,9 @@ func (s *service) InitRealAuth(userId int64, authType int, cardName, cardNo, com
 		if companyNo == "" {
 			return "", "", errors.New("企业编码不能为空")
 		}
+	}
+	if s.config == nil {
+		return "", "", errors.New("配置服务未初始化")
 	}
 	lockKey := constant.LockRealAuth + strconv.FormatInt(userId, 10)
 	if !s.cache.Lock(lockKey, constant.LockTimeRealAuth) {

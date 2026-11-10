@@ -10,6 +10,12 @@ import (
 
 // GenToken 生成连接token
 func (s *service) GenToken(session string) (string, error) {
+	if s.authService == nil {
+		return "", errors.New("认证服务未初始化")
+	}
+	if s.socketService == nil {
+		return "", errors.New("消息推送服务未初始化")
+	}
 	info := s.authService.GetSessionInfo(session)
 	if info == nil {
 		return "", errors.New("获取会话信息失败")
@@ -25,6 +31,9 @@ func (s *service) GenToken(session string) (string, error) {
 func (s *service) SendMessage(message *socket.Message, to ...interface{}) error {
 	if message == nil {
 		return errors.New("消息不能为空")
+	}
+	if s.socketService == nil {
+		return errors.New("消息推送服务未初始化")
 	}
 	bytes, err := json.Marshal(message)
 	if err != nil {

@@ -35,6 +35,9 @@ func (s *service) Login(account string, password string, code string, userAgent 
 		id = u.Id
 		status = u.Status
 	} else {
+		if s.authService == nil {
+			return "", errors.New("认证服务未初始化")
+		}
 		check := s.authService.CheckSms
 		if !regexp.MustCompile(`^1[3-9]\d{9}$`).MatchString(account) {
 			if !regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`).MatchString(account) {

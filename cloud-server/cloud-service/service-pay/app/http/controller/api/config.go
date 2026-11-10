@@ -11,6 +11,10 @@ import (
 // Config 支付配置
 func (Controller) Config(c *context.Context) {
 	config := service.Channel.GetConfig(false)
+	if config == nil {
+		c.Error("获取支付配置失败")
+		return
+	}
 	c.SuccessWithData("获取数据成功", sinking_web.H{
 		"min":            config.Min,
 		"max":            config.Max,
